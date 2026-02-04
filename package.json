@@ -1,0 +1,49 @@
+{
+  "name": "bsebet",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5",
+      "@types/node": "^22.13.14",
+      "@trpc/server": "^11.7.2",
+      "@trpc/client": "^11.7.2",
+      "better-auth": "^1.4.18",
+      "alchemy": "^0.82.1"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @bsebet/db db:push",
+    "db:studio": "turbo -F @bsebet/db db:studio",
+    "db:generate": "turbo -F @bsebet/db db:generate",
+    "db:migrate": "turbo -F @bsebet/db db:migrate",
+    "deploy": "turbo -F @bsebet/infra deploy",
+    "destroy": "turbo -F @bsebet/infra destroy",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "@bsebet/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "@bsebet/config": "workspace:*",
+    "@cloudflare/workers-types": "^4.20251213.0",
+    "@types/node": "catalog:",
+    "turbo": "^2.6.3",
+    "typescript": "catalog:"
+  },
+  "packageManager": "bun@1.3.6"
+}

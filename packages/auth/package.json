@@ -1,0 +1,24 @@
+{
+  "name": "@bsebet/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@bsebet/db": "workspace:*",
+    "@bsebet/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@bsebet/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
