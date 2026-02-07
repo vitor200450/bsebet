@@ -1,0 +1,11 @@
+{
+  "extends": "../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@bsebet/db": ["../packages/db/src"],
+      "@bsebet/db/*": ["../packages/db/src/*"]
+    }
+  },
+  "include": ["."]
+}

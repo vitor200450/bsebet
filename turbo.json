@@ -36,6 +36,10 @@
     },
     "destroy": {
       "cache": false
+    },
+    "db:seed": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*"]
     }
   }
 }

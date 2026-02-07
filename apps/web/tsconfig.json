@@ -22,7 +22,11 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@bsebet/db": ["../../packages/db/src/index.ts"],
+      "@bsebet/db/*": ["../../packages/db/src/*"],
+      "@bsebet/api": ["../../packages/api/src/index.ts"],
+      "@bsebet/api/*": ["../../packages/api/src/*"]
     }
   }
 }

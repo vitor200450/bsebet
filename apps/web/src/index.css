@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Geist+Mono:wght@400;500;600;700;800;900&family=Permanent+Marker&family=Inter:wght@800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -113,8 +114,61 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Custom fonts */
+  --font-display: "Inter", sans-serif;
+  --font-body: "Geist Mono", monospace;
+  --font-marker: "Permanent Marker", cursive;
+  --font-military: "Black Ops One", cursive;
+
+  /* Custom colors */
+  --color-brawl-blue: #2e5cff;
+  --color-brawl-red: #ff2e2e;
+  --color-brawl-yellow: #ffc700;
+  --color-paper: #f0f0f0;
+  --color-ink: #121212;
+  --color-tape: #e6e6e6;
+
+  /* Custom background images */
+  --background-image-paper-texture: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+  --background-image-noise: url("https://www.transparenttextures.com/patterns/noise-lines.png");
+
+  /* Custom shadows */
+  --shadow-comic: 3px 3px 0px 0px #000000;
+  --shadow-comic-hover: 1px 1px 0px 0px #000000;
+  --shadow-comic-deep: 6px 6px 0px 0px rgba(0, 0, 0, 0.15);
 }
 
+/* Custom Utilities from HTML */
+.btn-press:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #000;
+}
+.btn-press:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #000;
+}
+.sketch-underline {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCGIsO2L-MjtCQ9At81fTmk0jZWyKSyHE9sRPNBbvKojIzozUGHzypesG3kXD1mRnMzqCLwUMkIaPhHbXUGwtGoHMONaZO3zCzzQDJc6CJteLxQpt0MIqp38fCusdmkOaZg8PzuPMTVp2GRuJcBWxU4ljrjiRH8NkSb9rBKZnDV30FHxp3dfsXMPs7zpAYktk4N85It2fGAx7Oe-721zesHCVNjiTmYYws3c3BSTwzmqhgJha-zYqOY57DLl4h9vING0ioTCAcmf04);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 5px;
+}
+.pencil-texture {
+  filter: contrast(110%) brightness(100%);
+}
+.table-compact td,
+.table-compact th {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.neon-text-glow {
+  text-shadow:
+    0 0 5px #ff2e2e,
+    0 0 10px #ff2e2e,
+    0 0 20px #ff2e2e,
+    0 0 40px #ff0000;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
