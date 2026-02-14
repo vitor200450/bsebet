@@ -11,15 +11,30 @@ export const auth = betterAuth({
     provider: "pg",
     schema: schema,
   }),
-  trustedOrigins: [env.CORS_ORIGIN],
+  trustedOrigins: [env.CORS_ORIGIN, env.BETTER_AUTH_URL],
+  baseURL: env.BETTER_AUTH_URL,
   emailAndPassword: {
-    enabled: true,
+    enabled: false,
   },
   plugins: [tanstackStartCookies(), admin()],
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      // Explicit redirect URI
+      redirectURI: `${env.BETTER_AUTH_URL}/api/auth/callback/google`,
+    },
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    disableCSRFCheck: true,
+  },
+  cookies: {
+    sessionToken: {
+      sameSite: "none",
+      secure: true,
     },
   },
 });

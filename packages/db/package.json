@@ -19,16 +19,16 @@
   "dependencies": {
     "@bsebet/env": "workspace:*",
     "@neondatabase/serverless": "^1.0.2",
-    "dotenv": "catalog:",
-    "drizzle-orm": "catalog:",
-    "postgres": "catalog:",
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8",
     "ws": "^8.18.3",
-    "zod": "catalog:"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@bsebet/config": "workspace:*",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.8",
-    "typescript": "catalog:"
+    "typescript": "^5"
   }
 }

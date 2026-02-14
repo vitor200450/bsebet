@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { clsx } from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { TeamLogo } from "./TeamLogo";
 
 // --- TYPES ---
 export type Team = {
@@ -536,21 +537,13 @@ export function BettingCarousel({
                             </span>
                           </div>
                           <div className="flex-grow flex items-center justify-center">
-                            <div className="w-24 h-24">
-                              {currentMatch.teamA.logoUrl ? (
-                                <img
-                                  alt={currentMatch.teamA.name}
-                                  className="w-full h-full object-contain drop-shadow-md"
-                                  src={currentMatch.teamA.logoUrl}
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-4xl text-center">
-                                    🛡️
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                            <TeamLogo
+                              teamId={currentMatch.teamA.id}
+                              teamName={currentMatch.teamA.name}
+                              logoUrl={currentMatch.teamA.logoUrl}
+                              size="xl"
+                              fallback="🛡️"
+                            />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
                             <span className="text-white text-[9px] font-bold uppercase font-body tracking-wider">
@@ -593,19 +586,13 @@ export function BettingCarousel({
                             </span>
                           </div>
                           <div className="flex-grow flex items-center justify-center">
-                            <div className="w-24 h-24 flex items-center justify-center">
-                              {currentMatch.teamB.logoUrl ? (
-                                <img
-                                  alt={currentMatch.teamB.name}
-                                  className="w-full h-full object-contain drop-shadow-md"
-                                  src={currentMatch.teamB.logoUrl}
-                                />
-                              ) : (
-                                <span className="material-symbols-outlined text-7xl text-white drop-shadow-md">
-                                  shield_lock
-                                </span>
-                              )}
-                            </div>
+                            <TeamLogo
+                              teamId={currentMatch.teamB.id}
+                              teamName={currentMatch.teamB.name}
+                              logoUrl={currentMatch.teamB.logoUrl}
+                              size="xl"
+                              fallback="🛡️"
+                            />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
                             <span className="text-white text-[9px] font-bold uppercase font-body tracking-wider">

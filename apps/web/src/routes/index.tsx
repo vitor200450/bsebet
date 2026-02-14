@@ -19,54 +19,56 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
     const { db, matches, tournaments, bets } = await import("@bsebet/db");
     const user = await getUser();
 
-    // Step 1: Get IDs of all tournaments with betting-enabled matches
-    const tournamentsWithBettingEnabled = await db.query.tournaments.findMany({
+    // Step 1: Get all active tournaments (simplified query without nested with)
+    const activeTournaments = await db.query.tournaments.findMany({
       where: and(
         eq(tournaments.isActive, true),
         eq(tournaments.status, "active"),
         not(like(tournaments.name, "Test Tournament%")),
       ),
-      with: {
-        matches: {
-          where: eq(matches.isBettingEnabled, true),
-          columns: { id: true },
-        },
-      },
+    });
+
+    // Step 2: Get matches with betting enabled for these tournaments
+    const tournamentIds = activeTournaments.map((t: any) => t.id);
+    const bettingMatches = await db.query.matches.findMany({
+      where: and(
+        inArray(matches.tournamentId, tournamentIds),
+        eq(matches.isBettingEnabled, true),
+      ),
+      columns: { id: true, tournamentId: true },
     });
 
     const bettingEnabledTournamentIds = new Set(
-      tournamentsWithBettingEnabled
-        .filter((t: any) => t.matches && t.matches.length > 0)
-        .map((t: any) => t.id)
+      bettingMatches.map((m: any) => m.tournamentId)
     );
 
-    // Step 2: Get tournament IDs where user has bets
+    // Step 3: Get tournament IDs where user has bets
     let userBetTournamentIds = new Set<number>();
     if (user) {
       const userBetsData = await db.query.bets.findMany({
         where: eq(bets.userId, user.user.id),
-        columns: {},
-        with: {
-          match: {
-            columns: { tournamentId: true },
-          },
-        },
+        columns: { matchId: true },
       });
 
-      userBetsData.forEach((bet: any) => {
-        if (bet.match?.tournamentId) {
-          userBetTournamentIds.add(bet.match.tournamentId);
-        }
-      });
+      if (userBetsData.length > 0) {
+        const userMatchIds = userBetsData.map((b: any) => b.matchId);
+        const userMatches = await db.query.matches.findMany({
+          where: inArray(matches.id, userMatchIds),
+          columns: { tournamentId: true },
+        });
+        userMatches.forEach((m: any) => {
+          if (m.tournamentId) userBetTournamentIds.add(m.tournamentId);
+        });
+      }
     }
 
-    // Step 3: Combine all tournament IDs we need to fetch
+    // Step 4: Combine all tournament IDs we need to fetch
     const allTournamentIdsToFetch = new Set([
       ...bettingEnabledTournamentIds,
       ...userBetTournamentIds,
     ]);
 
-    // Step 4: Fetch ALL tournaments with ALL their matches in ONE query
+    // Step 5: Fetch tournaments and their matches separately
     let allTournaments: any[] = [];
     if (allTournamentIdsToFetch.size > 0) {
       allTournaments = await db.query.tournaments.findMany({
@@ -74,15 +76,30 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
           inArray(tournaments.id, Array.from(allTournamentIdsToFetch)),
           not(like(tournaments.name, "Test Tournament%")),
         ),
-        with: {
-          matches: {
-            orderBy: [asc(matches.startTime)],
-          },
-        },
       });
+
+      // Fetch matches separately for each tournament
+      const allMatches = await db.query.matches.findMany({
+        where: inArray(matches.tournamentId, Array.from(allTournamentIdsToFetch)),
+        orderBy: [asc(matches.startTime)],
+      });
+
+      // Attach matches to tournaments
+      const matchesByTournament: { [key: number]: any[] } = {};
+      allMatches.forEach((m: any) => {
+        if (!matchesByTournament[m.tournamentId]) {
+          matchesByTournament[m.tournamentId] = [];
+        }
+        matchesByTournament[m.tournamentId].push(m);
+      });
+
+      allTournaments = allTournaments.map((t: any) => ({
+        ...t,
+        matches: matchesByTournament[t.id] || [],
+      }));
     }
 
-    // Step 5: Filter to only include tournaments that have matches
+    // Step 6: Filter to only include tournaments that have matches
     const tournamentsWithBetting = allTournaments
       .filter((t: any) => t.matches && t.matches.length > 0)
       .map((t: any) => {
@@ -1455,12 +1472,6 @@ function SubmitBetsModal({
     setErrorMessage(null);
 
     try {
-      console.log(
-        "[SUBMIT BETS] Starting submission...",
-        Object.keys(predictions).length,
-        "predictions",
-      );
-
       // Transform predictions to array and filter out started matches
       const betsToSubmit = Object.entries(predictions)
         .map(([matchIdStr, pred]) => {
@@ -1491,19 +1502,12 @@ function SubmitBetsModal({
         })
         .filter((bet): bet is NonNullable<typeof bet> => bet !== null);
 
-      console.log(
-        "[SUBMIT BETS] Bets to submit after filtering:",
-        betsToSubmit,
-      );
-
       if (betsToSubmit.length === 0) {
         throw new Error("No valid bets to submit (matches may have started).");
       }
 
-      console.log("[SUBMIT BETS] Calling submitMultipleBets API...");
       const { submitMultipleBets } = await import("../server/bets");
-      const result = await submitMultipleBets({ data: { bets: betsToSubmit } });
-      console.log("[SUBMIT BETS] Success!", result);
+      await submitMultipleBets({ data: { bets: betsToSubmit } });
 
       setStatus("success");
       const key = `bse-predictions-${tournamentId}-${userId}`;

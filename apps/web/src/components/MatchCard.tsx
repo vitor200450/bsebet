@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { TeamLogo } from "./TeamLogo";
 
 export type Team = {
   id: number;
@@ -171,23 +172,16 @@ export function MatchCard({
             </div>
 
             {/* Logo */}
-            <div
+            <TeamLogo
+              teamId={teamA?.id}
+              teamName={teamA?.name || match.labelTeamA}
+              logoUrl={teamA?.logoUrl}
+              size="md"
               className={clsx(
-                "w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-lg flex items-center justify-center shrink-0 overflow-hidden shadow-sm p-1.5 transition-transform",
+                "transition-transform",
                 userPredictedWinnerA ? "scale-105 rotate-[-2deg]" : "",
               )}
-            >
-              {teamA?.logoUrl ? (
-                <img
-                  src={teamA.logoUrl}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <span className="text-xl font-black text-zinc-300 italic">
-                  ?
-                </span>
-              )}
-            </div>
+            />
           </div>
 
           {/* --- VS / PLACAR (Center) --- */}
@@ -237,23 +231,16 @@ export function MatchCard({
             )}
           >
             {/* Logo */}
-            <div
+            <TeamLogo
+              teamId={teamB?.id}
+              teamName={teamB?.name || match.labelTeamB}
+              logoUrl={teamB?.logoUrl}
+              size="md"
               className={clsx(
-                "w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-lg flex items-center justify-center shrink-0 overflow-hidden shadow-sm p-1.5 transition-transform",
+                "transition-transform",
                 userPredictedWinnerB ? "scale-105 rotate-[2deg]" : "",
               )}
-            >
-              {teamB?.logoUrl ? (
-                <img
-                  src={teamB.logoUrl}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <span className="text-xl font-black text-zinc-300 italic">
-                  ?
-                </span>
-              )}
-            </div>
+            />
 
             <div className="flex flex-col items-start leading-tight shrink min-w-0 max-w-full z-10">
               <span

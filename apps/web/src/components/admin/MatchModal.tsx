@@ -290,25 +290,12 @@ export function MatchModal({
       teamAId:
         formData.teamAType === "team" && formData.teamA
           ? Number(formData.teamA)
-          : formData.teamAType === "match" &&
-              matchToEdit &&
-              formData.teamAPreviousMatchId === matchToEdit.teamAPreviousMatchId
-            ? matchToEdit.teamAId // Keep existing resolved team if dependency hasn't changed
+          : matchToEdit?.teamAId // Always preserve resolved team when editing
+            ? matchToEdit.teamAId
             : null,
       labelTeamA:
         formData.teamAType === "match"
-          ? // If editing and dependency hasn't changed, keep original label
-            matchToEdit &&
-            formData.teamAPreviousMatchId ===
-              matchToEdit.teamAPreviousMatchId &&
-            formData.teamAPreviousMatchResult ===
-              matchToEdit.teamAPreviousMatchResult
-            ? matchToEdit.labelTeamA // Preserve original label
-            : getSourceLabel(
-                "match",
-                formData.teamAPreviousMatchId,
-                formData.teamAPreviousMatchResult,
-              )
+          ? matchToEdit?.labelTeamA // Always preserve original label when editing
           : formData.teamAType === "group"
             ? getSourceLabel(
                 "group",
@@ -333,25 +320,12 @@ export function MatchModal({
       teamBId:
         formData.teamBType === "team" && formData.teamB
           ? Number(formData.teamB)
-          : formData.teamBType === "match" &&
-              matchToEdit &&
-              formData.teamBPreviousMatchId === matchToEdit.teamBPreviousMatchId
-            ? matchToEdit.teamBId // Keep existing resolved team if dependency hasn't changed
+          : matchToEdit?.teamBId // Always preserve resolved team when editing
+            ? matchToEdit.teamBId
             : null,
       labelTeamB:
         formData.teamBType === "match"
-          ? // If editing and dependency hasn't changed, keep original label
-            matchToEdit &&
-            formData.teamBPreviousMatchId ===
-              matchToEdit.teamBPreviousMatchId &&
-            formData.teamBPreviousMatchResult ===
-              matchToEdit.teamBPreviousMatchResult
-            ? matchToEdit.labelTeamB // Preserve original label
-            : getSourceLabel(
-                "match",
-                formData.teamBPreviousMatchId,
-                formData.teamBPreviousMatchResult,
-              )
+          ? matchToEdit?.labelTeamB // Always preserve original label when editing
           : formData.teamBType === "group"
             ? getSourceLabel(
                 "group",

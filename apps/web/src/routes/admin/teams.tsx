@@ -14,6 +14,7 @@ import {
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSetHeader } from "../../components/HeaderContext";
+import { TeamLogo } from "../../components/TeamLogo";
 
 export const Route = createFileRoute("/admin/teams")({
   component: AdminTeamsPage,
@@ -326,17 +327,13 @@ function AdminTeamsPage() {
                 <div
                   className={`w-32 h-32 bg-[#f0f0f0] border-[3px] border-black rounded-full flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-all duration-300 ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
                 >
-                  {team.logoUrl ? (
-                    <img
-                      src={team.logoUrl}
-                      alt={team.name}
-                      className="w-full h-full object-contain p-4"
-                    />
-                  ) : (
-                    <span className="text-4xl font-black text-gray-300 select-none">
-                      ?
-                    </span>
-                  )}
+                  <TeamLogo
+                    teamId={team.id}
+                    teamName={team.name}
+                    logoUrl={team.logoUrl}
+                    size="lg"
+                    className="w-full h-full p-4"
+                  />
                 </div>
 
                 {/* Info */}
@@ -556,10 +553,12 @@ function AdminTeamsPage() {
 
                 <div className="flex-1 bg-[#e6e6e6] border-[3px] border-black border-dashed flex items-center justify-center relative min-h-[160px] group">
                   {formData.logoUrl ? (
-                    <img
-                      src={formData.logoUrl}
-                      alt="Preview"
-                      className="w-32 h-32 object-contain drop-shadow-md"
+                    <TeamLogo
+                      teamId={formData.id}
+                      teamName={formData.name}
+                      logoUrl={formData.logoUrl}
+                      size="lg"
+                      className="drop-shadow-md"
                     />
                   ) : (
                     <div className="text-gray-400 text-center">

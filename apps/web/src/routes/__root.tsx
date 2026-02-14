@@ -10,7 +10,6 @@ import {
 } from "@tanstack/react-router";
 
 import { Toaster } from "@/components/ui/sonner";
-import { DebugUserSwitcher } from "@/components/dev/DebugUserSwitcher";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { HeaderProvider } from "@/components/HeaderContext";
 
@@ -63,7 +62,6 @@ function RootDocument() {
             <Outlet />
           </div>
           <Toaster richColors />
-          <DebugUserSwitcher />
           <Scripts />
         </HeaderProvider>
       </body>

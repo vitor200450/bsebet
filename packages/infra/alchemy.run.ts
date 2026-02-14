@@ -17,6 +17,4 @@ export const web = await TanStackStart("web", {
   },
 });
 
-console.log(`Web    -> ${web.url}`);
-
 await app.finalize();

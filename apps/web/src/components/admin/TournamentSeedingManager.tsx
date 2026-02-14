@@ -2,6 +2,7 @@ import { useState } from "react";
 import { updateTeamSeeding } from "@/server/tournament-teams";
 import { toast } from "sonner";
 import { Loader2, Check } from "lucide-react";
+import { TeamLogo } from "../TeamLogo";
 
 interface Team {
   id: number;
@@ -251,12 +252,13 @@ function TeamSeedingCard({
         </div>
       )}
 
-      <div className="w-10 h-10 border border-black p-1 flex items-center justify-center bg-gray-50 flex-shrink-0">
-        {team.logoUrl ? (
-          <img src={team.logoUrl} className="w-full h-full object-contain" />
-        ) : (
-          <span className="text-xs font-bold text-gray-300">?</span>
-        )}
+      <div className="w-10 h-10 border border-black flex items-center justify-center bg-gray-50 flex-shrink-0">
+        <TeamLogo
+          teamId={team.id}
+          teamName={team.name}
+          logoUrl={team.logoUrl}
+          size="sm"
+        />
       </div>
       <div className="flex-1 min-w-0">
         <div

@@ -14,13 +14,13 @@
     "@bsebet/auth": "workspace:*",
     "@bsebet/db": "workspace:*",
     "@bsebet/env": "workspace:*",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "@trpc/client": "^11.7.2",
+    "@trpc/server": "^11.7.2",
+    "dotenv": "^17.2.2",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@bsebet/config": "workspace:*",
-    "typescript": "catalog:"
+    "typescript": "^5"
   }
 }

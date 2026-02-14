@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { clsx } from "clsx";
 import type { Match, Team, Prediction } from "./types";
+import { TeamLogo } from "../TeamLogo";
 
 export type Standing = {
   team: Team;
@@ -150,12 +151,13 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ccff00] shadow-[0_0_10px_#ccff00]" />
                 )}
 
-                {s.team.logoUrl && (
-                  <img
-                    src={s.team.logoUrl}
-                    className="w-5 h-5 object-contain flex-shrink-0 relative z-10"
-                  />
-                )}
+                <TeamLogo
+                  teamId={s.team.id}
+                  teamName={s.team.name}
+                  logoUrl={s.team.logoUrl}
+                  size="xs"
+                  className="flex-shrink-0 relative z-10"
+                />
                 <span
                   className={clsx(
                     "uppercase block relative z-10",

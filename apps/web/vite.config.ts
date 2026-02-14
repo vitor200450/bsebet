@@ -10,16 +10,18 @@ import dotenv from "dotenv";
 // Explicitly load root .env to ensure variables are present
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-console.log(
-  "VITE CONFIG: GOOGLE_CLIENT_ID is",
-  process.env.GOOGLE_CLIENT_ID ? "DEFINED" : "UNDEFINED",
-);
-
 export default defineConfig({
   plugins: [
     tsconfigPaths(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      nitro: {
+        preset: 'node-server',
+        output: {
+          dir: './dist',
+        },
+      },
+    }),
     viteReact(),
     // alchemy(),
   ],

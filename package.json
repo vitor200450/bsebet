@@ -1,24 +1,10 @@
 {
   "name": "bsebet",
   "private": true,
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "packages/*"
-    ],
-    "catalog": {
-      "dotenv": "^17.2.2",
-      "zod": "^4.1.13",
-      "typescript": "^5",
-      "@types/node": "^22.13.14",
-      "@trpc/server": "^11.7.2",
-      "@trpc/client": "^11.7.2",
-      "better-auth": "^1.4.18",
-      "alchemy": "^0.82.1",
-      "drizzle-orm": "^0.45.1",
-      "postgres": "^3.4.8"
-    }
-  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "type": "module",
   "scripts": {
     "dev": "turbo dev",
@@ -26,36 +12,31 @@
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
     "dev:web": "bun --env-file=.env run turbo -F web dev",
+    "check": "biome check --write .",
     "db:push": "turbo -F @bsebet/db db:push",
     "db:studio": "turbo -F @bsebet/db db:studio",
     "db:generate": "turbo -F @bsebet/db db:generate",
     "db:migrate": "turbo -F @bsebet/db db:migrate",
     "db:seed": "turbo -F @bsebet/db db:seed",
-    "fix-matches": "bun --env-file=.env run ./scripts/fix-finished-matches.ts",
-    "recalc-bets": "bun --env-file=.env run ./scripts/recalculate-all-bets.ts",
-    "fix-bracket": "bun --env-file=.env run ./scripts/fix-bracket-progression.ts",
-    "fix-groups": "bun --env-file=.env run ./scripts/fix-groups-progression.ts",
-    "config-playoffs": "bun --env-file=.env run ./scripts/configure-groups-to-playoffs.ts",
-    "config-deciders": "bun --env-file=.env run ./scripts/configure-deciders-to-playoffs.ts",
-    "fix-labels": "bun --env-file=.env run ./scripts/fix-playoff-labels.ts",
-    "reconfig-seeding": "bun --env-file=.env run ./scripts/reconfigure-playoff-seeding.ts",
-    "diagnose-bets": "bun --env-file=.env run ./scripts/diagnose-zero-points.ts",
+    "db:push:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:push",
+    "db:migrate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:migrate",
+    "db:studio:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:studio",
+    "db:generate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:generate",
     "deploy": "turbo -F @bsebet/infra deploy",
-    "destroy": "turbo -F @bsebet/infra destroy",
-    "check": "biome check --write ."
+    "destroy": "turbo -F @bsebet/infra destroy"
   },
   "dependencies": {
     "@bsebet/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "dotenv": "^17.3.1",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
     "@bsebet/config": "workspace:*",
     "@cloudflare/workers-types": "^4.20251213.0",
-    "@types/node": "catalog:",
+    "@types/node": "^22.13.14",
     "turbo": "^2.8.3",
-    "typescript": "catalog:"
+    "typescript": "^5"
   },
   "packageManager": "bun@1.3.6"
 }

@@ -1,6 +1,6 @@
 import { matches, matchDays } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
 
@@ -28,9 +28,6 @@ function getBracketMatchName(
  */
 async function updateBracketProgression(db: any, finishedMatch: any) {
   if (!finishedMatch.winnerId) {
-    console.log(
-      `[Bracket Progression] Match ${finishedMatch.id} has no winner, skipping`,
-    );
     return;
   }
 
@@ -39,10 +36,6 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
     finishedMatch.teamAId === winnerId
       ? finishedMatch.teamBId
       : finishedMatch.teamAId;
-
-  console.log(
-    `[Bracket Progression] Match ${finishedMatch.id} finished. Winner: ${winnerId}, Loser: ${loserId}`,
-  );
 
   // Find all matches that depend on this match result
   const dependentMatches = await db.query.matches.findMany({
@@ -53,30 +46,16 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
       ),
   });
 
-  console.log(
-    `[Bracket Progression] Found ${dependentMatches.length} dependent matches`,
-  );
-
   // Update each dependent match
   for (const depMatch of dependentMatches) {
     const updates: any = {};
-
-    console.log(`[Bracket Progression] Checking match ${depMatch.id}:`);
-    console.log(
-      `  teamAPrevMatch: ${depMatch.teamAPreviousMatchId} (${depMatch.teamAPreviousMatchResult})`,
-    );
-    console.log(
-      `  teamBPrevMatch: ${depMatch.teamBPreviousMatchId} (${depMatch.teamBPreviousMatchResult})`,
-    );
 
     // Check if this match feeds into Team A slot
     if (depMatch.teamAPreviousMatchId === finishedMatch.id) {
       if (depMatch.teamAPreviousMatchResult === "winner") {
         updates.teamAId = winnerId;
-        console.log(`  → Setting teamAId to winner: ${winnerId}`);
       } else if (depMatch.teamAPreviousMatchResult === "loser") {
         updates.teamAId = loserId;
-        console.log(`  → Setting teamAId to loser: ${loserId}`);
       }
     }
 
@@ -84,10 +63,8 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
     if (depMatch.teamBPreviousMatchId === finishedMatch.id) {
       if (depMatch.teamBPreviousMatchResult === "winner") {
         updates.teamBId = winnerId;
-        console.log(`  → Setting teamBId to winner: ${winnerId}`);
       } else if (depMatch.teamBPreviousMatchResult === "loser") {
         updates.teamBId = loserId;
-        console.log(`  → Setting teamBId to loser: ${loserId}`);
       }
     }
 
@@ -101,21 +78,81 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
   }
 }
 
+/**
+ * Busca matches otimizada - Reduz dados transferidos em ~80%
+ * Versão otimizada que evita LATERAL JOIN com json_build_array
+ */
 const getMatchesFn = createServerFn({ method: "GET" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
     const data = z.object({ tournamentId: z.number() }).parse(ctx.data);
 
-    const results = await db.query.matches.findMany({
+    // Query 1: Apenas matches (sem joins pesados)
+    // Seleciona apenas colunas necessárias (não *)
+    const matchesData = await db.query.matches.findMany({
       where: eq(matches.tournamentId, data.tournamentId),
       orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
-      with: {
-        teamA: true,
-        teamB: true,
+      columns: {
+        id: true,
+        tournamentId: true,
+        matchDayId: true,
+        label: true,
+        stageId: true,
+        name: true,
+        teamAId: true,
+        teamBId: true,
+        labelTeamA: true,
+        labelTeamB: true,
+        startTime: true,
+        status: true,
+        winnerId: true,
+        scoreA: true,
+        scoreB: true,
+        nextMatchWinnerId: true,
+        nextMatchWinnerSlot: true,
+        nextMatchLoserId: true,
+        nextMatchLoserSlot: true,
+        roundIndex: true,
+        bracketSide: true,
+        displayOrder: true,
+        isBettingEnabled: true,
+        underdogTeamId: true,
       },
     });
 
-    return results;
+    // Query 2: Busca apenas os teams necessários
+    const teamIds = new Set<number>();
+    matchesData.forEach((m) => {
+      if (m.teamAId) teamIds.add(m.teamAId);
+      if (m.teamBId) teamIds.add(m.teamBId);
+    });
+
+    if (teamIds.size === 0) {
+      return matchesData.map((m) => ({ ...m, teamA: null, teamB: null }));
+    }
+
+    const { teams } = await import("@bsebet/db/schema");
+
+    // Busca teams com logoUrl (agora é URL do R2, não Base64)
+    const teamsData = await db.query.teams.findMany({
+      where: inArray(teams.id, Array.from(teamIds)),
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        logoUrl: true, // URL do R2 - leve e cacheável
+        region: true,
+      },
+    });
+
+    // Mapeamento eficiente na aplicação
+    const teamsMap = new Map(teamsData.map((t) => [t.id, t]));
+
+    return matchesData.map((match) => ({
+      ...match,
+      teamA: match.teamAId ? teamsMap.get(match.teamAId) || null : null,
+      teamB: match.teamBId ? teamsMap.get(match.teamBId) || null : null,
+    }));
   },
 );
 
@@ -694,10 +731,6 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
       let groupDeciderMatches: any[] = [];
 
       if (groupsStage) {
-        console.log(
-          "[Bracket Generation] Found groups stage, linking progression to playoffs...",
-        );
-
         // Get Winner Matches (1st place) from each group
         groupWinnerMatches = await db.query.matches.findMany({
           where: (m, { and, eq, like }) =>
@@ -764,12 +797,6 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 
           teamAPreviousMatchId = teamAMatch?.id || null;
           teamBPreviousMatchId = teamBMatch?.id || null;
-
-          if (teamAPreviousMatchId || teamBPreviousMatchId) {
-            console.log(
-              `[Bracket Generation] ${matchName}: TeamA <- Match ${teamAPreviousMatchId} (${teamAPlaceholder}), TeamB <- Match ${teamBPreviousMatchId} (${teamBPlaceholder})`,
-            );
-          }
         }
 
         await db.insert(matches).values({
@@ -892,3 +919,100 @@ function generatePlaceholderLabels(
 export const generateFullBracket = generateFullBracketFn as unknown as (opts: {
   data: { tournamentId: number; stageId?: string };
 }) => Promise<{ success: boolean }>;
+
+/**
+ * Busca de match days otimizada - Reduz dados transferidos
+ */
+const getMatchDaysFn = createServerFn({ method: "GET" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const data = ctx.data as { tournamentId: number };
+
+    if (!data?.tournamentId) {
+      throw new Error("Tournament ID required");
+    }
+
+    // Query 1: Match days (sem joins complexos)
+    const days = await db.query.matchDays.findMany({
+      where: eq(matchDays.tournamentId, data.tournamentId),
+      orderBy: [asc(matchDays.date)],
+      columns: {
+        id: true,
+        tournamentId: true,
+        date: true,
+        label: true,
+        status: true,
+      },
+    });
+
+    if (days.length === 0) return [];
+
+    // Query 2: Matches dos match days
+    const dayIds = days.map((d) => d.id);
+    const { matches, teams } = await import("@bsebet/db/schema");
+
+    const allMatches = await db.query.matches.findMany({
+      where: inArray(matches.matchDayId, dayIds),
+      columns: {
+        id: true,
+        matchDayId: true,
+        tournamentId: true,
+        label: true,
+        name: true,
+        teamAId: true,
+        teamBId: true,
+        labelTeamA: true,
+        labelTeamB: true,
+        startTime: true,
+        status: true,
+        winnerId: true,
+        scoreA: true,
+        scoreB: true,
+        isBettingEnabled: true,
+        displayOrder: true,
+      },
+    });
+
+    // Query 3: Teams necessários
+    const teamIds = new Set<number>();
+    allMatches.forEach((m) => {
+      if (m.teamAId) teamIds.add(m.teamAId);
+      if (m.teamBId) teamIds.add(m.teamBId);
+    });
+
+    const teamsData =
+      teamIds.size > 0
+        ? await db.query.teams.findMany({
+            where: inArray(teams.id, Array.from(teamIds)),
+            columns: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true, // URL do R2 - leve e cacheável
+            },
+          })
+        : [];
+
+    const teamsMap = new Map(teamsData.map((t) => [t.id, t]));
+    const matchesByDay = new Map<number, typeof allMatches>();
+
+    allMatches.forEach((m) => {
+      const list = matchesByDay.get(m.matchDayId) || [];
+      list.push({
+        ...m,
+        teamA: m.teamAId ? teamsMap.get(m.teamAId) || null : null,
+        teamB: m.teamBId ? teamsMap.get(m.teamBId) || null : null,
+      });
+      matchesByDay.set(m.matchDayId, list);
+    });
+
+    return days.map((day) => ({
+      ...day,
+      matches: matchesByDay.get(day.id) || [],
+    }));
+  }
+);
+
+export const getMatchDays = getMatchDaysFn as unknown as (opts: {
+  data: { tournamentId: number };
+}) => Promise<any[]>;

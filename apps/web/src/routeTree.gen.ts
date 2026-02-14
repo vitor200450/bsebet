@@ -20,6 +20,7 @@ import { Route as TournamentsSlugRouteImport } from './routes/tournaments/$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTournamentsRouteImport } from './routes/admin/tournaments'
 import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
+import { Route as AdminMigrateLogosRouteImport } from './routes/admin/migrate-logos'
 import { Route as AdminTournamentsIndexRouteImport } from './routes/admin/tournaments/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -81,6 +82,11 @@ const AdminTeamsRoute = AdminTeamsRouteImport.update({
   path: '/admin/teams',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMigrateLogosRoute = AdminMigrateLogosRouteImport.update({
+  id: '/admin/migrate-logos',
+  path: '/admin/migrate-logos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTournamentsIndexRoute = AdminTournamentsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/tournaments': typeof TournamentsRouteWithChildren
+  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/landing': typeof LandingRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/users': typeof AdminUsersRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/tournaments': typeof TournamentsRouteWithChildren
+  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/tournaments'
+    | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/landing'
     | '/leaderboard'
     | '/login'
+    | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/users'
     | '/tournaments/$slug'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/tournaments'
+    | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   TournamentsRoute: typeof TournamentsRouteWithChildren
+  AdminMigrateLogosRoute: typeof AdminMigrateLogosRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
   AdminTournamentsRoute: typeof AdminTournamentsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTeamsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/migrate-logos': {
+      id: '/admin/migrate-logos'
+      path: '/admin/migrate-logos'
+      fullPath: '/admin/migrate-logos'
+      preLoaderRoute: typeof AdminMigrateLogosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tournaments/': {
       id: '/admin/tournaments/'
       path: '/'
@@ -383,6 +403,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   TournamentsRoute: TournamentsRouteWithChildren,
+  AdminMigrateLogosRoute: AdminMigrateLogosRoute,
   AdminTeamsRoute: AdminTeamsRoute,
   AdminTournamentsRoute: AdminTournamentsRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,

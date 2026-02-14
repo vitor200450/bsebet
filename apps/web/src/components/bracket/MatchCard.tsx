@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import type { Match, Prediction, Team } from "./types";
+import { TeamLogo } from "../TeamLogo";
 
 // --- SCORE PICKER (POPOVER) ---
 const ScorePicker = ({
@@ -336,18 +337,13 @@ export const MatchCard = ({
           )}
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2 relative z-10">
-            <div className="w-8 h-8 rounded-full border-2 border-black/20 overflow-hidden flex-shrink-0 bg-gray-50">
-              {match.teamA.logoUrl ? (
-                <img
-                  src={match.teamA.logoUrl}
-                  className="w-full h-full object-contain p-0.5"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">
-                  ?
-                </div>
-              )}
-            </div>
+            <TeamLogo
+              teamId={match.teamA.id}
+              teamName={match.teamA.name}
+              logoUrl={match.teamA.logoUrl}
+              size="sm"
+              className="rounded-full border-2 border-black/20"
+            />
             <span
               className={clsx(
                 "text-[10px] font-black uppercase italic line-clamp-2 leading-tight w-full break-words",
@@ -430,18 +426,13 @@ export const MatchCard = ({
           )}
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-            <div className="w-8 h-8 rounded-full border-2 border-black/20 overflow-hidden flex-shrink-0 bg-gray-50">
-              {match.teamB.logoUrl ? (
-                <img
-                  src={match.teamB.logoUrl}
-                  className="w-full h-full object-contain p-0.5"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">
-                  ?
-                </div>
-              )}
-            </div>
+            <TeamLogo
+              teamId={match.teamB.id}
+              teamName={match.teamB.name}
+              logoUrl={match.teamB.logoUrl}
+              size="sm"
+              className="rounded-full border-2 border-black/20"
+            />
             <span
               className={clsx(
                 "text-[10px] font-black uppercase italic line-clamp-2 leading-tight w-full break-words",
