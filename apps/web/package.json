@@ -4,11 +4,14 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "start": "vite preview --port 3000 --host",
     "serve": "vite preview",
     "dev": "vite dev",
     "seed:debug": "bun run scripts/seed-debug-users.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.990.0",
+    "@aws-sdk/s3-request-presigner": "^3.990.0",
     "@base-ui/react": "^1.0.0",
     "@bsebet/api": "workspace:*",
     "@bsebet/auth": "workspace:*",
