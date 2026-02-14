@@ -1,32 +1,32 @@
-# Dockerfile para Heroku - Bun Workspace
-FROM oven/bun:1.2.2-slim
+# Dockerfile para Heroku - Usando Node + pnpm
+FROM node:22-slim
+
+# Instalar pnpm
+RUN npm install -g pnpm
 
 WORKDIR /app
 
 # Instalar dependências do sistema
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-# Copiar arquivos de configuração do workspace primeiro
-COPY package.json .
-COPY pnpm-workspace.yaml .
-COPY turbo.json .
-COPY bun.lock .
+# Copiar arquivos de configuração primeiro
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 
-# Copiar packages primeiro (para cache de layer)
-COPY packages/ packages/
+# Copiar packages
+COPY packages/ ./packages/
 
 # Copiar apps
-COPY apps/ apps/
+COPY apps/ ./apps/
 
-# Instalar dependências do workspace
-RUN bun install --frozen-lockfile || bun install
+# Instalar dependências
+RUN pnpm install --frozen-lockfile || pnpm install
 
-# Build do app web
-RUN bun run build --filter=web
+# Build
+RUN pnpm run build
 
 # Porta
 EXPOSE 3000
 
 # Comando para iniciar
 WORKDIR /app/apps/web
-CMD ["bun", "run", "start"]
+CMD ["pnpm", "run", "start"]
