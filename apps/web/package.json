@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "start": "HOST=0.0.0.0 PORT=3000 bun run dist/server/server.js",
+    "start": "HOST=0.0.0.0 NITRO_PORT=${PORT:-3000} bun run dist/server/server.js",
     "serve": "vite preview",
     "dev": "vite dev",
     "seed:debug": "bun run scripts/seed-debug-users.ts"
