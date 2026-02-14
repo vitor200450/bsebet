@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd ../.. && npm install && npm run build",
+  "outputDirectory": "apps/web/dist/client",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
+}
