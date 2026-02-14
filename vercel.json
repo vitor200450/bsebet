@@ -1,6 +1,6 @@
 {
   "buildCommand": "bun run build",
-  "outputDirectory": "apps/web/dist",
+  "outputDirectory": "apps/web/dist/client",
   "framework": null,
   "rewrites": [
     {
@@ -8,12 +8,8 @@
       "destination": "/assets/$1"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/api/index"
     }
   ]
 }
