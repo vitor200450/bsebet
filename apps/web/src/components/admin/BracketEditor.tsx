@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { Plus, Zap } from "lucide-react";
 import { clsx } from "clsx";
-import type { Match } from "../TournamentBracket";
+import type { Match } from "../bracket/types";
+import { GSLGroupView } from "../bracket/GSLGroupView";
+import { StandardGroupView } from "../bracket/StandardGroupView";
 
 const MATCH_HEIGHT = 125;
 
@@ -11,8 +13,6 @@ function abbreviateLabel(label: string | null | undefined): string {
 
   // Light abbreviations - keep it readable
   const abbreviations: Record<string, string> = {
-    "Quarter-Final": "QF",
-    "Semi-Final": "SF",
     Bracket: "",
     Upper: "UB",
     Lower: "LB",
@@ -48,6 +48,7 @@ interface BracketEditorProps {
   }) => void;
   onGenerateNextRound?: (roundIndex: number, side: string) => void;
   onGenerateFullBracket?: (roundIndex: number, side: string) => void;
+  stageType?: string;
 }
 
 export function BracketEditor({
@@ -55,9 +56,10 @@ export function BracketEditor({
   onEditMatch,
   onCreateMatch,
   onGenerateFullBracket,
+  stageType = "Double Elimination",
 }: BracketEditorProps) {
   // Group matches by Side > Round
-  const { upper, lower, final } = useMemo(() => {
+  const { upper, lower, final, bracketType } = useMemo(() => {
     const upp: Record<number, Match[]> = {};
     const low: Record<number, Match[]> = {};
     const fin: Match[] = [];
@@ -72,6 +74,8 @@ export function BracketEditor({
       } else if (side === "lower") {
         if (!low[round]) low[round] = [];
         low[round].push(m);
+      } else if (side === "groups") {
+        // Do nothing, handled separately in the Groups column
       } else {
         if (!upp[round]) upp[round] = [];
         upp[round].push(m);
@@ -93,11 +97,25 @@ export function BracketEditor({
     );
     fin.sort(sortMatches);
 
-    return { upper: upp, lower: low, final: fin };
+    return {
+      upper: upp,
+      lower: low,
+      final: fin,
+      bracketType: matches.some((m) => m.bracketSide === "groups")
+        ? "groups"
+        : "elimination",
+    };
   }, [matches]);
 
   const getRoundTitle = (side: "upper" | "lower", idx: number): string => {
+    const isDouble = stageType === "Double Elimination";
+
     if (side === "upper") {
+      if (!isDouble) {
+        return (
+          ["Quarter-Finals", "Semi-Finals", "Final"][idx] || `Round ${idx + 1}`
+        );
+      }
       return (
         ["Quarter-Finals", "Semi-Finals", "UB Final"][idx] || `UB R${idx + 1}`
       );
@@ -114,7 +132,7 @@ export function BracketEditor({
     .sort((a, b) => a - b);
 
   return (
-    <div className="bg-[#e6e6e6] p-8 overflow-auto min-h-[600px] border-[4px] border-black">
+    <div className="overflow-x-auto overflow-y-visible min-h-[600px]">
       {/* GLOBAL ACTIONS BAR */}
       <div className="flex justify-between items-center mb-8 bg-white/50 p-4 border-2 border-dashed border-black/10 rounded-lg">
         <div className="flex flex-col">
@@ -133,107 +151,102 @@ export function BracketEditor({
               className="px-6 py-2 border-4 border-black bg-[#ccff00] flex items-center gap-2 hover:bg-black hover:text-[#ccff00] transition-colors relative shadow-[4px_4px_0px_0px_#000] active:translate-y-1 active:shadow-none font-black uppercase italic text-sm text-black group"
             >
               <Zap className="w-5 h-5 group-hover:animate-pulse" />
-              Generate Entire Bracket
+              {bracketType === "groups"
+                ? "Generate Group Matches"
+                : "Generate Entire Bracket"}
             </button>
           )}
         </div>
       </div>
 
       <div className="flex gap-16 min-w-max px-4 items-center">
-        {/* LEFT COLUMN (UPPER + LOWER) */}
-        <div className="flex flex-col gap-12">
-          {/* UPPER BRACKET + GRAND FINAL */}
-          <div className="flex flex-col gap-4">
-            <div className="relative h-8 mb-4">
-              <div className="text-xs font-black uppercase italic tracking-widest text-white bg-black px-4 py-1.5 transform -skew-x-12 border-2 border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] absolute top-0 left-0 z-10">
-                UPPER BRACKET
-              </div>
-            </div>
-            <div className="flex gap-6 items-stretch text-black">
-              {upperRounds.map((roundIdx) => (
-                <div key={`upper-${roundIdx}`} className="flex flex-col gap-2">
-                  <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
-                    {getRoundTitle("upper", roundIdx)}
-                  </div>
-                  <div className="flex flex-col gap-4 justify-around h-full">
-                    {/* Render matches for this round */}
-                    {(upper[roundIdx] || []).map((match) => (
-                      <div key={match.id} className="w-64">
+        {/* GROUPS COLUMN */}
+        {bracketType === "groups" && (
+          <div className="w-full flex flex-col gap-12">
+            {Object.entries(
+              matches.reduce(
+                (acc, m) => {
+                  // Group by Label (e.g. "Group A")
+                  const groupName = m.label || "Unknown Group";
+                  if (!acc[groupName]) acc[groupName] = [];
+                  acc[groupName].push(m);
+                  return acc;
+                },
+                {} as Record<string, Match[]>,
+              ),
+            )
+              .sort(([groupNameA], [groupNameB]) =>
+                groupNameA.localeCompare(groupNameB),
+              )
+              .map(([groupName, groupMatches]) => {
+                // DETECT FORMAT: GSL vs Round Robin
+                const isGSL =
+                  groupMatches.length === 5 &&
+                  groupMatches.some((m) => m.name?.includes("Opening"));
+
+                if (isGSL) {
+                  return (
+                    <GSLGroupView
+                      key={groupName}
+                      groupName={groupName}
+                      matches={groupMatches}
+                      predictions={{}}
+                      onUpdatePrediction={() => {}}
+                      renderMatchCard={(m) => (
                         <EditorMatchCard
-                          match={match}
-                          onClick={() => onEditMatch?.(match)}
+                          match={m}
+                          onClick={() => onEditMatch?.(m)}
                         />
-                      </div>
-                    ))}
-                    {/* Add Match Button if empty (optional, keeping minimal as per request) */}
-                    {(upper[roundIdx] || []).length === 0 && (
-                      <div className="w-64">
-                        <AddMatchButton
-                          onClick={() =>
-                            onCreateMatch({
-                              roundIndex: roundIdx,
-                              bracketSide: "upper",
-                              label: "New Match",
-                            })
-                          }
-                        />
-                      </div>
+                      )}
+                    />
+                  );
+                }
+
+                return (
+                  <StandardGroupView
+                    key={groupName}
+                    groupName={groupName}
+                    matches={groupMatches}
+                    predictions={{}}
+                    onUpdatePrediction={() => {}}
+                    renderMatchCard={(m) => (
+                      <EditorMatchCard
+                        match={m}
+                        onClick={() => onEditMatch?.(m)}
+                      />
                     )}
+                  />
+                );
+              })}
+          </div>
+        )}
+
+        {/* LEFT COLUMN (UPPER + LOWER) */}
+        {(Object.keys(upper).length > 0 ||
+          Object.keys(lower).length > 0 ||
+          final.length > 0) && (
+          <div className="flex flex-col gap-12">
+            {/* UPPER BRACKET + GRAND FINAL */}
+            <div className="flex flex-col gap-4">
+              {stageType === "Double Elimination" && (
+                <div className="relative h-8 mb-4">
+                  <div className="text-xs font-black uppercase italic tracking-widest text-white bg-black px-4 py-1.5 transform -skew-x-12 border-2 border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] absolute top-0 left-0 z-10">
+                    UPPER BRACKET
                   </div>
                 </div>
-              ))}
-
-              {/* GRAND FINAL Appended */}
-              <div className="flex flex-col gap-2">
-                <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
-                  GRAND FINAL
-                </div>
-                <div className="flex flex-col gap-4 justify-around h-full">
-                  {(final || []).map((match) => (
-                    <div key={match.id} className="w-64">
-                      <EditorMatchCard
-                        match={match}
-                        onClick={() => onEditMatch?.(match)}
-                      />
-                    </div>
-                  ))}
-                  {final.length === 0 && (
-                    <div className="w-64">
-                      <AddMatchButton
-                        onClick={() =>
-                          onCreateMatch({
-                            roundIndex: 0,
-                            bracketSide: "grand_final",
-                            label: "Grand Final",
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* LOWER BRACKET */}
-          {lowerRounds.length > 0 && (
-            <div className="pt-8 border-t-[3px] border-dashed border-black/10 relative">
-              <div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
-                <div className="text-xs font-black uppercase italic tracking-widest text-white bg-black px-4 py-1.5 transform -skew-x-12 border-2 border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
-                  LOWER BRACKET
-                </div>
-              </div>
-              <div className="flex gap-6 items-stretch">
-                {lowerRounds.map((roundIdx) => (
+              )}
+              <div className="flex gap-6 items-stretch text-black">
+                {upperRounds.map((roundIdx) => (
                   <div
-                    key={`lower-${roundIdx}`}
+                    key={`upper-${roundIdx}`}
                     className="flex flex-col gap-2"
                   >
-                    <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider">
-                      {getRoundTitle("lower", roundIdx)}
+                    <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
+                      {getRoundTitle("upper", roundIdx)}
                     </div>
                     <div className="flex flex-col gap-4 justify-around h-full">
-                      {(lower[roundIdx] || []).map((match) => (
+                      {/* Render matches for this round */}
+                      {(upper[roundIdx] || []).map((match) => (
                         <div key={match.id} className="w-64">
                           <EditorMatchCard
                             match={match}
@@ -241,13 +254,92 @@ export function BracketEditor({
                           />
                         </div>
                       ))}
+                      {/* Add Match Button if empty (optional, keeping minimal as per request) */}
+                      {(upper[roundIdx] || []).length === 0 && (
+                        <div className="w-64">
+                          <AddMatchButton
+                            onClick={() =>
+                              onCreateMatch({
+                                roundIndex: roundIdx,
+                                bracketSide: "upper",
+                                label: "New Match",
+                              })
+                            }
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
+
+                {/* GRAND FINAL Appended */}
+                {(stageType === "Double Elimination" || final.length > 0) && (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
+                      GRAND FINAL
+                    </div>
+                    <div className="flex flex-col gap-4 justify-around h-full">
+                      {(final || []).map((match) => (
+                        <div key={match.id} className="w-64">
+                          <EditorMatchCard
+                            match={match}
+                            onClick={() => onEditMatch?.(match)}
+                          />
+                        </div>
+                      ))}
+                      {final.length === 0 && (
+                        <div className="w-64">
+                          <AddMatchButton
+                            onClick={() =>
+                              onCreateMatch({
+                                roundIndex: 0,
+                                bracketSide: "grand_final",
+                                label: "Grand Final",
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
+
+            {/* LOWER BRACKET */}
+            {lowerRounds.length > 0 && (
+              <div className="pt-8 border-t-[3px] border-dashed border-black/10 relative">
+                <div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
+                  <div className="text-xs font-black uppercase italic tracking-widest text-white bg-black px-4 py-1.5 transform -skew-x-12 border-2 border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+                    LOWER BRACKET
+                  </div>
+                </div>
+                <div className="flex gap-6 items-stretch">
+                  {lowerRounds.map((roundIdx) => (
+                    <div
+                      key={`lower-${roundIdx}`}
+                      className="flex flex-col gap-2"
+                    >
+                      <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider">
+                        {getRoundTitle("lower", roundIdx)}
+                      </div>
+                      <div className="flex flex-col gap-4 justify-around h-full">
+                        {(lower[roundIdx] || []).map((match) => (
+                          <div key={match.id} className="w-64">
+                            <EditorMatchCard
+                              match={match}
+                              onClick={() => onEditMatch?.(match)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -294,15 +386,32 @@ function EditorMatchCard({
       )}
 
       {/* HEADER - Strict top-alignment for baseline consistency */}
-      <div className="border-b-2 border-black h-7 mb-1 flex-shrink-0 relative box-border bg-gray-50/50 -mx-1.5 -mt-1.5 px-1.5 flex items-center justify-between">
-        <div className="flex-grow pr-2">
-          <span className="text-[10px] font-black uppercase text-black leading-tight line-clamp-2 text-left block antialiased italic">
-            {match.name || match.label}
+      <div className="border-b-2 border-black min-h-7 mb-1 flex-shrink-0 relative box-border bg-gray-50/50 -mx-1.5 -mt-1.5 px-1.5 pr-10 flex flex-col justify-center py-0.5 gap-0.5">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex-grow pr-1 min-w-0">
+            <span className="text-[10px] font-black uppercase text-black leading-tight line-clamp-2 text-left block antialiased italic">
+              {match.name || match.label}
+            </span>
+          </div>
+          <span className="text-[9px] font-mono text-gray-400 flex-shrink-0 font-bold">
+            #{match.displayOrder ?? "-"}
           </span>
         </div>
-        <span className="text-[9px] font-mono text-gray-400 flex-shrink-0 font-bold">
-          #{match.displayOrder ?? "-"}
-        </span>
+        {match.startTime && (
+          <div className="text-[7px] font-bold text-gray-600">
+            📅{" "}
+            {new Date(match.startTime).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}{" "}
+            •{" "}
+            {new Date(match.startTime).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        )}
       </div>
 
       {/* TEAMS AREA - Proportional grid for better breathing room */}

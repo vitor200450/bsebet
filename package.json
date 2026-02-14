@@ -14,7 +14,9 @@
       "@trpc/server": "^11.7.2",
       "@trpc/client": "^11.7.2",
       "better-auth": "^1.4.18",
-      "alchemy": "^0.82.1"
+      "alchemy": "^0.82.1",
+      "drizzle-orm": "^0.45.1",
+      "postgres": "^3.4.8"
     }
   },
   "type": "module",
@@ -29,6 +31,15 @@
     "db:generate": "turbo -F @bsebet/db db:generate",
     "db:migrate": "turbo -F @bsebet/db db:migrate",
     "db:seed": "turbo -F @bsebet/db db:seed",
+    "fix-matches": "bun --env-file=.env run ./scripts/fix-finished-matches.ts",
+    "recalc-bets": "bun --env-file=.env run ./scripts/recalculate-all-bets.ts",
+    "fix-bracket": "bun --env-file=.env run ./scripts/fix-bracket-progression.ts",
+    "fix-groups": "bun --env-file=.env run ./scripts/fix-groups-progression.ts",
+    "config-playoffs": "bun --env-file=.env run ./scripts/configure-groups-to-playoffs.ts",
+    "config-deciders": "bun --env-file=.env run ./scripts/configure-deciders-to-playoffs.ts",
+    "fix-labels": "bun --env-file=.env run ./scripts/fix-playoff-labels.ts",
+    "reconfig-seeding": "bun --env-file=.env run ./scripts/reconfigure-playoff-seeding.ts",
+    "diagnose-bets": "bun --env-file=.env run ./scripts/diagnose-zero-points.ts",
     "deploy": "turbo -F @bsebet/infra deploy",
     "destroy": "turbo -F @bsebet/infra destroy",
     "check": "biome check --write ."
@@ -43,7 +54,6 @@
     "@bsebet/config": "workspace:*",
     "@cloudflare/workers-types": "^4.20251213.0",
     "@types/node": "catalog:",
-    "drizzle-orm": "^0.45.1",
     "turbo": "^2.8.3",
     "typescript": "catalog:"
   },

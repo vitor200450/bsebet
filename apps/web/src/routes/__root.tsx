@@ -10,8 +10,12 @@ import {
 } from "@tanstack/react-router";
 
 import { Toaster } from "@/components/ui/sonner";
+import { DebugUserSwitcher } from "@/components/dev/DebugUserSwitcher";
+import { GlobalHeader } from "@/components/GlobalHeader";
+import { HeaderProvider } from "@/components/HeaderContext";
 
 import appCss from "../index.css?url";
+
 export interface RouterAppContext {
   trpc: TRPCOptionsProxy<AppRouter>;
   queryClient: QueryClient;
@@ -28,7 +32,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "My App",
+        title: "BSEBET",
       },
     ],
     links: [
@@ -53,11 +57,15 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <div className="min-h-screen w-full font-sans">
-          <Outlet />
-        </div>
-        <Toaster richColors />
-        <Scripts />
+        <HeaderProvider>
+          <div className="min-h-screen w-full font-sans">
+            <GlobalHeader />
+            <Outlet />
+          </div>
+          <Toaster richColors />
+          <DebugUserSwitcher />
+          <Scripts />
+        </HeaderProvider>
       </body>
     </html>
   );

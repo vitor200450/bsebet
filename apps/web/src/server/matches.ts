@@ -1,241 +1,345 @@
-import { matches, teams } from "@bsebet/db/schema";
+import { matches, matchDays } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { asc, eq, and, notInArray } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { settleBets } from "./scoring";
+
+function getBracketMatchName(
+  matchesCount: number,
+  index: number,
+  side: string,
+) {
+  if (side === "grand_final") return "Grand Final";
+
+  const prefix =
+    side === "upper" || side === "main" ? "" : side.toUpperCase() + " ";
+
+  if (matchesCount === 1) return `${prefix}Final`;
+  if (matchesCount === 2) return `${prefix}Semi-Final #${index + 1}`;
+  if (matchesCount === 4) return `${prefix}Quarter-Final #${index + 1}`;
+  if (matchesCount === 8) return `${prefix}Round of 16 #${index + 1}`;
+  if (matchesCount === 16) return `${prefix}Round of 32 #${index + 1}`;
+  return `${prefix}Round Match #${index + 1}`;
+}
+
+/**
+ * Updates bracket progression by moving winner/loser to next matches
+ * after a match is finished
+ */
+async function updateBracketProgression(db: any, finishedMatch: any) {
+  if (!finishedMatch.winnerId) {
+    console.log(
+      `[Bracket Progression] Match ${finishedMatch.id} has no winner, skipping`,
+    );
+    return;
+  }
+
+  const winnerId = finishedMatch.winnerId;
+  const loserId =
+    finishedMatch.teamAId === winnerId
+      ? finishedMatch.teamBId
+      : finishedMatch.teamAId;
+
+  console.log(
+    `[Bracket Progression] Match ${finishedMatch.id} finished. Winner: ${winnerId}, Loser: ${loserId}`,
+  );
+
+  // Find all matches that depend on this match result
+  const dependentMatches = await db.query.matches.findMany({
+    where: (m: any, { or, eq }: any) =>
+      or(
+        eq(m.teamAPreviousMatchId, finishedMatch.id),
+        eq(m.teamBPreviousMatchId, finishedMatch.id),
+      ),
+  });
+
+  console.log(
+    `[Bracket Progression] Found ${dependentMatches.length} dependent matches`,
+  );
+
+  // Update each dependent match
+  for (const depMatch of dependentMatches) {
+    const updates: any = {};
+
+    console.log(`[Bracket Progression] Checking match ${depMatch.id}:`);
+    console.log(
+      `  teamAPrevMatch: ${depMatch.teamAPreviousMatchId} (${depMatch.teamAPreviousMatchResult})`,
+    );
+    console.log(
+      `  teamBPrevMatch: ${depMatch.teamBPreviousMatchId} (${depMatch.teamBPreviousMatchResult})`,
+    );
+
+    // Check if this match feeds into Team A slot
+    if (depMatch.teamAPreviousMatchId === finishedMatch.id) {
+      if (depMatch.teamAPreviousMatchResult === "winner") {
+        updates.teamAId = winnerId;
+        console.log(`  → Setting teamAId to winner: ${winnerId}`);
+      } else if (depMatch.teamAPreviousMatchResult === "loser") {
+        updates.teamAId = loserId;
+        console.log(`  → Setting teamAId to loser: ${loserId}`);
+      }
+    }
+
+    // Check if this match feeds into Team B slot
+    if (depMatch.teamBPreviousMatchId === finishedMatch.id) {
+      if (depMatch.teamBPreviousMatchResult === "winner") {
+        updates.teamBId = winnerId;
+        console.log(`  → Setting teamBId to winner: ${winnerId}`);
+      } else if (depMatch.teamBPreviousMatchResult === "loser") {
+        updates.teamBId = loserId;
+        console.log(`  → Setting teamBId to loser: ${loserId}`);
+      }
+    }
+
+    // Only update if there are changes
+    if (Object.keys(updates).length > 0) {
+      await db
+        .update(matches)
+        .set(updates)
+        .where(eq(matches.id, depMatch.id));
+    }
+  }
+}
 
 const getMatchesFn = createServerFn({ method: "GET" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const { tournamentId } = z.object({ tournamentId: z.number() }).parse(data);
+    const data = z.object({ tournamentId: z.number() }).parse(ctx.data);
 
     const results = await db.query.matches.findMany({
-      where: eq(matches.tournamentId, tournamentId),
+      where: eq(matches.tournamentId, data.tournamentId),
+      orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
       with: {
         teamA: true,
         teamB: true,
-        winner: true,
       },
-      orderBy: [asc(matches.displayOrder), asc(matches.startTime)],
     });
+
     return results;
   },
 );
 
 export const getMatches = getMatchesFn as unknown as (opts: {
   data: { tournamentId: number };
-}) => Promise<
-  (typeof matches.$inferSelect & {
-    teamA: typeof teams.$inferSelect | null;
-    teamB: typeof teams.$inferSelect | null;
-    winner: typeof teams.$inferSelect | null;
-  })[]
->;
+}) => Promise<any[]>;
+
+const getLiveMatchFn = createServerFn({ method: "GET" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { matchId } = z.object({ matchId: z.number() }).parse(ctx.data);
+
+    const result = await db.query.matches.findFirst({
+      where: eq(matches.id, matchId),
+      with: {
+        teamA: true,
+        teamB: true,
+        tournament: true,
+      },
+    });
+
+    if (!result) throw new Error("Match not found");
+    return result;
+  },
+);
+
+export const getLiveMatch = getLiveMatchFn as unknown as (opts: {
+  data: { matchId: number };
+}) => Promise<any>;
+
+const updateMatchFn = createServerFn({ method: "POST" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { matchId, ...updateData } = ctx.data;
+
+    // Load current match state to check for status transitions
+    const currentMatch = await db.query.matches.findFirst({
+      where: eq(matches.id, matchId),
+    });
+
+    if (!currentMatch) throw new Error("Match not found");
+
+    if (updateData.startTime && typeof updateData.startTime === "string") {
+      updateData.startTime = new Date(updateData.startTime);
+    }
+
+    const [updated] = await db
+      .update(matches)
+      .set(updateData)
+      .where(eq(matches.id, matchId))
+      .returning();
+
+    // Trigger bet settlement if status IS now finished (or was already finished and we updated it)
+    if (updateData.status === "finished") {
+      try {
+        await settleBets({ data: { matchId } });
+      } catch (e) {
+        console.error("Failed to settle bets after update", e);
+      }
+
+      // Update bracket progression (move winner/loser to next matches)
+      await updateBracketProgression(db, updated);
+    }
+
+    return updated;
+  },
+);
+
+export const updateMatch = updateMatchFn as unknown as (opts: {
+  data: { matchId: number; [key: string]: any };
+}) => Promise<any>;
 
 const createMatchFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const validData = z
-      .object({
-        tournamentId: z.number(),
-        label: z.string().nullable().optional(),
-        teamAId: z.coerce.number().nullable().optional(),
-        teamBId: z.coerce.number().nullable().optional(),
-        labelTeamA: z.string().nullable().optional(),
-        labelTeamB: z.string().nullable().optional(),
-        startTime: z.string(), // ISO string
-        matchDayId: z.coerce.number().nullable().optional(),
-        name: z.string().nullable().optional(),
-        // New Dependency Fields
-        teamAPreviousMatchId: z.number().nullable().optional(),
-        teamAPreviousMatchResult: z
-          .enum(["winner", "loser"])
-          .nullable()
-          .optional(),
-        teamBPreviousMatchId: z.number().nullable().optional(),
-        teamBPreviousMatchResult: z
-          .enum(["winner", "loser"])
-          .nullable()
-          .optional(),
-        isBettingEnabled: z.boolean().default(true),
-        nextMatchWinnerId: z.coerce.number().nullable().optional(),
-        nextMatchWinnerSlot: z.string().nullable().optional(),
-        nextMatchLoserId: z.coerce.number().nullable().optional(),
-        nextMatchLoserSlot: z.string().nullable().optional(),
-        // Visual Bracket Fields
-        roundIndex: z.number().nullable().optional(),
-        bracketSide: z
-          .enum(["upper", "lower", "grand_final"])
-          .nullable()
-          .optional(),
-        displayOrder: z.number().nullable().optional(),
-      })
-      .parse(data);
-
-    await db.insert(matches).values({
-      tournamentId: validData.tournamentId,
-      label: validData.label,
-      teamAId: validData.teamAId,
-      teamBId: validData.teamBId,
-      labelTeamA: validData.labelTeamA,
-      labelTeamB: validData.labelTeamB,
-      startTime: new Date(validData.startTime),
-      matchDayId: validData.matchDayId,
-      name: validData.name,
-      // Dependencies
-      teamAPreviousMatchId: validData.teamAPreviousMatchId,
-      teamAPreviousMatchResult: validData.teamAPreviousMatchResult,
-      teamBPreviousMatchId: validData.teamBPreviousMatchId,
-      teamBPreviousMatchResult: validData.teamBPreviousMatchResult,
-      isBettingEnabled: validData.isBettingEnabled,
-      nextMatchWinnerId: validData.nextMatchWinnerId,
-      nextMatchWinnerSlot: validData.nextMatchWinnerSlot,
-      nextMatchLoserId: validData.nextMatchLoserId,
-      nextMatchLoserSlot: validData.nextMatchLoserSlot,
-      roundIndex: validData.roundIndex,
-      bracketSide: validData.bracketSide,
-      displayOrder: validData.displayOrder,
-    });
+    const insertData = { ...ctx.data };
+    if (insertData.startTime && typeof insertData.startTime === "string") {
+      insertData.startTime = new Date(insertData.startTime);
+    }
+    const [created] = await db.insert(matches).values(insertData).returning();
+    return created;
   },
 );
 
 export const createMatch = createMatchFn as unknown as (opts: {
-  data: {
-    tournamentId: number;
-    label?: string | null;
-    teamAId?: number | null;
-    teamBId?: number | null;
-    labelTeamA?: string | null;
-    labelTeamB?: string | null;
-    startTime: string;
-    matchDayId?: number | null;
-    name?: string | null;
-    teamAPreviousMatchId?: number | null;
-    teamAPreviousMatchResult?: "winner" | "loser" | null;
-    teamBPreviousMatchId?: number | null;
-    teamBPreviousMatchResult?: "winner" | "loser" | null;
-    isBettingEnabled?: boolean;
-    nextMatchWinnerId?: number | null;
-    nextMatchWinnerSlot?: string | null;
-    nextMatchLoserId?: number | null;
-    nextMatchLoserSlot?: string | null;
-    roundIndex?: number | null;
-    bracketSide?: "upper" | "lower" | "grand_final" | null;
-    displayOrder?: number | null;
-  };
-}) => Promise<void>;
+  data: any;
+}) => Promise<any>;
 
 const deleteMatchFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    const id = z.number().parse(ctx.data);
-    await db.delete(matches).where(eq(matches.id, id));
+    const matchId = Number(ctx.data);
+    await db.delete(matches).where(eq(matches.id, matchId));
+    return { success: true };
   },
 );
 
 export const deleteMatch = deleteMatchFn as unknown as (opts: {
   data: number;
-}) => Promise<void>;
+}) => Promise<{ success: boolean }>;
 
-const updateMatchFn = createServerFn({ method: "POST" }).handler(
+const incrementScoreFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    // Separate ID from the rest of the data for update
-    const { id, ...updateData } = z
+    const { matchId, team } = z
       .object({
-        id: z.number(),
-        tournamentId: z.number(),
-        label: z.string().nullable().optional(),
-        teamAId: z.coerce.number().nullable().optional(),
-        teamBId: z.coerce.number().nullable().optional(),
-        labelTeamA: z.string().nullable().optional(),
-        labelTeamB: z.string().nullable().optional(),
-        startTime: z.string(), // ISO string
-        matchDayId: z.coerce.number().nullable().optional(),
-        name: z.string().nullable().optional(),
-        // Dependency Fields
-        teamAPreviousMatchId: z.number().nullable().optional(),
-        teamAPreviousMatchResult: z
-          .enum(["winner", "loser"])
-          .nullable()
-          .optional(),
-        teamBPreviousMatchId: z.number().nullable().optional(),
-        teamBPreviousMatchResult: z
-          .enum(["winner", "loser"])
-          .nullable()
-          .optional(),
-        isBettingEnabled: z.boolean().default(true),
-        nextMatchWinnerId: z.coerce.number().nullable().optional(),
-        nextMatchWinnerSlot: z.string().nullable().optional(),
-        nextMatchLoserId: z.coerce.number().nullable().optional(),
-        nextMatchLoserSlot: z.string().nullable().optional(),
-        // Visual Bracket Fields
-        roundIndex: z.number().nullable().optional(),
-        bracketSide: z
-          .enum(["upper", "lower", "grand_final"])
-          .nullable()
-          .optional(),
-        displayOrder: z.number().nullable().optional(),
+        matchId: z.number(),
+        team: z.enum(["A", "B"]),
       })
-      .parse(data);
+      .parse(ctx.data);
 
-    await db
+    const match = await db.query.matches.findFirst({
+      where: eq(matches.id, matchId),
+    });
+
+    if (!match) throw new Error("Match not found");
+
+    const update: any = { status: "live" };
+    if (team === "A") update.scoreA = (match.scoreA || 0) + 1;
+    else update.scoreB = (match.scoreB || 0) + 1;
+
+    const [updated] = await db
       .update(matches)
-      .set({
-        tournamentId: updateData.tournamentId,
-        label: updateData.label,
-        teamAId: updateData.teamAId,
-        teamBId: updateData.teamBId,
-        labelTeamA: updateData.labelTeamA,
-        labelTeamB: updateData.labelTeamB,
-        startTime: new Date(updateData.startTime),
-        matchDayId: updateData.matchDayId,
-        name: updateData.name,
-        teamAPreviousMatchId: updateData.teamAPreviousMatchId,
-        teamAPreviousMatchResult: updateData.teamAPreviousMatchResult,
-        teamBPreviousMatchId: updateData.teamBPreviousMatchId,
-        teamBPreviousMatchResult: updateData.teamBPreviousMatchResult,
-        isBettingEnabled: updateData.isBettingEnabled,
-        nextMatchWinnerId: updateData.nextMatchWinnerId,
-        nextMatchWinnerSlot: updateData.nextMatchWinnerSlot,
-        nextMatchLoserId: updateData.nextMatchLoserId,
-        nextMatchLoserSlot: updateData.nextMatchLoserSlot,
-        roundIndex: updateData.roundIndex,
-        bracketSide: updateData.bracketSide,
-        displayOrder: updateData.displayOrder,
-      })
-      .where(eq(matches.id, id));
+      .set(update)
+      .where(eq(matches.id, matchId))
+      .returning();
+
+    return updated;
   },
 );
 
-export const updateMatch = updateMatchFn as unknown as (opts: {
-  data: {
-    id: number;
-    tournamentId: number;
-    label?: string | null;
-    teamAId?: number | null;
-    teamBId?: number | null;
-    labelTeamA?: string | null;
-    labelTeamB?: string | null;
-    startTime: string;
-    matchDayId?: number | null;
-    name?: string | null;
-    teamAPreviousMatchId?: number | null;
-    teamAPreviousMatchResult?: "winner" | "loser" | null;
-    teamBPreviousMatchId?: number | null;
-    teamBPreviousMatchResult?: "winner" | "loser" | null;
-    isBettingEnabled?: boolean;
-    nextMatchWinnerId?: number | null;
-    nextMatchWinnerSlot?: string | null;
-    nextMatchLoserId?: number | null;
-    nextMatchLoserSlot?: string | null;
-    roundIndex?: number | null;
-    bracketSide?: "upper" | "lower" | "grand_final" | null;
-    displayOrder?: number | null;
-  };
-}) => Promise<void>;
+export const incrementScore = incrementScoreFn as unknown as (opts: {
+  data: { matchId: number; team: "A" | "B" };
+}) => Promise<any>;
+
+const finalizeMatchFn = createServerFn({ method: "POST" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { matchId, winnerId } = z
+      .object({
+        matchId: z.number(),
+        winnerId: z.number(),
+      })
+      .parse(ctx.data);
+
+    const [updated] = await db
+      .update(matches)
+      .set({
+        winnerId,
+        status: "finished",
+      })
+      .where(eq(matches.id, matchId))
+      .returning();
+
+    await settleBets({ data: { matchId } });
+
+    // Update bracket progression (move winner/loser to next matches)
+    await updateBracketProgression(db, updated);
+
+    return updated;
+  },
+);
+
+export const finalizeMatch = finalizeMatchFn as unknown as (opts: {
+  data: { matchId: number; winnerId: number };
+}) => Promise<any>;
+
+const resetScoresFn = createServerFn({ method: "POST" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { matchId, status } = z
+      .object({
+        matchId: z.number(),
+        status: z.enum(["scheduled", "live", "finished"]).optional(),
+      })
+      .parse(ctx.data);
+
+    const [updated] = await db
+      .update(matches)
+      .set({
+        scoreA: 0,
+        scoreB: 0,
+        status: status || "live",
+        winnerId: null,
+      })
+      .where(eq(matches.id, matchId))
+      .returning();
+
+    return updated;
+  },
+);
+
+export const resetScores = resetScoresFn as unknown as (opts: {
+  data: { matchId: number; status?: string };
+}) => Promise<any>;
+
+const updateMatchOrderFn = createServerFn({ method: "POST" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { updates } = z
+      .object({
+        updates: z.array(
+          z.object({
+            id: z.number(),
+            displayOrder: z.number(),
+          }),
+        ),
+      })
+      .parse(ctx.data);
+
+    for (const update of updates) {
+      await db
+        .update(matches)
+        .set({ displayOrder: update.displayOrder })
+        .where(eq(matches.id, update.id));
+    }
+
+    return { success: true };
+  },
+);
+
+export const updateMatchOrder = updateMatchOrderFn as unknown as (opts: {
+  data: { updates: { id: number; displayOrder: number }[] };
+}) => Promise<{ success: boolean }>;
 
 const generateNextRoundFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
@@ -244,619 +348,547 @@ const generateNextRoundFn = createServerFn({ method: "POST" }).handler(
       .object({
         tournamentId: z.number(),
         roundIndex: z.number(),
-        bracketSide: z.enum(["upper", "lower"]),
+        bracketSide: z.string(),
       })
       .parse(ctx.data);
 
-    // 1. Fetch matches from current round
     const currentMatches = await db.query.matches.findMany({
-      where: (m, { and, eq }) =>
-        and(
-          eq(m.tournamentId, tournamentId),
-          eq(m.roundIndex, roundIndex),
-          eq(m.bracketSide, bracketSide),
-        ),
-      orderBy: (m, { asc }) => [asc(m.displayOrder), asc(m.id)],
+      where: and(
+        eq(matches.tournamentId, tournamentId),
+        eq(matches.roundIndex, roundIndex),
+        eq(matches.bracketSide, bracketSide),
+      ),
     });
 
-    if (currentMatches.length < 2) {
-      throw new Error("Not enough matches to generate next round");
+    const nextMatchesCount = Math.floor(currentMatches.length / 2);
+    const createdMatches = [];
+
+    for (let i = 0; i < nextMatchesCount; i++) {
+      const matchA = currentMatches[i * 2];
+      const matchB = currentMatches[i * 2 + 1];
+
+      const matchName = getBracketMatchName(nextMatchesCount, i, bracketSide);
+      const labelA = `Winner of ${matchA.name || "#" + matchA.id}`;
+      const labelB = `Winner of ${matchB.name || "#" + matchB.id}`;
+
+      const [created] = await db
+        .insert(matches)
+        .values({
+          tournamentId,
+          roundIndex: roundIndex + 1,
+          bracketSide,
+          labelTeamA: labelA,
+          labelTeamB: labelB,
+          teamAPreviousMatchId: matchA.id,
+          teamBPreviousMatchId: matchB.id,
+          startTime: new Date(),
+          status: "scheduled",
+          name: matchName,
+          label: matchName,
+        })
+        .returning();
+      createdMatches.push(created);
     }
 
-    // 2. Pair them up
-    // Match 1 (Order 1) vs Match 2 (Order 2) -> Next Match 1
-    const nextRoundIndex = roundIndex + 1;
-
-    for (let i = 0; i < currentMatches.length; i += 2) {
-      const matchA = currentMatches[i];
-      const matchB = currentMatches[i + 1];
-
-      if (!matchB) break; // Odd number of matches, maybe a bye? For now ignore.
-
-      const nextDisplayOrder = Math.floor(i / 2) + 1;
-
-      // Create the new match
-      await db.insert(matches).values({
-        tournamentId,
-        roundIndex: nextRoundIndex,
-        bracketSide,
-        displayOrder: nextDisplayOrder,
-        label: `Round ${nextRoundIndex + 1} - Match ${nextDisplayOrder}`,
-        name: `Match ${nextDisplayOrder}`,
-        startTime: new Date(), // Default to now, user edits later
-        // Link Predecessors
-        teamAPreviousMatchId: matchA.id,
-        teamAPreviousMatchResult: "winner",
-        labelTeamA: `Winner of #${matchA.displayOrder}`,
-
-        teamBPreviousMatchId: matchB.id,
-        teamBPreviousMatchResult: "winner",
-        labelTeamB: `Winner of #${matchB.displayOrder}`,
-      });
-    }
+    return createdMatches;
   },
 );
 
 export const generateNextRound = generateNextRoundFn as unknown as (opts: {
-  data: {
-    tournamentId: number;
-    roundIndex: number;
-    bracketSide: "upper" | "lower";
-  };
-}) => Promise<void>;
+  data: { tournamentId: number; roundIndex: number; bracketSide: string };
+}) => Promise<any[]>;
 
 const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    const { tournamentId } = z
+    const { tournamentId, stageId } = z
       .object({
         tournamentId: z.number(),
+        stageId: z.string().optional(),
       })
       .parse(ctx.data);
 
-    // 1. Fetch all existing matches for this tournament to find quarters
-    const allMatches = await db.query.matches.findMany({
-      where: (m, { eq }) => eq(m.tournamentId, tournamentId),
-      orderBy: (m, { asc }) => [asc(m.roundIndex), asc(m.displayOrder)],
+    const tournament = await db.query.tournaments.findFirst({
+      where: (t, { eq }) => eq(t.id, tournamentId),
     });
 
-    const quarters = allMatches.filter(
-      (m) => (m as any).roundIndex === 0 && (m as any).bracketSide === "upper",
-    );
+    if (!tournament) throw new Error("Tournament not found");
 
-    if (quarters.length < 4) {
-      throw new Error(
-        "Need at least 4 Quarter-Final matches in Upper Bracket to generate a full 8-team DE structure.",
+    const stages = (tournament.stages as any[]) || [];
+    let stage;
+    if (stageId) {
+      stage = stages.find((s) => s.id === stageId);
+    } else {
+      // If no stageId, try to find a stage that matches the intent (Playoffs)
+      // DEFAULT: Prioritize playoff stages if we are in a context that likes them
+      // But for now, just fallback to stages[0] safely
+      stage = stages.find(
+        (s) =>
+          s.type === "Single Elimination" || s.type === "Double Elimination",
       );
+
+      // Only fallback to first stage (Groups) if absolutely necessary
+      if (!stage) stage = stages[0];
     }
 
-    // 2. CLEANUP: Delete all other matches to allow re-generation (Idempotency)
-    const quarterIds = quarters.map((q) => q.id);
-    await db
-      .delete(matches)
-      .where(
-        and(
-          eq(matches.tournamentId, tournamentId),
-          notInArray(matches.id, quarterIds),
-        ),
+    if (!stage) throw new Error("Stage not found");
+
+    const seededTeams = await db.query.tournamentTeams.findMany({
+      where: (tt, { eq, isNotNull }) =>
+        and(eq(tt.tournamentId, tournamentId), isNotNull(tt.group)),
+      with: {
+        team: true,
+      },
+    });
+
+    if (stage.type === "Groups") {
+      const groupsCount = stage.settings?.groupsCount || 4;
+      const format = stage.settings?.format || "GSL";
+
+      // 1. Find the first available Match Day or create a default one
+      let matchDay = await db.query.matchDays.findFirst({
+        where: (md, { eq }) => eq(md.tournamentId, tournamentId),
+        orderBy: (md, { asc }) => [asc(md.date)],
+      });
+
+      if (!matchDay) {
+        const [created] = await db
+          .insert(matchDays)
+          .values({
+            tournamentId,
+            date: new Date(),
+            label: "Day 1",
+            status: "draft",
+          })
+          .returning();
+        matchDay = created;
+      }
+
+      // Use match day's date for all generated matches
+      const matchStartTime = matchDay.date || new Date();
+
+      if (!matchDay) throw new Error("Failed to find or create match day");
+
+      for (let i = 0; i < groupsCount; i++) {
+        const groupChar = String.fromCharCode(65 + i); // A, B, C...
+
+        // Clean up existing matches for this group to avoid duplicates
+        await db
+          .delete(matches)
+          .where(
+            and(
+              eq(matches.tournamentId, tournamentId),
+              eq(matches.stageId, stage.id),
+              eq(matches.bracketSide, "groups"),
+              eq(matches.label, `Group ${groupChar}`),
+            ),
+          );
+
+        const groupTeams = seededTeams
+          .filter((t) => t.group === groupChar)
+          .sort((a, b) => (a.seed || 99) - (b.seed || 99));
+
+        if (groupTeams.length === 0) continue;
+
+        if (format === "GSL") {
+          const [m1] = await db
+            .insert(matches)
+            .values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide: "groups",
+              label: `Group ${groupChar}`,
+              name: `Group ${groupChar} - Opening Match 1`,
+              teamAId: groupTeams[0]?.teamId,
+              teamBId: groupTeams[3]?.teamId,
+              labelTeamA: groupTeams[0] ? undefined : "Seed 1",
+              labelTeamB: groupTeams[3] ? undefined : "Seed 4",
+              displayOrder: i * 10 + 1,
+              startTime: matchStartTime,
+              matchDayId: matchDay.id,
+              isBettingEnabled: false,
+            })
+            .returning();
+
+          const [m2] = await db
+            .insert(matches)
+            .values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide: "groups",
+              label: `Group ${groupChar}`,
+              name: `Group ${groupChar} - Opening Match 2`,
+              teamAId: groupTeams[1]?.teamId,
+              teamBId: groupTeams[2]?.teamId,
+              labelTeamA: groupTeams[1] ? undefined : "Seed 2",
+              labelTeamB: groupTeams[2] ? undefined : "Seed 3",
+              displayOrder: i * 10 + 2,
+              startTime: matchStartTime,
+              matchDayId: matchDay.id,
+              isBettingEnabled: false,
+            })
+            .returning();
+
+          const [m3] = await db
+            .insert(matches)
+            .values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide: "groups",
+              label: `Group ${groupChar}`,
+              name: `Group ${groupChar} - Winners Match`,
+              teamAPreviousMatchId: m1.id,
+              teamBPreviousMatchId: m2.id,
+              labelTeamA: "Winner Match 1",
+              labelTeamB: "Winner Match 2",
+              displayOrder: i * 10 + 3,
+              startTime: matchStartTime,
+              matchDayId: matchDay.id,
+              isBettingEnabled: false,
+            })
+            .returning();
+
+          const [m4] = await db
+            .insert(matches)
+            .values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide: "groups",
+              label: `Group ${groupChar}`,
+              name: `Group ${groupChar} - Elimination Match`,
+              teamAPreviousMatchId: m1.id,
+              teamBPreviousMatchId: m2.id,
+              teamAPreviousMatchResult: "loser",
+              teamBPreviousMatchResult: "loser",
+              labelTeamA: "Loser Match 1",
+              labelTeamB: "Loser Match 2",
+              displayOrder: i * 10 + 4,
+              startTime: matchStartTime,
+              matchDayId: matchDay.id,
+              isBettingEnabled: false,
+            })
+            .returning();
+
+          await db.insert(matches).values({
+            tournamentId,
+            stageId: stage.id,
+            bracketSide: "groups",
+            label: `Group ${groupChar}`,
+            name: `Group ${groupChar} - Decider Match`,
+            teamAPreviousMatchId: m3.id,
+            teamBPreviousMatchId: m4.id,
+            teamAPreviousMatchResult: "loser",
+            teamBPreviousMatchResult: "winner",
+            labelTeamA: "Loser Winners Match",
+            labelTeamB: "Winner Elim. Match",
+            displayOrder: i * 10 + 5,
+            startTime: matchStartTime,
+            matchDayId: matchDay.id,
+            isBettingEnabled: false,
+          });
+        } else if (format === "Round Robin") {
+          // Round Robin Generation
+          const n = groupTeams.length;
+          const isOdd = n % 2 !== 0;
+          const dummyId = -1; // Placeholder for Bye
+
+          let roundTeams = groupTeams.map((t) => t.teamId);
+          if (isOdd) roundTeams.push(dummyId);
+
+          const totalTeams = roundTeams.length;
+          const rounds = totalTeams - 1;
+          const half = totalTeams / 2;
+
+          for (let r = 0; r < rounds; r++) {
+            for (let m = 0; m < half; m++) {
+              const t1 = roundTeams[m];
+              const t2 = roundTeams[totalTeams - 1 - m];
+
+              if (t1 !== dummyId && t2 !== dummyId) {
+                // Find actual team objects for labels
+                const team1Obj = groupTeams.find((t) => t.teamId === t1);
+                const team2Obj = groupTeams.find((t) => t.teamId === t2);
+
+                await db.insert(matches).values({
+                  tournamentId,
+                  stageId: stage.id,
+                  bracketSide: "groups",
+                  label: `Group ${groupChar}`,
+                  name: `Group ${groupChar} - Round ${r + 1}`, // "Group A - Round 1"...
+                  teamAId: t1,
+                  teamBId: t2,
+                  labelTeamA: team1Obj?.team?.name || "TBD",
+                  labelTeamB: team2Obj?.team?.name || "TBD",
+                  displayOrder: i * 100 + r * 10 + m + 1, // Order by Group -> Round -> Match
+                  startTime: matchStartTime,
+                  status: "scheduled",
+                  matchDayId: matchDay.id,
+                  isBettingEnabled: false,
+                });
+              }
+            }
+
+            // Rotate array for next round (keep first fixed)
+            // [0, 1, 2, 3] -> [0, 3, 1, 2]
+            const fixed = roundTeams[0];
+            const tail = roundTeams.slice(1);
+            const last = tail.pop();
+            if (last) tail.unshift(last);
+            roundTeams = [fixed, ...tail];
+          }
+        }
+      }
+    } else if (
+      stage.type === "Single Elimination" ||
+      stage.type === "Double Elimination"
+    ) {
+      // Generate playoff bracket with placeholders
+      const groupsStage = stages.find((s) => s.type === "Groups");
+      const advancingPerGroup = stage.settings?.advancingPerGroup || 2;
+      const groupsCount = groupsStage?.settings?.groupsCount || 4;
+      const totalTeams = advancingPerGroup * groupsCount;
+
+      // Calculate bracket structure
+      const firstRoundMatches = totalTeams / 2;
+
+      // Generate placeholder labels with proper seeding
+      const placeholders = generatePlaceholderLabels(
+        groupsCount,
+        advancingPerGroup,
       );
 
-    // 3. Re-sort quarters explicitly by displayOrder to be extra safe
-    const sortedQuarters = [...quarters].sort((a, b) => {
-      const orderA = (a as any).displayOrder ?? 999;
-      const orderB = (b as any).displayOrder ?? 999;
-      return orderA - orderB;
-    });
+      // Clean up existing matches for this stage to avoid duplicates
+      await db
+        .delete(matches)
+        .where(
+          and(
+            eq(matches.tournamentId, tournamentId),
+            eq(matches.stageId, stage.id),
+          ),
+        );
 
-    // Helper to create or get match
-    const createMatch = async (data: any) => {
-      const [newMatch] = await db
-        .insert(matches)
-        .values({
+      // Find the first available Match Day for playoff matches
+      let playoffMatchDay = await db.query.matchDays.findFirst({
+        where: (md, { eq }) => eq(md.tournamentId, tournamentId),
+        orderBy: (md, { asc }) => [asc(md.date)],
+      });
+
+      if (!playoffMatchDay) {
+        const [created] = await db
+          .insert(matchDays)
+          .values({
+            tournamentId,
+            date: new Date(),
+            label: "Playoffs - Day 1",
+            status: "draft",
+          })
+          .returning();
+        playoffMatchDay = created;
+      }
+
+      const playoffStartTime = playoffMatchDay.date || new Date();
+      const side = stage.type === "Double Elimination" ? "upper" : "main";
+
+      // Check if there's a groups stage to link progression
+      let groupWinnerMatches: any[] = [];
+      let groupDeciderMatches: any[] = [];
+
+      if (groupsStage) {
+        console.log(
+          "[Bracket Generation] Found groups stage, linking progression to playoffs...",
+        );
+
+        // Get Winner Matches (1st place) from each group
+        groupWinnerMatches = await db.query.matches.findMany({
+          where: (m, { and, eq, like }) =>
+            and(
+              eq(m.tournamentId, tournamentId),
+              eq(m.stageId, groupsStage.id),
+              eq(m.bracketSide, "groups"),
+              like(m.name, "%Winner%"),
+            ),
+          orderBy: (m, { asc }) => [asc(m.id)],
+        });
+
+        // Get Decider Matches (2nd place) from each group
+        groupDeciderMatches = await db.query.matches.findMany({
+          where: (m, { and, eq, like }) =>
+            and(
+              eq(m.tournamentId, tournamentId),
+              eq(m.stageId, groupsStage.id),
+              eq(m.bracketSide, "groups"),
+              like(m.name, "%Decider%"),
+            ),
+          orderBy: (m, { asc }) => [asc(m.id)],
+        });
+      }
+
+      // Create first round matches with placeholders AND progression links
+      for (let i = 0; i < firstRoundMatches; i++) {
+        const matchName = getBracketMatchName(firstRoundMatches, i, side);
+
+        // Determine which group matches should feed into this playoff match
+        // Standard seeding: 1st Group A vs 2nd Group D, 1st Group B vs 2nd Group C, etc.
+        // placeholders[i*2] has format "1st Group A" or "2nd Group D"
+        const teamAPlaceholder = placeholders[i * 2];
+        const teamBPlaceholder = placeholders[i * 2 + 1];
+
+        let teamAPreviousMatchId = null;
+        let teamBPreviousMatchId = null;
+
+        // Parse placeholders to find the corresponding group matches
+        if (groupWinnerMatches.length > 0 && groupDeciderMatches.length > 0) {
+          const teamAMatch = teamAPlaceholder.includes("1st")
+            ? groupWinnerMatches.find((m) =>
+                m.name?.includes(
+                  `Group ${teamAPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
+                ),
+              )
+            : groupDeciderMatches.find((m) =>
+                m.name?.includes(
+                  `Group ${teamAPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
+                ),
+              );
+
+          const teamBMatch = teamBPlaceholder.includes("1st")
+            ? groupWinnerMatches.find((m) =>
+                m.name?.includes(
+                  `Group ${teamBPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
+                ),
+              )
+            : groupDeciderMatches.find((m) =>
+                m.name?.includes(
+                  `Group ${teamBPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
+                ),
+              );
+
+          teamAPreviousMatchId = teamAMatch?.id || null;
+          teamBPreviousMatchId = teamBMatch?.id || null;
+
+          if (teamAPreviousMatchId || teamBPreviousMatchId) {
+            console.log(
+              `[Bracket Generation] ${matchName}: TeamA <- Match ${teamAPreviousMatchId} (${teamAPlaceholder}), TeamB <- Match ${teamBPreviousMatchId} (${teamBPlaceholder})`,
+            );
+          }
+        }
+
+        await db.insert(matches).values({
           tournamentId,
-          startTime: new Date(),
-          isBettingEnabled: true,
-          ...data,
-        })
-        .returning();
-      return newMatch;
-    };
+          stageId: stage.id,
+          bracketSide: stage.type === "Double Elimination" ? "upper" : "main",
+          roundIndex: 0,
+          labelTeamA: placeholders[i * 2],
+          labelTeamB: placeholders[i * 2 + 1],
+          teamAPreviousMatchId,
+          teamBPreviousMatchId,
+          teamAPreviousMatchResult: teamAPreviousMatchId ? "winner" : null,
+          teamBPreviousMatchResult: teamBPreviousMatchId ? "winner" : null,
+          displayOrder: i + 1,
+          startTime: playoffStartTime,
+          matchDayId: playoffMatchDay.id,
+          status: "scheduled",
+          isBettingEnabled: false,
+          name: matchName,
+          label: matchName,
+        });
+      }
 
-    const q1 = sortedQuarters[0];
-    const q2 = sortedQuarters[1];
-    const q3 = sortedQuarters[2];
-    const q4 = sortedQuarters[3];
+      // Generate subsequent rounds with "Winner of Match X" labels
+      let currentRoundMatches = firstRoundMatches;
+      let roundIndex = 1;
 
-    // --- UPPER BRACKET ---
-    // UB Semis (Round 1)
-    const ubSf1 = await createMatch({
-      roundIndex: 1,
-      bracketSide: "upper",
-      displayOrder: 1,
-      name: "Upper Semi-Final 1",
-      label: "UB Semi-Final 1",
-      teamAPreviousMatchId: q1.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "UB Quarter 1 Winner",
-      teamBPreviousMatchId: q2.id,
-      teamBPreviousMatchResult: "winner",
-      labelTeamB: "UB Quarter 2 Winner",
-    });
+      while (currentRoundMatches > 1) {
+        const nextRoundMatches = Math.floor(currentRoundMatches / 2);
 
-    const ubSf2 = await createMatch({
-      roundIndex: 1,
-      bracketSide: "upper",
-      displayOrder: 2,
-      name: "Upper Semi-Final 2",
-      label: "UB Semi-Final 2",
-      teamAPreviousMatchId: q3.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "UB Quarter 3 Winner",
-      teamBPreviousMatchId: q4.id,
-      teamBPreviousMatchResult: "winner",
-      labelTeamB: "UB Quarter 4 Winner",
-    });
+        // Get matches from previous round
+        const prevRoundMatches = await db.query.matches.findMany({
+          where: and(
+            eq(matches.tournamentId, tournamentId),
+            eq(matches.stageId, stage.id),
+            eq(matches.roundIndex, roundIndex - 1),
+          ),
+          orderBy: [asc(matches.displayOrder)],
+        });
 
-    // UB Final (Round 2)
-    const ubFinal = await createMatch({
-      roundIndex: 2,
-      bracketSide: "upper",
-      displayOrder: 1,
-      name: "Upper Bracket Final",
-      label: "UB Final",
-      teamAPreviousMatchId: ubSf1.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "UB Semi 1 Winner",
-      teamBPreviousMatchId: ubSf2.id,
-      teamBPreviousMatchResult: "winner",
-      labelTeamB: "UB Semi 2 Winner",
-    });
+        for (let i = 0; i < nextRoundMatches; i++) {
+          const matchA = prevRoundMatches[i * 2];
+          const matchB = prevRoundMatches[i * 2 + 1];
 
-    // --- LOWER BRACKET ---
-    // LB Round 1 (Round 0)
-    // Connecting losers of Quarters
-    const lbR1_1 = await createMatch({
-      roundIndex: 0,
-      bracketSide: "lower",
-      displayOrder: 1,
-      name: "Lower Bracket R1 - M1",
-      label: "LB Round 1",
-      teamAPreviousMatchId: q1.id,
-      teamAPreviousMatchResult: "loser",
-      labelTeamA: "UB Quarter 1 Loser",
-      teamBPreviousMatchId: q2.id,
-      teamBPreviousMatchResult: "loser",
-      labelTeamB: "UB Quarter 2 Loser",
-    });
+          if (matchA && matchB) {
+            const matchName = getBracketMatchName(nextRoundMatches, i, side);
+            const labelA = `Winner of ${matchA.name || "#" + matchA.id}`;
+            const labelB = `Winner of ${matchB.name || "#" + matchB.id}`;
 
-    const lbR1_2 = await createMatch({
-      roundIndex: 0,
-      bracketSide: "lower",
-      displayOrder: 2,
-      name: "Lower Bracket R1 - M2",
-      label: "LB Round 1",
-      teamAPreviousMatchId: q3.id,
-      teamAPreviousMatchResult: "loser",
-      labelTeamA: "UB Quarter 3 Loser",
-      teamBPreviousMatchId: q4.id,
-      teamBPreviousMatchResult: "loser",
-      labelTeamB: "UB Quarter 4 Loser",
-    });
+            await db.insert(matches).values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide:
+                stage.type === "Double Elimination" ? "upper" : "main",
+              roundIndex,
+              labelTeamA: labelA,
+              labelTeamB: labelB,
+              teamAPreviousMatchId: matchA.id,
+              teamBPreviousMatchId: matchB.id,
+              displayOrder: i + 1,
+              startTime: playoffStartTime,
+              matchDayId: playoffMatchDay.id,
+              status: "scheduled",
+              isBettingEnabled: false,
+              name: matchName,
+              label: matchName,
+            });
+          }
+        }
 
-    // LB Round 2 (Quarter-Finals) (Round 1)
-    // Winner of LB R1 vs Loser of UB Semis (Crossed)
-    const lbQf1 = await createMatch({
-      roundIndex: 1,
-      bracketSide: "lower",
-      displayOrder: 1,
-      name: "Lower Bracket Quarter-Final 1",
-      label: "LB Quarter-Final",
-      teamAPreviousMatchId: lbR1_1.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "LB R1 Winner",
-      teamBPreviousMatchId: ubSf2.id, // Crossed loser from UB SF2
-      teamBPreviousMatchResult: "loser",
-      labelTeamB: "UB Semi 2 Loser",
-    });
+        currentRoundMatches = nextRoundMatches;
+        roundIndex++;
+      }
 
-    const lbQf2 = await createMatch({
-      roundIndex: 1,
-      bracketSide: "lower",
-      displayOrder: 2,
-      name: "Lower Bracket Quarter-Final 2",
-      label: "LB Quarter-Final",
-      teamAPreviousMatchId: lbR1_2.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "LB R1 Winner",
-      teamBPreviousMatchId: ubSf1.id, // Crossed loser from UB SF1
-      teamBPreviousMatchResult: "loser",
-      labelTeamB: "UB Semi 1 Loser",
-    });
+      // For Double Elimination, also generate lower bracket
+      if (stage.type === "Double Elimination") {
+        // Lower bracket generation would go here
+        // This is more complex and can be added in a future iteration
+      }
+    }
 
-    // LB Round 3 (Semi-Final) (Round 2)
-    const lbSf = await createMatch({
-      roundIndex: 2,
-      bracketSide: "lower",
-      displayOrder: 1,
-      name: "Lower Bracket Semi-Final",
-      label: "LB Semi-Final",
-      teamAPreviousMatchId: lbQf1.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "LB Quarter 1 Winner",
-      teamBPreviousMatchId: lbQf2.id,
-      teamBPreviousMatchResult: "winner",
-      labelTeamB: "LB Quarter 2 Winner",
-    });
-
-    // LB Round 4 (Final) (Round 3)
-    // Winner of LB SF vs Loser of UB Final
-    const lbFinal = await createMatch({
-      roundIndex: 3,
-      bracketSide: "lower",
-      displayOrder: 1,
-      name: "Lower Bracket Final",
-      label: "LB Final",
-      teamAPreviousMatchId: lbSf.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "LB Semi Winner",
-      teamBPreviousMatchId: ubFinal.id,
-      teamBPreviousMatchResult: "loser",
-      labelTeamB: "UB Final Loser",
-    });
-
-    // --- GRAND FINAL ---
-    await createMatch({
-      roundIndex: 4, // Incremented to 4 to follow LB Final (Round 3)
-      bracketSide: "grand_final",
-      displayOrder: 1,
-      name: "Grand Final",
-      label: "Grand Final",
-      teamAPreviousMatchId: ubFinal.id,
-      teamAPreviousMatchResult: "winner",
-      labelTeamA: "UB Final Champion",
-      teamBPreviousMatchId: lbFinal.id,
-      teamBPreviousMatchResult: "winner",
-      labelTeamB: "LB Final Champion",
-    });
+    return { success: true };
   },
 );
+
+// Helper function to generate placeholder labels with proper seeding
+function generatePlaceholderLabels(
+  groupsCount: number,
+  advancingPerGroup: number,
+): string[] {
+  const labels: string[] = [];
+  const positions = ["1st", "2nd", "3rd", "4th"];
+
+  // Standard tournament seeding: 1st seeds face 2nd seeds from different groups
+  // For 4 groups with 2 advancing: [1A, 2D, 1B, 2C, 1C, 2B, 1D, 2A]
+  if (advancingPerGroup === 2 && groupsCount === 4) {
+    // Optimized seeding for 4 groups, 2 advancing
+    const groups = ["A", "B", "C", "D"];
+    labels.push(`1st Group ${groups[0]}`); // 1A
+    labels.push(`2nd Group ${groups[3]}`); // 2D
+    labels.push(`1st Group ${groups[1]}`); // 1B
+    labels.push(`2nd Group ${groups[2]}`); // 2C
+    labels.push(`1st Group ${groups[2]}`); // 1C
+    labels.push(`2nd Group ${groups[1]}`); // 2B
+    labels.push(`1st Group ${groups[3]}`); // 1D
+    labels.push(`2nd Group ${groups[0]}`); // 2A
+  } else {
+    // Generic seeding for other configurations
+    for (let pos = 0; pos < advancingPerGroup; pos++) {
+      for (let group = 0; group < groupsCount; group++) {
+        const groupChar = String.fromCharCode(65 + group); // A, B, C, D
+        labels.push(`${positions[pos]} Group ${groupChar}`);
+      }
+    }
+  }
+
+  return labels;
+}
 
 export const generateFullBracket = generateFullBracketFn as unknown as (opts: {
-  data: {
-    tournamentId: number;
-    roundIndex: number;
-    bracketSide: "upper" | "lower";
-  };
-}) => Promise<void>;
-
-// ============================================
-// LIVE MATCH CONTROL FUNCTIONS
-// ============================================
-
-/**
- * Get a single match by ID with team data (for live control)
- */
-const getLiveMatchFn = createServerFn({ method: "GET" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const { matchId } = z.object({ matchId: z.number() }).parse(data);
-
-    const match = await db.query.matches.findFirst({
-      where: eq(matches.id, matchId),
-      with: {
-        teamA: true,
-        teamB: true,
-        winner: true,
-        tournament: true,
-      },
-    });
-
-    if (!match) {
-      throw new Error("Partida não encontrada");
-    }
-
-    return match;
-  },
-);
-
-export const getLiveMatch = getLiveMatchFn as unknown as (opts: {
-  data: { matchId: number };
-}) => Promise<
-  typeof matches.$inferSelect & {
-    teamA: typeof teams.$inferSelect | null;
-    teamB: typeof teams.$inferSelect | null;
-    winner: typeof teams.$inferSelect | null;
-    tournament: any;
-  }
->;
-
-/**
- * Update live score for a match (instant update)
- */
-const updateLiveScoreFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const validData = z
-      .object({
-        matchId: z.number(),
-        scoreA: z.number().min(0).max(10),
-        scoreB: z.number().min(0).max(10),
-      })
-      .parse(data);
-
-    // Update match scores
-    const updated = await db
-      .update(matches)
-      .set({
-        scoreA: validData.scoreA,
-        scoreB: validData.scoreB,
-        status: "live", // Set to live when updating scores
-      })
-      .where(eq(matches.id, validData.matchId))
-      .returning();
-
-    if (!updated[0]) {
-      throw new Error("Partida não encontrada");
-    }
-
-    return updated[0];
-  },
-);
-
-export const updateLiveScore = updateLiveScoreFn as unknown as (opts: {
-  data: { matchId: number; scoreA: number; scoreB: number };
-}) => Promise<typeof matches.$inferSelect>;
-
-/**
- * Increment score for a specific team
- */
-const incrementScoreFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const validData = z
-      .object({
-        matchId: z.number(),
-        team: z.enum(["A", "B"]),
-      })
-      .parse(data);
-
-    // Get current match with tournament info
-    const currentMatch = await db.query.matches.findFirst({
-      where: eq(matches.id, validData.matchId),
-      with: {
-        tournament: true,
-      },
-    });
-
-    if (!currentMatch) {
-      throw new Error("Partida não encontrada");
-    }
-
-    // Determine Best Of X (default to Bo5 if unknown)
-    let bestOf = 5;
-    const format = currentMatch.tournament?.format?.toLowerCase() || "";
-    if (format.includes("bo3")) bestOf = 3;
-    else if (format.includes("bo5")) bestOf = 5;
-    else if (format.includes("bo7")) bestOf = 7;
-
-    const winsNeeded = Math.ceil(bestOf / 2);
-
-    // Calculate new scores
-    let newScoreA = currentMatch.scoreA || 0;
-    let newScoreB = currentMatch.scoreB || 0;
-
-    if (validData.team === "A") {
-      if (newScoreA + 1 > winsNeeded) {
-        throw new Error(
-          `Score limit reached for Bo${bestOf} (Max ${winsNeeded})`,
-        );
-      }
-      newScoreA++;
-    } else {
-      if (newScoreB + 1 > winsNeeded) {
-        throw new Error(
-          `Score limit reached for Bo${bestOf} (Max ${winsNeeded})`,
-        );
-      }
-      newScoreB++;
-    }
-
-    // Update match
-    const updated = await db
-      .update(matches)
-      .set({
-        scoreA: newScoreA,
-        scoreB: newScoreB,
-        status: "live",
-      })
-      .where(eq(matches.id, validData.matchId))
-      .returning();
-
-    return updated[0];
-  },
-);
-
-export const incrementScore = incrementScoreFn as unknown as (opts: {
-  data: { matchId: number; team: "A" | "B" };
-}) => Promise<typeof matches.$inferSelect>;
-
-/**
- * Reset scores to 0-0
- */
-const resetScoresFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const { matchId } = z.object({ matchId: z.number() }).parse(data);
-
-    const updated = await db
-      .update(matches)
-      .set({
-        scoreA: 0,
-        scoreB: 0,
-        winnerId: null,
-        status: "live",
-      })
-      .where(eq(matches.id, matchId))
-      .returning();
-
-    if (!updated[0]) {
-      throw new Error("Partida não encontrada");
-    }
-
-    return updated[0];
-  },
-);
-
-export const resetScores = resetScoresFn as unknown as (opts: {
-  data: { matchId: number };
-}) => Promise<typeof matches.$inferSelect>;
-
-/**
- * Finalize match - set winner and status to finished
- */
-const finalizeMatchFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const data = ctx.data;
-    const validData = z
-      .object({
-        matchId: z.number(),
-        winnerId: z.number(),
-      })
-      .parse(data);
-
-    // Get match to verify winner is valid
-    const currentMatch = await db.query.matches.findFirst({
-      where: eq(matches.id, validData.matchId),
-    });
-
-    if (!currentMatch) {
-      throw new Error("Partida não encontrada");
-    }
-
-    // Verify winner is one of the teams
-    if (
-      validData.winnerId !== currentMatch.teamAId &&
-      validData.winnerId !== currentMatch.teamBId
-    ) {
-      throw new Error("Vencedor deve ser um dos times da partida");
-    }
-
-    // Update match with winner
-    const updated = await db
-      .update(matches)
-      .set({
-        winnerId: validData.winnerId,
-        status: "finished",
-      })
-      .where(eq(matches.id, validData.matchId))
-      .returning();
-
-    // --- BRACKET PROGRESSION ---
-    // Find matches that depend on this match
-    const dependentMatches = await db.query.matches.findMany({
-      where: (m, { or, eq }) =>
-        or(
-          eq(m.teamAPreviousMatchId, validData.matchId),
-          eq(m.teamBPreviousMatchId, validData.matchId),
-        ),
-    });
-
-    const loserId =
-      validData.winnerId === currentMatch.teamAId
-        ? currentMatch.teamBId
-        : currentMatch.teamAId;
-
-    if (!loserId) {
-      // Should not happen if match was valid, but good for safety
-      console.error("Could not determine loser ID for progression");
-      return updated[0];
-    }
-
-    for (const match of dependentMatches) {
-      const updates: any = {};
-
-      // Check Team A dependency
-      if (match.teamAPreviousMatchId === validData.matchId) {
-        if (match.teamAPreviousMatchResult === "winner") {
-          updates.teamAId = validData.winnerId;
-        } else if (match.teamAPreviousMatchResult === "loser") {
-          updates.teamAId = loserId;
-        }
-      }
-
-      // Check Team B dependency
-      if (match.teamBPreviousMatchId === validData.matchId) {
-        if (match.teamBPreviousMatchResult === "winner") {
-          updates.teamBId = validData.winnerId;
-        } else if (match.teamBPreviousMatchResult === "loser") {
-          updates.teamBId = loserId;
-        }
-      }
-
-      // If we have updates, apply them
-      if (Object.keys(updates).length > 0) {
-        await db.update(matches).set(updates).where(eq(matches.id, match.id));
-      }
-    }
-
-    return updated[0];
-  },
-);
-
-const updateMatchOrderFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const { matches: matchesSchema } = await import("@bsebet/db/schema");
-    console.log(
-      "updateMatchOrder called with:",
-      JSON.stringify(ctx.data, null, 2),
-    );
-    try {
-      console.log("Attempting to parse data for updateMatchOrder.");
-      const data = ctx.data;
-      const { updates } = z
-        .object({
-          updates: z.array(
-            z.object({
-              id: z.number(),
-              displayOrder: z.number(),
-            }),
-          ),
-        })
-        .parse(data);
-
-      // Neon HTTP driver doesn't support transactions, so we'll run updates sequentially
-      // This is acceptable here since the order is not critical data integrity-wise
-      for (const update of updates) {
-        await db
-          .update(matchesSchema)
-          .set({ displayOrder: update.displayOrder })
-          .where(eq(matchesSchema.id, update.id));
-      }
-
-      console.log("updateMatchOrder success");
-      return { success: true };
-    } catch (error) {
-      console.error("updateMatchOrder failed:", error);
-      throw error;
-    }
-  },
-);
-
-export const updateMatchOrder = updateMatchOrderFn as unknown as (opts: {
-  data: {
-    updates: {
-      id: number;
-      displayOrder: number;
-    }[];
-  };
+  data: { tournamentId: number; stageId?: string };
 }) => Promise<{ success: boolean }>;
-
-export const finalizeMatch = finalizeMatchFn as unknown as (opts: {
-  data: { matchId: number; winnerId: number };
-}) => Promise<typeof matches.$inferSelect>;

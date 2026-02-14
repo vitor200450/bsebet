@@ -14,6 +14,7 @@ interface TournamentTeamsManagerProps {
   allTeams: Team[]; // All available teams in the system (for the dropdown)
   onAddTeam: (teamId: number) => void;
   onRemoveTeam: (teamId: number) => void;
+  tournamentRegion?: string | null;
 }
 
 // Helper for Region Colors (Duplicated from admin/teams.tsx for consistency)
@@ -40,6 +41,7 @@ export function TournamentTeamsManager({
   allTeams,
   onAddTeam,
   onRemoveTeam,
+  tournamentRegion,
 }: TournamentTeamsManagerProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
   const [pendingTeamIds, setPendingTeamIds] = useState<string[]>([]);
@@ -78,10 +80,24 @@ export function TournamentTeamsManager({
     return 0;
   });
 
-  // Filter out teams that are already added (real or pending)
-  const availableTeams = allTeams.filter(
-    (t) => !allDisplayedTeams.some((at) => at.id === t.id),
-  );
+  // Filter out teams that are already added (real or pending) AND filter by Region
+  const availableTeams = allTeams.filter((t) => {
+    const isAlreadyAdded = allDisplayedTeams.some((at) => at.id === t.id);
+    if (isAlreadyAdded) return false;
+
+    // Region Restriction Logic
+    // If tournamentRegion is provided and NOT "Global", the team must match the region.
+    // If tournamentRegion is "Global" or not provided, allow all regions.
+    if (
+      tournamentRegion &&
+      tournamentRegion !== "Global" &&
+      t.region !== tournamentRegion
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 
   const handleAdd = (idOverride?: string) => {
     const idToAdd = idOverride || selectedTeamId;

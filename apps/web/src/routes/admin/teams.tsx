@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useSetHeader } from "../../components/HeaderContext";
 
 export const Route = createFileRoute("/admin/teams")({
   component: AdminTeamsPage,
@@ -34,7 +35,63 @@ const getRegionColor = (region: string) => {
       return "bg-[#1dd1a1] text-black shadow-[1px_1px_0px_0px_#000]";
     case "SA":
     default:
-      return "bg-[#ffc700] text-black shadow-[1px_1px_0px_0px_#000]";
+      return "bg-[#2ecc71] text-white shadow-[1px_1px_0px_0px_#000]";
+  }
+};
+
+const getRegionHoverColor = (region?: string) => {
+  switch (region) {
+    case "NA":
+      return "group-hover:bg-[#2e5cff]";
+    case "EMEA":
+      return "group-hover:bg-[#9b59b6]";
+    case "CN":
+      return "group-hover:bg-[#ff2e2e]";
+    case "EA":
+      return "group-hover:bg-[#ff9f43]";
+    case "SEA":
+      return "group-hover:bg-[#1dd1a1]";
+    case "SA":
+    default:
+      return "group-hover:bg-[#2ecc71]";
+  }
+};
+
+const getRegionHoverBorderColor = (
+  region?: string,
+  type: "card" | "group" = "card",
+) => {
+  if (type === "card") {
+    switch (region) {
+      case "NA":
+        return "hover:!border-[#2e5cff]";
+      case "EMEA":
+        return "hover:!border-[#9b59b6]";
+      case "CN":
+        return "hover:!border-[#ff2e2e]";
+      case "EA":
+        return "hover:!border-[#ff9f43]";
+      case "SEA":
+        return "hover:!border-[#1dd1a1]";
+      case "SA":
+      default:
+        return "hover:!border-[#2ecc71]";
+    }
+  }
+  switch (region) {
+    case "NA":
+      return "group-hover:border-[#2e5cff]";
+    case "EMEA":
+      return "group-hover:border-[#9b59b6]";
+    case "CN":
+      return "group-hover:border-[#ff2e2e]";
+    case "EA":
+      return "group-hover:border-[#ff9f43]";
+    case "SEA":
+      return "group-hover:border-[#1dd1a1]";
+    case "SA":
+    default:
+      return "group-hover:border-[#2ecc71]";
   }
 };
 
@@ -177,95 +234,98 @@ function AdminTeamsPage() {
       return 0;
     });
 
-  return (
-    <div className="min-h-screen bg-[#e6e6e6] font-sans pb-20">
-      {/* HEADER */}
-      <div className="bg-white border-b-4 border-black px-8 py-6 flex items-center justify-between shadow-sm sticky top-0 z-40">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-black transform skew-x-[-10deg]">
-          ADMIN <span className="text-[#2e5cff]">TEAMS</span>
-        </h1>
-        <div className="flex items-center gap-4">
-          {/* Sorting Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-              className="bg-white border-[3px] border-black px-4 py-2 pr-10 font-bold text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 relative min-w-[120px] text-black"
-            >
-              <span className="text-xs text-gray-400 mr-1">Sort:</span>
-              {sortOrder === "recent"
-                ? "Recents"
-                : sortOrder === "name"
-                  ? "A-Z"
-                  : "Region"}
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-[10px]">▼</span>
-              </div>
-            </button>
-
-            {isSortDropdownOpen && (
-              <div className="absolute top-full left-0 w-full mt-1 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 py-1">
-                {[
-                  { id: "recent", label: "Recents" },
-                  { id: "name", label: "A-Z" },
-                  { id: "region", label: "Region" },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => {
-                      setSortOrder(opt.id);
-                      setIsSortDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-xs font-bold uppercase transition-colors hover:bg-[#ccff00] text-black ${
-                      sortOrder === opt.id ? "bg-gray-100" : ""
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="BUSCAR TIME..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-[3px] border-black px-4 py-2 w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-
+  useSetHeader({
+    title: "TEAMS",
+    actions: (
+      <div className="flex items-center gap-4">
+        {/* Sorting Dropdown */}
+        <div className="relative">
           <button
-            onClick={() => {
-              setIsModalOpen(true);
-              resetForm();
-            }}
-            className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            type="button"
+            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+            className="bg-white border-[3px] border-black px-4 py-2 pr-10 font-bold text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 relative min-w-[120px] text-black"
           >
-            <Plus className="w-5 h-5" strokeWidth={3} />
-            NOVO TIME
+            <span className="text-xs text-gray-400 mr-1">Sort:</span>
+            {sortOrder === "recent"
+              ? "Recents"
+              : sortOrder === "name"
+                ? "A-Z"
+                : "Region"}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <span className="text-[10px]">▼</span>
+            </div>
           </button>
-        </div>
-      </div>
 
+          {isSortDropdownOpen && (
+            <div className="absolute top-full left-0 w-full mt-1 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 py-1">
+              {[
+                { id: "recent", label: "Recents" },
+                { id: "name", label: "A-Z" },
+                { id: "region", label: "Region" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setSortOrder(opt.id);
+                    setIsSortDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold uppercase transition-colors hover:bg-[#ccff00] text-black ${
+                    sortOrder === opt.id ? "bg-gray-100" : ""
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="BUSCAR TIME..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+          />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+
+        <button
+          onClick={() => {
+            setIsModalOpen(true);
+            resetForm();
+          }}
+          className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
+        >
+          <Plus className="w-5 h-5" strokeWidth={3} />
+          <span className="hidden sm:inline">NOVO TIME</span>
+        </button>
+      </div>
+    ),
+  });
+
+  return (
+    <div className="min-h-screen bg-paper bg-paper-texture font-sans pb-20">
       {/* GRID */}
-      <div className="p-6 max-w-[1600px] mx-auto">
+      <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredTeams.map((team) => (
             <div
               key={team.id}
-              className="group bg-white border-[3px] border-black p-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200 flex flex-col relative overflow-hidden"
+              className={`group bg-white border-[3px] border-black p-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200 flex flex-col relative overflow-hidden ${getRegionHoverBorderColor(team.region || undefined, "card")}`}
             >
               {/* Decoration */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-[#f0f0f0] border-l-[3px] border-b-[3px] border-black -mr-8 -mt-8 rotate-45 z-0 group-hover:bg-[#ffc700] transition-colors"></div>
+              <div
+                className={`absolute top-0 right-0 w-16 h-16 bg-[#f0f0f0] border-l-[3px] border-b-[3px] border-black -mr-8 -mt-8 rotate-45 z-0 transition-colors ${getRegionHoverColor(team.region || undefined)} ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
+              ></div>
 
               <div className="p-6 flex flex-col items-center gap-4 relative z-10 flex-1">
                 {/* Logo Area */}
-                <div className="w-32 h-32 bg-[#f0f0f0] border-[3px] border-black rounded-full flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-300">
+                <div
+                  className={`w-32 h-32 bg-[#f0f0f0] border-[3px] border-black rounded-full flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-all duration-300 ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
+                >
                   {team.logoUrl ? (
                     <img
                       src={team.logoUrl}
@@ -305,17 +365,19 @@ function AdminTeamsPage() {
               </div>
 
               {/* Actions Footer */}
-              <div className="border-t-[3px] border-black p-3 bg-gray-50 flex gap-2 justify-center">
+              <div
+                className={`border-t-[3px] border-black p-3 bg-gray-50 flex gap-2 justify-center transition-colors ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
+              >
                 <button
                   onClick={() => handleEdit(team)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-[#ccff00] text-black font-bold py-1.5 px-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none translate-y-0 hover:translate-y-[2px] transition-all text-sm rounded-sm"
+                  className={`flex-1 flex items-center justify-center gap-2 bg-white hover:bg-[#ccff00] text-black font-bold py-1.5 px-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none translate-y-0 hover:translate-y-[2px] transition-all text-sm rounded-sm ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
                 >
                   <Edit2 className="w-4 h-4" />
                   EDITAR
                 </button>
                 <button
                   onClick={() => handleDelete(team.id, team.name)}
-                  className="px-3 py-1.5 bg-white hover:bg-[#ff2e2e] hover:text-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none translate-y-0 hover:translate-y-[2px] transition-all rounded-sm"
+                  className={`px-3 py-1.5 bg-white hover:bg-[#ff2e2e] hover:text-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none translate-y-0 hover:translate-y-[2px] transition-all rounded-sm ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

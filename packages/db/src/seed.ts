@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import { db } from "./index";
 import { tournaments, teams, tournamentTeams, matches } from "./schema";
 import { eq } from "drizzle-orm";
@@ -138,7 +141,11 @@ async function main() {
   console.log("✅ Seed concluído com sucesso!");
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

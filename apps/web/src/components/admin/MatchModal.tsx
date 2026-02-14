@@ -20,12 +20,14 @@ interface MatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   tournamentId: number;
-  stages: { id: string; name: string }[];
+  stages: { id: string; name: string; type?: string }[];
   teams: Team[]; // Available teams in tournament
   matchDays: { id: number; label: string; date: string }[]; // Keep simple matchDays structure
   matches: any[]; // Matches for dependency selection
   matchToEdit?: any; // Optional match to edit
   onSuccess: () => void;
+  groupsCount?: number;
+  advancingPerGroup?: number;
 }
 
 export function MatchModal({
@@ -38,6 +40,8 @@ export function MatchModal({
   matches,
   matchToEdit,
   onSuccess,
+  groupsCount = 8,
+  advancingPerGroup = 4,
 }: MatchModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -49,7 +53,8 @@ export function MatchModal({
   const getInitialState = () => {
     if (!matchToEdit) {
       return {
-        label: stages[0]?.id || "",
+        stageId: stages[0]?.id || "",
+        label: "",
         date: "",
         time: "",
         name: "",
@@ -59,21 +64,36 @@ export function MatchModal({
         labelTeamA: "",
         teamAPreviousMatchId: null,
         teamAPreviousMatchResult: "winner" as const,
+        teamAGroup: "A",
+        teamAPlacement: "1",
 
         teamBType: "team" as const,
         teamB: "",
         labelTeamB: "",
         teamBPreviousMatchId: null,
         teamBPreviousMatchResult: "winner" as const,
+        teamBGroup: "A",
+        teamBPlacement: "1",
 
         matchDayId: null,
         isBettingEnabled: true,
+
+        // Bracket Info
+        roundIndex: 0,
+        bracketSide: "upper" as const,
+        displayOrder: 0,
+
+        status: "scheduled" as "scheduled" | "live" | "finished",
+        scoreA: 0,
+        scoreB: 0,
+        winnerId: null as number | null,
       };
     }
 
     const start = new Date(matchToEdit.startTime);
     return {
-      label: matchToEdit.label || stages[0]?.id || "",
+      stageId: matchToEdit.stageId || matchToEdit.label || stages[0]?.id || "",
+      label: matchToEdit.label || "", // Keep label for reference
       date: start.toISOString().split("T")[0],
       time: start.toLocaleTimeString([], {
         hour: "2-digit",
@@ -83,24 +103,34 @@ export function MatchModal({
       name: matchToEdit.name || "",
 
       // Team A
-      teamAType: (matchToEdit.teamAPreviousMatchId ? "match" : "team") as
-        | "team"
-        | "match",
+      teamAType: (matchToEdit.labelTeamA?.includes("Group")
+        ? "group"
+        : matchToEdit.teamAPreviousMatchId
+          ? "match"
+          : "team") as "team" | "match" | "group",
       teamA: matchToEdit.teamAId ? String(matchToEdit.teamAId) : "",
       labelTeamA: matchToEdit.labelTeamA || "",
       teamAPreviousMatchId: matchToEdit.teamAPreviousMatchId,
       teamAPreviousMatchResult: (matchToEdit.teamAPreviousMatchResult ||
         "winner") as "winner" | "loser",
+      teamAGroup: matchToEdit.labelTeamA?.match(/Group ([A-Z])/)?.[1] || "A",
+      teamAPlacement:
+        matchToEdit.labelTeamA?.match(/(\d)(?:st|nd|rd|th)/)?.[1] || "1",
 
       // Team B
-      teamBType: (matchToEdit.teamBPreviousMatchId ? "match" : "team") as
-        | "team"
-        | "match",
+      teamBType: (matchToEdit.labelTeamB?.includes("Group")
+        ? "group"
+        : matchToEdit.teamBPreviousMatchId
+          ? "match"
+          : "team") as "team" | "match" | "group",
       teamB: matchToEdit.teamBId ? String(matchToEdit.teamBId) : "",
       labelTeamB: matchToEdit.labelTeamB || "",
       teamBPreviousMatchId: matchToEdit.teamBPreviousMatchId,
       teamBPreviousMatchResult: (matchToEdit.teamBPreviousMatchResult ||
         "winner") as "winner" | "loser",
+      teamBGroup: matchToEdit.labelTeamB?.match(/Group ([A-Z])/)?.[1] || "A",
+      teamBPlacement:
+        matchToEdit.labelTeamB?.match(/(\d)(?:st|nd|rd|th)/)?.[1] || "1",
 
       matchDayId: matchToEdit.matchDayId,
       isBettingEnabled: matchToEdit.isBettingEnabled ?? true,
@@ -109,6 +139,13 @@ export function MatchModal({
       roundIndex: matchToEdit.roundIndex ?? 0,
       bracketSide: matchToEdit.bracketSide ?? "upper",
       displayOrder: matchToEdit.displayOrder ?? 0,
+
+      status:
+        (matchToEdit.status as "scheduled" | "live" | "finished") ||
+        "scheduled",
+      scoreA: matchToEdit.scoreA ?? 0,
+      scoreB: matchToEdit.scoreB ?? 0,
+      winnerId: matchToEdit.winnerId ?? null,
     };
   };
 
@@ -125,6 +162,89 @@ export function MatchModal({
     }
   }, [matchToEdit, isOpen]);
 
+  // Sync bracketSide with selected stage type
+  useEffect(() => {
+    const selectedStage = stages.find((s) => s.id === formData.stageId);
+    if (selectedStage?.type === "Groups" && formData.bracketSide !== "groups") {
+      setFormData((prev) => ({ ...prev, bracketSide: "groups" }));
+    } else if (
+      selectedStage?.type !== "Groups" &&
+      formData.bracketSide === "groups"
+    ) {
+      // Fallback to upper for non-group stages if transitioning from groups
+      setFormData((prev) => ({ ...prev, bracketSide: "upper" }));
+    }
+  }, [formData.stageId, stages]);
+
+  // Auto-determine winner based on score and validate max score
+  useEffect(() => {
+    if (!matchToEdit) return;
+
+    // Determine format from tournament or default to BO5
+    const matchFormat = matchToEdit.tournament?.format?.toLowerCase() || "bo5";
+    let bestOf = 5;
+    if (matchFormat.includes("bo3")) bestOf = 3;
+    else if (matchFormat.includes("bo5")) bestOf = 5;
+    else if (matchFormat.includes("bo7")) bestOf = 7;
+
+    const winsNeeded = Math.ceil(bestOf / 2);
+    const { scoreA, scoreB } = formData;
+
+    // Validate scores don't exceed max wins
+    let updatedScoreA = scoreA;
+    let updatedScoreB = scoreB;
+    let needsUpdate = false;
+
+    if (scoreA > winsNeeded) {
+      updatedScoreA = winsNeeded;
+      needsUpdate = true;
+    }
+    if (scoreB > winsNeeded) {
+      updatedScoreB = winsNeeded;
+      needsUpdate = true;
+    }
+
+    // Auto-determine winner based on higher score
+    let autoWinnerId = formData.winnerId;
+
+    if (updatedScoreA > updatedScoreB && updatedScoreA >= winsNeeded && matchToEdit.teamAId) {
+      // Team A wins if they have more points and reached winning threshold
+      autoWinnerId = matchToEdit.teamAId;
+      needsUpdate = true;
+    } else if (updatedScoreB > updatedScoreA && updatedScoreB >= winsNeeded && matchToEdit.teamBId) {
+      // Team B wins if they have more points and reached winning threshold
+      autoWinnerId = matchToEdit.teamBId;
+      needsUpdate = true;
+    } else if (updatedScoreA < winsNeeded && updatedScoreB < winsNeeded) {
+      // Clear winner if neither team reached winning threshold
+      if (formData.winnerId) {
+        autoWinnerId = null;
+        needsUpdate = true;
+      }
+    } else if (updatedScoreA === updatedScoreB && updatedScoreA < winsNeeded) {
+      // Clear winner if scores are tied below winning threshold
+      if (formData.winnerId) {
+        autoWinnerId = null;
+        needsUpdate = true;
+      }
+    }
+
+    if (needsUpdate) {
+      setFormData((prev) => ({
+        ...prev,
+        scoreA: updatedScoreA,
+        scoreB: updatedScoreB,
+        winnerId: autoWinnerId,
+      }));
+    }
+  }, [
+    formData.scoreA,
+    formData.scoreB,
+    matchToEdit?.teamAId,
+    matchToEdit?.teamBId,
+    matchToEdit?.tournament?.format,
+  ]);
+
   // Build payload helper
   const buildPayload = useCallback(() => {
     if (!formData.date || !formData.time) return null;
@@ -132,11 +252,22 @@ export function MatchModal({
     const dateTime = new Date(`${formData.date}T${formData.time}:00`);
 
     const getSourceLabel = (
-      type: "team" | "match",
+      type: "team" | "match" | "group",
       matchId: number | null,
       result: "winner" | "loser",
+      group: string = "A",
+      placement: string = "1",
     ) => {
       if (type === "team") return null;
+      if (type === "group") {
+        const ordinals: Record<string, string> = {
+          "1": "1st",
+          "2": "2nd",
+          "3": "3rd",
+          "4": "4th",
+        };
+        return `${ordinals[placement] || placement + "th"} Place Group ${group}`;
+      }
       const sourceMatch = matches.find((m) => m.id === matchId);
       if (!sourceMatch) return "TBD";
 
@@ -154,6 +285,7 @@ export function MatchModal({
       tournamentId,
       startTime: dateTime.toISOString(),
       label: formData.label || null,
+      stageId: formData.stageId || null,
       name: formData.name || null,
       teamAId:
         formData.teamAType === "team" && formData.teamA
@@ -165,18 +297,39 @@ export function MatchModal({
             : null,
       labelTeamA:
         formData.teamAType === "match"
-          ? getSourceLabel(
-              "match",
-              formData.teamAPreviousMatchId,
-              formData.teamAPreviousMatchResult,
-            )
-          : null,
+          ? // If editing and dependency hasn't changed, keep original label
+            matchToEdit &&
+            formData.teamAPreviousMatchId ===
+              matchToEdit.teamAPreviousMatchId &&
+            formData.teamAPreviousMatchResult ===
+              matchToEdit.teamAPreviousMatchResult
+            ? matchToEdit.labelTeamA // Preserve original label
+            : getSourceLabel(
+                "match",
+                formData.teamAPreviousMatchId,
+                formData.teamAPreviousMatchResult,
+              )
+          : formData.teamAType === "group"
+            ? getSourceLabel(
+                "group",
+                null,
+                "winner",
+                formData.teamAGroup,
+                formData.teamAPlacement,
+              )
+            : null,
       teamAPreviousMatchId:
-        formData.teamAType === "match" ? formData.teamAPreviousMatchId : null,
+        formData.teamAType === "match"
+          ? formData.teamAPreviousMatchId
+          : formData.teamAType === "group" && matchToEdit?.teamAPreviousMatchId
+            ? matchToEdit.teamAPreviousMatchId // Preserve auto-progression for groups
+            : null,
       teamAPreviousMatchResult:
         formData.teamAType === "match"
           ? formData.teamAPreviousMatchResult
-          : null,
+          : formData.teamAType === "group" && matchToEdit?.teamAPreviousMatchResult
+            ? matchToEdit.teamAPreviousMatchResult // Preserve auto-progression for groups
+            : null,
       teamBId:
         formData.teamBType === "team" && formData.teamB
           ? Number(formData.teamB)
@@ -187,25 +340,56 @@ export function MatchModal({
             : null,
       labelTeamB:
         formData.teamBType === "match"
-          ? getSourceLabel(
-              "match",
-              formData.teamBPreviousMatchId,
-              formData.teamBPreviousMatchResult,
-            )
-          : null,
+          ? // If editing and dependency hasn't changed, keep original label
+            matchToEdit &&
+            formData.teamBPreviousMatchId ===
+              matchToEdit.teamBPreviousMatchId &&
+            formData.teamBPreviousMatchResult ===
+              matchToEdit.teamBPreviousMatchResult
+            ? matchToEdit.labelTeamB // Preserve original label
+            : getSourceLabel(
+                "match",
+                formData.teamBPreviousMatchId,
+                formData.teamBPreviousMatchResult,
+              )
+          : formData.teamBType === "group"
+            ? getSourceLabel(
+                "group",
+                null,
+                "winner",
+                formData.teamBGroup,
+                formData.teamBPlacement,
+              )
+            : null,
       teamBPreviousMatchId:
-        formData.teamBType === "match" ? formData.teamBPreviousMatchId : null,
+        formData.teamBType === "match"
+          ? formData.teamBPreviousMatchId
+          : formData.teamBType === "group" && matchToEdit?.teamBPreviousMatchId
+            ? matchToEdit.teamBPreviousMatchId // Preserve auto-progression for groups
+            : null,
       teamBPreviousMatchResult:
         formData.teamBType === "match"
           ? formData.teamBPreviousMatchResult
-          : null,
+          : formData.teamBType === "group" && matchToEdit?.teamBPreviousMatchResult
+            ? matchToEdit.teamBPreviousMatchResult // Preserve auto-progression for groups
+            : null,
       matchDayId: formData.matchDayId || null,
       isBettingEnabled: formData.isBettingEnabled,
       roundIndex: Number(formData.roundIndex),
-      bracketSide: formData.bracketSide,
+      bracketSide:
+        stages.find((s) => s.id === formData.stageId)?.type === "Groups"
+          ? "groups"
+          : formData.bracketSide,
       displayOrder: Number(formData.displayOrder),
+      status: formData.status,
+      scoreA: Number(formData.scoreA),
+      scoreB: Number(formData.scoreB),
+      winnerId: formData.winnerId ? Number(formData.winnerId) : null,
     };
-  }, [formData, matches, tournamentId]);
+  }, [formData, matches, tournamentId, stages]);
+
+  // Validation: Prevent saving "finished" status without a winner
+  const canSaveAsFinished = formData.status === "finished" ? formData.winnerId !== null : true;
 
   // Auto-save effect (only for editing mode)
   useEffect(() => {
@@ -230,6 +414,13 @@ export function MatchModal({
 
     // Debounce save
     debounceRef.current = setTimeout(async () => {
+      // Prevent auto-saving finished status without a winner
+      if (formData.status === "finished" && !formData.winnerId) {
+        setSaveStatus("error");
+        toast.error("Cannot finish match without a winner!");
+        return;
+      }
+
       const payload = buildPayload();
       if (!payload) {
         setSaveStatus("idle");
@@ -239,7 +430,7 @@ export function MatchModal({
       try {
         await updateMatch({
           data: {
-            id: matchToEdit.id,
+            matchId: matchToEdit.id,
             ...payload,
           },
         });
@@ -262,12 +453,63 @@ export function MatchModal({
     };
   }, [formData, matchToEdit, isOpen, buildPayload, onSuccess]);
 
+  const handleSave = async () => {
+    if (!matchToEdit) return;
+
+    // Prevent saving finished status without a winner
+    if (formData.status === "finished" && !formData.winnerId) {
+      toast.error("Cannot finish match without a winner!");
+      setSaveStatus("error");
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const currentData = JSON.stringify(formData);
+    if (currentData !== lastSavedData.current) {
+      setIsSubmitting(true);
+      setSaveStatus("saving");
+      try {
+        const payload = buildPayload();
+        if (payload) {
+          await updateMatch({
+            data: {
+              matchId: matchToEdit.id,
+              ...payload,
+            },
+          });
+          lastSavedData.current = currentData;
+          setSaveStatus("saved");
+          onSuccess();
+        }
+      } catch (error) {
+        console.error("Save failed:", error);
+        setSaveStatus("error");
+        toast.error("Failed to save changes");
+        setIsSubmitting(false);
+        throw error;
+      }
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleClose = async () => {
+    if (matchToEdit) {
+      try {
+        await handleSave();
+      } catch (e) {
+        // Errors already toasted in handleSave
+      }
+    }
+    onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // For editing, auto-save handles it
+    // For editing, ensure we save if there are pending changes
     if (matchToEdit) {
-      onClose();
+      await handleClose();
       return;
     }
 
@@ -328,79 +570,295 @@ export function MatchModal({
             )}
           </div>
           <button
-            onClick={onClose}
-            className="bg-black hover:bg-[#ff2e2e] text-white p-1 transition-colors"
+            onClick={handleClose}
+            disabled={isSubmitting || saveStatus === "saving"}
+            className="bg-black hover:bg-[#ff2e2e] text-white p-1 transition-colors disabled:opacity-50"
           >
-            <X className="w-4 h-4" strokeWidth={3} />
+            {isSubmitting || saveStatus === "saving" ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <X className="w-4 h-4" strokeWidth={3} />
+            )}
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 pb-10">
-          {/* Bracket Configuration (Added) */}
-          <div className="p-4 bg-gray-100 border-2 border-black space-y-3">
-            <h3 className="font-bold uppercase text-xs flex items-center gap-2 text-black">
-              <span className="w-2 h-2 bg-black rounded-full" /> Bracket
-              Placement
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              <CustomSelect
-                label="Side"
-                value={formData.bracketSide}
-                onChange={(val) =>
-                  setFormData({ ...formData, bracketSide: val })
-                }
-                options={[
-                  { value: "upper", label: "Upper Bracket" },
-                  { value: "lower", label: "Lower Bracket" },
-                  { value: "grand_final", label: "Grand Final" },
-                ]}
-              />
-              <div>
-                <label className="block text-xs font-black uppercase ml-1 mb-1 text-black">
-                  Round # (Column)
-                </label>
-                <input
-                  type="number"
-                  value={formData.roundIndex}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      roundIndex: Number(e.target.value),
-                    })
-                  }
-                  className="w-full border-[3px] border-black p-2 text-sm font-bold bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-                />
-                <p className="text-[9px] font-bold text-gray-500 mt-1 leading-tight">
-                  0=Start, 1=Semis, 2=Final
-                </p>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-10">
+          {/* 1. RESULTS & SCORES - MOVED TO TOP FOR VISIBILITY */}
+          {matchToEdit && (
+            <div className="p-5 bg-[#ccff00]/5 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-black uppercase text-sm flex items-center gap-2 text-black italic">
+                  <span className="w-2.5 h-2.5 bg-black rounded-full animate-pulse" />{" "}
+                  Result & Scores
+                </h3>
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] font-black uppercase text-black">
+                    Status:
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => {
+                      const status = e.target.value as
+                        | "scheduled"
+                        | "live"
+                        | "finished";
+                      setFormData({
+                        ...formData,
+                        status,
+                        isBettingEnabled:
+                          status === "live" || status === "finished"
+                            ? false
+                            : formData.isBettingEnabled,
+                      });
+                    }}
+                    className="bg-black text-[#ccff00] text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black focus:outline-none"
+                  >
+                    <option value="scheduled">Scheduled</option>
+                    <option value="live">LIVE</option>
+                    <option value="finished">Finished</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-black uppercase ml-1 mb-1 text-black">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  value={formData.displayOrder}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      displayOrder: Number(e.target.value),
-                    })
-                  }
-                  className="w-full border-[3px] border-black p-2 text-sm font-bold bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-                />
-                <p className="text-[9px] font-bold text-gray-500 mt-1 leading-tight">
-                  Vertical Pos. (1=Top)
-                </p>
+
+              <div className="grid grid-cols-2 gap-8">
+                {/* Score A */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-3 h-3 bg-brawl-blue rounded-full border border-black shadow-[1px_1px_0px_0px_#000]" />
+                    <label className="text-[10px] font-black uppercase text-black">
+                      {matchToEdit?.teamA?.name || "Team A"}
+                    </label>
+                    {formData.winnerId === matchToEdit?.teamAId && (
+                      <span className="text-[9px] font-black uppercase text-green-600 ml-auto">
+                        ✓ WINNER
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.scoreA}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        scoreA: Number(e.target.value),
+                      })
+                    }
+                    className="w-full border-[3px] border-black p-3 text-3xl font-black bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00] tabular-nums shadow-[2px_2px_0px_0px_#000]"
+                  />
+                  {matchToEdit?.tournament?.format && (
+                    <p className="text-[9px] font-bold text-gray-500 uppercase">
+                      Max:{" "}
+                      {Math.ceil(
+                        (matchToEdit.tournament.format
+                          .toLowerCase()
+                          .includes("bo3")
+                          ? 3
+                          : matchToEdit.tournament.format
+                                .toLowerCase()
+                                .includes("bo7")
+                            ? 7
+                            : 5) / 2,
+                      )}{" "}
+                      wins
+                    </p>
+                  )}
+                </div>
+
+                {/* Score B */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-3 h-3 bg-brawl-red rounded-full border border-black shadow-[1px_1px_0px_0px_#000]" />
+                    <label className="text-[10px] font-black uppercase text-black">
+                      {matchToEdit?.teamB?.name || "Team B"}
+                    </label>
+                    {formData.winnerId === matchToEdit?.teamBId && (
+                      <span className="text-[9px] font-black uppercase text-green-600 ml-auto">
+                        ✓ WINNER
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.scoreB}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        scoreB: Number(e.target.value),
+                      })
+                    }
+                    className="w-full border-[3px] border-black p-3 text-3xl font-black bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00] tabular-nums shadow-[2px_2px_0px_0px_#000]"
+                  />
+                  {matchToEdit?.tournament?.format && (
+                    <p className="text-[9px] font-bold text-gray-500 uppercase">
+                      Max:{" "}
+                      {Math.ceil(
+                        (matchToEdit.tournament.format
+                          .toLowerCase()
+                          .includes("bo3")
+                          ? 3
+                          : matchToEdit.tournament.format
+                                .toLowerCase()
+                                .includes("bo7")
+                            ? 7
+                            : 5) / 2,
+                      )}{" "}
+                      wins
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {formData.status === "finished" && (
+                <div className="pt-2 animate-in slide-in-from-top-2 duration-300">
+                  <label className="block text-[10px] font-black uppercase ml-1 mb-2 text-black italic">
+                    Winner (Auto-detected from score)
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          winnerId: matchToEdit?.teamAId || null,
+                        })
+                      }
+                      className={clsx(
+                        "py-3 border-[3px] border-black font-black uppercase text-xs transition-all flex items-center justify-center gap-2",
+                        formData.winnerId === matchToEdit?.teamAId
+                          ? "bg-brawl-blue text-white shadow-[4px_4px_0px_0px_#000] -translate-y-1"
+                          : "bg-white text-black hover:bg-gray-50",
+                      )}
+                    >
+                      {formData.winnerId === matchToEdit?.teamAId && (
+                        <Check className="w-4 h-4" />
+                      )}
+                      {matchToEdit?.teamA?.name || "Team A"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          winnerId: matchToEdit?.teamBId || null,
+                        })
+                      }
+                      className={clsx(
+                        "py-3 border-[3px] border-black font-black uppercase text-xs transition-all flex items-center justify-center gap-2",
+                        formData.winnerId === matchToEdit?.teamBId
+                          ? "bg-brawl-red text-white shadow-[4px_4px_0px_0px_#000] -translate-y-1"
+                          : "bg-white text-black hover:bg-gray-50",
+                      )}
+                    >
+                      {formData.winnerId === matchToEdit?.teamBId && (
+                        <Check className="w-4 h-4" />
+                      )}
+                      {matchToEdit?.teamB?.name || "Team B"}
+                    </button>
+                  </div>
+                  {!formData.winnerId ? (
+                    <div className="bg-red-500/10 border-[3px] border-red-500 p-3 mt-3 animate-in slide-in-from-top-2 duration-300">
+                      <p className="text-[10px] font-black text-red-600 uppercase flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        ERROR: Cannot finish match without a winner!
+                      </p>
+                      <p className="text-[9px] text-red-600 mt-1">
+                        Please select a winner above or ensure one team has enough wins.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[9px] font-bold text-red-500 uppercase mt-3 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      Warning: Finalizing will settle user points immediately.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="h-[2px] bg-black/10 w-full" />
+          {/* Bracket Configuration (Added) - Only for Non-Group Matches */}
+          {formData.bracketSide !== "groups" && (
+            <div className="p-4 bg-gray-100 border-2 border-black space-y-3">
+              <h3 className="font-bold uppercase text-xs flex items-center gap-2 text-black">
+                <span className="w-2 h-2 bg-black rounded-full" /> Bracket
+                Placement
+              </h3>
+              <div
+                className={clsx(
+                  "grid gap-3",
+                  stages.find((s) => s.id === formData.stageId)?.type ===
+                    "Double Elimination"
+                    ? "grid-cols-3"
+                    : "grid-cols-2",
+                )}
+              >
+                {stages.find((s) => s.id === formData.stageId)?.type ===
+                  "Double Elimination" && (
+                  <CustomSelect
+                    label="Side"
+                    value={formData.bracketSide}
+                    onChange={(val) =>
+                      setFormData({ ...formData, bracketSide: val })
+                    }
+                    options={[
+                      { value: "upper", label: "Upper Bracket" },
+                      { value: "lower", label: "Lower Bracket" },
+                      { value: "grand_final", label: "Grand Final" },
+                    ]}
+                  />
+                )}
+                <div>
+                  <label className="block text-xs font-black uppercase ml-1 mb-1 text-black">
+                    Round # (Column)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.roundIndex}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        roundIndex: Number(e.target.value),
+                      })
+                    }
+                    className="w-full border-[3px] border-black p-2 text-sm font-bold bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+                  />
+                  <p className="text-[9px] font-bold text-gray-500 mt-1 leading-tight">
+                    0=Start, 1=Semis, 2=Final
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-black uppercase ml-1 mb-1 text-black">
+                    Display Order
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.displayOrder}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        displayOrder: Number(e.target.value),
+                      })
+                    }
+                    className="w-full border-[3px] border-black p-2 text-sm font-bold bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+                  />
+                  <p className="text-[9px] font-bold text-gray-500 mt-1 leading-tight">
+                    Vertical Pos. (1=Top)
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             {/* Stage Selection */}
             <CustomSelect
               label="Stage"
-              value={formData.label}
-              onChange={(val) => setFormData({ ...formData, label: val })}
+              value={formData.stageId}
+              onChange={(val) =>
+                setFormData({ ...formData, stageId: val, label: val })
+              }
               options={stages.map((s) => ({ value: s.id, label: s.name }))}
             />
 
@@ -504,7 +962,7 @@ export function MatchModal({
                 Team A Source
               </label>
               <div className="flex gap-2 mb-2">
-                {(["team", "match"] as const).map((type) => (
+                {(["team", "match", "group"] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
@@ -581,6 +1039,49 @@ export function MatchModal({
                   </div>
                 </div>
               )}
+
+              {formData.teamAType === "group" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <CustomSelect
+                    label="Group"
+                    value={formData.teamAGroup}
+                    onChange={(val) =>
+                      setFormData({ ...formData, teamAGroup: val })
+                    }
+                    options={Array.from({ length: groupsCount }, (_, i) =>
+                      String.fromCharCode(65 + i),
+                    ).map((g) => ({
+                      value: g,
+                      label: `Group ${g}`,
+                    }))}
+                  />
+                  <CustomSelect
+                    label="Placement"
+                    value={formData.teamAPlacement}
+                    onChange={(val) =>
+                      setFormData({ ...formData, teamAPlacement: val })
+                    }
+                    options={Array.from(
+                      { length: advancingPerGroup },
+                      (_, i) => ({
+                        value: String(i + 1),
+                        label: `${
+                          [
+                            "1st",
+                            "2nd",
+                            "3rd",
+                            "4th",
+                            "5th",
+                            "6th",
+                            "7th",
+                            "8th",
+                          ][i] || i + 1 + "th"
+                        } Place`,
+                      }),
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Team B */}
@@ -589,7 +1090,7 @@ export function MatchModal({
                 Team B Source
               </label>
               <div className="flex gap-2 mb-2">
-                {(["team", "match"] as const).map((type) => (
+                {(["team", "match", "group"] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
@@ -664,6 +1165,49 @@ export function MatchModal({
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {formData.teamBType === "group" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <CustomSelect
+                    label="Group"
+                    value={formData.teamBGroup}
+                    onChange={(val) =>
+                      setFormData({ ...formData, teamBGroup: val })
+                    }
+                    options={Array.from({ length: groupsCount }, (_, i) =>
+                      String.fromCharCode(65 + i),
+                    ).map((g) => ({
+                      value: g,
+                      label: `Group ${g}`,
+                    }))}
+                  />
+                  <CustomSelect
+                    label="Placement"
+                    value={formData.teamBPlacement}
+                    onChange={(val) =>
+                      setFormData({ ...formData, teamBPlacement: val })
+                    }
+                    options={Array.from(
+                      { length: advancingPerGroup },
+                      (_, i) => ({
+                        value: String(i + 1),
+                        label: `${
+                          [
+                            "1st",
+                            "2nd",
+                            "3rd",
+                            "4th",
+                            "5th",
+                            "6th",
+                            "7th",
+                            "8th",
+                          ][i] || i + 1 + "th"
+                        } Place`,
+                      }),
+                    )}
+                  />
                 </div>
               )}
             </div>

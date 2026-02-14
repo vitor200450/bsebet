@@ -76,29 +76,45 @@ const submitBetFn = createServerFn({
   }
 
   // 5. Check if match hasn't started yet
-  const now = new Date();
-  const matchStartTime = new Date(match.startTime);
+  // RELAXED CHECK: Allow betting if status is 'scheduled', even if time passed.
+  // Only block if explicitly live or finished.
+  const isStarted = match.status === "live" || match.status === "finished";
 
-  if (matchStartTime <= now) {
+  if (isStarted) {
     throw new Error("Apostas encerradas - a partida já começou");
   }
 
   // 6. Validate predicted winner is one of the teams
-  if (
-    validData.predictedWinnerId !== match.teamAId &&
-    validData.predictedWinnerId !== match.teamBId
-  ) {
-    throw new Error("Vencedor previsto deve ser um dos times da partida");
+  // Only validate if both teams are defined (not TBD)
+  if (match.teamAId && match.teamBId) {
+    if (
+      validData.predictedWinnerId !== match.teamAId &&
+      validData.predictedWinnerId !== match.teamBId
+    ) {
+      throw new Error("Vencedor previsto deve ser um dos times da partida");
+    }
   }
 
   // 7. Validate score consistency
-  const winnerIsTeamA = validData.predictedWinnerId === match.teamAId;
-  const winnerScore = winnerIsTeamA
-    ? validData.predictedScoreA
-    : validData.predictedScoreB;
-  const loserScore = winnerIsTeamA
-    ? validData.predictedScoreB
-    : validData.predictedScoreA;
+  let winnerScore: number;
+  let loserScore: number;
+
+  if (match.teamAId && match.teamBId) {
+    const winnerIsTeamA = validData.predictedWinnerId === match.teamAId;
+    winnerScore = winnerIsTeamA
+      ? validData.predictedScoreA
+      : validData.predictedScoreB;
+    loserScore = winnerIsTeamA
+      ? validData.predictedScoreB
+      : validData.predictedScoreA;
+  } else {
+    // TBD Match: We don't know who is A or B, so we assume winner has high score
+    winnerScore = Math.max(
+      validData.predictedScoreA,
+      validData.predictedScoreB,
+    );
+    loserScore = Math.min(validData.predictedScoreA, validData.predictedScoreB);
+  }
 
   if (winnerScore <= loserScore) {
     throw new Error("O vencedor deve ter mais pontos que o perdedor");
@@ -204,7 +220,6 @@ const submitMultipleBetsFn = createServerFn({
     },
   });
 
-  const now = new Date();
   const errors: string[] = [];
 
   // Validate each bet
@@ -221,27 +236,41 @@ const submitMultipleBetsFn = createServerFn({
       continue;
     }
 
-    const matchStartTime = new Date(match.startTime);
-    if (matchStartTime <= now) {
+    // RELAXED CHECK: Allow betting if status is 'scheduled', even if time passed.
+    // Only block if explicitly live or finished.
+    const isStarted = match.status === "live" || match.status === "finished";
+
+    if (isStarted) {
       errors.push(`Partida ${betData.matchId} já começou`);
       continue;
     }
 
-    if (
-      betData.predictedWinnerId !== match.teamAId &&
-      betData.predictedWinnerId !== match.teamBId
-    ) {
-      errors.push(`Vencedor inválido para partida ${betData.matchId}`);
-      continue;
+    if (match.teamAId && match.teamBId) {
+      if (
+        betData.predictedWinnerId !== match.teamAId &&
+        betData.predictedWinnerId !== match.teamBId
+      ) {
+        errors.push(`Vencedor inválido para partida ${betData.matchId}`);
+        continue;
+      }
     }
 
-    const winnerIsTeamA = betData.predictedWinnerId === match.teamAId;
-    const winnerScore = winnerIsTeamA
-      ? betData.predictedScoreA
-      : betData.predictedScoreB;
-    const loserScore = winnerIsTeamA
-      ? betData.predictedScoreB
-      : betData.predictedScoreA;
+    let winnerScore: number;
+    let loserScore: number;
+
+    if (match.teamAId && match.teamBId) {
+      const winnerIsTeamA = betData.predictedWinnerId === match.teamAId;
+      winnerScore = winnerIsTeamA
+        ? betData.predictedScoreA
+        : betData.predictedScoreB;
+      loserScore = winnerIsTeamA
+        ? betData.predictedScoreB
+        : betData.predictedScoreA;
+    } else {
+      // TBD Match: We don't know who is A or B, so we assume winner has high score
+      winnerScore = Math.max(betData.predictedScoreA, betData.predictedScoreB);
+      loserScore = Math.min(betData.predictedScoreA, betData.predictedScoreB);
+    }
 
     if (winnerScore <= loserScore) {
       errors.push(
@@ -277,38 +306,29 @@ const submitMultipleBetsFn = createServerFn({
       and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)),
   });
 
-  // 5. Process bets (update existing, insert new)
+  // 5. BLOCK RE-BETTING: If user already has bets for ANY of these matches, reject
+  if (existingBets.length > 0) {
+    const existingMatchIds = existingBets.map((b) => b.matchId).join(", ");
+    throw new Error(
+      `Você já tem apostas registradas para as partidas: ${existingMatchIds}. Não é possível alterar apostas após o envio inicial.`,
+    );
+  }
+
+  // 6. Insert new bets
   const results = [];
 
   for (const betData of validData.bets) {
-    const existingBet = existingBets.find((b) => b.matchId === betData.matchId);
-
-    if (existingBet) {
-      // Update
-      const updated = await db
-        .update(bets)
-        .set({
-          predictedWinnerId: betData.predictedWinnerId,
-          predictedScoreA: betData.predictedScoreA,
-          predictedScoreB: betData.predictedScoreB,
-        })
-        .where(eq(bets.id, existingBet.id))
-        .returning();
-      results.push(updated[0]);
-    } else {
-      // Insert
-      const inserted = await db
-        .insert(bets)
-        .values({
-          userId,
-          matchId: betData.matchId,
-          predictedWinnerId: betData.predictedWinnerId,
-          predictedScoreA: betData.predictedScoreA,
-          predictedScoreB: betData.predictedScoreB,
-        })
-        .returning();
-      results.push(inserted[0]);
-    }
+    const inserted = await db
+      .insert(bets)
+      .values({
+        userId,
+        matchId: betData.matchId,
+        predictedWinnerId: betData.predictedWinnerId,
+        predictedScoreA: betData.predictedScoreA,
+        predictedScoreB: betData.predictedScoreB,
+      })
+      .returning();
+    results.push(inserted[0]);
   }
 
   return {

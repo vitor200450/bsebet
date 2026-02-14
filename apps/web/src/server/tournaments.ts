@@ -1,7 +1,8 @@
-import { tournaments } from "@bsebet/db/schema";
+import { tournaments, matches, bets } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, asc, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { auth } from "@bsebet/auth";
 
 // Schema for Tournament Input
 const tournamentSchema = z.object({
@@ -37,6 +38,13 @@ const tournamentSchema = z.object({
         }),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
+        scoringRules: z
+          .object({
+            winner: z.number(),
+            exact: z.number(),
+            underdog_25: z.number(),
+          })
+          .optional(),
       }),
     )
     .default([]),
@@ -54,7 +62,7 @@ const tournamentSchema = z.object({
     .default({
       winner: 1,
       exact: 3,
-      underdog_25: 0.25,
+      underdog_25: 2,
     }),
 });
 
@@ -116,6 +124,7 @@ const saveTournamentFn = createServerFn({
         endDate: validData.endDate || null,
         status: validData.status,
         isActive: validData.isActive,
+        scoringRules: validData.scoringRules,
       })
       .where(eq(tournaments.id, validData.id))
       .returning();
@@ -153,12 +162,110 @@ const deleteTournamentFn = createServerFn({
   method: "POST",
 }).handler(async (ctx: any) => {
   const { db } = await import("@bsebet/db");
+  const { tournaments } = await import("@bsebet/db/schema");
+  const { eq } = await import("drizzle-orm");
+
   const data = ctx.data;
-  if (typeof data !== "number") throw new Error("Invalid ID");
-  await db.delete(tournaments).where(eq(tournaments.id, data));
-  return { success: true };
+
+  // Ensure data is the ID directly
+  const id = typeof data === "object" && data.data ? data.data : data;
+
+  if (!id || typeof id !== "number") {
+    console.error("Invalid ID for deletion:", id);
+    throw new Error("Invalid ID");
+  }
+
+  try {
+    const { matches, bets } = await import("@bsebet/db/schema");
+    const { inArray } = await import("drizzle-orm");
+
+    // First, find all matches associated with this tournament
+    const tournamentMatches = await db
+      .select({ id: matches.id })
+      .from(matches)
+      .where(eq(matches.tournamentId, id));
+
+    const matchIds = tournamentMatches.map((m) => m.id);
+
+    if (matchIds.length > 0) {
+      // Delete all bets for these matches
+      await db.delete(bets).where(inArray(bets.matchId, matchIds));
+
+      // Delete the matches
+      await db.delete(matches).where(inArray(matches.id, matchIds));
+    }
+
+    // Then delete the tournament
+    await db.delete(tournaments).where(eq(tournaments.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting tournament:", error);
+    throw new Error("Failed to delete tournament in DB");
+  }
 });
 
 export const deleteTournament = deleteTournamentFn as unknown as (opts: {
   data: number;
 }) => Promise<{ success: boolean }>;
+
+/**
+ * Get Tournament by Slug with Matches and User Bets
+ */
+const getTournamentBySlugFn = createServerFn({
+  method: "GET",
+}).handler(async (ctx: any) => {
+  const { db } = await import("@bsebet/db");
+
+  const slug = z.string().parse(ctx.data);
+
+  // 1. Get Tournament
+  const tournament = await db.query.tournaments.findFirst({
+    where: eq(tournaments.slug, slug),
+  });
+
+  if (!tournament) {
+    throw new Error("Tournament not found");
+  }
+
+  // 2. Get Matches
+  const tournamentMatches = await db.query.matches.findMany({
+    where: eq(matches.tournamentId, tournament.id),
+    orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
+    with: {
+      teamA: true,
+      teamB: true,
+    },
+  });
+
+  // 3. Get User Bets (if authenticated)
+  let userBets: any[] = [];
+  const session = await auth.api.getSession({
+    headers: ctx.request.headers,
+  });
+
+  if (session?.user) {
+    const matchIds = tournamentMatches.map((m) => m.id);
+    if (matchIds.length > 0) {
+      userBets = await db.query.bets.findMany({
+        where: and(
+          eq(bets.userId, session.user.id),
+          inArray(bets.matchId, matchIds),
+        ),
+      });
+    }
+  }
+
+  return {
+    tournament,
+    matches: tournamentMatches,
+    userBets,
+  };
+});
+
+export const getTournamentBySlug = getTournamentBySlugFn as unknown as (opts: {
+  data: string;
+}) => Promise<{
+  tournament: typeof tournaments.$inferSelect;
+  matches: (typeof matches.$inferSelect & { teamA: any; teamB: any })[];
+  userBets: (typeof bets.$inferSelect)[];
+}>;

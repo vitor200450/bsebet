@@ -1,15 +1,23 @@
 import { env } from "@bsebet/env/server";
-import { neon, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import ws from "ws";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres"; // 3.4.8
 
 import * as schema from "./schema";
 
-neonConfig.webSocketConstructor = ws;
+// Prevent multiple instances of the DB client in development
+const globalForDb = globalThis as unknown as {
+  conn: postgres.Sql | undefined;
+};
 
-// To work in edge environments (Cloudflare Workers, Vercel Edge, etc.), enable querying over fetch
-// neonConfig.poolQueryViaFetch = true
+const conn =
+  globalForDb.conn ??
+  postgres(env.DATABASE_URL, {
+    ssl: "require",
+    max: 1, // Limit connections in dev to avoid hitting limits
+    prepare: false, // Required for Supabase transaction pooler & some dev environments
+  });
 
-const sql = neon(env.DATABASE_URL);
-export const db = drizzle(sql, { schema });
+if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
+
+export const db = drizzle(conn, { schema });
 export * from "./schema";

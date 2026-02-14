@@ -28,6 +28,9 @@ export type Match = {
   nextMatchWinnerSlot?: string | null;
   nextMatchLoserId?: number | null;
   nextMatchLoserSlot?: string | null;
+  tournamentName?: string | null;
+  tournamentLogoUrl?: string | null;
+  startTime: string | Date;
 };
 
 // --- SVG COMPONENTS ---
@@ -136,7 +139,7 @@ export function BettingCarousel({
   }, [matches.length, currentIndex]);
 
   // 1. Calculate Projected Matches based on current predictions
-  const projectedMatches = useMemo(() => {
+  const projectedMatches = useMemo<Match[]>(() => {
     // Clone matches to avoid mutating props
     const projected = matches.map((m) => ({
       ...m,
@@ -187,7 +190,7 @@ export function BettingCarousel({
   }, [matches, predictions]);
 
   const currentMatch = projectedMatches[currentIndex];
-  const currentPrediction = predictions[currentMatch.id];
+  const currentPrediction = currentMatch ? predictions[currentMatch.id] : null;
   const isLastMatch = currentIndex === projectedMatches.length - 1;
 
   // Check if all matches have predictions with BOTH winner AND score
@@ -204,8 +207,11 @@ export function BettingCarousel({
   }, [matches, predictions]);
 
   const handleNext = () => {
+    // Check if we're at the last match and all bets are complete
     if (isLastMatch && allBetsComplete) {
-      onShowReview?.();
+      if (onShowReview) {
+        onShowReview();
+      }
       return;
     }
 
@@ -224,7 +230,10 @@ export function BettingCarousel({
       }
     }
 
-    setCurrentIndex((prev) => prev + 1);
+    // Only advance to next match if not at the end
+    if (currentIndex < matches.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
   };
 
   // Determine button text
@@ -252,6 +261,7 @@ export function BettingCarousel({
   const updatePrediction = onUpdatePrediction;
 
   const setSelectedWinnerId = (winnerId: number) => {
+    if (!currentMatch) return;
     updatePrediction(currentMatch.id, winnerId);
   };
 
@@ -262,6 +272,7 @@ export function BettingCarousel({
 
   // Determine available scores based on format (BO3=2wins, BO5=3wins)
   const scoreOptions = useMemo(() => {
+    if (!currentMatch) return [];
     const winsNeeded =
       currentMatch.format === "bo5" ? 3 : currentMatch.format === "bo3" ? 2 : 3;
     const options = [];
@@ -282,7 +293,7 @@ export function BettingCarousel({
       });
     }
     return options;
-  }, [currentMatch.format, currentMatch.teamA.id, selectedWinnerId]);
+  }, [currentMatch?.format, currentMatch?.teamA.id, selectedWinnerId]);
 
   // Helper to check if a team is selected
   const isSelected = (teamId: number) => selectedWinnerId === teamId;
@@ -290,25 +301,63 @@ export function BettingCarousel({
     selectedWinnerId !== null && selectedWinnerId !== teamId;
 
   const activeAccentColor =
-    selectedWinnerId === currentMatch.teamA.id ? "brawl-blue" : "brawl-red";
+    currentMatch && selectedWinnerId === currentMatch.teamA.id
+      ? "brawl-blue"
+      : "brawl-red";
 
   if (!currentMatch)
     return (
-      <div className="min-h-screen bg-paper bg-paper-texture flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-3xl font-black italic uppercase text-black mb-4">
-          Nenhum jogo agendado
-        </h2>
-        <p className="text-gray-600 font-bold mb-8 max-w-sm">
-          Todos os jogos de hoje já começaram ou foram finalizados.
-        </p>
-        {Object.keys(predictions).length > 0 && onShowReview && (
-          <button
-            onClick={onShowReview}
-            className="bg-brawl-red hover:bg-[#d41d1d] text-white px-8 py-4 font-black italic uppercase border-[4px] border-black shadow-[8px_8px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all"
-          >
-            Revisar Minhas Apostas
-          </button>
-        )}
+      <div className="min-h-screen bg-paper bg-paper-texture flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 pointer-events-none opacity-50 z-0 transform -rotate-12">
+          <PaintSplatterBlue className="w-full h-full" />
+        </div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 pointer-events-none opacity-50 z-0 transform rotate-45">
+          <PaintSplatterRed className="w-full h-full" />
+        </div>
+
+        <div className="relative z-10 max-w-md w-full">
+          <div className="bg-white border-[4px] border-black shadow-comic p-8 flex flex-col items-center text-center transform rotate-1">
+            {/* Icon/Decoration */}
+            <div className="w-20 h-20 bg-gray-100 border-[3px] border-black rounded-full flex items-center justify-center mb-6 shadow-sm relative group">
+              <span className="material-symbols-outlined text-4xl text-gray-400 group-hover:text-brawl-red transition-colors">
+                calendar_clock
+              </span>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-brawl-red rounded-full border-[2px] border-black animate-pulse"></div>
+            </div>
+
+            <h2 className="text-3xl font-black font-display italic uppercase text-black mb-3 text-shadow-sm transform -skew-x-2">
+              Nenhum Jogo <span className="text-brawl-red">Agora</span>
+            </h2>
+
+            <p className="text-gray-600 font-bold font-body mb-8 text-sm leading-relaxed uppercase tracking-wide">
+              Os jogos de hoje já começaram ou ainda não foram agendados. Volte
+              mais tarde para apostar!
+            </p>
+
+            {Object.keys(predictions).length > 0 && onShowReview ? (
+              <button
+                onClick={onShowReview}
+                className="w-full bg-brawl-red hover:bg-[#d41d1d] text-white py-4 font-black italic uppercase border-[3px] border-black shadow-comic active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2 group"
+              >
+                <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">
+                  rate_review
+                </span>
+                Revisar Apostas
+              </button>
+            ) : (
+              <div className="w-full bg-gray-100 text-gray-400 py-3 font-bold uppercase border-[2px] border-gray-300 flex items-center justify-center gap-2 text-xs tracking-widest cursor-default">
+                <span className="material-symbols-outlined text-sm">
+                  hourglass_empty
+                </span>
+                Aguardando Partidas
+              </div>
+            )}
+          </div>
+
+          {/* Tape Decoration */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-[#e6e6e6]/90 border border-gray-300 shadow-sm transform -rotate-1 z-20 backdrop-blur-sm"></div>
+        </div>
       </div>
     );
 
@@ -316,36 +365,6 @@ export function BettingCarousel({
     <>
       <div className="bg-paper bg-paper-texture font-body min-h-screen flex flex-col items-center pt-24 pb-8 relative overflow-x-hidden text-ink pencil-texture">
         {/* Header / Navbar */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white h-16 border-b-4 border-brawl-red shadow-lg flex items-center justify-between px-6 lg:px-12">
-          <div className="flex items-center gap-2">
-            <span className="font-display font-black text-3xl italic tracking-tighter text-black transform -skew-x-12 cursor-pointer select-none drop-shadow-sm">
-              BSE<span className="text-brawl-red">BET</span>
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-black/5 px-3 py-1 rounded border border-black/10">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-xs font-bold text-gray-600 tracking-wider">
-                LIVE MARKETS
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-xs font-bold text-gray-500">
-              <span className="hover:text-black cursor-pointer transition-colors">
-                MATCHES
-              </span>
-              <span className="hover:text-black cursor-pointer transition-colors">
-                LEADERBOARD
-              </span>
-              <span className="hover:text-black cursor-pointer transition-colors">
-                WALLET
-              </span>
-            </div>
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-gray-100 to-gray-300 border border-gray-300 shadow-sm"></div>
-          </div>
-          <div className="md:hidden">
-            <span className="material-symbols-outlined text-black">menu</span>
-          </div>
-        </div>
 
         {/* Decorations */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -399,18 +418,50 @@ export function BettingCarousel({
             >
               Predict The Winner
             </h1>
-            <div className="relative bg-white border border-gray-300 px-4 py-1 shadow-sm transform rotate-1 max-w-sm skew-x-[-5deg]">
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-4 bg-[#e8e8e0] opacity-80 rotate-1 shadow-sm"></div>
-              <p className="text-[10px] md:text-xs font-bold tracking-widest text-gray-800 uppercase font-body transform skew-x-[5deg]">
-                Brawl Stars World Finals 2025
-              </p>
+            {/* Double Post-it Header */}
+            <div className="flex flex-col items-center gap-0 relative z-30">
+              {/* Logo Post-it (Top) */}
+              {currentMatch.tournamentLogoUrl && (
+                <div className="relative bg-white border border-gray-200 p-3 shadow-sm transform -rotate-2 z-10 w-46 h-46 flex items-center justify-center">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-5 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
+                  <img
+                    src={currentMatch.tournamentLogoUrl}
+                    alt=""
+                    className="w-48 h-48 object-contain filter drop-shadow-sm"
+                  />
+                </div>
+              )}
+
+              {/* Name Post-it (Bottom) - Overlapping the logo (z-20) */}
+              <div
+                className={clsx(
+                  "relative bg-white border border-gray-200 px-8 py-3 shadow-sm transform rotate-1 skew-x-[-2deg] z-20 max-w-sm text-center",
+                  currentMatch.tournamentLogoUrl ? "-mt-2" : "mt-0",
+                )}
+              >
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-4 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
+                <p className="text-xs md:text-sm font-black tracking-widest text-black uppercase font-display transform skew-x-[2deg]">
+                  {currentMatch.tournamentName || "Brawl Stars Championship"}
+                </p>
+              </div>
             </div>
-            <div className="mt-4 bg-black text-[10px] font-black text-white px-3 py-1 rounded-full tracking-[0.2em] transform -skew-x-12 inline-flex items-center gap-1.5 shadow-sm">
+
+            <div className="bg-black text-[10px] font-black text-white px-3 py-1 rounded-full tracking-[0.2em] transform -skew-x-12 inline-flex items-center gap-1.5 shadow-sm mt-6">
               <span className="w-1.5 h-1.5 bg-brawl-yellow rounded-full animate-pulse"></span>
-              DAY 1 - PLAYOFFS
+              LIVE BRACKET
             </div>
-            <div className="mt-4 font-body font-bold text-gray-800 text-[10px] tracking-widest uppercase">
-              {currentMatch.label}
+            <div className="mt-4 font-body font-bold text-gray-800 text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
+              <span>{currentMatch.label}</span>
+              <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+              <span className="text-gray-400 flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">
+                  schedule
+                </span>
+                {new Date(currentMatch.startTime).toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
             </div>
           </header>
 

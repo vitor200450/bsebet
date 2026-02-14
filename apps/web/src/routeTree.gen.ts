@@ -9,9 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TournamentsRouteImport } from './routes/tournaments'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LandingRouteImport } from './routes/landing'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TournamentsIndexRouteImport } from './routes/tournaments/index'
+import { Route as TournamentsSlugRouteImport } from './routes/tournaments/$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTournamentsRouteImport } from './routes/admin/tournaments'
 import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
@@ -21,9 +26,24 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminLiveMatchIdRouteImport } from './routes/admin/live/$matchId'
 import { Route as AdminTournamentsTournamentIdMatchesRouteImport } from './routes/admin/tournaments/$tournamentId/matches'
 
+const TournamentsRoute = TournamentsRouteImport.update({
+  id: '/tournaments',
+  path: '/tournaments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -35,6 +55,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIndexRoute = TournamentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TournamentsRoute,
+} as any)
+const TournamentsSlugRoute = TournamentsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => TournamentsRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
@@ -81,10 +111,15 @@ const AdminTournamentsTournamentIdMatchesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/landing': typeof LandingRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/tournaments': typeof TournamentsRouteWithChildren
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
+  '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -94,9 +129,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/landing': typeof LandingRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/tournaments': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -107,10 +146,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/landing': typeof LandingRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/tournaments': typeof TournamentsRouteWithChildren
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
+  '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -122,10 +166,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/landing'
+    | '/leaderboard'
     | '/login'
+    | '/tournaments'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
+    | '/tournaments/$slug'
+    | '/tournaments/'
     | '/admin/live/$matchId'
     | '/api/auth/$'
     | '/api/trpc/$'
@@ -135,9 +184,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/landing'
+    | '/leaderboard'
     | '/login'
     | '/admin/teams'
     | '/admin/users'
+    | '/tournaments/$slug'
+    | '/tournaments'
     | '/admin/live/$matchId'
     | '/api/auth/$'
     | '/api/trpc/$'
@@ -147,10 +200,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/landing'
+    | '/leaderboard'
     | '/login'
+    | '/tournaments'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
+    | '/tournaments/$slug'
+    | '/tournaments/'
     | '/admin/live/$matchId'
     | '/api/auth/$'
     | '/api/trpc/$'
@@ -161,7 +219,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  LandingRoute: typeof LandingRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  TournamentsRoute: typeof TournamentsRouteWithChildren
   AdminTeamsRoute: typeof AdminTeamsRoute
   AdminTournamentsRoute: typeof AdminTournamentsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
@@ -172,11 +233,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tournaments': {
+      id: '/tournaments'
+      path: '/tournaments'
+      fullPath: '/tournaments'
+      preLoaderRoute: typeof TournamentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -192,6 +274,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/': {
+      id: '/tournaments/'
+      path: '/'
+      fullPath: '/tournaments/'
+      preLoaderRoute: typeof TournamentsIndexRouteImport
+      parentRoute: typeof TournamentsRoute
+    }
+    '/tournaments/$slug': {
+      id: '/tournaments/$slug'
+      path: '/$slug'
+      fullPath: '/tournaments/$slug'
+      preLoaderRoute: typeof TournamentsSlugRouteImport
+      parentRoute: typeof TournamentsRoute
     }
     '/admin/users': {
       id: '/admin/users'
@@ -252,6 +348,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface TournamentsRouteChildren {
+  TournamentsSlugRoute: typeof TournamentsSlugRoute
+  TournamentsIndexRoute: typeof TournamentsIndexRoute
+}
+
+const TournamentsRouteChildren: TournamentsRouteChildren = {
+  TournamentsSlugRoute: TournamentsSlugRoute,
+  TournamentsIndexRoute: TournamentsIndexRoute,
+}
+
+const TournamentsRouteWithChildren = TournamentsRoute._addFileChildren(
+  TournamentsRouteChildren,
+)
+
 interface AdminTournamentsRouteChildren {
   AdminTournamentsIndexRoute: typeof AdminTournamentsIndexRoute
   AdminTournamentsTournamentIdMatchesRoute: typeof AdminTournamentsTournamentIdMatchesRoute
@@ -269,7 +379,10 @@ const AdminTournamentsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  LandingRoute: LandingRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  TournamentsRoute: TournamentsRouteWithChildren,
   AdminTeamsRoute: AdminTeamsRoute,
   AdminTournamentsRoute: AdminTournamentsRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,

@@ -14,9 +14,16 @@ export interface Stage {
     teamsPerGroup?: number;
     advancingCount?: number;
     matchType?: MatchType;
+    groupFormat?: "GSL" | "Round Robin";
   };
   startDate?: string;
   endDate?: string;
+  scoringRules?: {
+    winner: number;
+    exact: number;
+    underdog_25: number;
+    underdog_50: number;
+  };
 }
 
 interface StageBuilderProps {
@@ -137,12 +144,24 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 
                 {stage.type === "Groups" && (
                   <>
+                    <CustomSelect
+                      label="Format"
+                      value={stage.settings.groupFormat || "GSL"}
+                      onChange={(val) =>
+                        updateSettings(index, "groupFormat", val)
+                      }
+                      options={[
+                        { value: "GSL", label: "GSL" },
+                        { value: "Round Robin", label: "Round Robin" },
+                      ]}
+                    />
                     <div>
                       <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500">
                         Groups Count
                       </label>
                       <input
                         type="number"
+                        min={1}
                         value={stage.settings.groupsCount || ""}
                         onChange={(e) =>
                           updateSettings(
@@ -161,6 +180,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
                       </label>
                       <input
                         type="number"
+                        min={2}
                         value={stage.settings.teamsPerGroup || ""}
                         onChange={(e) =>
                           updateSettings(
@@ -190,6 +210,130 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
                 value={stage.endDate || ""}
                 onChange={(val) => updateStage(index, "endDate", val)}
               />
+            </div>
+
+            {/* SCORING OVERRIDES */}
+            <div className="bg-white border-2 border-gray-200 p-3 mt-4">
+              <div className="flex items-center gap-2 mb-2 text-gray-400">
+                <Settings className="w-3 h-3" />
+                <span className="text-[10px] font-bold uppercase">
+                  Scoring Overrides (Optional)
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500">
+                    Winner Pts
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={stage.scoringRules?.winner ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        ? parseFloat(e.target.value)
+                        : undefined;
+                      const currentRules = stage.scoringRules || {
+                        winner: 1,
+                        exact: 3,
+                        underdog_25: 2,
+                        underdog_50: 1,
+                      };
+                      if (val === undefined) {
+                        updateStage(index, "scoringRules", undefined);
+                      } else {
+                        updateStage(index, "scoringRules", {
+                          ...currentRules,
+                          winner: val,
+                        });
+                      }
+                    }}
+                    className="w-full border-2 border-gray-300 p-1 text-xs focus:outline-none focus:border-black bg-white text-black"
+                    placeholder="Default"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500">
+                    Exact Pts
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={stage.scoringRules?.exact ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        ? parseFloat(e.target.value)
+                        : undefined;
+                      const currentRules = stage.scoringRules || {
+                        winner: 1,
+                        exact: 3,
+                        underdog_25: 2,
+                        underdog_50: 1,
+                      };
+                      updateStage(index, "scoringRules", {
+                        ...currentRules,
+                        exact: val ?? 3,
+                      });
+                    }}
+                    className="w-full border-2 border-gray-300 p-1 text-xs focus:outline-none focus:border-black bg-white text-black"
+                    placeholder="Default"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus for underdog with ≤25% of votes">
+                    Underdog T1 (≤25%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={stage.scoringRules?.underdog_25 ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        ? parseFloat(e.target.value)
+                        : undefined;
+                      const currentRules = stage.scoringRules || {
+                        winner: 1,
+                        exact: 3,
+                        underdog_25: 2,
+                        underdog_50: 1,
+                      };
+                      updateStage(index, "scoringRules", {
+                        ...currentRules,
+                        underdog_25: val ?? 2,
+                      });
+                    }}
+                    className="w-full border-2 border-gray-300 p-1 text-xs focus:outline-none focus:border-black bg-white text-black"
+                    placeholder="Default"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus for underdog with 26-50% of votes">
+                    Underdog T2 (26-50%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={stage.scoringRules?.underdog_50 ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        ? parseFloat(e.target.value)
+                        : undefined;
+                      const currentRules = stage.scoringRules || {
+                        winner: 1,
+                        exact: 3,
+                        underdog_25: 2,
+                        underdog_50: 1,
+                      };
+                      updateStage(index, "scoringRules", {
+                        ...currentRules,
+                        underdog_50: val ?? 1,
+                      });
+                    }}
+                    className="w-full border-2 border-gray-300 p-1 text-xs focus:outline-none focus:border-black bg-white text-black"
+                    placeholder="Default"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Visual connector to next stage */}

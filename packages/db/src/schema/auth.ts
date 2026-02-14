@@ -9,6 +9,10 @@ export const user = pgTable("user", {
   image: text("image"),
   nickname: text("nickname"),
   role: text("role").default("user").notNull(),
+  // Admin fields
+  banned: boolean("banned"),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

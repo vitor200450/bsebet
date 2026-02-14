@@ -11,6 +11,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { user } from "./auth";
 export * from "./auth";
 
 // --- ENUMS ---
@@ -47,6 +48,8 @@ export const tournamentTeams = pgTable(
     teamId: integer("team_id")
       .notNull()
       .references(() => teams.id),
+    group: text("group"), // "A", "B", ...
+    seed: integer("seed"), // 1, 2, 3, 4...
   },
   (t) => ({
     pk: primaryKey({ columns: [t.tournamentId, t.teamId] }), // Chave composta
@@ -77,6 +80,11 @@ export const tournaments = pgTable("tournaments", {
       };
       startDate?: string;
       endDate?: string;
+      scoringRules?: {
+        winner: number;
+        exact: number;
+        underdog_25: number;
+      };
     }[]
   >(),
   startDate: timestamp("start_date"),
@@ -118,6 +126,7 @@ export const matches = pgTable(
     tournamentId: integer("tournament_id").references(() => tournaments.id),
     matchDayId: integer("match_day_id").references(() => matchDays.id), // New relation
     label: text("label"), // Stage name (ex: "Upper Bracket Quarterfinals")
+    stageId: text("stage_id"), // ID of the stage in the tournament JSON
     name: text("name"), // Specific match name (ex: "Opening Match")
 
     // REFATORADO: Agora apontamos para IDs, não strings
@@ -156,6 +165,8 @@ export const matches = pgTable(
     teamAPreviousMatchResult: text("team_a_previous_match_result"), // 'winner' | 'loser'
     teamBPreviousMatchId: integer("team_b_previous_match_id"),
     teamBPreviousMatchResult: text("team_b_previous_match_result"),
+
+    underdogTeamId: integer("underdog_team_id").references(() => teams.id),
   },
   (t) => ({
     uniqueMatch: uniqueIndex("unique_match_idx").on(
@@ -258,5 +269,20 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
     fields: [matches.nextMatchLoserId],
     references: [matches.id],
     relationName: "loserPath",
+  }),
+}));
+
+export const betsRelations = relations(bets, ({ one }) => ({
+  user: one(user, {
+    fields: [bets.userId],
+    references: [user.id],
+  }),
+  match: one(matches, {
+    fields: [bets.matchId],
+    references: [matches.id],
+  }),
+  predictedWinner: one(teams, {
+    fields: [bets.predictedWinnerId],
+    references: [teams.id],
   }),
 }));

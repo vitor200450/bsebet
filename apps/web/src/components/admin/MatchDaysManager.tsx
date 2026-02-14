@@ -1,14 +1,13 @@
-import { Trash2, Plus, Loader2, Lock, Unlock, Zap, ZapOff } from "lucide-react";
+import { Trash2, Plus, Loader2, Pencil, X, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
   createMatchDay,
   deleteMatchDay,
-  updateMatchDayStatus,
-  toggleMatchDayBetting,
+  updateMatchDay,
 } from "@/server/match-days";
 import { useRouter } from "@tanstack/react-router";
-import { CustomDatePicker } from "./CustomInputs"; // Need to ensure this is exported
+import { CustomDatePicker, CustomSelect } from "./CustomInputs";
 
 interface MatchDay {
   id: number;
@@ -21,14 +20,22 @@ interface MatchDay {
 export function MatchDaysManager({
   tournamentId,
   matchDays,
+  tournamentStartDate,
+  tournamentEndDate,
 }: {
   tournamentId: number;
   matchDays: MatchDay[];
+  tournamentStartDate?: Date | null;
+  tournamentEndDate?: Date | null;
 }) {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [newDayLabel, setNewDayLabel] = useState("");
   const [newDayDate, setNewDayDate] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editLabel, setEditLabel] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editStatus, setEditStatus] = useState<MatchDay["status"]>("draft");
 
   const handleCreate = async () => {
     if (!newDayLabel || !newDayDate) return;
@@ -53,16 +60,6 @@ export function MatchDaysManager({
     }
   };
 
-  const handleStatusChange = async (id: number, status: MatchDay["status"]) => {
-    try {
-      await updateMatchDayStatus({ data: { id, status } });
-      toast.success(`Status atualizado para ${status}`);
-      router.invalidate();
-    } catch (e) {
-      toast.error("Erro ao atualizar status.");
-    }
-  };
-
   const handleDelete = async (id: number) => {
     if (!confirm("Tem certeza? Isso vai desvincular as partidas deste dia."))
       return;
@@ -75,15 +72,36 @@ export function MatchDaysManager({
     }
   };
 
-  const handleBettingToggle = async (id: number, enabled: boolean) => {
+  const startEditing = (day: MatchDay) => {
+    setEditingId(day.id);
+    setEditLabel(day.label);
+    setEditDate(new Date(day.date).toISOString().split("T")[0]);
+    setEditStatus(day.status);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditLabel("");
+    setEditDate("");
+    setEditStatus("draft");
+  };
+
+  const handleUpdate = async (id: number) => {
+    if (!editLabel || !editDate) return;
     try {
-      await toggleMatchDayBetting({ data: { id, enabled } });
-      toast.success(
-        `Apostas ${enabled ? "ativadas" : "desativadas"} para este dia!`,
-      );
+      await updateMatchDay({
+        data: {
+          id,
+          label: editLabel,
+          date: `${editDate}T12:00:00`,
+          status: editStatus,
+        },
+      });
+      toast.success("Match day atualizado!");
+      cancelEditing();
       router.invalidate();
     } catch (e) {
-      toast.error("Erro ao configurar apostas.");
+      toast.error("Erro ao atualizar match day.");
     }
   };
 
@@ -104,6 +122,24 @@ export function MatchDaysManager({
 
   return (
     <div className="space-y-6">
+      {/* Info Box */}
+      <div className="bg-blue-50 border-[3px] border-blue-300 p-4">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">ℹ️</span>
+          <div>
+            <p className="text-sm font-bold text-blue-900">
+              O <strong>status do Match Day</strong> controla automaticamente as apostas:
+            </p>
+            <ul className="text-xs text-blue-800 mt-2 space-y-1 ml-4">
+              <li>• <strong>Open</strong> = Apostas abertas para todas as partidas</li>
+              <li>• <strong>Locked</strong> = Apostas fechadas (partidas em andamento)</li>
+              <li>• <strong>Finished</strong> = Dia finalizado</li>
+              <li>• <strong>Draft</strong> = Ainda não disponível</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Create New Day */}
       <div className="bg-white border-[4px] border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
         <h3 className="font-black italic uppercase text-xl mb-4 text-black">
@@ -127,6 +163,16 @@ export function MatchDaysManager({
               label="Data"
               value={newDayDate}
               onChange={setNewDayDate}
+              minDate={
+                tournamentStartDate
+                  ? new Date(tournamentStartDate).toISOString().split("T")[0]
+                  : undefined
+              }
+              maxDate={
+                tournamentEndDate
+                  ? new Date(tournamentEndDate).toISOString().split("T")[0]
+                  : undefined
+              }
             />
           </div>
           <button
@@ -146,103 +192,150 @@ export function MatchDaysManager({
 
       {/* List Days */}
       <div className="space-y-4">
-        {matchDays.map((day) => (
-          <div
-            key={day.id}
-            className="bg-white border-[3px] border-black p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-black text-white px-3 py-1 font-black italic uppercase text-lg transform skew-x-[-10deg]">
-                {new Date(day.date).toLocaleDateString([], {
-                  day: "2-digit",
-                  month: "2-digit",
-                })}
-              </div>
-              <div>
-                <h4 className="font-black uppercase text-lg leading-none text-black">
-                  {day.label}
-                </h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className={`text-[10px] font-bold uppercase px-2 py-0.5 border-2 rounded-full ${getStatusColor(
-                      day.status,
-                    )}`}
-                  >
-                    {day.status}
-                  </span>
-                  <span className="text-xs font-bold text-gray-400">
-                    {day.matches.length} partidas
-                  </span>
+        {matchDays.map((day) => {
+          const isEditing = editingId === day.id;
+
+          return (
+            <div
+              key={day.id}
+              className="bg-white border-[3px] border-black p-4 shadow-sm hover:shadow-md transition-shadow"
+            >
+              {isEditing ? (
+                // EDIT MODE
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-xs font-black uppercase mb-1 ml-1 text-black">
+                        Nome do Dia
+                      </label>
+                      <input
+                        type="text"
+                        value={editLabel}
+                        onChange={(e) => setEditLabel(e.target.value)}
+                        className="w-full border-[3px] border-black p-2 font-bold focus:outline-none focus:ring-4 focus:ring-[#ccff00] text-black"
+                      />
+                    </div>
+                    <div className="w-48">
+                      <CustomDatePicker
+                        label="Data"
+                        value={editDate}
+                        onChange={setEditDate}
+                        minDate={
+                          tournamentStartDate
+                            ? new Date(tournamentStartDate).toISOString().split("T")[0]
+                            : undefined
+                        }
+                        maxDate={
+                          tournamentEndDate
+                            ? new Date(tournamentEndDate).toISOString().split("T")[0]
+                            : undefined
+                        }
+                      />
+                    </div>
+                    <div className="w-48">
+                      <CustomSelect
+                        label="Status"
+                        value={editStatus}
+                        onChange={(val) => setEditStatus(val as MatchDay["status"])}
+                        options={[
+                          { value: "draft", label: "Draft" },
+                          { value: "open", label: "Open (Apostas Ativas)" },
+                          { value: "locked", label: "Locked (Apostas Fechadas)" },
+                          { value: "finished", label: "Finished" },
+                        ]}
+                        placeholder="Selecione..."
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={cancelEditing}
+                      className="px-4 py-2 font-black uppercase text-sm border-[3px] border-black bg-white text-black hover:bg-gray-100 transition-all flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" strokeWidth={3} />
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => handleUpdate(day.id)}
+                      disabled={!editLabel || !editDate}
+                      className="px-4 py-2 font-black uppercase text-sm border-[3px] border-black bg-black text-white hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Check className="w-4 h-4" strokeWidth={3} />
+                      Salvar
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
+              ) : (
+                // VIEW MODE
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black text-white px-3 py-1 font-black italic uppercase text-lg transform skew-x-[-10deg]">
+                      {new Date(day.date).toLocaleDateString([], {
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}
+                    </div>
+                    <div>
+                      <h4 className="font-black uppercase text-lg leading-none text-black">
+                        {day.label}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 border-2 rounded-full ${getStatusColor(
+                            day.status,
+                          )}`}
+                        >
+                          {day.status}
+                        </span>
+                        <span className="text-xs font-bold text-gray-400">
+                          {day.matches.length} partidas
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="flex items-center gap-2">
-              {day.status === "open" && (
-                <button
-                  onClick={() => handleStatusChange(day.id, "locked")}
-                  className="p-2 border-2 border-black hover:bg-[#ff2e2e] hover:text-white text-black transition-colors"
-                  title="Bloquear Apostas"
-                >
-                  <Lock className="w-5 h-5" />
-                </button>
+                  <div className="flex items-center gap-2">
+                    {/* Betting Status Indicator - Based on Match Day Status */}
+                    <div className="flex flex-col items-end mr-2">
+                      {day.status === "open" ? (
+                        <span className="text-[9px] font-black uppercase bg-[#ccff00] text-black px-1.5 py-0.5 border border-black shadow-[1px_1px_0px_0px_#000]">
+                          APOSTAS ABERTAS
+                        </span>
+                      ) : day.status === "locked" ? (
+                        <span className="text-[9px] font-black uppercase bg-[#ff2e2e] text-white px-1.5 py-0.5 border border-black">
+                          APOSTAS FECHADAS
+                        </span>
+                      ) : day.status === "finished" ? (
+                        <span className="text-[9px] font-black uppercase bg-black text-white px-1.5 py-0.5 border border-black">
+                          FINALIZADO
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-black uppercase bg-gray-100 text-gray-400 px-1.5 py-0.5 border border-gray-300">
+                          RASCUNHO
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => startEditing(day)}
+                      className="p-2 border-2 border-black hover:bg-[#ccff00] text-black transition-colors"
+                      title="Editar Match Day"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(day.id)}
+                      className="p-2 text-gray-300 hover:text-[#ff2e2e] transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               )}
-              {day.status === "locked" && (
-                <button
-                  onClick={() => handleStatusChange(day.id, "open")}
-                  className="p-2 border-2 border-black hover:bg-[#ccff00] text-black transition-colors"
-                  title="Reabrir"
-                >
-                  <Unlock className="w-5 h-5" />
-                </button>
-              )}
-
-              <div className="w-[2px] h-8 bg-gray-200 mx-2" />
-
-              {/* Betting Status Indicator */}
-              <div className="flex flex-col items-end mr-2">
-                {day.matches &&
-                day.matches.some((m: any) => m.isBettingEnabled) ? (
-                  <span className="text-[9px] font-black uppercase bg-[#ccff00] text-black px-1.5 py-0.5 border border-black shadow-[1px_1px_0px_0px_#000]">
-                    BETS OPEN
-                  </span>
-                ) : (
-                  <span className="text-[9px] font-black uppercase bg-gray-100 text-gray-400 px-1.5 py-0.5 border border-gray-300">
-                    BETS CLOSED
-                  </span>
-                )}
-              </div>
-
-              <div className="flex bg-gray-100 p-1 border-2 border-black gap-1">
-                <button
-                  onClick={() => handleBettingToggle(day.id, true)}
-                  className="p-1 px-2 text-[10px] font-black uppercase flex items-center gap-1 text-black hover:bg-[#ccff00] transition-colors"
-                  title="Ativar Apostas para todas as partidas"
-                >
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                  ON
-                </button>
-                <button
-                  onClick={() => handleBettingToggle(day.id, false)}
-                  className="p-1 px-2 text-[10px] font-black uppercase flex items-center gap-1 text-black hover:bg-[#ff2e2e] transition-colors"
-                  title="Desativar Apostas para todas as partidas"
-                >
-                  <ZapOff className="w-3.5 h-3.5" />
-                  OFF
-                </button>
-              </div>
-
-              <div className="w-[2px] h-8 bg-gray-200 mx-2" />
-
-              <button
-                onClick={() => handleDelete(day.id)}
-                className="p-2 text-gray-300 hover:text-[#ff2e2e] transition-colors"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {matchDays.length === 0 && (
           <div className="text-center py-12 text-gray-400 font-bold uppercase">
             Nenhum dia criado.

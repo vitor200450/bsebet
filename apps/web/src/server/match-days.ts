@@ -63,6 +63,48 @@ export const createMatchDay = createMatchDayFn as unknown as (opts: {
   };
 }) => Promise<any>;
 
+// --- UPDATE MATCH DAY ---
+const updateMatchDayFn = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const data = ctx.data as unknown as {
+      id: number;
+      label: string;
+      date: string;
+      status: "draft" | "open" | "locked" | "finished";
+    };
+
+    // Update match day
+    const result = await db
+      .update(matchDays)
+      .set({
+        label: data.label,
+        date: new Date(data.date),
+        status: data.status,
+      })
+      .where(eq(matchDays.id, data.id))
+      .returning();
+
+    // Sync isBettingEnabled on all matches in this match day
+    // Only "open" status enables betting
+    const isBettingEnabled = data.status === "open";
+    await db
+      .update(matches)
+      .set({ isBettingEnabled })
+      .where(eq(matches.matchDayId, data.id));
+
+    return result[0];
+  },
+);
+
+export const updateMatchDay = updateMatchDayFn as unknown as (opts: {
+  data: {
+    id: number;
+    label: string;
+    date: string;
+    status: "draft" | "open" | "locked" | "finished";
+  };
+}) => Promise<any>;
+
 // --- UPDATE MATCH DAY STATUS ---
 const updateMatchDayStatusFn = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
@@ -71,11 +113,21 @@ const updateMatchDayStatusFn = createServerFn({ method: "POST" }).handler(
       status: "draft" | "open" | "locked" | "finished";
     };
 
+    // Update match day status
     const result = await db
       .update(matchDays)
       .set({ status: data.status })
       .where(eq(matchDays.id, data.id))
       .returning();
+
+    // Sync isBettingEnabled on all matches in this match day
+    // Only "open" status enables betting
+    const isBettingEnabled = data.status === "open";
+    await db
+      .update(matches)
+      .set({ isBettingEnabled })
+      .where(eq(matches.matchDayId, data.id));
+
     return result[0];
   },
 );
@@ -108,28 +160,3 @@ const deleteMatchDayFn = createServerFn({ method: "POST" }).handler(
 export const deleteMatchDay = deleteMatchDayFn as unknown as (opts: {
   data: number;
 }) => Promise<{ success: boolean }>;
-
-// --- TOGGLE MATCH DAY BETTING ---
-const toggleMatchDayBettingFn = createServerFn({ method: "POST" }).handler(
-  async (ctx) => {
-    const { id, enabled } = ctx.data as unknown as {
-      id: number;
-      enabled: boolean;
-    };
-
-    await db
-      .update(matches)
-      .set({ isBettingEnabled: enabled })
-      .where(eq(matches.matchDayId, id));
-
-    return { success: true };
-  },
-);
-
-export const toggleMatchDayBetting =
-  toggleMatchDayBettingFn as unknown as (opts: {
-    data: {
-      id: number;
-      enabled: boolean;
-    };
-  }) => Promise<{ success: boolean }>;

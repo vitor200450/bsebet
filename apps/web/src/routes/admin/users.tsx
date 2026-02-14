@@ -1,84 +1,30 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
-import { eq, desc } from "drizzle-orm";
-import { clsx } from "clsx";
-import { z } from "zod";
 import {
+  deleteUser,
+  getUsers,
+  toggleRole,
+  updateUserDetails,
+} from "@/server/users";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { clsx } from "clsx";
+import {
+  AlertTriangle,
+  Copy,
+  Edit2,
+  Image as ImageIcon,
+  Loader2,
   Search,
   Shield,
-  User,
-  Edit2,
-  Copy,
-  X,
-  Loader2,
-  Image as ImageIcon,
+  Trash2,
   Upload,
-  AlertTriangle,
+  User,
+  X,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-
-// --- SERVER FUNCTIONS ---
-
-const getUsersFn = createServerFn({ method: "GET" }).handler(async () => {
-  const { db } = await import("@bsebet/db");
-  const { user } = await import("@bsebet/db/schema");
-
-  const users = await db.query.user.findMany({
-    orderBy: [desc(user.createdAt)],
-  });
-  return users;
-});
-
-const toggleRoleSchema = z.object({
-  userId: z.string(),
-  newRole: z.enum(["admin", "user"]),
-});
-
-const toggleRoleFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const { user } = await import("@bsebet/db/schema");
-
-    const data = toggleRoleSchema.parse(ctx.data);
-    const { userId, newRole } = data;
-
-    await db.update(user).set({ role: newRole }).where(eq(user.id, userId));
-    return { success: true };
-  },
-);
-
-const updateUserDetailsSchema = z.object({
-  userId: z.string(),
-  nickname: z.string().max(50).nullable(), // Allow clearing
-  image: z.string().nullable(), // Allow clearing or URL
-});
-
-const updateUserDetailsFn = createServerFn({ method: "POST" }).handler(
-  async (ctx: any) => {
-    const { db } = await import("@bsebet/db");
-    const { user } = await import("@bsebet/db/schema");
-
-    const data = updateUserDetailsSchema.parse(ctx.data);
-    const { userId, nickname, image } = data;
-
-    await db.update(user).set({ nickname, image }).where(eq(user.id, userId));
-    return { success: true };
-  },
-);
-
-const toggleRole = toggleRoleFn as unknown as (opts: {
-  data: { userId: string; newRole: "admin" | "user" };
-}) => Promise<{ success: boolean }>;
-
-const updateUserDetails = updateUserDetailsFn as unknown as (opts: {
-  data: { userId: string; nickname: string | null; image: string | null };
-}) => Promise<{ success: boolean }>;
-
-// --- COMPONENT ---
+import { useSetHeader } from "../../components/HeaderContext";
 
 export const Route = createFileRoute("/admin/users")({
-  loader: async () => await getUsersFn(),
+  loader: async () => await getUsers(),
   component: AdminUsersPage,
 });
 
@@ -110,6 +56,15 @@ function AdminUsersPage() {
   const [nicknameInput, setNicknameInput] = useState("");
   const [imageInput, setImageInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete Confirmation Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetUser, setDeleteTargetUser] = useState<{
+    id: string;
+    name: string | null;
+    nickname: string | null;
+    image: string | null;
+  } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -197,6 +152,56 @@ function AdminUsersPage() {
     }
   };
 
+  // OPEN DELETE CONFIRMATION MODAL
+  const initiateDelete = (u: any) => {
+    setDeleteTargetUser({
+      id: u.id,
+      name: u.name,
+      nickname: u.nickname,
+      image: u.image,
+    });
+    setIsDeleteModalOpen(true);
+  };
+
+  // EXECUTE DELETE
+  const confirmDelete = async () => {
+    if (!deleteTargetUser) return;
+
+    setIsSubmitting(true);
+    try {
+      await deleteUser({
+        data: {
+          userId: deleteTargetUser.id,
+        },
+      });
+      toast.success("User deleted successfully");
+      setIsDeleteModalOpen(false);
+      router.invalidate();
+    } catch (err) {
+      toast.error("Failed to delete user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useSetHeader({
+    title: "USERS",
+    actions: (
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="SEARCH USERS..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+          />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+      </div>
+    ),
+  });
+
   const filteredUsers = users.filter(
     (u) =>
       (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
@@ -205,28 +210,9 @@ function AdminUsersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#e6e6e6] font-sans pb-20">
-      {/* HEADER */}
-      <div className="bg-white border-b-4 border-black px-8 py-6 flex items-center justify-between shadow-sm sticky top-0 z-40">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-black transform skew-x-[-10deg]">
-          ADMIN <span className="text-[#2e5cff]">USERS</span>
-        </h1>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="SEARCH USERS..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-[3px] border-black px-4 py-2 w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-paper bg-paper-texture font-sans pb-20">
       {/* LIST CONTENT */}
-      <div className="p-8 max-w-[1600px] mx-auto">
+      <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
@@ -325,6 +311,13 @@ function AdminUsersPage() {
                       title="Edit Details"
                     >
                       <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => initiateDelete(u)}
+                      className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                      title="Delete User"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -535,6 +528,73 @@ function AdminUsersPage() {
                 </button>
                 <button
                   onClick={() => setIsRoleModalOpen(false)}
+                  className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {isDeleteModalOpen && deleteTargetUser && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full max-w-md overflow-hidden transform animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-4 flex items-center gap-3 border-b-[4px] border-black bg-[#ff2e2e]">
+              <div className="bg-white border-[3px] border-black p-1">
+                <AlertTriangle className="w-6 h-6 text-[#ff2e2e] stroke-[3px]" />
+              </div>
+              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
+                DELETE USER?
+              </h3>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 text-center">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
+                {deleteTargetUser.image ? (
+                  <img
+                    src={deleteTargetUser.image}
+                    alt={deleteTargetUser.name || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic text-2xl">
+                    {deleteTargetUser.nickname?.[0] ||
+                      deleteTargetUser.name?.[0] ||
+                      "?"}
+                  </div>
+                )}
+              </div>
+
+              <p className="text-lg font-bold text-gray-800 mb-2">
+                Are you sure you want to permanently delete
+              </p>
+              <p className="text-xl font-black italic uppercase text-black mb-2">
+                {deleteTargetUser.nickname || deleteTargetUser.name}
+              </p>
+              <p className="text-sm text-gray-600 mb-6 bg-yellow-50 border-2 border-yellow-300 p-3 rounded">
+                ⚠️ This action cannot be undone. All user data will be
+                permanently deleted.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={confirmDelete}
+                  disabled={isSubmitting}
+                  className="w-full py-4 font-black italic uppercase border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2 bg-[#ff2e2e] hover:bg-[#d41d1d] text-white"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <>YES, DELETE USER</>
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
                   className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
                 >
                   Cancel

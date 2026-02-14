@@ -1,222 +1,381 @@
-import { useForm } from "@tanstack/react-form";
-import { betSchema } from "../utils/validators";
 import { clsx } from "clsx";
 
-// Tipagem simples para o componente receber os dados
-type Team = { id: number; name: string; logoUrl?: string; region?: string };
-type Match = {
+export type Team = {
   id: number;
-  labelTeamA?: string;
-  labelTeamB?: string;
-  teamA?: Team;
-  teamB?: Team;
-  format: "bo3" | "bo5" | "bo7";
-  category: string; // Ex: "GRUPO A - PARTIDA DE ELIMINAÇÃO"
+  name: string;
+  logoUrl?: string | null;
+  region?: string | null;
 };
 
-export function MatchCard({ match }: { match: Match }) {
-  // Configuração do Formulário
-  const form = useForm({
-    defaultValues: {
-      matchId: match.id,
-      winnerId: 0,
-      scoreA: 0,
-      scoreB: 0,
-      format: match.format,
+export type Match = {
+  id: number;
+  label?: string | null;
+  name?: string | null;
+  labelTeamA?: string | null;
+  labelTeamB?: string | null;
+  teamA?: Team | null;
+  teamB?: Team | null;
+  format: string;
+  category: string;
+  startTime: string | Date;
+  status: "scheduled" | "live" | "finished";
+  isBettingEnabled: boolean;
+  scoreA?: number | null;
+  scoreB?: number | null;
+  winnerId?: number | null;
+};
+
+export type Bet = {
+  id: number;
+  matchId: number;
+  predictedWinnerId: number | null;
+  predictedScoreA: number;
+  predictedScoreB: number;
+  pointsEarned?: number;
+  isUnderdogPick?: boolean;
+  isPerfectPick?: boolean;
+};
+
+interface MatchCardProps {
+  match: Match;
+  initialBet?: Bet;
+  showPredictionScore?: boolean;
+}
+
+export function MatchCard({
+  match,
+  initialBet,
+  showPredictionScore = false,
+}: MatchCardProps) {
+  const isLive = match.status === "live";
+  const isFinished = match.status === "finished";
+
+  const teamA = match.teamA;
+  const teamB = match.teamB;
+
+  // Visual highlights for user predictions
+  const userPredictedWinnerA =
+    showPredictionScore &&
+    teamA?.id &&
+    initialBet?.predictedWinnerId === teamA.id;
+  const userPredictedWinnerB =
+    showPredictionScore &&
+    teamB?.id &&
+    initialBet?.predictedWinnerId === teamB.id;
+
+  const formattedStartTime = new Date(match.startTime).toLocaleTimeString(
+    "pt-BR",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
     },
-    validators: {
-      onChange: betSchema,
-    },
-    onSubmit: async ({ value }) => {
-      console.log("Enviando aposta:", value);
-      // Aqui entraria a chamada da Server Function: await saveBetFn({ data: value })
-    },
-  });
+  );
+
+  const formattedStartDate = new Date(match.startTime)
+    .toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+    })
+    .toUpperCase()
+    .replace(".", "");
+
+  // Score Logic
+  const displayScoreA =
+    showPredictionScore && initialBet
+      ? initialBet.predictedScoreA
+      : (match.scoreA ?? 0);
+  const displayScoreB =
+    showPredictionScore && initialBet
+      ? initialBet.predictedScoreB
+      : (match.scoreB ?? 0);
+
+  // Calculate max length for dynamic sizing consistency
+  const lenA = (teamA?.name || match.labelTeamA || "").length;
+  const lenB = (teamB?.name || match.labelTeamB || "").length;
+  const maxLen = Math.max(lenA, lenB);
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }}
-      className="relative w-full max-w-3xl mx-auto mb-8 font-sans"
+    <div
+      className={clsx(
+        "relative w-full max-w-4xl mx-auto mb-2 font-sans transition-opacity group/card",
+        isFinished && !showPredictionScore
+          ? "opacity-60 grayscale"
+          : "opacity-100",
+      )}
     >
-      {/* --- CABEÇALHO "GRUNGE" --- */}
-      {/* Simulando a fita preta colada com leve rotação */}
-      <div className="absolute -top-3 left-0 right-0 z-10 flex justify-center">
-        <div className="bg-zinc-950 text-white px-6 py-1 -rotate-1 shadow-lg transform skew-x-[-10deg]">
-          <span className="text-sm font-black tracking-widest uppercase italic block transform skew-x-[10deg]">
-            {match.category}
-          </span>
-        </div>
-      </div>
+      {/* Match Label Badge (Opening, Winners, etc.) */}
+      {(() => {
+        // Prioritize 'name' if it exists and is meaningful, otherwise use cleaned 'label'
+        const candidate = match.name || match.label || "";
+        const cleanedLabel = candidate
+          .replace(/Group\s+\w+\s*([-:|]\s*)?/i, "")
+          .replace(/Match\s*\d*/i, "")
+          .trim();
 
-      {/* --- O CARTÃO (Fundo Papel) --- */}
-      <div className="bg-zinc-100 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-1 pt-8 relative overflow-hidden">
-        {/* Assinatura do Estado (React Form) */}
-        <form.Subscribe
-          selector={(state) => ({ values: state.values, errors: state.errors })}
-          children={({ values, errors }) => {
-            const teamA = match.teamA;
-            const teamB = match.teamB;
-            // Verifica quem está selecionado como vencedor
-            const winnerIsA = values.winnerId === teamA?.id;
-            const winnerIsB = values.winnerId === teamB?.id;
+        if (!cleanedLabel && !initialBet) return null;
 
-            return (
-              <div className="flex flex-col md:flex-row items-stretch">
-                {/* --- LADO A (Esquerda) --- */}
-                <div
-                  // Se A for vencedor, fundo Verde Neon. Se não, cinza claro.
-                  className={clsx(
-                    "flex-1 p-4 transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center gap-2 border-b-2 md:border-b-0 md:border-r-2 border-zinc-900",
-                    winnerIsA
-                      ? "bg-[#ccff00] text-black"
-                      : "bg-zinc-200 hover:bg-zinc-300",
-                  )}
-                  onClick={() =>
-                    teamA && form.setFieldValue("winnerId", teamA.id)
-                  }
-                >
-                  {/* Logo ou Placeholder */}
-                  <div className="w-16 h-16 bg-white border-2 border-black rounded-full flex items-center justify-center overflow-hidden shadow-sm">
-                    {teamA?.logoUrl ? (
-                      <img
-                        src={teamA.logoUrl}
-                        alt={teamA.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-2xl font-black text-zinc-400">
-                        ?
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-black text-xl uppercase text-center leading-tight">
-                    {teamA?.name || match.labelTeamA || "A Definir"}
-                  </span>
-
-                  {/* Feedback Visual de Seleção */}
-                  {winnerIsA && (
-                    <span className="bg-black text-[#ccff00] text-xs px-2 py-0.5 font-bold uppercase -rotate-2">
-                      Vencedor
-                    </span>
-                  )}
-                </div>
-
-                {/* --- PLACAR CENTRAL (Inputs) --- */}
-                <div className="w-full md:w-48 bg-white flex flex-col items-center justify-center p-4 gap-2 relative z-0">
-                  {/* Fundo sutil de textura de papel se quiser */}
-                  <div className="flex items-center gap-2">
-                    {/* Input Score A */}
-                    <form.Field
-                      name="scoreA"
-                      children={(field) => (
-                        <input
-                          type="number"
-                          min={0}
-                          max={3} // BO5
-                          value={field.state.value}
-                          onChange={(e) =>
-                            field.handleChange(e.target.valueAsNumber)
-                          }
-                          className="w-16 h-16 text-center text-4xl font-black bg-zinc-100 border-2 border-zinc-300 focus:border-black focus:bg-[#ccff00] focus:text-black focus:ring-0 outline-none transition-all rounded-md"
-                        />
-                      )}
-                    />
-
-                    <span className="text-2xl font-black text-zinc-300">X</span>
-
-                    {/* Input Score B */}
-                    <form.Field
-                      name="scoreB"
-                      children={(field) => (
-                        <input
-                          type="number"
-                          min={0}
-                          max={3}
-                          value={field.state.value}
-                          onChange={(e) =>
-                            field.handleChange(e.target.valueAsNumber)
-                          }
-                          className="w-16 h-16 text-center text-4xl font-black bg-zinc-100 border-2 border-zinc-300 focus:border-black focus:bg-[#ccff00] focus:text-black focus:ring-0 outline-none transition-all rounded-md"
-                        />
-                      )}
-                    />
-                  </div>
-
-                  {/* Mensagem de Erro (Zod) */}
-                  {errors.length > 0 && (
-                    <div className="absolute -bottom-2 w-full text-center">
-                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 shadow-sm">
-                        {typeof errors[0] === "string"
-                          ? errors[0]
-                          : (errors[0] as any)?.message ||
-                            (errors[0] as any)?.scoreA?.[0]?.message ||
-                            (errors[0] as any)?.scoreB?.[0]?.message ||
-                            "Placar inv\u00E1lido"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* --- LADO B (Direita) --- */}
-                <div
-                  className={clsx(
-                    "flex-1 p-4 transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center gap-2 border-t-2 md:border-t-0 md:border-l-2 border-zinc-900",
-                    winnerIsB
-                      ? "bg-[#ccff00] text-black"
-                      : "bg-zinc-200 hover:bg-zinc-300",
-                  )}
-                  onClick={() =>
-                    teamB && form.setFieldValue("winnerId", teamB.id)
-                  }
-                >
-                  <div className="w-16 h-16 bg-white border-2 border-black rounded-full flex items-center justify-center overflow-hidden shadow-sm">
-                    {teamB?.logoUrl ? (
-                      <img
-                        src={teamB.logoUrl}
-                        alt={teamB.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-2xl font-black text-zinc-400">
-                        ?
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-black text-xl uppercase text-center leading-tight">
-                    {teamB?.name || match.labelTeamB || "A Definir"}
-                  </span>
-
-                  {winnerIsB && (
-                    <span className="bg-black text-[#ccff00] text-xs px-2 py-0.5 font-bold uppercase rotate-2">
-                      Vencedor
-                    </span>
-                  )}
-                </div>
+        return (
+          <div className="absolute -top-2 left-4 z-20 flex items-center gap-2">
+            {cleanedLabel && (
+              <div className="bg-black text-white text-[10px] md:text-xs font-black italic uppercase px-3 py-0.5 border-2 border-white shadow-[2px_2px_0_0_#000] transform -rotate-1 skew-x-[-12deg]">
+                <span className="block skew-x-[12deg]">{cleanedLabel}</span>
               </div>
-            );
-          }}
-        />
-      </div>
+            )}
+            {initialBet && showPredictionScore && (
+              <div className="bg-[#ccff00] text-black text-[8px] md:text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-[2px_2px_0_0_#000] transform rotate-2 animate-in fade-in zoom-in duration-300">
+                PALPITE SALVO
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
-      {/* --- BOTÃO DE AÇÃO (Estilo Brawl) --- */}
-      <div className="flex justify-center -mt-4 relative z-20">
-        <form.Subscribe
-          selector={(state) => state.canSubmit}
-          children={(canSubmit) => (
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="bg-blue-600 hover:bg-blue-500 text-white text-lg font-black uppercase px-8 py-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      <div
+        className={clsx(
+          "bg-white border-2 border-black shadow-[4px_4px_0_0_#000] relative overflow-visible transition-all",
+          isLive
+            ? "bg-red-50 border-red-600 ring-2 ring-red-600/20"
+            : "hover:bg-zinc-50",
+          // Add top padding if there's likely a label to avoid overlap
+          match.name || match.label ? "pt-2" : "",
+        )}
+      >
+        <div className="flex items-center p-2 gap-4 md:gap-8 h-20 relative">
+          {/* --- TEAM A --- */}
+          <div
+            className={clsx(
+              "flex-1 flex items-center justify-end gap-3 py-1 pr-1 lg:pr-2 rounded-lg transition-all relative overflow-hidden h-full",
+              userPredictedWinnerA ? "bg-[#ccff00]/40" : "",
+            )}
+          >
+            <div className="flex flex-col items-end leading-tight shrink min-w-0 max-w-full z-10">
+              <span
+                className={clsx(
+                  "font-black uppercase tracking-tighter text-right transition-colors break-normal w-full block",
+                  userPredictedWinnerA ? "text-black" : "text-zinc-800",
+                  // Dynamic sizing based on JOINT MAX length to keep text consistent
+                  maxLen > 16
+                    ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                    : maxLen > 8
+                      ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                      : "text-xs md:text-sm lg:text-base", // Normal
+                )}
+              >
+                {teamA?.name || match.labelTeamA || "TBD"}
+              </span>
+              {initialBet && !showPredictionScore && (
+                <span className="text-[10px] font-black text-black/40 uppercase mt-0.5 whitespace-nowrap">
+                  Palpite: {initialBet.predictedScoreA}
+                </span>
+              )}
+            </div>
+
+            {/* Logo */}
+            <div
+              className={clsx(
+                "w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-lg flex items-center justify-center shrink-0 overflow-hidden shadow-sm p-1.5 transition-transform",
+                userPredictedWinnerA ? "scale-105 rotate-[-2deg]" : "",
+              )}
             >
-              Confirmar Palpite
-            </button>
-          )}
-        />
+              {teamA?.logoUrl ? (
+                <img
+                  src={teamA.logoUrl}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-xl font-black text-zinc-300 italic">
+                  ?
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* --- VS / PLACAR (Center) --- */}
+          <div className="flex flex-col items-center justify-center shrink-0 w-24 md:w-36">
+            <div className="flex items-center gap-2 md:gap-3">
+              {(isLive || isFinished || showPredictionScore) && (
+                <div className="w-8 h-10 md:w-11 md:h-12 text-center text-xl md:text-3xl font-black border-2 border-black rounded-lg bg-zinc-50 text-zinc-900 border-zinc-200 flex items-center justify-center shadow-sm">
+                  {displayScoreA}
+                </div>
+              )}
+
+              <div className="flex flex-col items-center justify-center min-w-[60px] md:min-w-[80px] relative h-full">
+                {isLive ? (
+                  <span className="text-[8px] font-black text-red-600 animate-pulse uppercase tracking-tighter mb-1">
+                    LIVE
+                  </span>
+                ) : (
+                  <span className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mb-1">
+                    {formattedStartDate}
+                  </span>
+                )}
+
+                <div className="bg-zinc-100/50 px-2 py-0.5 rounded border border-zinc-200/50 flex items-center justify-center">
+                  <span className="text-[10px] md:text-xs font-black text-zinc-500 italic leading-none">
+                    VS
+                  </span>
+                </div>
+
+                <span className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mt-1 tabular-nums">
+                  {formattedStartTime}
+                </span>
+              </div>
+
+              {(isLive || isFinished || showPredictionScore) && (
+                <div className="w-8 h-10 md:w-11 md:h-12 text-center text-xl md:text-3xl font-black border-2 border-black rounded-lg bg-zinc-50 text-zinc-900 border-zinc-200 flex items-center justify-center shadow-sm">
+                  {displayScoreB}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* --- TEAM B --- */}
+          <div
+            className={clsx(
+              "flex-1 flex items-center justify-start gap-3 py-1 pl-1 lg:pl-2 pr-1 lg:pr-2 rounded-lg transition-all relative overflow-hidden h-full",
+              userPredictedWinnerB ? "bg-[#ccff00]/40" : "",
+            )}
+          >
+            {/* Logo */}
+            <div
+              className={clsx(
+                "w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-lg flex items-center justify-center shrink-0 overflow-hidden shadow-sm p-1.5 transition-transform",
+                userPredictedWinnerB ? "scale-105 rotate-[2deg]" : "",
+              )}
+            >
+              {teamB?.logoUrl ? (
+                <img
+                  src={teamB.logoUrl}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-xl font-black text-zinc-300 italic">
+                  ?
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col items-start leading-tight shrink min-w-0 max-w-full z-10">
+              <span
+                className={clsx(
+                  "font-black uppercase tracking-tighter text-left transition-colors break-normal w-full block",
+                  userPredictedWinnerB ? "text-black" : "text-zinc-800",
+                  // Dynamic sizing based on JOINT MAX length to keep text consistent
+                  maxLen > 16
+                    ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                    : maxLen > 8
+                      ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                      : "text-xs md:text-sm lg:text-base", // Normal
+                )}
+              >
+                {teamB?.name || match.labelTeamB || "TBD"}
+              </span>
+              {initialBet && !showPredictionScore && (
+                <span className="text-[10px] font-black text-black/40 uppercase mt-0.5 whitespace-nowrap">
+                  Palpite: {initialBet.predictedScoreB}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bet Result Badge - Show points earned for finished matches */}
+        {isFinished && initialBet && initialBet.pointsEarned !== undefined && (
+          <div
+            className={clsx(
+              "absolute -bottom-2 -right-2 text-[8px] font-black uppercase px-2 py-1 border-2 border-black z-20 flex items-center gap-1.5 cursor-help group/badge",
+              (() => {
+                const isCorrect =
+                  match.winnerId === initialBet.predictedWinnerId;
+                if (!isCorrect) return "bg-red-500 text-white";
+                if (initialBet.isUnderdogPick) {
+                  return "bg-gradient-to-r from-purple-600 to-pink-600 text-white animate-pulse";
+                }
+                return "bg-green-500 text-white";
+              })(),
+            )}
+          >
+            {/* Tooltip */}
+            <div className="absolute bottom-full right-0 mb-2 hidden group-hover/badge:block w-48 bg-black text-white text-[10px] p-2 rounded border-2 border-white shadow-lg z-[100] pointer-events-none">
+              <div className="space-y-1">
+                {(() => {
+                  const isCorrect =
+                    match.winnerId === initialBet.predictedWinnerId;
+                  if (!isCorrect) {
+                    return (
+                      <>
+                        <div className="font-bold text-red-300">
+                          ❌ Palpite Incorreto
+                        </div>
+                        <div className="text-[9px] text-gray-300">
+                          Você apostou em:{" "}
+                          {match.teamA?.id === initialBet.predictedWinnerId
+                            ? match.teamA?.name
+                            : match.teamB?.name}
+                        </div>
+                        <div className="text-[9px] text-gray-300">
+                          Vencedor real:{" "}
+                          {match.teamA?.id === match.winnerId
+                            ? match.teamA?.name
+                            : match.teamB?.name}
+                        </div>
+                        <div className="border-t border-gray-600 pt-1 mt-1 font-bold">
+                          Total: 0 pontos
+                        </div>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className="font-bold text-green-300">
+                        ✅ Breakdown:
+                      </div>
+                      {initialBet.isPerfectPick ? (
+                        <div className="text-[9px] text-gray-300">
+                          ✓ Placar exato ({initialBet.predictedScoreA}-
+                          {initialBet.predictedScoreB})
+                        </div>
+                      ) : (
+                        <div className="text-[9px] text-gray-300">
+                          ✓ Vencedor correto
+                        </div>
+                      )}
+                      {initialBet.isUnderdogPick && (
+                        <div className="text-[9px] text-purple-300">
+                          🔥 Bônus azarão (+25%)
+                        </div>
+                      )}
+                      <div className="border-t border-gray-600 pt-1 mt-1 font-bold text-yellow-300">
+                        Total: +{initialBet.pointsEarned} pts
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+            </div>
+
+            {/* Badge Content */}
+            {(() => {
+              const isCorrect = match.winnerId === initialBet.predictedWinnerId;
+              if (!isCorrect) return "✗";
+              if (initialBet.isUnderdogPick) return <span>🔥</span>;
+              return "✓";
+            })()}
+            <span className="whitespace-nowrap">
+              {initialBet.pointsEarned > 0
+                ? `+${initialBet.pointsEarned}`
+                : initialBet.pointsEarned}{" "}
+              PTS
+            </span>
+            {initialBet.isUnderdogPick &&
+              match.winnerId === initialBet.predictedWinnerId && (
+                <span className="text-[7px]">🐕</span>
+              )}
+          </div>
+        )}
       </div>
-    </form>
+    </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   CustomDatePicker,
   CustomSelect,
 } from "../../../components/admin/CustomInputs";
+import { useSetHeader } from "../../../components/HeaderContext";
 
 export const Route = createFileRoute("/admin/tournaments/")({
   component: AdminTournamentsPage,
@@ -60,6 +61,12 @@ function AdminTournamentsPage() {
     startDate: string;
     endDate: string;
     status: "upcoming" | "active" | "finished";
+    scoringRules: {
+      winner: number;
+      exact: number;
+      underdog_25: number;
+      underdog_50: number;
+    };
   }>({
     name: "",
     slug: "",
@@ -71,7 +78,15 @@ function AdminTournamentsPage() {
     startDate: "",
     endDate: "",
     status: "upcoming",
+    scoringRules: {
+      winner: 1,
+      exact: 3,
+      underdog_25: 2,
+      underdog_50: 1,
+    },
   });
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const generateSlug = (name: string) => {
     return name
@@ -79,6 +94,52 @@ function AdminTournamentsPage() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
   };
+
+  useSetHeader({
+    title: "TOURNAMENTS",
+    actions: (
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="SEARCH..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+          />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+
+        <button
+          onClick={() => {
+            setFormData({
+              name: "",
+              slug: "",
+              logoUrl: "",
+              format: "",
+              region: "",
+              participantsCount: "",
+              stages: [],
+              startDate: "",
+              endDate: "",
+              status: "upcoming",
+              scoringRules: {
+                winner: 1,
+                exact: 3,
+                underdog_25: 2,
+                underdog_50: 1,
+              },
+            });
+            setIsModalOpen(true);
+          }}
+          className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
+        >
+          <Plus className="w-5 h-5" strokeWidth={3} />
+          <span className="hidden sm:inline">NOVO TORNEIO</span>
+        </button>
+      </div>
+    ),
+  });
 
   const handleNameChange = (val: string) => {
     const slug = generateSlug(val);
@@ -108,7 +169,14 @@ function AdminTournamentsPage() {
       endDate: item.endDate
         ? new Date(item.endDate).toISOString().split("T")[0]
         : "",
+
       status: item.status || "upcoming",
+      scoringRules: {
+        winner: (item.scoringRules as any)?.winner ?? 1,
+        exact: (item.scoringRules as any)?.exact ?? 3,
+        underdog_25: (item.scoringRules as any)?.underdog_25 ?? 2,
+        underdog_50: (item.scoringRules as any)?.underdog_50 ?? 1,
+      },
     });
     setIsModalOpen(true);
   };
@@ -127,6 +195,7 @@ function AdminTournamentsPage() {
             ? new Date(formData.startDate)
             : undefined,
           endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+          scoringRules: formData.scoringRules,
         },
       });
       toast.success("Tournament saved successfully!");
@@ -186,49 +255,21 @@ function AdminTournamentsPage() {
     }
   };
 
+  const formatDateUTC = (date: string | Date | null) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  };
+
+  const filteredTournaments = tournaments.filter(
+    (t) =>
+      t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.slug.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   return (
-    <div className="min-h-screen bg-[#e6e6e6] font-sans pb-20">
-      {/* HEADER */}
-      <div className="bg-white border-b-4 border-black px-8 py-6 flex items-center justify-between shadow-sm sticky top-0 z-40">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-black transform skew-x-[-10deg]">
-          ADMIN <span className="text-[#2e5cff]">TOURNAMENTS</span>
-        </h1>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="SEARCH..."
-              className="border-[3px] border-black px-4 py-2 w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-
-          <button
-            onClick={() => {
-              setFormData({
-                name: "",
-                slug: "",
-                logoUrl: "",
-                format: "",
-                region: "",
-                participantsCount: "",
-                stages: [],
-                startDate: "",
-                endDate: "",
-                status: "upcoming",
-              });
-              setIsModalOpen(true);
-            }}
-            className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-          >
-            <Plus className="w-5 h-5" strokeWidth={3} />
-            NOVO TORNEIO
-          </button>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-paper bg-paper-texture font-sans pb-20">
       {/* LIST CONTENT */}
-      <div className="p-8 max-w-[1600px] mx-auto">
+      <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
@@ -240,7 +281,7 @@ function AdminTournamentsPage() {
           </div>
 
           {/* Table Rows */}
-          {tournaments.length === 0 ? (
+          {filteredTournaments.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
                 <Copy className="w-8 h-8 text-gray-400" />
@@ -251,7 +292,7 @@ function AdminTournamentsPage() {
             </div>
           ) : (
             <div>
-              {tournaments.map((t, index) => (
+              {filteredTournaments.map((t, index) => (
                 <div
                   key={t.id}
                   className={`grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors ${
@@ -308,12 +349,10 @@ function AdminTournamentsPage() {
                   <div className="col-span-2 text-sm font-bold text-gray-600 uppercase">
                     {t.startDate ? (
                       <div className="flex flex-col">
-                        <span>
-                          {new Date(t.startDate).toLocaleDateString()}
-                        </span>
+                        <span>{formatDateUTC(t.startDate)}</span>
                         {t.endDate && (
                           <span className="text-xs text-gray-400">
-                            to {new Date(t.endDate).toLocaleDateString()}
+                            to {formatDateUTC(t.endDate)}
                           </span>
                         )}
                       </div>
@@ -367,7 +406,7 @@ function AdminTournamentsPage() {
       {/* CREATE/EDIT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border-[4px] border-black shadow-[10px_10px_0px_0px_#000] w-full max-w-4xl max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white border-[4px] border-black shadow-[10px_10px_0px_0px_#000] w-full max-w-5xl max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="bg-[#2e5cff] p-3 flex justify-between items-center border-b-[4px] border-black sticky top-0 z-50">
               <h2 className="text-white font-black italic uppercase text-lg">
@@ -486,6 +525,93 @@ function AdminTournamentsPage() {
                     <option value="active">Active</option>
                     <option value="finished">Finished</option>
                   </select>
+                </div>
+
+                {/* Default Scoring Rules */}
+                <div className="bg-gray-50 border-[3px] border-black p-4 space-y-3">
+                  <h3 className="font-black uppercase text-sm flex items-center gap-2 text-black">
+                    Default Scoring Rules
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500">
+                        Winner
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.scoringRules.winner}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scoringRules: {
+                              ...formData.scoringRules,
+                              winner: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full border-2 border-black p-2 font-bold text-sm text-black bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500">
+                        Exact Score
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.scoringRules.exact}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scoringRules: {
+                              ...formData.scoringRules,
+                              exact: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full border-2 border-black p-2 font-bold text-sm text-black bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus when picking winner with ≤25% of votes">
+                        Underdog Tier 1 (≤25%)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.scoringRules.underdog_25}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scoringRules: {
+                              ...formData.scoringRules,
+                              underdog_25: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full border-2 border-black p-2 font-bold text-sm text-black bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus when picking winner with 26-50% of votes">
+                        Underdog Tier 2 (26-50%)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.scoringRules.underdog_50}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scoringRules: {
+                              ...formData.scoringRules,
+                              underdog_50: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full border-2 border-black p-2 font-bold text-sm text-black bg-white"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

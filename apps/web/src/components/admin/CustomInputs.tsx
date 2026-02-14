@@ -109,10 +109,14 @@ export const CustomDatePicker = ({
   label,
   value,
   onChange,
+  minDate,
+  maxDate,
 }: {
   label: string;
   value: string;
   onChange: (val: string) => void;
+  minDate?: string; // Format: YYYY-MM-DD
+  maxDate?: string; // Format: YYYY-MM-DD
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -221,6 +225,18 @@ export const CustomDatePicker = ({
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
+
+              // Check if date is within allowed range
+              // Use string comparison to avoid timezone issues
+              const year = currentDate.getFullYear();
+              const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+              const dayStr = String(day).padStart(2, "0");
+              const currentDateStr = `${year}-${month}-${dayStr}`;
+
+              const isDisabled =
+                (minDate && currentDateStr < minDate) ||
+                (maxDate && currentDateStr > maxDate);
+
               // Simple equality check
               const isSelected =
                 value &&
@@ -231,8 +247,13 @@ export const CustomDatePicker = ({
                 <button
                   key={day}
                   type="button"
-                  onClick={() => handleDateClick(day)}
-                  className={`p-1 text-xs font-bold hover:bg-[#ccff00] hover:text-black rounded-sm ${isSelected ? "bg-black text-white" : "text-black"}`}
+                  onClick={() => !isDisabled && handleDateClick(day)}
+                  disabled={!!isDisabled}
+                  className={`p-1 text-xs font-bold rounded-sm ${
+                    isDisabled
+                      ? "text-gray-300 cursor-not-allowed"
+                      : "hover:bg-[#ccff00] hover:text-black"
+                  } ${isSelected ? "bg-black text-white" : "text-black"}`}
                 >
                   {day}
                 </button>
