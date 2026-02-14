@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && bun run build",
+  "buildCommand": "cd ../.. && bunx turbo build",
   "outputDirectory": "apps/web/dist/client",
   "framework": null,
   "rewrites": [
