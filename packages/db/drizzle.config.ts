@@ -5,10 +5,13 @@ dotenv.config({
   path: "../../apps/web/.env",
 });
 
-const databaseUrl = process.env.DATABASE_URL || "";
+let databaseUrl = process.env.DATABASE_URL || "";
 
-// Heroku Postgres requires SSL
-const isHeroku = databaseUrl.includes("amazonaws.com") || databaseUrl.includes("herokudns") || databaseUrl.includes("heroku");
+// Heroku Postgres requires SSL - add sslmode=require to URL
+if (databaseUrl && !databaseUrl.includes("sslmode=")) {
+  const separator = databaseUrl.includes("?") ? "&" : "?";
+  databaseUrl = `${databaseUrl}${separator}sslmode=require`;
+}
 
 export default defineConfig({
   schema: "./src/schema",
@@ -16,6 +19,5 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url: databaseUrl,
-    ssl: isHeroku ? { rejectUnauthorized: false } : undefined,
   },
 });
