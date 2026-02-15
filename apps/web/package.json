@@ -7,7 +7,11 @@
     "start": "HOST=0.0.0.0 NITRO_PORT=${PORT:-3000} bun run dist/server/server.js",
     "serve": "vite preview",
     "dev": "vite dev",
-    "seed:debug": "bun run scripts/seed-debug-users.ts"
+    "seed:debug": "bun run scripts/seed-debug-users.ts",
+    "db:push": "bun --cwd ../../packages/db run db:push",
+    "db:migrate": "bun --cwd ../../packages/db run db:migrate",
+    "db:seed": "bun --cwd ../../packages/db run db:seed",
+    "db:studio": "bun --cwd ../../packages/db run db:studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.990.0",
