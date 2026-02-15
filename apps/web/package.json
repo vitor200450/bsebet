@@ -12,6 +12,7 @@
     "db:migrate": "cd ../../packages/db && bun run db:migrate",
     "db:seed": "cd ../../packages/db && bun run db:seed",
     "db:reset": "cd ../../packages/db && bun run src/reset-db.ts",
+    "db:import": "cd ../../packages/db && bun run src/import-backup.ts",
     "db:studio": "cd ../../packages/db && bun run db:studio"
   },
   "dependencies": {
