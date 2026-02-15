@@ -22,6 +22,7 @@
     "db:migrate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:migrate",
     "db:studio:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:studio",
     "db:generate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:generate",
+    "db:import:prod": "bun run import-local.ts",
     "deploy": "turbo -F @bsebet/infra deploy",
     "destroy": "turbo -F @bsebet/infra destroy"
   },
