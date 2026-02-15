@@ -51,3 +51,9 @@ tmp
 temp
 .vercel
 .env*.local
+
+# Database backups
+db_backup/
+*.sql
+dump.sql
+heroku_dump.sql
