@@ -23,4 +23,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
   },
   emptyStringAsUndefined: true,
+  // Skip validation in production if env vars are not available at build time
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
