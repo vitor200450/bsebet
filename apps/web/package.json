@@ -8,10 +8,10 @@
     "serve": "vite preview",
     "dev": "vite dev",
     "seed:debug": "bun run scripts/seed-debug-users.ts",
-    "db:push": "bun --cwd ../../packages/db run db:push",
-    "db:migrate": "bun --cwd ../../packages/db run db:migrate",
-    "db:seed": "bun --cwd ../../packages/db run db:seed",
-    "db:studio": "bun --cwd ../../packages/db run db:studio"
+    "db:push": "cd ../../packages/db && bun run db:push",
+    "db:migrate": "cd ../../packages/db && bun run db:migrate",
+    "db:seed": "cd ../../packages/db && bun run db:seed",
+    "db:studio": "cd ../../packages/db && bun run db:studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.990.0",
