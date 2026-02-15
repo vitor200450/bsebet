@@ -20,4 +20,7 @@ export default defineConfig({
   dbCredentials: {
     url: databaseUrl,
   },
+  // Ignore system schemas and extensions on Heroku
+  schemaFilter: ["public"],
+  tablesFilter: ["!pg_stat_statements*", "!pg_buffercache*"],
 });
