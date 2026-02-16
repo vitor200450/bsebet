@@ -57,3 +57,6 @@ db_backup/
 *.sql
 dump.sql
 heroku_dump.sql
+
+.vercel
+.env*.local
