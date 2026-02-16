@@ -47,7 +47,7 @@ async function importSQL(filePath: string, databaseUrl: string) {
     // Usar heroku pg:psql para executar
     const { stdout, stderr } = await execAsync(
       `heroku pg:psql -c "\\i ${tempFile.replace(/\\/g, "/")}"`,
-      { timeout: 120000 }
+      { timeout: 120000 },
     );
 
     if (stderr && !stderr.includes("NOTICE")) {
@@ -87,18 +87,42 @@ async function main() {
   console.log("📁 Arquivos encontrados:");
   files.forEach((f, i) => console.log(`  ${i + 1}. ${f}`));
 
+  // Ordem de importação baseada nas dependências (FKs)
+  const importOrder = [
+    "user_rows.sql", // 1. Usuários (base de tudo)
+    "session_rows.sql", // 2. Sessões (depende de user)
+    "account_rows.sql", // 3. Contas (depende de user)
+    "teams_rows.sql", // 4. Times (independente ou base para torneios)
+    "tournaments_rows.sql", // 5. Torneios (base para partidas)
+    "tournament_teams_rows.sql", // 6. Times do torneio (depende de torneio e time)
+    "match_days_rows.sql", // 7. Dias de partida (depende de torneio)
+    "matches_rows.sql", // 8. Partidas (depende de torneio, times, dias)
+    "bets_rows.sql", // 9. Apostas (depende de user e matches)
+  ];
+
+  const sortedFiles = files.sort((a, b) => {
+    const indexA = importOrder.indexOf(a);
+    const indexB = importOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1; // Arquivos desconhecidos vão para o final
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+
+  console.log("📁 Arquivos na ordem de importação:");
+  sortedFiles.forEach((f, i) => console.log(`  ${i + 1}. ${f}`));
+
   // Por enquanto, importar todos
   console.log("\n🔌 Obtendo DATABASE_URL do Heroku...");
   const dbUrl = await getDatabaseUrl();
   console.log("✅ DATABASE_URL obtido\n");
 
-  for (const file of files.sort()) {
+  for (const file of sortedFiles) {
     const filePath = join(backupDir, file);
-    console.log(`\n📂 Processando: ${file}`);
-    await importSQL(filePath, dbUrl);
-  }
+    // ... rest of loop
 
-  console.log("\n🎉 Importação concluída!");
+    console.log("\n🎉 Importação concluída!");
+  }
 }
 
 main().catch(console.error);

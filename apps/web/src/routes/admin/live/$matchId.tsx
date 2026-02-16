@@ -301,7 +301,7 @@ function LiveMatchControl() {
                         if (e.key === "Escape") setEditingScoreTeam(null);
                       }}
                       onBlur={() => handleDirectScoreSubmit("A")}
-                      className="bg-black text-white font-black text-5xl w-24 text-center border-b-4 border-brawl-blue focus:outline-none tabular-nums"
+                      className="bg-black text-white font-black text-3xl md:text-5xl w-16 md:w-24 text-center border-b-4 border-brawl-blue focus:outline-none tabular-nums"
                     />
                   </div>
                 ) : (
@@ -313,7 +313,7 @@ function LiveMatchControl() {
                       }
                     }}
                     className={clsx(
-                      "text-white font-black text-6xl tabular-nums relative inline-block cursor-pointer hover:scale-105 transition-transform",
+                      "text-white font-black text-4xl md:text-6xl tabular-nums relative inline-block cursor-pointer hover:scale-105 transition-transform",
                       !winner && !isUpdating && "hover:text-brawl-blue",
                     )}
                   >
@@ -328,8 +328,10 @@ function LiveMatchControl() {
               </div>
 
               {/* VS Separator */}
-              <div className="w-12 h-12 bg-black border-[3px] border-gray-700 rounded-full flex items-center justify-center mx-2 flex-shrink-0">
-                <span className="text-gray-400 font-black text-xs">VS</span>
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-black border-[3px] border-gray-700 rounded-full flex items-center justify-center mx-2 flex-shrink-0">
+                <span className="text-gray-400 font-black text-[10px] md:text-xs">
+                  VS
+                </span>
               </div>
 
               {/* Team B */}
@@ -339,7 +341,7 @@ function LiveMatchControl() {
                   winner && winner !== "B" ? "opacity-30" : "opacity-100",
                 )}
               >
-                <div className="text-brawl-red font-black uppercase text-sm mb-1 truncate px-2">
+                <div className="text-brawl-red font-black uppercase text-xs md:text-sm mb-1 truncate px-2">
                   {match.teamB?.name || "Time B"}
                 </div>
                 {editingScoreTeam === "B" ? (
@@ -354,7 +356,7 @@ function LiveMatchControl() {
                         if (e.key === "Escape") setEditingScoreTeam(null);
                       }}
                       onBlur={() => handleDirectScoreSubmit("B")}
-                      className="bg-black text-white font-black text-5xl w-24 text-center border-b-4 border-brawl-red focus:outline-none tabular-nums"
+                      className="bg-black text-white font-black text-3xl md:text-5xl w-16 md:w-24 text-center border-b-4 border-brawl-red focus:outline-none tabular-nums"
                     />
                   </div>
                 ) : (
@@ -366,7 +368,7 @@ function LiveMatchControl() {
                       }
                     }}
                     className={clsx(
-                      "text-white font-black text-6xl tabular-nums relative inline-block cursor-pointer hover:scale-105 transition-transform",
+                      "text-white font-black text-4xl md:text-6xl tabular-nums relative inline-block cursor-pointer hover:scale-105 transition-transform",
                       !winner && !isUpdating && "hover:text-brawl-red",
                     )}
                   >
@@ -384,13 +386,13 @@ function LiveMatchControl() {
         </div>
 
         {/* Score Buttons */}
-        <div className="flex-1 flex gap-4 px-4 pb-4 min-h-[200px]">
+        <div className="flex-1 flex flex-col md:flex-row gap-4 px-4 pb-4 min-h-[200px]">
           {/* Team A Button */}
           <button
             onClick={() => handleIncrement("A")}
             disabled={isUpdating || !!winner || scoreA >= winsNeeded}
             className={clsx(
-              "flex-1 flex flex-col items-center justify-center gap-4 border-[4px] border-black shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] relative overflow-hidden",
+              "flex-1 flex flex-col items-center justify-center gap-4 border-[4px] border-black shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] relative overflow-hidden py-6 md:py-0",
               isUpdating || !!winner || scoreA >= winsNeeded
                 ? "opacity-30 grayscale cursor-not-allowed"
                 : "",
@@ -411,7 +413,7 @@ function LiveMatchControl() {
                   className="w-16 h-16 object-contain drop-shadow-lg"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-md bg-white/20 flex items-center justify-center">
                   <span className="text-white font-black text-2xl">A</span>
                 </div>
               )}
@@ -427,7 +429,7 @@ function LiveMatchControl() {
             onClick={() => handleIncrement("B")}
             disabled={isUpdating || !!winner || scoreB >= winsNeeded}
             className={clsx(
-              "flex-1 flex flex-col items-center justify-center gap-4 border-[4px] border-black shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] relative overflow-hidden",
+              "flex-1 flex flex-col items-center justify-center gap-4 border-[4px] border-black shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] relative overflow-hidden py-6 md:py-0",
               isUpdating || !!winner || scoreB >= winsNeeded
                 ? "opacity-30 grayscale cursor-not-allowed"
                 : "",
@@ -448,7 +450,7 @@ function LiveMatchControl() {
                   className="w-16 h-16 object-contain drop-shadow-lg"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-md bg-white/20 flex items-center justify-center">
                   <span className="text-white font-black text-2xl">B</span>
                 </div>
               )}
@@ -539,7 +541,7 @@ function LiveMatchControl() {
                   <div className="flex items-center justify-between gap-4">
                     {/* Team A */}
                     <div className="flex-1 flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-gray-800 border-2 border-gray-600 flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 rounded-md bg-gray-800 border-2 border-gray-600 flex items-center justify-center overflow-hidden">
                         {match.teamA?.logoUrl ? (
                           <img
                             src={match.teamA.logoUrl}
@@ -579,7 +581,7 @@ function LiveMatchControl() {
 
                     {/* Team B */}
                     <div className="flex-1 flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-gray-800 border-2 border-gray-600 flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 rounded-md bg-gray-800 border-2 border-gray-600 flex items-center justify-center overflow-hidden">
                         {match.teamB?.logoUrl ? (
                           <img
                             src={match.teamB.logoUrl}

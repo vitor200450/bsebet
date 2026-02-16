@@ -253,12 +253,7 @@ function TeamSeedingCard({
       )}
 
       <div className="w-10 h-10 border border-black flex items-center justify-center bg-gray-50 flex-shrink-0">
-        <TeamLogo
-          teamId={team.id}
-          teamName={team.name}
-          logoUrl={team.logoUrl}
-          size="sm"
-        />
+        <TeamLogo teamName={team.name} logoUrl={team.logoUrl} size="sm" />
       </div>
       <div className="flex-1 min-w-0">
         <div

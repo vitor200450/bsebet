@@ -160,8 +160,9 @@ export function MatchDaySelector({
                           sports_esports
                         </span>
                         <span className="font-bold text-gray-700">
-                          {md.matchCount} partida{md.matchCount !== 1 ? "s" : ""}{" "}
-                          disponível{md.matchCount !== 1 ? "eis" : ""}
+                          {md.matchCount} partida
+                          {md.matchCount !== 1 ? "s" : ""} disponível
+                          {md.matchCount !== 1 ? "eis" : ""}
                         </span>
                       </>
                     ) : (

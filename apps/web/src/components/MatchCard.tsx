@@ -173,8 +173,7 @@ export function MatchCard({
 
             {/* Logo */}
             <TeamLogo
-              teamId={teamA?.id}
-              teamName={teamA?.name || match.labelTeamA}
+              teamName={teamA?.name || match.labelTeamA || "TBD"}
               logoUrl={teamA?.logoUrl}
               size="md"
               className={clsx(
@@ -232,8 +231,7 @@ export function MatchCard({
           >
             {/* Logo */}
             <TeamLogo
-              teamId={teamB?.id}
-              teamName={teamB?.name || match.labelTeamB}
+              teamName={teamB?.name || match.labelTeamB || "TBD"}
               logoUrl={teamB?.logoUrl}
               size="md"
               className={clsx(

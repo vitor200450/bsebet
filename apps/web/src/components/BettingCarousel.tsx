@@ -423,12 +423,12 @@ export function BettingCarousel({
             <div className="flex flex-col items-center gap-0 relative z-30">
               {/* Logo Post-it (Top) */}
               {currentMatch.tournamentLogoUrl && (
-                <div className="relative bg-white border border-gray-200 p-3 shadow-sm transform -rotate-2 z-10 w-46 h-46 flex items-center justify-center">
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-5 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
+                <div className="relative bg-white border border-gray-200 p-3 shadow-sm transform -rotate-2 z-10 w-32 h-32 md:w-46 md:h-46 flex items-center justify-center">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 md:w-16 h-4 md:h-5 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
                   <img
                     src={currentMatch.tournamentLogoUrl}
                     alt=""
-                    className="w-48 h-48 object-contain filter drop-shadow-sm"
+                    className="w-full h-full object-contain filter drop-shadow-sm"
                   />
                 </div>
               )}
@@ -436,12 +436,12 @@ export function BettingCarousel({
               {/* Name Post-it (Bottom) - Overlapping the logo (z-20) */}
               <div
                 className={clsx(
-                  "relative bg-white border border-gray-200 px-8 py-3 shadow-sm transform rotate-1 skew-x-[-2deg] z-20 max-w-sm text-center",
+                  "relative bg-white border border-gray-200 px-6 py-2 md:px-8 md:py-3 shadow-sm transform rotate-1 skew-x-[-2deg] z-20 max-w-[280px] md:max-w-sm text-center",
                   currentMatch.tournamentLogoUrl ? "-mt-2" : "mt-0",
                 )}
               >
-                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-4 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
-                <p className="text-xs md:text-sm font-black tracking-widest text-black uppercase font-display transform skew-x-[2deg]">
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-12 md:w-16 h-3 md:h-4 bg-[#e8e8e0] opacity-80 shadow-sm"></div>
+                <p className="text-[10px] md:text-sm font-black tracking-widest text-black uppercase font-display transform skew-x-[2deg]">
                   {currentMatch.tournamentName || "Brawl Stars Championship"}
                 </p>
               </div>
@@ -478,10 +478,10 @@ export function BettingCarousel({
                 className="w-full"
               >
                 <div className="w-full bg-paper border-0 shadow-none relative overflow-visible">
-                  <div className="absolute top-[-100px] -left-[140px] w-[500px] h-[500px] pointer-events-none opacity-90 z-0 transform -rotate-12">
+                  <div className="absolute top-[-100px] -left-[140px] w-[300px] h-[300px] md:w-[500px] md:h-[500px] pointer-events-none opacity-90 z-0 transform -rotate-12">
                     <PaintSplatterBlue className="w-full h-full" />
                   </div>
-                  <div className="absolute top-[-100px] -right-[140px] w-[500px] h-[500px] pointer-events-none opacity-90 z-0 transform rotate-12">
+                  <div className="absolute top-[-100px] -right-[140px] w-[300px] h-[300px] md:w-[500px] md:h-[500px] pointer-events-none opacity-90 z-0 transform rotate-12">
                     <PaintSplatterRed className="w-full h-full" />
                   </div>
 
@@ -494,10 +494,10 @@ export function BettingCarousel({
                     </div>
 
                     {/* TEAMS DISPLAY */}
-                    <div className="grid grid-cols-2 relative h-48 border-x border-black bg-white">
+                    <div className="grid grid-cols-2 relative h-36 md:h-48 border-x border-black bg-white">
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-                        <div className="bg-white border-[2px] border-black rounded-full w-8 h-8 flex items-center justify-center shadow-comic">
-                          <span className="font-display font-black text-sm pt-0.5">
+                        <div className="bg-white border-[2px] border-black rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center shadow-comic">
+                          <span className="font-display font-black text-xs md:text-sm pt-0.5">
                             VS
                           </span>
                         </div>
@@ -526,7 +526,7 @@ export function BettingCarousel({
                           <div className="w-full pt-3 pb-1 px-2 text-left">
                             <span
                               className={clsx(
-                                "text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm",
+                                "text-[9px] md:text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm truncate",
                                 isSelected(currentMatch.teamA.id) ||
                                   !selectedWinnerId
                                   ? "text-white"
@@ -536,17 +536,16 @@ export function BettingCarousel({
                               {currentMatch.teamA.name}
                             </span>
                           </div>
-                          <div className="flex-grow flex items-center justify-center">
+                          <div className="flex-grow flex items-center justify-center p-2">
                             <TeamLogo
-                              teamId={currentMatch.teamA.id}
                               teamName={currentMatch.teamA.name}
                               logoUrl={currentMatch.teamA.logoUrl}
-                              size="xl"
-                              fallback="🛡️"
+                              size="lg"
+                              className="md:scale-125"
                             />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
-                            <span className="text-white text-[9px] font-bold uppercase font-body tracking-wider">
+                            <span className="text-white text-[8px] md:text-[9px] font-bold uppercase font-body tracking-wider">
                               Win Rate: {currentMatch.stats.winRateA}
                             </span>
                           </div>
@@ -575,7 +574,7 @@ export function BettingCarousel({
                           <div className="w-full pt-3 pb-1 px-2 text-right">
                             <span
                               className={clsx(
-                                "text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm",
+                                "text-[9px] md:text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm truncate",
                                 isSelected(currentMatch.teamB.id) ||
                                   !selectedWinnerId
                                   ? "text-white"
@@ -585,17 +584,16 @@ export function BettingCarousel({
                               {currentMatch.teamB.name}
                             </span>
                           </div>
-                          <div className="flex-grow flex items-center justify-center">
+                          <div className="flex-grow flex items-center justify-center p-2">
                             <TeamLogo
-                              teamId={currentMatch.teamB.id}
                               teamName={currentMatch.teamB.name}
                               logoUrl={currentMatch.teamB.logoUrl}
-                              size="xl"
-                              fallback="🛡️"
+                              size="lg"
+                              className="md:scale-125"
                             />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
-                            <span className="text-white text-[9px] font-bold uppercase font-body tracking-wider">
+                            <span className="text-white text-[8px] md:text-[9px] font-bold uppercase font-body tracking-wider">
                               Win Rate: {currentMatch.stats.winRateB}
                             </span>
                           </div>
@@ -653,8 +651,8 @@ export function BettingCarousel({
                 </div>
 
                 {/* PREDICTION OPTIONS */}
-                <div className="w-full mt-10">
-                  <div className="grid grid-cols-3 gap-3 md:gap-4 px-0">
+                <div className="w-full mt-8 md:mt-10">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 px-0">
                     {scoreOptions.map((option) => {
                       const isOptionSelected = selectedScore === option.label;
                       // Only allow selecting score if a winner is selected
@@ -668,7 +666,7 @@ export function BettingCarousel({
                           }
                           disabled={isDisabled}
                           className={clsx(
-                            "group relative rounded-sm p-4 shadow-comic btn-press transition-all duration-100 h-24 flex flex-col justify-center items-center border-[3px]",
+                            "group relative rounded-sm p-3 md:p-4 shadow-comic btn-press transition-all duration-100 h-20 md:h-24 flex flex-col justify-center items-center border-[3px]",
                             isDisabled
                               ? "bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed"
                               : isOptionSelected
@@ -694,7 +692,7 @@ export function BettingCarousel({
 
                           <div
                             className={clsx(
-                              "flex items-center gap-2 font-display font-black text-4xl",
+                              "flex items-center gap-2 font-display font-black text-2xl md:text-4xl",
                               isOptionSelected
                                 ? activeAccentColor === "brawl-blue"
                                   ? "text-brawl-blue"
@@ -707,7 +705,7 @@ export function BettingCarousel({
 
                           <span
                             className={clsx(
-                              "text-[9px] font-bold font-body uppercase tracking-wider mt-1 px-1",
+                              "text-[8px] md:text-[9px] font-bold font-body uppercase tracking-wider mt-1 px-1",
                               isOptionSelected
                                 ? "text-black border border-black bg-brawl-yellow rounded-sm transform -rotate-1 shadow-sm"
                                 : "text-gray-500 font-bold",

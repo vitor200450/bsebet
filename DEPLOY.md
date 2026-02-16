@@ -80,3 +80,36 @@ Se houver conflitos entre migrações locais e produção:
 1. Faça backup do banco de produção
 2. Verifique as migrações aplicadas: `bun run db:studio:prod`
 3. Resolva manualmente ou recrie as migrações
+
+## 📦 Migração de Dados (Local -> Produção)
+
+Para levar seus dados locais (times, torneios, usuários) para a produção:
+
+### 1. Preparar o Backup Local
+Você precisa gerar um arquivo SQL do seu banco local.
+Se estiver usando Postgres localmente:
+```bash
+pg_dump -U postgres -d bsebet --data-only --inserts > db_backup/meus_dados.sql
+```
+*Certifique-se de criar a pasta `db_backup` na raiz do projeto se não existir.*
+
+### 2. Importar para Produção
+O projeto possui um script automatizado para isso:
+
+```bash
+bun run db:import:prod
+```
+
+Este script irá:
+1. Ler os arquivos `.sql` na pasta `db_backup`
+2. Conectar ao Heroku (login necessário)
+3. Importar os dados com segurança
+
+### 3. Deploy da Aplicação (Código)
+Para subir as telas novas:
+
+```bash
+bun run deploy
+```
+*Isso usa o pacote `infra` para realizar o deploy via Alchemy.*
+

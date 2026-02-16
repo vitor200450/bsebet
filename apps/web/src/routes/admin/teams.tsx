@@ -1,5 +1,5 @@
 import { deleteTeam, getTeams, saveTeam } from "@/server/teams";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   Copy,
   Edit2,
@@ -151,6 +151,7 @@ function AdminTeamsPage() {
     setIsSubmitting(true);
     try {
       await saveTeam({ data: formData });
+
       setIsModalOpen(false);
       resetForm();
       router.invalidate();
@@ -325,10 +326,9 @@ function AdminTeamsPage() {
               <div className="p-6 flex flex-col items-center gap-4 relative z-10 flex-1">
                 {/* Logo Area */}
                 <div
-                  className={`w-32 h-32 bg-[#f0f0f0] border-[3px] border-black rounded-full flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-all duration-300 ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
+                  className={`w-32 h-32 bg-[#f0f0f0] border-[3px] border-black rounded-md flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-all duration-300 ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
                 >
                   <TeamLogo
-                    teamId={team.id}
                     teamName={team.name}
                     logoUrl={team.logoUrl}
                     size="lg"
@@ -521,17 +521,37 @@ function AdminTeamsPage() {
                     <div className="relative flex-1">
                       <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
-                        type="url"
-                        value={formData.logoUrl}
+                        type="text"
+                        value={
+                          formData.logoUrl.startsWith("data:")
+                            ? "[IMAGEM BASE64 - SALVE PARA CONVERTER]"
+                            : formData.logoUrl
+                        }
+                        readOnly={formData.logoUrl.startsWith("data:")}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
                             logoUrl: e.target.value,
                           })
                         }
-                        className="w-full border-[3px] border-black p-2 pl-10 text-xs font-mono focus:outline-none focus:border-black text-black"
+                        className={`w-full border-[3px] border-black p-2 pl-10 text-xs font-mono focus:outline-none focus:border-black text-black ${
+                          formData.logoUrl.startsWith("data:")
+                            ? "bg-gray-100 italic text-gray-400"
+                            : ""
+                        }`}
                         placeholder="https://..."
                       />
+                      {formData.logoUrl.startsWith("data:") && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData({ ...formData, logoUrl: "" })
+                          }
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border-2 border-black p-0.5 hover:bg-red-50"
+                        >
+                          <X className="w-3 h-3 text-red-500" />
+                        </button>
+                      )}
                     </div>
                     <input
                       type="file"
@@ -549,12 +569,23 @@ function AdminTeamsPage() {
                       <Upload className="w-4 h-4" />
                     </button>
                   </div>
+                  {formData.logoUrl.startsWith("data:") && (
+                    <p className="text-[10px] font-bold text-red-500 mt-1 uppercase italic">
+                      ⚠️ Esta logo está em Base64. Salve para converter para R2
+                      ou use a{" "}
+                      <Link
+                        to="/admin/migrate-logos"
+                        className="underline hover:text-red-700"
+                      >
+                        Página de Migração
+                      </Link>
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex-1 bg-[#e6e6e6] border-[3px] border-black border-dashed flex items-center justify-center relative min-h-[160px] group">
                   {formData.logoUrl ? (
                     <TeamLogo
-                      teamId={formData.id}
                       teamName={formData.name}
                       logoUrl={formData.logoUrl}
                       size="lg"

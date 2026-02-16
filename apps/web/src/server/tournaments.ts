@@ -3,6 +3,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { desc, eq, and, asc, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@bsebet/auth";
+import {
+  uploadLogoToR2,
+  base64ToBuffer,
+  getTournamentLogoKey,
+  isBase64DataUrl,
+} from "./r2";
 
 // Schema for Tournament Input
 const tournamentSchema = z.object({
@@ -109,13 +115,24 @@ const saveTournamentFn = createServerFn({
   const data = ctx.data;
   const validData = tournamentSchema.parse(data);
 
+  let finalLogoUrl = validData.logoUrl || null;
+
   if (validData.id) {
+    // Handling existing tournament
+    if (finalLogoUrl && isBase64DataUrl(finalLogoUrl)) {
+      const { buffer, contentType } = base64ToBuffer(finalLogoUrl);
+      const extension = contentType.split("/")[1] || "png";
+      const key = getTournamentLogoKey(validData.id, extension);
+      const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
+      finalLogoUrl = publicUrl;
+    }
+
     const updated = await db
       .update(tournaments)
       .set({
         name: validData.name,
         slug: validData.slug,
-        logoUrl: validData.logoUrl || null,
+        logoUrl: finalLogoUrl,
         format: validData.format || null,
         region: validData.region || null,
         participantsCount: validData.participantsCount || null,
@@ -130,12 +147,13 @@ const saveTournamentFn = createServerFn({
       .returning();
     return updated[0];
   } else {
+    // Handling new tournament - need ID first
     const inserted = await db
       .insert(tournaments)
       .values({
         name: validData.name,
         slug: validData.slug,
-        logoUrl: validData.logoUrl || null,
+        logoUrl: null, // Temp null
         format: validData.format || null,
         region: validData.region || null,
         participantsCount: validData.participantsCount || null,
@@ -144,10 +162,38 @@ const saveTournamentFn = createServerFn({
         endDate: validData.endDate || null,
         status: validData.status,
         isActive: validData.isActive,
-        scoringRules: validData.scoringRules, // Add defaults
+        scoringRules: validData.scoringRules,
       })
       .returning();
-    return inserted[0];
+
+    const newTournament = inserted[0];
+
+    if (finalLogoUrl && isBase64DataUrl(finalLogoUrl)) {
+      const { buffer, contentType } = base64ToBuffer(finalLogoUrl);
+      const extension = contentType.split("/")[1] || "png";
+      const key = getTournamentLogoKey(newTournament.id, extension);
+      const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
+
+      // Update with the R2 URL
+      const finalUpdate = await db
+        .update(tournaments)
+        .set({ logoUrl: publicUrl })
+        .where(eq(tournaments.id, newTournament.id))
+        .returning();
+      return finalUpdate[0];
+    }
+
+    // If it was already a URL or empty, update if needed or return
+    if (finalLogoUrl) {
+      const finalUpdate = await db
+        .update(tournaments)
+        .set({ logoUrl: finalLogoUrl })
+        .where(eq(tournaments.id, newTournament.id))
+        .returning();
+      return finalUpdate[0];
+    }
+
+    return newTournament;
   }
 });
 

@@ -214,116 +214,120 @@ function AdminUsersPage() {
       {/* LIST CONTENT */}
       <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
-            <div className="col-span-4">User Identity</div>
-            <div className="col-span-4">Contact</div>
-            <div className="col-span-2 text-center">Role</div>
-            <div className="col-span-2 text-right">Actions</div>
-          </div>
-
-          {/* List Rows */}
-          {filteredUsers.length === 0 ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
-                <User className="w-8 h-8 text-gray-400" />
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
+                <div className="col-span-4">User Identity</div>
+                <div className="col-span-4">Contact</div>
+                <div className="col-span-2 text-center">Role</div>
+                <div className="col-span-2 text-right">Actions</div>
               </div>
-              <span className="font-black text-gray-400 uppercase italic text-lg">
-                No users found
-              </span>
-            </div>
-          ) : (
-            <div>
-              {filteredUsers.map((u, index) => (
-                <div
-                  key={u.id}
-                  className={clsx(
-                    "grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors bg-white hover:bg-[#ccff00]/10",
-                    index % 2 !== 0 && "bg-[#f4f4f5]",
-                  )}
-                >
-                  {/* User Info */}
-                  <div className="col-span-4 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 border-[3px] border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform flex-shrink-0">
-                      {u.image ? (
-                        <img
-                          src={u.image}
-                          alt={u.name || "User"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic">
-                          {u.name?.[0]?.toUpperCase() || "?"}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      {/* Nickname Priority */}
-                      {u.nickname ? (
-                        <>
-                          <h3 className="font-black text-lg text-black uppercase italic leading-none text-[#2e5cff]">
-                            {u.nickname}
-                          </h3>
-                          <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
-                            {u.name}
-                          </span>
-                        </>
-                      ) : (
-                        <h3 className="font-black text-lg text-black uppercase italic leading-none">
-                          {u.name || "Unknown"}
-                        </h3>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Contact */}
-                  <div className="col-span-4 flex flex-col justify-center">
-                    <span className="text-sm font-bold text-gray-700 font-mono flex items-center gap-2">
-                      {u.email}
-                      <Copy className="w-3 h-3 text-gray-300 hover:text-black cursor-pointer" />
-                    </span>
-                    <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
-                      ID: {u.id.slice(0, 8)}...
-                    </span>
+              {/* List Rows */}
+              {filteredUsers.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
+                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
+                    <User className="w-8 h-8 text-gray-400" />
                   </div>
-
-                  {/* Role Badge */}
-                  <div className="col-span-2 flex justify-center">
-                    <button
-                      onClick={() => initiateRoleToggle(u)}
-                      className={clsx(
-                        "px-3 py-1 text-[10px] font-black uppercase italic border-[2px] border-black transform transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none flex items-center gap-1",
-                        u.role === "admin"
-                          ? "bg-[#ccff00] text-black -skew-x-6"
-                          : "bg-gray-200 text-gray-500 -skew-x-6",
-                      )}
-                    >
-                      {u.role === "admin" && <Shield className="w-3 h-3" />}
-                      {u.role}
-                    </button>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="col-span-2 flex justify-end gap-2">
-                    <button
-                      onClick={() => openEditModal(u)}
-                      className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      title="Edit Details"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => initiateDelete(u)}
-                      className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      title="Delete User"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <span className="font-black text-gray-400 uppercase italic text-lg">
+                    No users found
+                  </span>
                 </div>
-              ))}
+              ) : (
+                <div>
+                  {filteredUsers.map((u, index) => (
+                    <div
+                      key={u.id}
+                      className={clsx(
+                        "grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors bg-white hover:bg-[#ccff00]/10",
+                        index % 2 !== 0 && "bg-[#f4f4f5]",
+                      )}
+                    >
+                      {/* User Info */}
+                      <div className="col-span-4 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gray-200 border-[3px] border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform flex-shrink-0">
+                          {u.image ? (
+                            <img
+                              src={u.image}
+                              alt={u.name || "User"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic">
+                              {u.name?.[0]?.toUpperCase() || "?"}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          {/* Nickname Priority */}
+                          {u.nickname ? (
+                            <>
+                              <h3 className="font-black text-lg text-black uppercase italic leading-none text-[#2e5cff]">
+                                {u.nickname}
+                              </h3>
+                              <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
+                                {u.name}
+                              </span>
+                            </>
+                          ) : (
+                            <h3 className="font-black text-lg text-black uppercase italic leading-none">
+                              {u.name || "Unknown"}
+                            </h3>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contact */}
+                      <div className="col-span-4 flex flex-col justify-center">
+                        <span className="text-sm font-bold text-gray-700 font-mono flex items-center gap-2">
+                          {u.email}
+                          <Copy className="w-3 h-3 text-gray-300 hover:text-black cursor-pointer" />
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
+                          ID: {u.id.slice(0, 8)}...
+                        </span>
+                      </div>
+
+                      {/* Role Badge */}
+                      <div className="col-span-2 flex justify-center">
+                        <button
+                          onClick={() => initiateRoleToggle(u)}
+                          className={clsx(
+                            "px-3 py-1 text-[10px] font-black uppercase italic border-[2px] border-black transform transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none flex items-center gap-1",
+                            u.role === "admin"
+                              ? "bg-[#ccff00] text-black -skew-x-6"
+                              : "bg-gray-200 text-gray-500 -skew-x-6",
+                          )}
+                        >
+                          {u.role === "admin" && <Shield className="w-3 h-3" />}
+                          {u.role}
+                        </button>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="col-span-2 flex justify-end gap-2">
+                        <button
+                          onClick={() => openEditModal(u)}
+                          className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Edit Details"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => initiateDelete(u)}
+                          className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

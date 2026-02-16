@@ -198,6 +198,7 @@ function AdminTournamentsPage() {
           scoringRules: formData.scoringRules,
         },
       });
+
       toast.success("Tournament saved successfully!");
       setIsModalOpen(false);
       router.invalidate();
@@ -271,135 +272,151 @@ function AdminTournamentsPage() {
       {/* LIST CONTENT */}
       <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
-            <div className="col-span-4">Tournament Info</div>
-            <div className="col-span-3">Details</div>
-            <div className="col-span-2">Dates</div>
-            <div className="col-span-2 text-center">Status</div>
-            <div className="col-span-1 text-right">Actions</div>
-          </div>
-
-          {/* Table Rows */}
-          {filteredTournaments.length === 0 ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
-                <Copy className="w-8 h-8 text-gray-400" />
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
+                <div className="col-span-4">Tournament Info</div>
+                <div className="col-span-3">Details</div>
+                <div className="col-span-2">Dates</div>
+                <div className="col-span-2 text-center">Status</div>
+                <div className="col-span-1 text-right">Actions</div>
               </div>
-              <span className="font-black text-gray-400 uppercase italic text-lg">
-                No tournaments found
-              </span>
-            </div>
-          ) : (
-            <div>
-              {filteredTournaments.map((t, index) => (
-                <div
-                  key={t.id}
-                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors ${
-                    index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]"
-                  } hover:bg-[#ccff00]/10`}
-                >
-                  {/* Tournament Info */}
-                  <div className="col-span-4 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-white border-[3px] border-black flex items-center justify-center overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                      {t.logoUrl ? (
-                        <img
-                          src={t.logoUrl}
-                          alt={t.name}
-                          className="w-full h-full object-contain p-2"
-                        />
-                      ) : (
-                        <ImageIcon className="text-gray-300 w-6 h-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-black text-lg text-black uppercase italic leading-none">
-                        {t.name}
-                      </h3>
-                      <span className="text-xs font-bold text-gray-500 font-mono bg-gray-100 px-1 rounded border border-gray-300">
-                        {t.slug}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Details (Region, Format, Players) */}
-                  <div className="col-span-3 flex flex-col gap-1">
-                    {t.region && (
-                      <span className="text-xs font-bold uppercase text-black flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>{" "}
-                        {t.region}
-                      </span>
-                    )}
-                    {t.format && (
-                      <span
-                        className="text-xs text-gray-600 font-bold uppercase truncate"
-                        title={t.format}
-                      >
-                        Format: {t.format}
-                      </span>
-                    )}
-                    {t.participantsCount && (
-                      <span className="text-[10px] font-mono text-gray-500 bg-gray-200 px-1 rounded w-fit">
-                        {t.participantsCount} Teams
-                      </span>
-                    )}
+              {/* Table Rows */}
+              {filteredTournaments.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
+                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
+                    <Copy className="w-8 h-8 text-gray-400" />
                   </div>
+                  <span className="font-black text-gray-400 uppercase italic text-lg">
+                    No tournaments found
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  {filteredTournaments.map((t, index) => (
+                    <div
+                      key={t.id}
+                      className={`grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]"
+                      } hover:bg-[#ccff00]/10`}
+                    >
+                      {/* Tournament Info */}
+                      <div className="col-span-4 flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-md bg-white border-[3px] border-black flex items-center justify-center overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                          {t.logoUrl ? (
+                            <img
+                              src={t.logoUrl}
+                              alt={t.name}
+                              className="w-full h-full object-contain p-2"
+                            />
+                          ) : (
+                            <ImageIcon className="text-gray-300 w-6 h-6" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-black text-lg text-black uppercase italic leading-none">
+                            {t.name}
+                          </h3>
+                          <span className="text-xs font-bold text-gray-500 font-mono bg-gray-100 px-1 rounded border border-gray-300">
+                            {t.slug}
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Dates */}
-                  <div className="col-span-2 text-sm font-bold text-gray-600 uppercase">
-                    {t.startDate ? (
-                      <div className="flex flex-col">
-                        <span>{formatDateUTC(t.startDate)}</span>
-                        {t.endDate && (
-                          <span className="text-xs text-gray-400">
-                            to {formatDateUTC(t.endDate)}
+                      {/* Details (Region, Format, Players) */}
+                      <div className="col-span-3 flex flex-col gap-1">
+                        {t.region && (
+                          <span className="text-xs font-bold uppercase text-black flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>{" "}
+                            {t.region}
+                          </span>
+                        )}
+                        {t.format && (
+                          <span
+                            className="text-xs text-gray-600 font-bold uppercase truncate"
+                            title={t.format}
+                          >
+                            Format: {t.format}
+                          </span>
+                        )}
+                        {t.participantsCount && (
+                          <span className="text-[10px] font-mono text-gray-500 bg-gray-200 px-1 rounded w-fit">
+                            {t.participantsCount} Teams
                           </span>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-gray-400 italic">TBD</span>
-                    )}
-                  </div>
 
-                  {/* Status Badge */}
-                  <div className="col-span-2 flex justify-center">
-                    <span
-                      className={`text-[10px] font-black uppercase italic px-3 py-1 border-[2px] border-black ${getStatusColor(
-                        t.status || "upcoming",
-                      )}`}
-                    >
-                      {t.status || "upcoming"}
-                    </span>
-                  </div>
+                      {/* Dates */}
+                      <div className="col-span-2 text-sm font-bold text-gray-600 uppercase">
+                        {t.startDate ? (
+                          <div className="flex flex-col">
+                            <span>{formatDateUTC(t.startDate)}</span>
+                            {t.endDate && (
+                              <span className="text-xs text-gray-400">
+                                to {formatDateUTC(t.endDate)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 italic">TBD</span>
+                        )}
+                      </div>
 
-                  <div className="col-span-1 flex justify-end gap-2">
-                    <Link
-                      to="/admin/tournaments/$tournamentId/matches"
-                      params={{ tournamentId: String(t.id) }}
-                      className="bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      title="Match Scheduler"
-                    >
-                      <Calendar className="w-4 h-4" strokeWidth={2.5} />
-                    </Link>
-                    <button
-                      onClick={() => handleEdit(t)}
-                      className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-4 h-4" strokeWidth={2.5} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(t.id, t.name)}
-                      className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" strokeWidth={2.5} />
-                    </button>
-                  </div>
+                      {/* Status Badge */}
+                      <div className="col-span-2 flex justify-center">
+                        <span
+                          className={`text-[10px] font-black uppercase italic px-3 py-1 border-[2px] border-black whitespace-nowrap ${getStatusColor(
+                            t.status || "upcoming",
+                          )}`}
+                        >
+                          {t.status || "upcoming"}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 flex justify-end gap-2">
+                        <Link
+                          to="/admin/tournaments/$tournamentId/matches"
+                          params={{ tournamentId: String(t.id) }}
+                          className="bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Match Scheduler"
+                        >
+                          <Calendar className="w-4 h-4" strokeWidth={2.5} />
+                        </Link>
+                        <button
+                          onClick={() => handleEdit(t)}
+                          className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" strokeWidth={2.5} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id, t.name)}
+                          className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                      {formData.logoUrl.startsWith("data:") && (
+                        <p className="text-[10px] font-bold text-red-500 mt-1 uppercase italic">
+                          ⚠️ Esta logo está em Base64. Salve para converter para
+                          R2 ou use a{" "}
+                          <Link
+                            to="/admin/migrate-logos"
+                            className="underline hover:text-red-700"
+                          >
+                            Página de Migração
+                          </Link>
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -447,9 +464,14 @@ function AdminTournamentsPage() {
                   <div className="relative">
                     <input
                       type="text"
-                      readOnly
                       value={formData.slug}
-                      className="w-full border-[3px] border-black p-3 pr-10 font-mono text-sm bg-gray-50 focus:outline-none text-black"
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          slug: generateSlug(e.target.value),
+                        }))
+                      }
+                      className="w-full border-[3px] border-black p-3 pr-10 font-mono text-sm bg-white focus:outline-none focus:ring-4 focus:ring-[#ccff00] focus:border-black text-black"
                     />
                     <Copy className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 cursor-pointer hover:text-black" />
                   </div>
@@ -574,7 +596,10 @@ function AdminTournamentsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus when picking winner with ≤25% of votes">
+                      <label
+                        className="block text-[10px] font-bold uppercase mb-1 text-gray-500"
+                        title="Bonus when picking winner with ≤25% of votes"
+                      >
                         Underdog Tier 1 (≤25%)
                       </label>
                       <input
@@ -593,7 +618,10 @@ function AdminTournamentsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase mb-1 text-gray-500" title="Bonus when picking winner with 26-50% of votes">
+                      <label
+                        className="block text-[10px] font-bold uppercase mb-1 text-gray-500"
+                        title="Bonus when picking winner with 26-50% of votes"
+                      >
                         Underdog Tier 2 (26-50%)
                       </label>
                       <input
@@ -632,14 +660,34 @@ function AdminTournamentsPage() {
                     <div className="relative flex-1">
                       <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
-                        type="url"
-                        value={formData.logoUrl}
+                        type="text"
+                        value={
+                          formData.logoUrl.startsWith("data:")
+                            ? "[IMAGEM BASE64 - SALVE PARA CONVERTER]"
+                            : formData.logoUrl
+                        }
+                        readOnly={formData.logoUrl.startsWith("data:")}
                         onChange={(e) =>
                           setFormData({ ...formData, logoUrl: e.target.value })
                         }
-                        className="w-full border-[3px] border-black p-2 pl-9 text-xs font-mono focus:outline-none focus:border-black bg-white text-black"
+                        className={`w-full border-[3px] border-black p-2 pl-9 text-xs font-mono focus:outline-none focus:border-black text-black ${
+                          formData.logoUrl.startsWith("data:")
+                            ? "bg-gray-100 italic text-gray-400"
+                            : "bg-white"
+                        }`}
                         placeholder="https://..."
                       />
+                      {formData.logoUrl.startsWith("data:") && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData({ ...formData, logoUrl: "" })
+                          }
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border-2 border-black p-0.5 hover:bg-red-50"
+                        >
+                          <X className="w-3 h-3 text-red-500" />
+                        </button>
+                      )}
                     </div>
                     <input
                       type="file"

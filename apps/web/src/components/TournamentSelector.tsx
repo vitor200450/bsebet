@@ -78,7 +78,7 @@ export function TournamentSelector({
       </header>
 
       {/* Main Content: Tournament Cards */}
-      <main className="flex-grow w-full max-w-7xl px-4 flex flex-col lg:flex-row items-stretch justify-center gap-8 md:gap-12 z-10 py-8">
+      <main className="flex-grow w-full max-w-7xl px-4 flex flex-col md:flex-row flex-wrap items-center md:items-stretch justify-center gap-8 md:gap-12 z-10 py-8">
         {tournaments.map((tournament, index) => {
           const statusStyle =
             STATUS_STYLES[tournament.status] || STATUS_STYLES.upcoming;

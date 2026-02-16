@@ -13,6 +13,7 @@ import { MatchDaySelector } from "../components/MatchDaySelector";
 import { getUser } from "../functions/get-user";
 import { useState, useMemo, useEffect } from "react";
 import { clsx } from "clsx";
+import { Trophy } from "lucide-react";
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -39,7 +40,7 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
     });
 
     const bettingEnabledTournamentIds = new Set(
-      bettingMatches.map((m: any) => m.tournamentId)
+      bettingMatches.map((m: any) => m.tournamentId),
     );
 
     // Step 3: Get tournament IDs where user has bets
@@ -80,7 +81,10 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 
       // Fetch matches separately for each tournament
       const allMatches = await db.query.matches.findMany({
-        where: inArray(matches.tournamentId, Array.from(allTournamentIdsToFetch)),
+        where: inArray(
+          matches.tournamentId,
+          Array.from(allTournamentIdsToFetch),
+        ),
         orderBy: [asc(matches.startTime)],
       });
 
@@ -475,17 +479,6 @@ function ReviewScreen({
     // In GSL format, decider matches get teams from:
     // - Slot A: Loser of Winners Match
     // - Slot B: Winner of Elimination Match
-    const isGSLGroup = (matchName: string) => {
-      const text = matchName.toLowerCase();
-      return text.includes("group") || text.includes("grupo");
-    };
-
-    const findMatchByName = (patterns: string[]) => {
-      return projected.find((m) => {
-        const text = (m.name || m.label || "").toLowerCase();
-        return patterns.some((p) => text.includes(p.toLowerCase()));
-      });
-    };
 
     // Group matches by their group identifier (e.g., "Group A", "Group B")
     const groupMap = new Map<string, any[]>();
@@ -527,11 +520,7 @@ function ReviewScreen({
 
       const winnersMatch = findInGroup(["winners", "vencedores", "winner"]);
       const elimMatch = findInGroup(["elimination", "eliminação", "loser"]);
-      const deciderMatch = findInGroup([
-        "decider",
-        "decisiva",
-        "decisivo",
-      ]);
+      const deciderMatch = findInGroup(["decider", "decisiva", "decisivo"]);
 
       // Project from opening matches to winners/elimination matches
       if (openingMatches.length >= 2) {
@@ -800,605 +789,610 @@ function ReviewScreen({
 
           {/* Matches List */}
           <div className="w-full space-y-6 mb-12 px-1">
-            {matchesToDisplay.map((match, idx) => {
-              const prediction = predictions[match.id];
-              const betData = filteredUserBets.find(
-                (b) => b.matchId === match.id,
-              );
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {matchesToDisplay.map((match, idx) => {
+                const prediction = predictions[match.id];
+                const betData = filteredUserBets.find(
+                  (b) => b.matchId === match.id,
+                );
 
-              // Use betData as source of truth when available (readonly mode)
-              // BUT only if the match has a valid winnerId (data integrity check)
-              const effectivePrediction =
-                betData && match.winnerId !== null
-                  ? {
-                      winnerId: betData.predictedWinnerId,
-                      score: `${betData.predictedScoreA}-${betData.predictedScoreB}`,
-                    }
-                  : prediction;
+                // Use betData as source of truth when available (readonly mode)
+                // BUT only if the match has a valid winnerId (data integrity check)
+                const effectivePrediction =
+                  betData && match.winnerId !== null
+                    ? {
+                        winnerId: betData.predictedWinnerId,
+                        score: `${betData.predictedScoreA}-${betData.predictedScoreB}`,
+                      }
+                    : prediction;
 
-              const isWinnerA =
-                effectivePrediction?.winnerId === match.teamA.id;
-              const isWinnerB =
-                effectivePrediction?.winnerId === match.teamB.id;
-              const isEditingScore = editingScoreMatchId === match.id;
-              const showResult =
-                match.status === "live" || match.status === "finished";
-              const isActualWinnerA =
-                showResult && match.winnerId === match.teamA.id;
-              const isActualWinnerB =
-                showResult && match.winnerId === match.teamB.id;
+                const isWinnerA =
+                  effectivePrediction?.winnerId === match.teamA.id;
+                const isWinnerB =
+                  effectivePrediction?.winnerId === match.teamB.id;
+                const isEditingScore = editingScoreMatchId === match.id;
+                const showResult =
+                  match.status === "live" || match.status === "finished";
+                const isActualWinnerA =
+                  showResult && match.winnerId === match.teamA.id;
+                const isActualWinnerB =
+                  showResult && match.winnerId === match.teamB.id;
 
-              // Check if predicted team is not in the current match (bracket projection changed)
-              const predictedTeamNotInMatch =
-                betData?.predictedWinnerId &&
-                ![
-                  match.teamA.id,
-                  match.teamB.id,
-                ].includes(betData.predictedWinnerId);
+                // Check if predicted team is not in the current match (bracket projection changed)
+                const predictedTeamNotInMatch =
+                  betData?.predictedWinnerId &&
+                  ![match.teamA.id, match.teamB.id].includes(
+                    betData.predictedWinnerId,
+                  );
 
-              const matchActiveColor =
-                isActualWinnerA || (!showResult && isWinnerA)
-                  ? "brawl-blue"
-                  : "brawl-red";
-              const displayScore = showResult
-                ? `${match.scoreA} - ${match.scoreB}`
-                : effectivePrediction?.score || "N/A";
+                const matchActiveColor =
+                  isActualWinnerA || (!showResult && isWinnerA)
+                    ? "brawl-blue"
+                    : "brawl-red";
+                const displayScore = showResult
+                  ? `${match.scoreA} - ${match.scoreB}`
+                  : effectivePrediction?.score || "N/A";
 
-              const winsNeeded =
-                match.format === "bo5" ? 3 : match.format === "bo3" ? 2 : 4;
-              const scoreOptions = [];
-              for (let loserWins = 0; loserWins < winsNeeded; loserWins++) {
-                const label = isWinnerA
-                  ? `${winsNeeded} - ${loserWins}`
-                  : `${loserWins} - ${winsNeeded}`;
-                scoreOptions.push(label);
-              }
+                const winsNeeded =
+                  match.format === "bo5" ? 3 : match.format === "bo3" ? 2 : 4;
+                const scoreOptions = [];
+                for (let loserWins = 0; loserWins < winsNeeded; loserWins++) {
+                  const label = isWinnerA
+                    ? `${winsNeeded} - ${loserWins}`
+                    : `${loserWins} - ${winsNeeded}`;
+                  scoreOptions.push(label);
+                }
 
-              return (
-                <div
-                  key={match.id}
-                  className={clsx(
-                    "w-full bg-white border-[4px] overflow-visible transform hover:-translate-y-1 transition-all duration-200 relative mb-4",
-                    betData?.isPerfectPick && match.winnerId !== null
-                      ? "border-[#ccff00] shadow-[6px_6px_0px_0px_#ccff00,12px_12px_0px_0px_#000]"
-                      : "border-black shadow-[6px_6px_0px_0px_#000]",
-                  )}
-                >
-                  {/* Match Header Bar */}
+                return (
                   <div
+                    key={match.id}
                     className={clsx(
-                      "border-b-[4px] border-black px-4 py-1.5 flex justify-between items-center",
+                      "w-full bg-white border-[4px] overflow-visible transform hover:-translate-y-1 transition-all duration-200 relative mb-4",
                       betData?.isPerfectPick && match.winnerId !== null
-                        ? "bg-gradient-to-r from-[#ccff00] via-yellow-300 to-[#ccff00]"
-                        : betData?.isUnderdogPick && match.winnerId !== null
-                          ? "bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600"
-                          : "bg-zinc-900",
+                        ? "border-[#ccff00] shadow-[6px_6px_0px_0px_#ccff00,12px_12px_0px_0px_#000]"
+                        : "border-black shadow-[6px_6px_0px_0px_#000]",
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={clsx(
-                          "text-[10px] md:text-xs font-black uppercase tracking-[0.2em] italic",
-                          betData?.isPerfectPick || betData?.isUnderdogPick
-                            ? "text-white"
-                            : "text-white",
-                        )}
-                      >
-                        {match.label || match.name || `MATCH ${idx + 1}`}
-                      </span>
-                      {betData?.isPerfectPick && match.winnerId !== null && (
-                        <span className="bg-black text-[#ccff00] text-[8px] font-black px-2 py-0.5 border-2 border-black flex items-center gap-1">
-                          ⭐ PERFECT PICK!
-                        </span>
-                      )}
-                      {betData?.isUnderdogPick &&
-                        match.winnerId !== null &&
-                        !betData?.isPerfectPick && (
-                          <span className="bg-black text-purple-300 text-[8px] font-black px-2 py-0.5 border-2 border-black flex items-center gap-1">
-                            🔥 UNDERDOG!
-                          </span>
-                        )}
-                    </div>
+                    {/* Match Header Bar */}
                     <div
                       className={clsx(
-                        "text-[10px] font-black italic flex items-center gap-1 shrink-0",
-                        betData?.isPerfectPick
-                          ? "text-black"
-                          : "text-[#ccff00]",
+                        "border-b-[4px] border-black px-4 py-1.5 flex justify-between items-center",
+                        betData?.isPerfectPick && match.winnerId !== null
+                          ? "bg-gradient-to-r from-[#ccff00] via-yellow-300 to-[#ccff00]"
+                          : betData?.isUnderdogPick && match.winnerId !== null
+                            ? "bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600"
+                            : "bg-zinc-900",
                       )}
                     >
-                      <span className="material-symbols-outlined text-xs">
-                        schedule
-                      </span>
-                      {new Date(match.startTime).toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={clsx(
+                            "text-[10px] md:text-xs font-black uppercase tracking-[0.2em] italic",
+                            betData?.isPerfectPick || betData?.isUnderdogPick
+                              ? "text-white"
+                              : "text-white",
+                          )}
+                        >
+                          {match.label || match.name || `MATCH ${idx + 1}`}
+                        </span>
+                        {betData?.isPerfectPick && match.winnerId !== null && (
+                          <span className="bg-black text-[#ccff00] text-[8px] font-black px-2 py-0.5 border-2 border-black flex items-center gap-1">
+                            ⭐ PERFECT PICK!
+                          </span>
+                        )}
+                        {betData?.isUnderdogPick &&
+                          match.winnerId !== null &&
+                          !betData?.isPerfectPick && (
+                            <span className="bg-black text-purple-300 text-[8px] font-black px-2 py-0.5 border-2 border-black flex items-center gap-1">
+                              🔥 UNDERDOG!
+                            </span>
+                          )}
+                      </div>
+                      <div
+                        className={clsx(
+                          "text-[10px] font-black italic flex items-center gap-1 shrink-0",
+                          betData?.isPerfectPick
+                            ? "text-black"
+                            : "text-[#ccff00]",
+                        )}
+                      >
+                        <span className="material-symbols-outlined text-xs">
+                          schedule
+                        </span>
+                        {new Date(match.startTime).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Match Body - Split Design */}
-                  <div className="relative min-h-[112px] h-auto flex overflow-visible group">
-                    {/* Perfect Pick Overlay Effect */}
-                    {betData?.isPerfectPick && match.winnerId !== null && (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#ccff00]/20 via-yellow-200/10 to-[#ccff00]/20 pointer-events-none z-10" />
-                        {/* Decorative Stars */}
-                        <div
-                          className="absolute top-2 left-2 text-2xl animate-bounce z-10"
-                          style={{ animationDelay: "0ms" }}
-                        >
-                          ⭐
-                        </div>
-                        <div
-                          className="absolute top-4 right-4 text-xl animate-bounce z-10"
-                          style={{ animationDelay: "200ms" }}
-                        >
-                          ✨
-                        </div>
-                        <div
-                          className="absolute bottom-2 left-6 text-lg animate-bounce z-10"
-                          style={{ animationDelay: "400ms" }}
-                        >
-                          💫
-                        </div>
-                        <div
-                          className="absolute bottom-4 right-8 text-xl animate-bounce z-10"
-                          style={{ animationDelay: "600ms" }}
-                        >
-                          ⭐
-                        </div>
-                      </>
-                    )}
-                    {/* Underdog Pick Overlay Effect */}
-                    {betData?.isUnderdogPick &&
-                      match.winnerId !== null &&
-                      !betData?.isPerfectPick && (
+                    {/* Match Body - Split Design */}
+                    <div className="relative min-h-[112px] h-auto flex overflow-visible group">
+                      {/* Perfect Pick Overlay Effect */}
+                      {betData?.isPerfectPick && match.winnerId !== null && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-purple-600/10 pointer-events-none z-10" />
-                          {/* Decorative Fire/Dogs */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#ccff00]/20 via-yellow-200/10 to-[#ccff00]/20 pointer-events-none z-10" />
+                          {/* Decorative Stars */}
                           <div
                             className="absolute top-2 left-2 text-2xl animate-bounce z-10"
                             style={{ animationDelay: "0ms" }}
                           >
-                            🔥
+                            ⭐
                           </div>
                           <div
                             className="absolute top-4 right-4 text-xl animate-bounce z-10"
                             style={{ animationDelay: "200ms" }}
                           >
-                            🐕
+                            ✨
                           </div>
                           <div
                             className="absolute bottom-2 left-6 text-lg animate-bounce z-10"
                             style={{ animationDelay: "400ms" }}
                           >
-                            💪
+                            💫
                           </div>
                           <div
                             className="absolute bottom-4 right-8 text-xl animate-bounce z-10"
                             style={{ animationDelay: "600ms" }}
                           >
-                            🔥
+                            ⭐
                           </div>
                         </>
                       )}
-                    {/* VS Divider Badge */}
-                    <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-40">
-                      <div className="bg-white border-[3px] border-black rotate-[8deg] px-1.5 py-0.5 shadow-[2px_2px_0px_0px_#000]">
-                        <span className="font-display font-black text-black text-xs italic">
-                          VS
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Team A Side */}
-                    <div
-                      onClick={() => {
-                        if (!showResult && !isReadOnly)
-                          onUpdatePrediction(match.id, match.teamA.id);
-                      }}
-                      className={clsx(
-                        "flex-1 min-w-0 flex items-center pr-14 pl-6 py-4 relative transition-all duration-300 border-r-2 border-black/10 hover:z-20",
-                        !showResult && !isReadOnly
-                          ? "cursor-pointer"
-                          : "cursor-default",
-                        isActualWinnerA
-                          ? "bg-[#ccff00] text-black"
-                          : isWinnerA
-                            ? "bg-brawl-blue"
-                            : "bg-white hover:bg-gray-50",
-                        showResult &&
-                          !isActualWinnerA &&
-                          "opacity-50 grayscale",
-                      )}
-                    >
-                      {(isWinnerA || isActualWinnerA) && (
-                        <>
-                          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                          {isWinnerA && (
-                            <div className="absolute top-2 left-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
-                              PICK
+                      {/* Underdog Pick Overlay Effect */}
+                      {betData?.isUnderdogPick &&
+                        match.winnerId !== null &&
+                        !betData?.isPerfectPick && (
+                          <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-purple-600/10 pointer-events-none z-10" />
+                            {/* Decorative Fire/Dogs */}
+                            <div
+                              className="absolute top-2 left-2 text-2xl animate-bounce z-10"
+                              style={{ animationDelay: "0ms" }}
+                            >
+                              🔥
                             </div>
-                          )}
-                        </>
-                      )}
-                      <div className="flex items-center gap-4 relative z-10 w-full overflow-hidden">
-                        <div
-                          className={clsx(
-                            "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
-                            isWinnerA
-                              ? "bg-white/20 border-white shadow-sm"
-                              : "bg-black/5 border-black/10",
-                          )}
-                        >
-                          <img
-                            src={match.teamA.logoUrl || ""}
-                            className="w-full h-full object-contain filter drop-shadow-md"
-                            alt=""
-                          />
-                        </div>
-                        <span
-                          className={clsx(
-                            "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 line-clamp-2 px-1",
-                            isActualWinnerA
-                              ? "text-black"
-                              : isWinnerA
-                                ? "text-white"
-                                : showResult
-                                  ? "text-zinc-500" // Dimmer for losers
-                                  : "text-zinc-400",
-                          )}
-                        >
-                          {match.teamA.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Team B Side */}
-                    <div
-                      onClick={() => {
-                        if (!showResult && !isReadOnly)
-                          onUpdatePrediction(match.id, match.teamB.id);
-                      }}
-                      className={clsx(
-                        "flex-1 min-w-0 flex items-center justify-end pl-14 pr-6 py-4 relative transition-all duration-300 border-l-2 border-black/10 hover:z-20",
-                        !showResult && !isReadOnly
-                          ? "cursor-pointer"
-                          : "cursor-default",
-                        isActualWinnerB
-                          ? "bg-[#ccff00] text-black"
-                          : isWinnerB
-                            ? "bg-brawl-red"
-                            : "bg-white hover:bg-gray-50",
-                        showResult &&
-                          !isActualWinnerB &&
-                          "opacity-50 grayscale",
-                      )}
-                    >
-                      {(isWinnerB || isActualWinnerB) && (
-                        <>
-                          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                          {isWinnerB && (
-                            <div className="absolute top-2 right-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
-                              PICK
+                            <div
+                              className="absolute top-4 right-4 text-xl animate-bounce z-10"
+                              style={{ animationDelay: "200ms" }}
+                            >
+                              🐕
                             </div>
-                          )}
-                        </>
-                      )}
-                      <div className="flex items-center gap-4 justify-end relative z-10 w-full overflow-hidden">
-                        <span
-                          className={clsx(
-                            "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 text-right line-clamp-2 px-1",
-                            isActualWinnerB
-                              ? "text-black"
-                              : isWinnerB
-                                ? "text-white"
-                                : showResult
-                                  ? "text-zinc-500" // Dimmer for losers
-                                  : "text-zinc-400",
-                          )}
-                        >
-                          {match.teamB.name}
-                        </span>
-                        <div
-                          className={clsx(
-                            "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
-                            isWinnerB
-                              ? "bg-white/20 border-white shadow-sm"
-                              : "bg-black/5 border-black/10",
-                          )}
-                        >
-                          <img
-                            src={match.teamB.logoUrl || ""}
-                            className="w-full h-full object-contain filter drop-shadow-md"
-                            alt=""
-                          />
+                            <div
+                              className="absolute bottom-2 left-6 text-lg animate-bounce z-10"
+                              style={{ animationDelay: "400ms" }}
+                            >
+                              💪
+                            </div>
+                            <div
+                              className="absolute bottom-4 right-8 text-xl animate-bounce z-10"
+                              style={{ animationDelay: "600ms" }}
+                            >
+                              🔥
+                            </div>
+                          </>
+                        )}
+                      {/* VS Divider Badge */}
+                      <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-40">
+                        <div className="bg-white border-[3px] border-black rotate-[8deg] px-1.5 py-0.5 shadow-[2px_2px_0px_0px_#000]">
+                          <span className="font-display font-black text-black text-xs italic">
+                            VS
+                          </span>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Warning if predicted team didn't make it to this match */}
-                    {predictedTeamNotInMatch && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-500 border-[2px] border-black px-2 py-0.5 shadow-[2px_2px_0px_0px_#000] transform -rotate-1 z-50 whitespace-nowrap">
-                        <span className="text-[8px] font-black uppercase text-black">
-                          ⚠️ Confronto diferente do palpite
-                        </span>
+                      {/* Team A Side */}
+                      <div
+                        onClick={() => {
+                          if (!showResult && !isReadOnly)
+                            onUpdatePrediction(match.id, match.teamA.id);
+                        }}
+                        className={clsx(
+                          "flex-1 min-w-0 flex items-center pr-14 pl-6 py-4 relative transition-all duration-300 border-r-2 border-black/10 hover:z-20",
+                          !showResult && !isReadOnly
+                            ? "cursor-pointer"
+                            : "cursor-default",
+                          isActualWinnerA
+                            ? "bg-[#ccff00] text-black"
+                            : isWinnerA
+                              ? "bg-brawl-blue"
+                              : "bg-white hover:bg-gray-50",
+                          showResult &&
+                            !isActualWinnerA &&
+                            "opacity-50 grayscale",
+                        )}
+                      >
+                        {(isWinnerA || isActualWinnerA) && (
+                          <>
+                            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                            {isWinnerA && (
+                              <div className="absolute top-2 left-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
+                                PICK
+                              </div>
+                            )}
+                          </>
+                        )}
+                        <div className="flex items-center gap-4 relative z-10 w-full overflow-hidden">
+                          <div
+                            className={clsx(
+                              "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
+                              isWinnerA
+                                ? "bg-white/20 border-white shadow-sm"
+                                : "bg-black/5 border-black/10",
+                            )}
+                          >
+                            <img
+                              src={match.teamA.logoUrl || ""}
+                              className="w-full h-full object-contain filter drop-shadow-md"
+                              alt=""
+                            />
+                          </div>
+                          <span
+                            className={clsx(
+                              "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 line-clamp-2 px-1",
+                              isActualWinnerA
+                                ? "text-black"
+                                : isWinnerA
+                                  ? "text-white"
+                                  : showResult
+                                    ? "text-zinc-500" // Dimmer for losers
+                                    : "text-zinc-400",
+                            )}
+                          >
+                            {match.teamA.name}
+                          </span>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Predicted Score Overlay / Selector */}
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-30">
-                      {isEditingScore ? (
-                        <div className="flex gap-1 bg-white border-[3px] border-black p-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 animate-in zoom-in-95 duration-200">
-                          {scoreOptions.map((opt) => (
-                            <button
-                              key={opt}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onUpdatePrediction(
-                                  match.id,
-                                  prediction?.winnerId || 0,
-                                  opt,
-                                );
-                                setEditingScoreMatchId(null);
-                              }}
+                      {/* Team B Side */}
+                      <div
+                        onClick={() => {
+                          if (!showResult && !isReadOnly)
+                            onUpdatePrediction(match.id, match.teamB.id);
+                        }}
+                        className={clsx(
+                          "flex-1 min-w-0 flex items-center justify-end pl-14 pr-6 py-4 relative transition-all duration-300 border-l-2 border-black/10 hover:z-20",
+                          !showResult && !isReadOnly
+                            ? "cursor-pointer"
+                            : "cursor-default",
+                          isActualWinnerB
+                            ? "bg-[#ccff00] text-black"
+                            : isWinnerB
+                              ? "bg-brawl-red"
+                              : "bg-white hover:bg-gray-50",
+                          showResult &&
+                            !isActualWinnerB &&
+                            "opacity-50 grayscale",
+                        )}
+                      >
+                        {(isWinnerB || isActualWinnerB) && (
+                          <>
+                            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                            {isWinnerB && (
+                              <div className="absolute top-2 right-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
+                                PICK
+                              </div>
+                            )}
+                          </>
+                        )}
+                        <div className="flex items-center gap-4 justify-end relative z-10 w-full overflow-hidden">
+                          <span
+                            className={clsx(
+                              "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 text-right line-clamp-2 px-1",
+                              isActualWinnerB
+                                ? "text-black"
+                                : isWinnerB
+                                  ? "text-white"
+                                  : showResult
+                                    ? "text-zinc-500" // Dimmer for losers
+                                    : "text-zinc-400",
+                            )}
+                          >
+                            {match.teamB.name}
+                          </span>
+                          <div
+                            className={clsx(
+                              "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
+                              isWinnerB
+                                ? "bg-white/20 border-white shadow-sm"
+                                : "bg-black/5 border-black/10",
+                            )}
+                          >
+                            <img
+                              src={match.teamB.logoUrl || ""}
+                              className="w-full h-full object-contain filter drop-shadow-md"
+                              alt=""
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Warning if predicted team didn't make it to this match */}
+                      {predictedTeamNotInMatch && (
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-500 border-[2px] border-black px-2 py-0.5 shadow-[2px_2px_0px_0px_#000] transform -rotate-1 z-50 whitespace-nowrap">
+                          <span className="text-[8px] font-black uppercase text-black">
+                            ⚠️ Confronto diferente do palpite
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Predicted Score Overlay / Selector */}
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-30">
+                        {isEditingScore ? (
+                          <div className="flex gap-1 bg-white border-[3px] border-black p-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 animate-in zoom-in-95 duration-200">
+                            {scoreOptions.map((opt) => (
+                              <button
+                                key={opt}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdatePrediction(
+                                    match.id,
+                                    prediction?.winnerId || 0,
+                                    opt,
+                                  );
+                                  setEditingScoreMatchId(null);
+                                }}
+                                className={clsx(
+                                  "px-2 py-1 font-display font-black text-xs italic border-2 transition-all",
+                                  prediction?.score === opt
+                                    ? matchActiveColor === "brawl-blue"
+                                      ? "bg-brawl-blue border-black text-white"
+                                      : "bg-brawl-red border-black text-white"
+                                    : "bg-white border-transparent text-gray-400 hover:text-black hover:border-gray-200",
+                                )}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        ) : showResult && betData ? (
+                          // Show comparison: predicted vs actual
+                          <div className="flex flex-col items-center gap-1">
+                            {/* Actual Score (Main) */}
+                            <div className="border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 bg-zinc-800">
+                              <span className="font-display font-black text-sm text-white italic">
+                                {displayScore}
+                              </span>
+                            </div>
+                            {/* Predicted Score (Below) */}
+                            <div
                               className={clsx(
-                                "px-2 py-1 font-display font-black text-xs italic border-2 transition-all",
-                                prediction?.score === opt
-                                  ? matchActiveColor === "brawl-blue"
-                                    ? "bg-brawl-blue border-black text-white"
-                                    : "bg-brawl-red border-black text-white"
-                                  : "bg-white border-transparent text-gray-400 hover:text-black hover:border-gray-200",
+                                "border-[2px] border-black px-3 py-0.5 rotate-1",
+                                betData.isPerfectPick && match.winnerId !== null
+                                  ? "bg-[#ccff00] text-black"
+                                  : betData.predictedWinnerId === match.winnerId
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-600",
                               )}
                             >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      ) : showResult && betData ? (
-                        // Show comparison: predicted vs actual
-                        <div className="flex flex-col items-center gap-1">
-                          {/* Actual Score (Main) */}
-                          <div className="border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 bg-zinc-800">
+                              <div className="flex items-center gap-1">
+                                <span className="text-[8px] font-bold uppercase">
+                                  Seu palpite:
+                                </span>
+                                <span className="font-display font-black text-xs italic">
+                                  {betData.predictedScoreA}-
+                                  {betData.predictedScoreB}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!showResult && !isReadOnly)
+                                setEditingScoreMatchId(match.id);
+                            }}
+                            className={clsx(
+                              "border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 transition-all outline-none",
+                              !showResult &&
+                                "hover:scale-105 active:scale-95 cursor-pointer",
+                              showResult
+                                ? "bg-zinc-800"
+                                : matchActiveColor === "brawl-blue"
+                                  ? "bg-brawl-blue"
+                                  : "bg-brawl-red",
+                            )}
+                          >
                             <span className="font-display font-black text-sm text-white italic">
                               {displayScore}
                             </span>
-                          </div>
-                          {/* Predicted Score (Below) */}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Points Badge - Show for finished matches */}
+                      {match.status === "finished" &&
+                        betData &&
+                        betData.pointsEarned !== undefined && (
                           <div
                             className={clsx(
-                              "border-[2px] border-black px-3 py-0.5 rotate-1",
-                              betData.isPerfectPick && match.winnerId !== null
-                                ? "bg-[#ccff00] text-black"
-                                : betData.predictedWinnerId === match.winnerId
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-600",
-                            )}
-                          >
-                            <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-bold uppercase">
-                                Seu palpite:
-                              </span>
-                              <span className="font-display font-black text-xs italic">
-                                {betData.predictedScoreA}-
-                                {betData.predictedScoreB}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!showResult && !isReadOnly)
-                              setEditingScoreMatchId(match.id);
-                          }}
-                          className={clsx(
-                            "border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 transition-all outline-none",
-                            !showResult &&
-                              "hover:scale-105 active:scale-95 cursor-pointer",
-                            showResult
-                              ? "bg-zinc-800"
-                              : matchActiveColor === "brawl-blue"
-                                ? "bg-brawl-blue"
-                                : "bg-brawl-red",
-                          )}
-                        >
-                          <span className="font-display font-black text-sm text-white italic">
-                            {displayScore}
-                          </span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Points Badge - Show for finished matches */}
-                    {match.status === "finished" &&
-                      betData &&
-                      betData.pointsEarned !== undefined && (
-                        <div
-                          className={clsx(
-                            "absolute -bottom-2 -right-2 text-[8px] font-black uppercase px-2 py-1 border-2 z-20 flex items-center gap-1.5 cursor-help group/badge",
-                            (() => {
-                              const isCorrect =
-                                match.winnerId === betData.predictedWinnerId;
-                              if (!isCorrect)
-                                return "bg-red-500 text-white border-black";
-                              if (betData.isPerfectPick) {
-                                return "bg-gradient-to-r from-yellow-400 via-[#ccff00] to-yellow-400 text-black border-[#ccff00] shadow-[0_0_20px_rgba(204,255,0,0.6)]";
-                              }
-                              if (betData.isUnderdogPick) {
-                                return "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-black";
-                              }
-                              return "bg-green-500 text-white border-black";
-                            })(),
-                          )}
-                        >
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover/badge:block w-52 bg-black text-white text-[10px] p-2 rounded border-2 border-white shadow-lg z-[100] pointer-events-none">
-                            <div className="space-y-1">
-                              {(() => {
+                              "absolute -bottom-2 -right-2 text-[8px] font-black uppercase px-2 py-1 border-2 z-20 flex items-center gap-1.5 cursor-help group/badge",
+                              (() => {
                                 const isCorrect =
                                   match.winnerId === betData.predictedWinnerId;
+                                if (!isCorrect)
+                                  return "bg-red-500 text-white border-black";
+                                if (betData.isPerfectPick) {
+                                  return "bg-gradient-to-r from-yellow-400 via-[#ccff00] to-yellow-400 text-black border-[#ccff00] shadow-[0_0_20px_rgba(204,255,0,0.6)]";
+                                }
+                                if (betData.isUnderdogPick) {
+                                  return "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-black";
+                                }
+                                return "bg-green-500 text-white border-black";
+                              })(),
+                            )}
+                          >
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full right-0 mb-2 hidden group-hover/badge:block w-52 bg-black text-white text-[10px] p-2 rounded border-2 border-white shadow-lg z-[100] pointer-events-none">
+                              <div className="space-y-1">
+                                {(() => {
+                                  const isCorrect =
+                                    match.winnerId ===
+                                    betData.predictedWinnerId;
 
-                                // Special case: predicted team never reached this match
-                                if (predictedTeamNotInMatch) {
+                                  // Special case: predicted team never reached this match
+                                  if (predictedTeamNotInMatch) {
+                                    return (
+                                      <>
+                                        <div className="font-bold text-yellow-400">
+                                          ⚠️ Confronto Diferente
+                                        </div>
+                                        <div className="text-[9px] text-gray-300">
+                                          Você apostou num confronto que não
+                                          ocorreu nesta partida devido ao
+                                          chaveamento.
+                                        </div>
+                                        <div className="border-t border-gray-600 pt-1 mt-1 font-bold text-red-400">
+                                          Total: 0 pontos
+                                        </div>
+                                      </>
+                                    );
+                                  }
+
+                                  if (!isCorrect) {
+                                    return (
+                                      <>
+                                        <div className="font-bold text-red-300">
+                                          ❌ Palpite Incorreto
+                                        </div>
+                                        <div className="text-[9px] text-gray-300">
+                                          Você apostou em:{" "}
+                                          {match.teamA?.id ===
+                                          betData.predictedWinnerId
+                                            ? match.teamA?.name
+                                            : match.teamB?.name}
+                                        </div>
+                                        <div className="text-[9px] text-gray-300">
+                                          Vencedor real:{" "}
+                                          {match.teamA?.id === match.winnerId
+                                            ? match.teamA?.name
+                                            : match.teamB?.name}
+                                        </div>
+                                        <div className="border-t border-gray-600 pt-1 mt-1 font-bold">
+                                          Total: 0 pontos
+                                        </div>
+                                      </>
+                                    );
+                                  }
+
                                   return (
                                     <>
-                                      <div className="font-bold text-yellow-400">
-                                        ⚠️ Confronto Diferente
-                                      </div>
-                                      <div className="text-[9px] text-gray-300">
-                                        Você apostou num confronto que não ocorreu nesta partida devido ao chaveamento.
-                                      </div>
-                                      <div className="border-t border-gray-600 pt-1 mt-1 font-bold text-red-400">
-                                        Total: 0 pontos
-                                      </div>
-                                    </>
-                                  );
-                                }
+                                      {betData.isPerfectPick ? (
+                                        <div className="font-bold text-[#ccff00] flex items-center gap-1">
+                                          ⭐ PLACAR PERFEITO!
+                                        </div>
+                                      ) : (
+                                        <div className="font-bold text-green-300">
+                                          ✅ Breakdown de Pontos:
+                                        </div>
+                                      )}
 
-                                if (!isCorrect) {
-                                  return (
-                                    <>
-                                      <div className="font-bold text-red-300">
-                                        ❌ Palpite Incorreto
-                                      </div>
-                                      <div className="text-[9px] text-gray-300">
-                                        Você apostou em:{" "}
-                                        {match.teamA?.id ===
-                                        betData.predictedWinnerId
-                                          ? match.teamA?.name
-                                          : match.teamB?.name}
-                                      </div>
-                                      <div className="text-[9px] text-gray-300">
-                                        Vencedor real:{" "}
-                                        {match.teamA?.id === match.winnerId
-                                          ? match.teamA?.name
-                                          : match.teamB?.name}
-                                      </div>
-                                      <div className="border-t border-gray-600 pt-1 mt-1 font-bold">
-                                        Total: 0 pontos
-                                      </div>
-                                    </>
-                                  );
-                                }
+                                      {/* Calculate point breakdown */}
+                                      {(() => {
+                                        // Get scoring rules from match (with fallback to defaults)
+                                        const rules = match.scoringRules || {
+                                          winner: 1,
+                                          exact: 3,
+                                          underdog_25: 2,
+                                          underdog_50: 1,
+                                        };
 
-                                return (
-                                  <>
-                                    {betData.isPerfectPick ? (
-                                      <div className="font-bold text-[#ccff00] flex items-center gap-1">
-                                        ⭐ PLACAR PERFEITO!
-                                      </div>
-                                    ) : (
-                                      <div className="font-bold text-green-300">
-                                        ✅ Breakdown de Pontos:
-                                      </div>
-                                    )}
+                                        let winnerPoints = 0;
+                                        let exactPoints = 0;
+                                        let underdogPoints = 0;
 
-                                    {/* Calculate point breakdown */}
-                                    {(() => {
-                                      // Get scoring rules from match (with fallback to defaults)
-                                      const rules = match.scoringRules || {
-                                        winner: 1,
-                                        exact: 3,
-                                        underdog_25: 2,
-                                        underdog_50: 1,
-                                      };
+                                        if (betData.isPerfectPick) {
+                                          // Perfect pick: exact score overwrites
+                                          exactPoints = rules.exact;
+                                        } else {
+                                          // Only winner correct
+                                          winnerPoints = rules.winner;
+                                        }
 
-                                      let winnerPoints = 0;
-                                      let exactPoints = 0;
-                                      let underdogPoints = 0;
+                                        if (betData.isUnderdogPick) {
+                                          // Calculate underdog bonus from total points
+                                          underdogPoints =
+                                            betData.pointsEarned -
+                                            (exactPoints || winnerPoints);
+                                        }
 
-                                      if (betData.isPerfectPick) {
-                                        // Perfect pick: exact score overwrites
-                                        exactPoints = rules.exact;
-                                      } else {
-                                        // Only winner correct
-                                        winnerPoints = rules.winner;
-                                      }
-
-                                      if (betData.isUnderdogPick) {
-                                        // Calculate underdog bonus from total points
-                                        underdogPoints =
-                                          betData.pointsEarned -
-                                          (exactPoints || winnerPoints);
-                                      }
-
-                                      return (
-                                        <div className="space-y-0.5 text-[9px]">
-                                          {betData.isPerfectPick ? (
-                                            <div className="text-[#ccff00] font-bold flex justify-between">
-                                              <span>
-                                                ⭐ Placar exato (
-                                                {betData.predictedScoreA}-
-                                                {betData.predictedScoreB})
-                                              </span>
-                                              <span>+{exactPoints} pts</span>
-                                            </div>
-                                          ) : (
-                                            <div className="text-gray-300 flex justify-between">
-                                              <span>✓ Vencedor correto</span>
-                                              <span>+{winnerPoints} pt</span>
-                                            </div>
-                                          )}
-                                          {betData.isUnderdogPick &&
-                                            underdogPoints > 0 && (
-                                              <div className="text-purple-300 font-bold flex justify-between">
-                                                <span>🔥 Bônus Underdog</span>
+                                        return (
+                                          <div className="space-y-0.5 text-[9px]">
+                                            {betData.isPerfectPick ? (
+                                              <div className="text-[#ccff00] font-bold flex justify-between">
                                                 <span>
-                                                  +{underdogPoints} pts
+                                                  ⭐ Placar exato (
+                                                  {betData.predictedScoreA}-
+                                                  {betData.predictedScoreB})
                                                 </span>
+                                                <span>+{exactPoints} pts</span>
+                                              </div>
+                                            ) : (
+                                              <div className="text-gray-300 flex justify-between">
+                                                <span>✓ Vencedor correto</span>
+                                                <span>+{winnerPoints} pt</span>
                                               </div>
                                             )}
-                                        </div>
-                                      );
-                                    })()}
+                                            {betData.isUnderdogPick &&
+                                              underdogPoints > 0 && (
+                                                <div className="text-purple-300 font-bold flex justify-between">
+                                                  <span>🔥 Bônus Underdog</span>
+                                                  <span>
+                                                    +{underdogPoints} pts
+                                                  </span>
+                                                </div>
+                                              )}
+                                          </div>
+                                        );
+                                      })()}
 
-                                    <div
-                                      className={clsx(
-                                        "border-t pt-1 mt-1 font-bold flex justify-between",
-                                        betData.isPerfectPick
-                                          ? "border-[#ccff00] text-[#ccff00]"
-                                          : "border-gray-600 text-yellow-300",
-                                      )}
-                                    >
-                                      <span>Total:</span>
-                                      <span>+{betData.pointsEarned} pts</span>
-                                    </div>
-                                  </>
-                                );
-                              })()}
+                                      <div
+                                        className={clsx(
+                                          "border-t pt-1 mt-1 font-bold flex justify-between",
+                                          betData.isPerfectPick
+                                            ? "border-[#ccff00] text-[#ccff00]"
+                                            : "border-gray-600 text-yellow-300",
+                                        )}
+                                      >
+                                        <span>Total:</span>
+                                        <span>+{betData.pointsEarned} pts</span>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
                             </div>
-                            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
-                          </div>
 
-                          {/* Badge Content */}
-                          {(() => {
-                            const isCorrect =
-                              match.winnerId === betData.predictedWinnerId;
-                            if (!isCorrect) return "✗";
-                            if (betData.isPerfectPick)
-                              return <span className="text-[10px]">⭐</span>;
-                            if (betData.isUnderdogPick) return <span>🔥</span>;
-                            return "✓";
-                          })()}
-                          <span className="whitespace-nowrap">
-                            {betData.pointsEarned > 0
-                              ? `+${betData.pointsEarned}`
-                              : betData.pointsEarned}{" "}
-                            PTS
-                          </span>
-                          {betData.isUnderdogPick &&
-                            match.winnerId === betData.predictedWinnerId && (
-                              <span className="text-[7px]">🐕</span>
-                            )}
-                        </div>
-                      )}
+                            {/* Badge Content */}
+                            {(() => {
+                              const isCorrect =
+                                match.winnerId === betData.predictedWinnerId;
+                              if (!isCorrect) return "✗";
+                              if (betData.isPerfectPick)
+                                return <span className="text-[10px]">⭐</span>;
+                              if (betData.isUnderdogPick)
+                                return <span>🔥</span>;
+                              return "✓";
+                            })()}
+                            <span className="whitespace-nowrap">
+                              {betData.pointsEarned > 0
+                                ? `+${betData.pointsEarned}`
+                                : betData.pointsEarned}{" "}
+                              PTS
+                            </span>
+                            {betData.isUnderdogPick &&
+                              match.winnerId === betData.predictedWinnerId && (
+                                <span className="text-[7px]">🐕</span>
+                              )}
+                          </div>
+                        )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Lock In Button */}
@@ -1665,13 +1659,12 @@ function Home() {
       setTournamentData({
         // Show all matches in carousel, not just betting-enabled ones
         // The match day status controls whether betting is allowed
-        carouselMatches: data.matches
-          .sort((a, b) => {
-            const timeA = new Date(a.startTime).getTime();
-            const timeB = new Date(b.startTime).getTime();
-            if (timeA !== timeB) return timeA - timeB;
-            return (a.displayOrder || 0) - (b.displayOrder || 0);
-          }),
+        carouselMatches: data.matches.sort((a, b) => {
+          const timeA = new Date(a.startTime).getTime();
+          const timeB = new Date(b.startTime).getTime();
+          if (timeA !== timeB) return timeA - timeB;
+          return (a.displayOrder || 0) - (b.displayOrder || 0);
+        }),
         bracketMatches: data.matches,
         userBets: data.userBets,
         matchDays: data.matchDays,
@@ -1730,7 +1723,13 @@ function Home() {
     // Double elimination: bracketSide "upper", "lower", "grand_final"
     const isPlayoffMatch = (m: any) => {
       if (m.bracketSide === "groups") return false;
-      if (m.bracketSide === "main" || m.bracketSide === "upper" || m.bracketSide === "lower" || m.bracketSide === "grand_final") return true;
+      if (
+        m.bracketSide === "main" ||
+        m.bracketSide === "upper" ||
+        m.bracketSide === "lower" ||
+        m.bracketSide === "grand_final"
+      )
+        return true;
       // Single elimination may have bracketSide: null but have nextMatchWinnerId
       if (m.bracketSide === null && m.nextMatchWinnerId) return true;
       return false;
@@ -1931,14 +1930,23 @@ function Home() {
   // Show empty state if no tournaments
   if (tournaments.length === 0) {
     return (
-      <div className="min-h-screen bg-paper bg-paper-texture flex items-center justify-center">
-        <div className="text-center space-y-4 p-8">
-          <h2 className="font-display font-black text-3xl italic uppercase text-black">
-            No Tournaments Available
-          </h2>
-          <p className="font-body text-zinc-500">
-            Check back soon for upcoming tournaments!
-          </p>
+      <div className="min-h-screen bg-paper bg-paper-texture flex items-center justify-center p-6">
+        <div className="w-full max-w-md text-center">
+          <div className="inline-block bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_#000] p-8 w-full relative overflow-hidden">
+            {/* Corner decorations */}
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#ccff00] border-2 border-black" />
+            <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-brawl-red border-2 border-black" />
+
+            <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 border-[3px] border-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+              <Trophy className="w-10 h-10 text-gray-300" strokeWidth={3} />
+            </div>
+            <h3 className="font-display font-black text-xl md:text-3xl italic uppercase text-black mb-3 tracking-tighter transform -skew-x-12">
+              Nenhum Torneio Disponível
+            </h3>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-widest leading-relaxed">
+              Volte em breve para acompanhar <br /> novos torneios competitivos!
+            </p>
+          </div>
         </div>
       </div>
     );

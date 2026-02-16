@@ -139,7 +139,7 @@ export const MatchCard = ({
 
   if (isGhost) {
     return (
-      <div className="w-72 bg-gray-100 border-[3px] border-black/20 h-28 flex items-center justify-center">
+      <div className="w-full bg-gray-100 border-[3px] border-black/20 h-28 flex items-center justify-center">
         <span className="text-black/20 font-black italic uppercase text-sm">
           TBD
         </span>
@@ -160,7 +160,7 @@ export const MatchCard = ({
   return (
     <div
       className={clsx(
-        "w-72 bg-white border-[3px] border-black shadow-[3px_3px_0px_0px_#000] overflow-visible transition-all duration-200 relative group z-10 text-black",
+        "w-full bg-white border-[3px] border-black shadow-[3px_3px_0px_0px_#000] overflow-visible transition-all duration-200 relative group z-10 text-black",
         canInteract && "hover:-translate-y-0.5 hover:z-50 cursor-pointer",
         !canInteract && !showResult && "opacity-60",
       )}
@@ -338,11 +338,10 @@ export const MatchCard = ({
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2 relative z-10">
             <TeamLogo
-              teamId={match.teamA.id}
               teamName={match.teamA.name}
               logoUrl={match.teamA.logoUrl}
-              size="sm"
-              className="rounded-full border-2 border-black/20"
+              size="md"
+              className=""
             />
             <span
               className={clsx(
@@ -427,11 +426,10 @@ export const MatchCard = ({
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             <TeamLogo
-              teamId={match.teamB.id}
               teamName={match.teamB.name}
               logoUrl={match.teamB.logoUrl}
-              size="sm"
-              className="rounded-full border-2 border-black/20"
+              size="md"
+              className=""
             />
             <span
               className={clsx(

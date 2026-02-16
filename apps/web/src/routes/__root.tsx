@@ -57,7 +57,7 @@ function RootDocument() {
       </head>
       <body>
         <HeaderProvider>
-          <div className="min-h-screen w-full font-sans">
+          <div className="min-h-screen w-full font-sans overflow-x-hidden">
             <GlobalHeader />
             <Outlet />
           </div>

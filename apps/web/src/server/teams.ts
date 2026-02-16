@@ -2,6 +2,12 @@ import { teams } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
+import {
+  uploadLogoToR2,
+  base64ToBuffer,
+  getTeamLogoKey,
+  isBase64DataUrl,
+} from "./r2";
 
 // Schema for Team Input
 const teamSchema = z.object({
@@ -47,29 +53,69 @@ const saveTeamFn = createServerFn({
   const data = ctx.data;
   const validData = teamSchema.parse(data);
 
+  let finalLogoUrl = validData.logoUrl || null;
+
   if (validData.id) {
+    // Handling existing team
+    if (finalLogoUrl && isBase64DataUrl(finalLogoUrl)) {
+      const { buffer, contentType } = base64ToBuffer(finalLogoUrl);
+      const extension = contentType.split("/")[1] || "png";
+      const key = getTeamLogoKey(validData.id, extension);
+      const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
+      finalLogoUrl = publicUrl;
+    }
+
     const updated = await db
       .update(teams)
       .set({
         name: validData.name,
         slug: validData.slug,
-        logoUrl: validData.logoUrl || null,
+        logoUrl: finalLogoUrl,
         region: validData.region || null,
       })
       .where(eq(teams.id, validData.id))
       .returning();
     return updated[0];
   } else {
+    // Handling new team - need ID first if we want to use it for the R2 key
     const inserted = await db
       .insert(teams)
       .values({
         name: validData.name,
         slug: validData.slug,
-        logoUrl: validData.logoUrl || null,
+        logoUrl: null, // Temp null
         region: validData.region || null,
       })
       .returning();
-    return inserted[0];
+
+    const newTeam = inserted[0];
+
+    if (finalLogoUrl && isBase64DataUrl(finalLogoUrl)) {
+      const { buffer, contentType } = base64ToBuffer(finalLogoUrl);
+      const extension = contentType.split("/")[1] || "png";
+      const key = getTeamLogoKey(newTeam.id, extension);
+      const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
+
+      // Update with the R2 URL
+      const finalUpdate = await db
+        .update(teams)
+        .set({ logoUrl: publicUrl })
+        .where(eq(teams.id, newTeam.id))
+        .returning();
+      return finalUpdate[0];
+    }
+
+    // If it was already a URL or empty, just update if needed or return
+    if (finalLogoUrl) {
+      const finalUpdate = await db
+        .update(teams)
+        .set({ logoUrl: finalLogoUrl })
+        .where(eq(teams.id, newTeam.id))
+        .returning();
+      return finalUpdate[0];
+    }
+
+    return newTeam;
   }
 });
 

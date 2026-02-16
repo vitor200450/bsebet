@@ -152,7 +152,6 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
                 )}
 
                 <TeamLogo
-                  teamId={s.team.id}
                   teamName={s.team.name}
                   logoUrl={s.team.logoUrl}
                   size="xs"

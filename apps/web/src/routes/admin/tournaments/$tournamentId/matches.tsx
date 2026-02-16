@@ -261,7 +261,7 @@ function TournamentMatchesPage() {
             {/* 1. Teams - Add teams first */}
             <button
               onClick={() => setActiveTab("teams")}
-              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                 activeTab === "teams"
                   ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                   : "bg-white hover:bg-gray-50"
@@ -273,7 +273,7 @@ function TournamentMatchesPage() {
             {/* 2. Schedule - Define match days */}
             <button
               onClick={() => setActiveTab("schedule")}
-              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                 activeTab === "schedule"
                   ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                   : "bg-white hover:bg-gray-50"
@@ -286,7 +286,7 @@ function TournamentMatchesPage() {
             {hasGroups && (
               <button
                 onClick={() => setActiveTab("seeding")}
-                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                   activeTab === "seeding"
                     ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                     : "bg-white hover:bg-gray-50"
@@ -300,7 +300,7 @@ function TournamentMatchesPage() {
             {hasGroups && (
               <button
                 onClick={() => setActiveTab("groups")}
-                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                   activeTab === "groups"
                     ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                     : "bg-white hover:bg-gray-50"
@@ -314,7 +314,7 @@ function TournamentMatchesPage() {
             {hasBracket && (
               <button
                 onClick={() => setActiveTab("bracket")}
-                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+                className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                   activeTab === "bracket"
                     ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                     : "bg-white hover:bg-gray-50"
@@ -327,7 +327,7 @@ function TournamentMatchesPage() {
             {/* 6. Matches - Manage individual matches */}
             <button
               onClick={() => setActiveTab("matches")}
-              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                 activeTab === "matches"
                   ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                   : "bg-white hover:bg-gray-50"
@@ -339,7 +339,7 @@ function TournamentMatchesPage() {
             {/* 7. Order - Fine-tune display order */}
             <button
               onClick={() => setActiveTab("ordering")}
-              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 text-black ${
                 activeTab === "ordering"
                   ? "bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
                   : "bg-white hover:bg-gray-50"
@@ -369,20 +369,20 @@ function TournamentMatchesPage() {
       <div className="lg:hidden bg-white border-b-2 border-black p-2 flex gap-2 overflow-x-auto sticky top-20 z-30">
         <button
           onClick={() => setActiveTab("teams")}
-          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "teams" ? "bg-[#ccff00]" : "bg-white"}`}
+          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "teams" ? "bg-[#ccff00]" : "bg-white"}`}
         >
           Teams
         </button>
         <button
           onClick={() => setActiveTab("schedule")}
-          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "schedule" ? "bg-[#ccff00]" : "bg-white"}`}
+          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "schedule" ? "bg-[#ccff00]" : "bg-white"}`}
         >
           Days
         </button>
         {hasGroups && (
           <button
             onClick={() => setActiveTab("seeding")}
-            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "seeding" ? "bg-[#ccff00]" : "bg-white"}`}
+            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "seeding" ? "bg-[#ccff00]" : "bg-white"}`}
           >
             Seeding
           </button>
@@ -390,7 +390,7 @@ function TournamentMatchesPage() {
         {hasGroups && (
           <button
             onClick={() => setActiveTab("groups")}
-            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "groups" ? "bg-[#ccff00]" : "bg-white"}`}
+            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "groups" ? "bg-[#ccff00]" : "bg-white"}`}
           >
             Groups
           </button>
@@ -398,20 +398,20 @@ function TournamentMatchesPage() {
         {hasBracket && (
           <button
             onClick={() => setActiveTab("bracket")}
-            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
+            className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
           >
             Bracket
           </button>
         )}
         <button
           onClick={() => setActiveTab("matches")}
-          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "matches" ? "bg-[#ccff00]" : "bg-white"}`}
+          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "matches" ? "bg-[#ccff00]" : "bg-white"}`}
         >
           Matches
         </button>
         <button
           onClick={() => setActiveTab("ordering")}
-          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 ${activeTab === "ordering" ? "bg-[#ccff00]" : "bg-white"}`}
+          className={`px-4 py-2 font-black uppercase text-[10px] border-2 border-black shrink-0 text-black ${activeTab === "ordering" ? "bg-[#ccff00]" : "bg-white"}`}
         >
           Order
         </button>
@@ -739,7 +739,7 @@ function TournamentMatchesPage() {
                             <div className="p-4 flex flex-col gap-3">
                               <div className="flex items-center justify-between gap-4">
                                 <div className="flex-1 flex flex-col items-center gap-2 text-center">
-                                  <div className="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center p-1 bg-white overflow-hidden">
+                                  <div className="w-16 h-16 flex items-center justify-center p-1">
                                     {match.teamA ? (
                                       <img
                                         src={match.teamA.logoUrl || ""}
@@ -778,7 +778,7 @@ function TournamentMatchesPage() {
                                 )}
 
                                 <div className="flex-1 flex flex-col items-center gap-2 text-center">
-                                  <div className="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center p-1 bg-white overflow-hidden">
+                                  <div className="w-16 h-16 flex items-center justify-center p-1">
                                     {match.teamB ? (
                                       <img
                                         src={match.teamB.logoUrl || ""}

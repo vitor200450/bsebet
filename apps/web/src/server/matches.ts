@@ -1,6 +1,6 @@
-import { matches, matchDays } from "@bsebet/db/schema";
+import { matches, matchDays, bets } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, not } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
 
@@ -70,10 +70,7 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 
     // Only update if there are changes
     if (Object.keys(updates).length > 0) {
-      await db
-        .update(matches)
-        .set(updates)
-        .where(eq(matches.id, depMatch.id));
+      await db.update(matches).set(updates).where(eq(matches.id, depMatch.id));
     }
   }
 }
@@ -117,6 +114,10 @@ const getMatchesFn = createServerFn({ method: "GET" }).handler(
         displayOrder: true,
         isBettingEnabled: true,
         underdogTeamId: true,
+        teamAPreviousMatchId: true,
+        teamBPreviousMatchId: true,
+        teamAPreviousMatchResult: true,
+        teamBPreviousMatchResult: true,
       },
     });
 
@@ -438,450 +439,472 @@ export const generateNextRound = generateNextRoundFn as unknown as (opts: {
 const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
+    console.log("generateFullBracketFn called with:", ctx.data);
     const { tournamentId, stageId } = z
       .object({
         tournamentId: z.number(),
         stageId: z.string().optional(),
       })
       .parse(ctx.data);
+    console.log("Parsed data:", { tournamentId, stageId });
 
-    const tournament = await db.query.tournaments.findFirst({
-      where: (t, { eq }) => eq(t.id, tournamentId),
-    });
-
-    if (!tournament) throw new Error("Tournament not found");
-
-    const stages = (tournament.stages as any[]) || [];
-    let stage;
-    if (stageId) {
-      stage = stages.find((s) => s.id === stageId);
-    } else {
-      // If no stageId, try to find a stage that matches the intent (Playoffs)
-      // DEFAULT: Prioritize playoff stages if we are in a context that likes them
-      // But for now, just fallback to stages[0] safely
-      stage = stages.find(
-        (s) =>
-          s.type === "Single Elimination" || s.type === "Double Elimination",
-      );
-
-      // Only fallback to first stage (Groups) if absolutely necessary
-      if (!stage) stage = stages[0];
-    }
-
-    if (!stage) throw new Error("Stage not found");
-
-    const seededTeams = await db.query.tournamentTeams.findMany({
-      where: (tt, { eq, isNotNull }) =>
-        and(eq(tt.tournamentId, tournamentId), isNotNull(tt.group)),
-      with: {
-        team: true,
-      },
-    });
-
-    if (stage.type === "Groups") {
-      const groupsCount = stage.settings?.groupsCount || 4;
-      const format = stage.settings?.format || "GSL";
-
-      // 1. Find the first available Match Day or create a default one
-      let matchDay = await db.query.matchDays.findFirst({
-        where: (md, { eq }) => eq(md.tournamentId, tournamentId),
-        orderBy: (md, { asc }) => [asc(md.date)],
+    try {
+      const tournament = await db.query.tournaments.findFirst({
+        where: (t, { eq }) => eq(t.id, tournamentId),
       });
 
-      if (!matchDay) {
-        const [created] = await db
-          .insert(matchDays)
-          .values({
-            tournamentId,
-            date: new Date(),
-            label: "Day 1",
-            status: "draft",
-          })
-          .returning();
-        matchDay = created;
-      }
+      if (!tournament) throw new Error("Tournament not found");
+      console.log("Tournament found:", tournament.id);
 
-      // Use match day's date for all generated matches
-      const matchStartTime = matchDay.date || new Date();
-
-      if (!matchDay) throw new Error("Failed to find or create match day");
-
-      for (let i = 0; i < groupsCount; i++) {
-        const groupChar = String.fromCharCode(65 + i); // A, B, C...
-
-        // Clean up existing matches for this group to avoid duplicates
-        await db
-          .delete(matches)
-          .where(
-            and(
-              eq(matches.tournamentId, tournamentId),
-              eq(matches.stageId, stage.id),
-              eq(matches.bracketSide, "groups"),
-              eq(matches.label, `Group ${groupChar}`),
-            ),
-          );
-
-        const groupTeams = seededTeams
-          .filter((t) => t.group === groupChar)
-          .sort((a, b) => (a.seed || 99) - (b.seed || 99));
-
-        if (groupTeams.length === 0) continue;
-
-        if (format === "GSL") {
-          const [m1] = await db
-            .insert(matches)
-            .values({
-              tournamentId,
-              stageId: stage.id,
-              bracketSide: "groups",
-              label: `Group ${groupChar}`,
-              name: `Group ${groupChar} - Opening Match 1`,
-              teamAId: groupTeams[0]?.teamId,
-              teamBId: groupTeams[3]?.teamId,
-              labelTeamA: groupTeams[0] ? undefined : "Seed 1",
-              labelTeamB: groupTeams[3] ? undefined : "Seed 4",
-              displayOrder: i * 10 + 1,
-              startTime: matchStartTime,
-              matchDayId: matchDay.id,
-              isBettingEnabled: false,
-            })
-            .returning();
-
-          const [m2] = await db
-            .insert(matches)
-            .values({
-              tournamentId,
-              stageId: stage.id,
-              bracketSide: "groups",
-              label: `Group ${groupChar}`,
-              name: `Group ${groupChar} - Opening Match 2`,
-              teamAId: groupTeams[1]?.teamId,
-              teamBId: groupTeams[2]?.teamId,
-              labelTeamA: groupTeams[1] ? undefined : "Seed 2",
-              labelTeamB: groupTeams[2] ? undefined : "Seed 3",
-              displayOrder: i * 10 + 2,
-              startTime: matchStartTime,
-              matchDayId: matchDay.id,
-              isBettingEnabled: false,
-            })
-            .returning();
-
-          const [m3] = await db
-            .insert(matches)
-            .values({
-              tournamentId,
-              stageId: stage.id,
-              bracketSide: "groups",
-              label: `Group ${groupChar}`,
-              name: `Group ${groupChar} - Winners Match`,
-              teamAPreviousMatchId: m1.id,
-              teamBPreviousMatchId: m2.id,
-              labelTeamA: "Winner Match 1",
-              labelTeamB: "Winner Match 2",
-              displayOrder: i * 10 + 3,
-              startTime: matchStartTime,
-              matchDayId: matchDay.id,
-              isBettingEnabled: false,
-            })
-            .returning();
-
-          const [m4] = await db
-            .insert(matches)
-            .values({
-              tournamentId,
-              stageId: stage.id,
-              bracketSide: "groups",
-              label: `Group ${groupChar}`,
-              name: `Group ${groupChar} - Elimination Match`,
-              teamAPreviousMatchId: m1.id,
-              teamBPreviousMatchId: m2.id,
-              teamAPreviousMatchResult: "loser",
-              teamBPreviousMatchResult: "loser",
-              labelTeamA: "Loser Match 1",
-              labelTeamB: "Loser Match 2",
-              displayOrder: i * 10 + 4,
-              startTime: matchStartTime,
-              matchDayId: matchDay.id,
-              isBettingEnabled: false,
-            })
-            .returning();
-
-          await db.insert(matches).values({
-            tournamentId,
-            stageId: stage.id,
-            bracketSide: "groups",
-            label: `Group ${groupChar}`,
-            name: `Group ${groupChar} - Decider Match`,
-            teamAPreviousMatchId: m3.id,
-            teamBPreviousMatchId: m4.id,
-            teamAPreviousMatchResult: "loser",
-            teamBPreviousMatchResult: "winner",
-            labelTeamA: "Loser Winners Match",
-            labelTeamB: "Winner Elim. Match",
-            displayOrder: i * 10 + 5,
-            startTime: matchStartTime,
-            matchDayId: matchDay.id,
-            isBettingEnabled: false,
-          });
-        } else if (format === "Round Robin") {
-          // Round Robin Generation
-          const n = groupTeams.length;
-          const isOdd = n % 2 !== 0;
-          const dummyId = -1; // Placeholder for Bye
-
-          let roundTeams = groupTeams.map((t) => t.teamId);
-          if (isOdd) roundTeams.push(dummyId);
-
-          const totalTeams = roundTeams.length;
-          const rounds = totalTeams - 1;
-          const half = totalTeams / 2;
-
-          for (let r = 0; r < rounds; r++) {
-            for (let m = 0; m < half; m++) {
-              const t1 = roundTeams[m];
-              const t2 = roundTeams[totalTeams - 1 - m];
-
-              if (t1 !== dummyId && t2 !== dummyId) {
-                // Find actual team objects for labels
-                const team1Obj = groupTeams.find((t) => t.teamId === t1);
-                const team2Obj = groupTeams.find((t) => t.teamId === t2);
-
-                await db.insert(matches).values({
-                  tournamentId,
-                  stageId: stage.id,
-                  bracketSide: "groups",
-                  label: `Group ${groupChar}`,
-                  name: `Group ${groupChar} - Round ${r + 1}`, // "Group A - Round 1"...
-                  teamAId: t1,
-                  teamBId: t2,
-                  labelTeamA: team1Obj?.team?.name || "TBD",
-                  labelTeamB: team2Obj?.team?.name || "TBD",
-                  displayOrder: i * 100 + r * 10 + m + 1, // Order by Group -> Round -> Match
-                  startTime: matchStartTime,
-                  status: "scheduled",
-                  matchDayId: matchDay.id,
-                  isBettingEnabled: false,
-                });
-              }
-            }
-
-            // Rotate array for next round (keep first fixed)
-            // [0, 1, 2, 3] -> [0, 3, 1, 2]
-            const fixed = roundTeams[0];
-            const tail = roundTeams.slice(1);
-            const last = tail.pop();
-            if (last) tail.unshift(last);
-            roundTeams = [fixed, ...tail];
-          }
-        }
-      }
-    } else if (
-      stage.type === "Single Elimination" ||
-      stage.type === "Double Elimination"
-    ) {
-      // Generate playoff bracket with placeholders
-      const groupsStage = stages.find((s) => s.type === "Groups");
-      const advancingPerGroup = stage.settings?.advancingPerGroup || 2;
-      const groupsCount = groupsStage?.settings?.groupsCount || 4;
-      const totalTeams = advancingPerGroup * groupsCount;
-
-      // Calculate bracket structure
-      const firstRoundMatches = totalTeams / 2;
-
-      // Generate placeholder labels with proper seeding
-      const placeholders = generatePlaceholderLabels(
-        groupsCount,
-        advancingPerGroup,
-      );
-
-      // Clean up existing matches for this stage to avoid duplicates
-      await db
-        .delete(matches)
-        .where(
-          and(
-            eq(matches.tournamentId, tournamentId),
-            eq(matches.stageId, stage.id),
-          ),
+      const stages = (tournament.stages as any[]) || [];
+      let stage;
+      if (stageId) {
+        stage = stages.find((s) => s.id === stageId);
+      } else {
+        stage = stages.find(
+          (s) =>
+            s.type === "Single Elimination" || s.type === "Double Elimination",
         );
-
-      // Find the first available Match Day for playoff matches
-      let playoffMatchDay = await db.query.matchDays.findFirst({
-        where: (md, { eq }) => eq(md.tournamentId, tournamentId),
-        orderBy: (md, { asc }) => [asc(md.date)],
-      });
-
-      if (!playoffMatchDay) {
-        const [created] = await db
-          .insert(matchDays)
-          .values({
-            tournamentId,
-            date: new Date(),
-            label: "Playoffs - Day 1",
-            status: "draft",
-          })
-          .returning();
-        playoffMatchDay = created;
+        if (!stage) stage = stages[0];
       }
 
-      const playoffStartTime = playoffMatchDay.date || new Date();
-      const side = stage.type === "Double Elimination" ? "upper" : "main";
+      if (!stage) throw new Error("Stage not found");
 
-      // Check if there's a groups stage to link progression
-      let groupWinnerMatches: any[] = [];
-      let groupDeciderMatches: any[] = [];
-
-      if (groupsStage) {
-        // Get Winner Matches (1st place) from each group
-        groupWinnerMatches = await db.query.matches.findMany({
-          where: (m, { and, eq, like }) =>
-            and(
-              eq(m.tournamentId, tournamentId),
-              eq(m.stageId, groupsStage.id),
-              eq(m.bracketSide, "groups"),
-              like(m.name, "%Winner%"),
-            ),
-          orderBy: (m, { asc }) => [asc(m.id)],
+      // Clear ghost matches:
+      if (stageId) {
+        // Find matches to be deleted
+        const matchesToDelete = await db.query.matches.findMany({
+          where: eq(matches.stageId, stageId),
+          columns: { id: true },
         });
+        const matchIds = matchesToDelete.map((m) => m.id);
 
-        // Get Decider Matches (2nd place) from each group
-        groupDeciderMatches = await db.query.matches.findMany({
-          where: (m, { and, eq, like }) =>
-            and(
-              eq(m.tournamentId, tournamentId),
-              eq(m.stageId, groupsStage.id),
-              eq(m.bracketSide, "groups"),
-              like(m.name, "%Decider%"),
-            ),
-          orderBy: (m, { asc }) => [asc(m.id)],
-        });
-      }
-
-      // Create first round matches with placeholders AND progression links
-      for (let i = 0; i < firstRoundMatches; i++) {
-        const matchName = getBracketMatchName(firstRoundMatches, i, side);
-
-        // Determine which group matches should feed into this playoff match
-        // Standard seeding: 1st Group A vs 2nd Group D, 1st Group B vs 2nd Group C, etc.
-        // placeholders[i*2] has format "1st Group A" or "2nd Group D"
-        const teamAPlaceholder = placeholders[i * 2];
-        const teamBPlaceholder = placeholders[i * 2 + 1];
-
-        let teamAPreviousMatchId = null;
-        let teamBPreviousMatchId = null;
-
-        // Parse placeholders to find the corresponding group matches
-        if (groupWinnerMatches.length > 0 && groupDeciderMatches.length > 0) {
-          const teamAMatch = teamAPlaceholder.includes("1st")
-            ? groupWinnerMatches.find((m) =>
-                m.name?.includes(
-                  `Group ${teamAPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
-                ),
-              )
-            : groupDeciderMatches.find((m) =>
-                m.name?.includes(
-                  `Group ${teamAPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
-                ),
-              );
-
-          const teamBMatch = teamBPlaceholder.includes("1st")
-            ? groupWinnerMatches.find((m) =>
-                m.name?.includes(
-                  `Group ${teamBPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
-                ),
-              )
-            : groupDeciderMatches.find((m) =>
-                m.name?.includes(
-                  `Group ${teamBPlaceholder.match(/Group ([A-Z])/)?.[1]}`,
-                ),
-              );
-
-          teamAPreviousMatchId = teamAMatch?.id || null;
-          teamBPreviousMatchId = teamBMatch?.id || null;
+        if (matchIds.length > 0) {
+          await db.delete(bets).where(inArray(bets.matchId, matchIds));
+          await db.delete(matches).where(inArray(matches.id, matchIds));
         }
-
-        await db.insert(matches).values({
-          tournamentId,
-          stageId: stage.id,
-          bracketSide: stage.type === "Double Elimination" ? "upper" : "main",
-          roundIndex: 0,
-          labelTeamA: placeholders[i * 2],
-          labelTeamB: placeholders[i * 2 + 1],
-          teamAPreviousMatchId,
-          teamBPreviousMatchId,
-          teamAPreviousMatchResult: teamAPreviousMatchId ? "winner" : null,
-          teamBPreviousMatchResult: teamBPreviousMatchId ? "winner" : null,
-          displayOrder: i + 1,
-          startTime: playoffStartTime,
-          matchDayId: playoffMatchDay.id,
-          status: "scheduled",
-          isBettingEnabled: false,
-          name: matchName,
-          label: matchName,
-        });
-      }
-
-      // Generate subsequent rounds with "Winner of Match X" labels
-      let currentRoundMatches = firstRoundMatches;
-      let roundIndex = 1;
-
-      while (currentRoundMatches > 1) {
-        const nextRoundMatches = Math.floor(currentRoundMatches / 2);
-
-        // Get matches from previous round
-        const prevRoundMatches = await db.query.matches.findMany({
+      } else {
+        // Find matches to be deleted
+        const matchesToDelete = await db.query.matches.findMany({
           where: and(
             eq(matches.tournamentId, tournamentId),
-            eq(matches.stageId, stage.id),
-            eq(matches.roundIndex, roundIndex - 1),
+            inArray(matches.bracketSide, [
+              "upper",
+              "lower",
+              "main",
+              "grand_final",
+            ]),
           ),
-          orderBy: [asc(matches.displayOrder)],
+          columns: { id: true },
+        });
+        const matchIds = matchesToDelete.map((m) => m.id);
+
+        if (matchIds.length > 0) {
+          await db.delete(bets).where(inArray(bets.matchId, matchIds));
+          await db.delete(matches).where(inArray(matches.id, matchIds));
+        }
+      }
+
+      if (stage.type === "Groups") {
+        const groupsCount = stage.settings?.groupsCount || 4;
+        const format = stage.settings?.format || "GSL";
+
+        const seededTeams = await db.query.tournamentTeams.findMany({
+          where: (tt, { eq, isNotNull }) =>
+            and(eq(tt.tournamentId, tournamentId), isNotNull(tt.group)),
+          with: { team: true },
         });
 
-        for (let i = 0; i < nextRoundMatches; i++) {
-          const matchA = prevRoundMatches[i * 2];
-          const matchB = prevRoundMatches[i * 2 + 1];
+        let matchDay = await db.query.matchDays.findFirst({
+          where: eq(matchDays.tournamentId, tournamentId),
+          orderBy: (md, { asc }) => [asc(md.date)],
+        });
 
-          if (matchA && matchB) {
-            const matchName = getBracketMatchName(nextRoundMatches, i, side);
-            const labelA = `Winner of ${matchA.name || "#" + matchA.id}`;
-            const labelB = `Winner of ${matchB.name || "#" + matchB.id}`;
+        if (!matchDay) {
+          const [created] = await db
+            .insert(matchDays)
+            .values({
+              tournamentId,
+              date: new Date(),
+              label: "Day 1",
+              status: "draft",
+            })
+            .returning();
+          matchDay = created;
+        }
+        const matchStartTime = matchDay.date || new Date();
+
+        for (let i = 0; i < groupsCount; i++) {
+          const groupChar = String.fromCharCode(65 + i);
+          const groupTeams = seededTeams
+            .filter((t: any) => t.group === groupChar)
+            .sort((a: any, b: any) => (a.seed || 99) - (b.seed || 99));
+
+          if (groupTeams.length === 0) continue;
+
+          if (format === "GSL") {
+            const [m1] = await db
+              .insert(matches)
+              .values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: "groups",
+                label: `Group ${groupChar}`,
+                name: `Group ${groupChar} - Opening Match 1`,
+                teamAId: groupTeams[0]?.teamId,
+                teamBId: groupTeams[3]?.teamId,
+                displayOrder: i * 10 + 1,
+                startTime: matchStartTime,
+                matchDayId: matchDay.id,
+                isBettingEnabled: true,
+              })
+              .returning();
+
+            const [m2] = await db
+              .insert(matches)
+              .values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: "groups",
+                label: `Group ${groupChar}`,
+                name: `Group ${groupChar} - Opening Match 2`,
+                teamAId: groupTeams[1]?.teamId,
+                teamBId: groupTeams[2]?.teamId,
+                displayOrder: i * 10 + 2,
+                startTime: matchStartTime,
+                matchDayId: matchDay.id,
+                isBettingEnabled: true,
+              })
+              .returning();
+
+            const [m3] = await db
+              .insert(matches)
+              .values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: "groups",
+                label: `Group ${groupChar}`,
+                name: `Group ${groupChar} - Winners Match`,
+                teamAPreviousMatchId: m1.id,
+                teamBPreviousMatchId: m2.id,
+                labelTeamA: "Winner Match 1",
+                labelTeamB: "Winner Match 2",
+                displayOrder: i * 10 + 3,
+                startTime: matchStartTime,
+                matchDayId: matchDay.id,
+                isBettingEnabled: true,
+              })
+              .returning();
+
+            const [m4] = await db
+              .insert(matches)
+              .values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: "groups",
+                label: `Group ${groupChar}`,
+                name: `Group ${groupChar} - Elimination Match`,
+                teamAPreviousMatchId: m1.id,
+                teamBPreviousMatchId: m2.id,
+                teamAPreviousMatchResult: "loser",
+                teamBPreviousMatchResult: "loser",
+                labelTeamA: "Loser Match 1",
+                labelTeamB: "Loser Match 2",
+                displayOrder: i * 10 + 4,
+                startTime: matchStartTime,
+                matchDayId: matchDay.id,
+                isBettingEnabled: true,
+              })
+              .returning();
 
             await db.insert(matches).values({
               tournamentId,
               stageId: stage.id,
-              bracketSide:
-                stage.type === "Double Elimination" ? "upper" : "main",
-              roundIndex,
-              labelTeamA: labelA,
-              labelTeamB: labelB,
-              teamAPreviousMatchId: matchA.id,
-              teamBPreviousMatchId: matchB.id,
-              displayOrder: i + 1,
+              bracketSide: "groups",
+              label: `Group ${groupChar}`,
+              name: `Group ${groupChar} - Decider Match`,
+              teamAPreviousMatchId: m3.id,
+              teamBPreviousMatchId: m4.id,
+              teamAPreviousMatchResult: "loser",
+              teamBPreviousMatchResult: "winner",
+              labelTeamA: "Loser Winners Match",
+              labelTeamB: "Winner Elim. Match",
+              displayOrder: i * 10 + 5,
+              startTime: matchStartTime,
+              matchDayId: matchDay.id,
+              isBettingEnabled: true,
+            });
+          }
+        }
+      } else {
+        // Playoff Generation
+        const groupsStage = stages.find((s) => s.type === "Groups");
+        const advancingPerGroup = stage.settings?.advancingPerGroup || 2;
+        const groupsCount = groupsStage?.settings?.groupsCount || 4;
+        const totalTeams = advancingPerGroup * groupsCount;
+        const firstRoundMatchesCount = totalTeams / 2;
+        const side = stage.type === "Double Elimination" ? "upper" : "main";
+
+        const placeholders = generatePlaceholderLabels(
+          groupsCount,
+          advancingPerGroup,
+        );
+
+        let playoffMatchDay = await db.query.matchDays.findFirst({
+          where: and(
+            eq(matchDays.tournamentId, tournamentId),
+            not(ilike(matchDays.label, "%Group%")),
+          ),
+          orderBy: (md, { asc }) => [asc(md.date)],
+        });
+
+        if (!playoffMatchDay) {
+          const [created] = await db
+            .insert(matchDays)
+            .values({
+              tournamentId,
+              date: new Date(),
+              label: "Playoffs Day 1",
+              status: "draft",
+            })
+            .returning();
+          playoffMatchDay = created;
+        }
+        const playoffStartTime = playoffMatchDay.date || new Date();
+
+        // R1
+        for (let i = 0; i < firstRoundMatchesCount; i++) {
+          const matchName = getBracketMatchName(
+            firstRoundMatchesCount,
+            i,
+            side,
+          );
+          await db.insert(matches).values({
+            tournamentId,
+            stageId: stage.id,
+            bracketSide: side,
+            roundIndex: 0,
+            labelTeamA: placeholders[i * 2],
+            labelTeamB: placeholders[i * 2 + 1],
+            displayOrder: i + 1,
+            startTime: playoffStartTime,
+            matchDayId: playoffMatchDay.id,
+            status: "scheduled",
+            isBettingEnabled: false,
+            name: matchName,
+            label: matchName,
+          });
+        }
+
+        // Subsequent Rounds
+        let currentRoundMatches = firstRoundMatchesCount;
+        let roundIdx = 1;
+        while (currentRoundMatches > 1) {
+          const nextRoundMatches = Math.floor(currentRoundMatches / 2);
+          const prevRoundMatches = await db.query.matches.findMany({
+            where: and(
+              eq(matches.tournamentId, tournamentId),
+              eq(matches.stageId, stage.id),
+              eq(matches.roundIndex, roundIdx - 1),
+              eq(matches.bracketSide, side),
+            ),
+            orderBy: [asc(matches.displayOrder)],
+          });
+
+          for (let i = 0; i < nextRoundMatches; i++) {
+            const matchA = prevRoundMatches[i * 2];
+            const matchB = prevRoundMatches[i * 2 + 1];
+            if (matchA && matchB) {
+              const matchName = getBracketMatchName(nextRoundMatches, i, side);
+              await db.insert(matches).values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: side,
+                roundIndex: roundIdx,
+                labelTeamA: `Winner of ${matchA.name}`,
+                labelTeamB: `Winner of ${matchB.name}`,
+                teamAPreviousMatchId: matchA.id,
+                teamBPreviousMatchId: matchB.id,
+                teamAPreviousMatchResult: "winner",
+                teamBPreviousMatchResult: "winner",
+                displayOrder: i + 1,
+                startTime: playoffStartTime,
+                matchDayId: playoffMatchDay.id,
+                status: "scheduled",
+                isBettingEnabled: false,
+                name: matchName,
+                label: matchName,
+              });
+            }
+          }
+          currentRoundMatches = nextRoundMatches;
+          roundIdx++;
+        }
+
+        if (stage.type === "Double Elimination") {
+          const allUpperMatches = await db.query.matches.findMany({
+            where: and(
+              eq(matches.tournamentId, tournamentId),
+              eq(matches.stageId, stage.id),
+              eq(matches.bracketSide, "upper"),
+            ),
+            orderBy: [asc(matches.roundIndex), asc(matches.displayOrder)],
+          });
+
+          if (allUpperMatches.length < 2) return { success: true };
+
+          const upperRoundsMap: Record<number, any[]> = {};
+          allUpperMatches.forEach((m) => {
+            const r = m.roundIndex ?? 0;
+            if (!upperRoundsMap[r]) upperRoundsMap[r] = [];
+            upperRoundsMap[r].push(m);
+          });
+
+          const maxUpperRound = Math.max(
+            ...allUpperMatches.map((m) => m.roundIndex ?? 0),
+          );
+          const lr0MatchesCount = upperRoundsMap[0].length / 2;
+          const lr0Matches = [];
+
+          for (let i = 0; i < lr0MatchesCount; i++) {
+            const matchA = upperRoundsMap[0][i * 2];
+            const matchB = upperRoundsMap[0][i * 2 + 1];
+            if (!matchA || !matchB) continue;
+            const matchName = `LB Round 1 - Match #${i + 1}`;
+            const [created] = await db
+              .insert(matches)
+              .values({
+                tournamentId,
+                stageId: stage.id,
+                bracketSide: "lower",
+                roundIndex: 0,
+                labelTeamA: `Loser of ${matchA.name}`,
+                labelTeamB: `Loser of ${matchB.name}`,
+                teamAPreviousMatchId: matchA.id,
+                teamBPreviousMatchId: matchB.id,
+                teamAPreviousMatchResult: "loser",
+                teamBPreviousMatchResult: "loser",
+                displayOrder: i + 1,
+                startTime: playoffStartTime,
+                matchDayId: playoffMatchDay.id,
+                status: "scheduled",
+                isBettingEnabled: false,
+                name: matchName,
+                label: matchName,
+              })
+              .returning();
+            lr0Matches.push(created);
+          }
+
+          let prevLBMatches = lr0Matches;
+          let lrIdx = 1;
+          let ubRoundToPull = 1;
+
+          while (ubRoundToPull <= maxUpperRound && prevLBMatches.length > 0) {
+            const ubMatchesToPull = upperRoundsMap[ubRoundToPull] || [];
+            if (ubMatchesToPull.length === prevLBMatches.length) {
+              const currentLBMatches = [];
+              for (let i = 0; i < prevLBMatches.length; i++) {
+                const lbMatch = prevLBMatches[i];
+                const ubMatch = ubMatchesToPull[i];
+                const matchName = `LB R${lrIdx + 1} - Match #${i + 1}`;
+                const [created] = await db
+                  .insert(matches)
+                  .values({
+                    tournamentId,
+                    stageId: stage.id,
+                    bracketSide: "lower",
+                    roundIndex: lrIdx,
+                    labelTeamA: `Winner of ${lbMatch.name}`,
+                    labelTeamB: `Loser of ${ubMatch.name}`,
+                    teamAPreviousMatchId: lbMatch.id,
+                    teamBPreviousMatchId: ubMatch.id,
+                    teamAPreviousMatchResult: "winner",
+                    teamBPreviousMatchResult: "loser",
+                    displayOrder: i + 1,
+                    startTime: playoffStartTime,
+                    matchDayId: playoffMatchDay.id,
+                    status: "scheduled",
+                    isBettingEnabled: false,
+                    name: matchName,
+                    label: matchName,
+                  })
+                  .returning();
+                currentLBMatches.push(created);
+              }
+              prevLBMatches = currentLBMatches;
+              lrIdx++;
+            }
+
+            if (prevLBMatches.length > 1) {
+              const midLBMatches = [];
+              for (let i = 0; i < prevLBMatches.length / 2; i++) {
+                const matchA = prevLBMatches[i * 2];
+                const matchB = prevLBMatches[i * 2 + 1];
+                const matchName = `LB R${lrIdx + 1} - Match #${i + 1}`;
+                const [created] = await db
+                  .insert(matches)
+                  .values({
+                    tournamentId,
+                    stageId: stage.id,
+                    bracketSide: "lower",
+                    roundIndex: lrIdx,
+                    labelTeamA: `Winner of ${matchA.name}`,
+                    labelTeamB: `Winner of ${matchB.name}`,
+                    teamAPreviousMatchId: matchA.id,
+                    teamBPreviousMatchId: matchB.id,
+                    teamAPreviousMatchResult: "winner",
+                    teamBPreviousMatchResult: "winner",
+                    displayOrder: i + 1,
+                    startTime: playoffStartTime,
+                    matchDayId: playoffMatchDay.id,
+                    status: "scheduled",
+                    isBettingEnabled: false,
+                    name: matchName,
+                    label: matchName,
+                  })
+                  .returning();
+                midLBMatches.push(created);
+              }
+              prevLBMatches = midLBMatches;
+              lrIdx++;
+            }
+            ubRoundToPull++;
+          }
+
+          const ubFinal = (upperRoundsMap[maxUpperRound] || [])[0];
+          const lbFinal = prevLBMatches[0];
+          if (ubFinal && lbFinal) {
+            await db.insert(matches).values({
+              tournamentId,
+              stageId: stage.id,
+              bracketSide: "grand_final",
+              roundIndex: 0,
+              labelTeamA: `Winner of ${ubFinal.name}`,
+              labelTeamB: `Winner of ${lbFinal.name}`,
+              teamAPreviousMatchId: ubFinal.id,
+              teamBPreviousMatchId: lbFinal.id,
+              teamAPreviousMatchResult: "winner",
+              teamBPreviousMatchResult: "winner",
+              displayOrder: 1,
               startTime: playoffStartTime,
               matchDayId: playoffMatchDay.id,
               status: "scheduled",
               isBettingEnabled: false,
-              name: matchName,
-              label: matchName,
+              name: "Grand Final",
+              label: "Grand Final",
             });
           }
         }
-
-        currentRoundMatches = nextRoundMatches;
-        roundIndex++;
       }
 
-      // For Double Elimination, also generate lower bracket
-      if (stage.type === "Double Elimination") {
-        // Lower bracket generation would go here
-        // This is more complex and can be added in a future iteration
-      }
+      return { success: true };
+    } catch (error) {
+      console.error("Error generating bracket:", error);
+      throw error;
     }
-
-    return { success: true };
   },
 );
-
 // Helper function to generate placeholder labels with proper seeding
 function generatePlaceholderLabels(
   groupsCount: number,
@@ -970,6 +993,10 @@ const getMatchDaysFn = createServerFn({ method: "GET" }).handler(
         scoreB: true,
         isBettingEnabled: true,
         displayOrder: true,
+        teamAPreviousMatchId: true,
+        teamBPreviousMatchId: true,
+        teamAPreviousMatchResult: true,
+        teamBPreviousMatchResult: true,
       },
     });
 
@@ -997,20 +1024,23 @@ const getMatchDaysFn = createServerFn({ method: "GET" }).handler(
     const matchesByDay = new Map<number, typeof allMatches>();
 
     allMatches.forEach((m) => {
-      const list = matchesByDay.get(m.matchDayId) || [];
-      list.push({
+      const dayId = m.matchDayId;
+      if (dayId === null) return;
+      const list = matchesByDay.get(dayId) || [];
+      const matchWithTeams = {
         ...m,
         teamA: m.teamAId ? teamsMap.get(m.teamAId) || null : null,
         teamB: m.teamBId ? teamsMap.get(m.teamBId) || null : null,
-      });
-      matchesByDay.set(m.matchDayId, list);
+      };
+      list.push(matchWithTeams as any);
+      matchesByDay.set(dayId, list);
     });
 
     return days.map((day) => ({
       ...day,
       matches: matchesByDay.get(day.id) || [],
     }));
-  }
+  },
 );
 
 export const getMatchDays = getMatchDaysFn as unknown as (opts: {

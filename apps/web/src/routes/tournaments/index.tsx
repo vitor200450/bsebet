@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { clsx } from "clsx";
 import {
   Trophy,
-  CheckCircle2,
   MapPin,
   Users,
   Search,
@@ -266,10 +265,17 @@ function TournamentCard({
                 ASSISTIR AGORA
               </Link>
             ) : isFinished ? (
-              <button className="w-full bg-gray-100 text-gray-400 font-bold uppercase py-3 border-4 border-gray-200 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4" />
-                FINALIZADO
-              </button>
+              <Link
+                to="/tournaments/$slug"
+                params={{ slug: tournament.slug }}
+                className="w-full bg-gray-100 text-black font-black italic uppercase py-3 border-4 border-black rounded-lg shadow-comic hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-comic-hover transition-all flex items-center justify-center gap-2 text-sm md:text-base group/btn"
+              >
+                VER RESULTADOS
+                <ArrowRight
+                  className="w-5 h-5 transition-transform group-hover/btn:translate-x-1"
+                  strokeWidth={3}
+                />
+              </Link>
             ) : (
               <Link
                 to="/tournaments/$slug"

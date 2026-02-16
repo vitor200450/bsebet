@@ -33,12 +33,28 @@ export default function UserMenu({
 
   if (isPending) {
     return (
-      <Skeleton
-        className={clsx(
-          "h-10 w-32 border-[2px]",
-          variant === "dark" ? "border-white/20" : "border-black",
-        )}
-      />
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end gap-1.5">
+          <Skeleton
+            className={clsx(
+              "h-3 w-20",
+              variant === "dark" ? "bg-white/10" : "bg-black/10",
+            )}
+          />
+          <Skeleton
+            className={clsx(
+              "h-2 w-12",
+              variant === "dark" ? "bg-white/10" : "bg-black/10",
+            )}
+          />
+        </div>
+        <Skeleton
+          className={clsx(
+            "h-10 w-10 border-[3px] transform -skew-x-6",
+            variant === "dark" ? "border-white/20" : "border-black/20",
+          )}
+        />
+      </div>
     );
   }
 
@@ -82,30 +98,33 @@ export default function UserMenu({
             <div className="relative">
               <div
                 className={clsx(
-                  "w-10 h-10 border-[3px] overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px] transform -skew-x-6",
+                  "w-10 h-10 border-[3px] overflow-hidden transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px] transform -skew-x-6 relative",
                   variant === "dark"
                     ? "bg-black border-white shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
                     : "bg-white border-black shadow-none",
                 )}
               >
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name ?? "User"}
-                    className="w-full h-full object-cover transform skew-x-6"
-                  />
-                ) : (
-                  <User
-                    size={20}
-                    className={clsx(
-                      "transform skew-x-6",
-                      variant === "dark" ? "text-white" : "text-black",
-                    )}
-                  />
-                )}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name ?? "User"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User
+                      size={40}
+                      strokeWidth={2}
+                      className={clsx(
+                        "shrink-0",
+                        variant === "dark" ? "text-white" : "text-black",
+                      )}
+                    />
+                  )}
+                </div>
               </div>
               {/* Status dot */}
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#ff2e2e] border-[2px] border-black rounded-full flex items-center justify-center shadow-sm">
+              <div className="absolute -top-1 -right-1 z-20 w-4 h-4 bg-[#ff2e2e] border-[2px] border-black rounded-full flex items-center justify-center shadow-sm">
                 <span className="text-[8px] font-black text-white">1</span>
               </div>
             </div>

@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface TeamLogoProps {
-  teamId: number;
   teamName: string;
   logoUrl?: string | null;
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 const sizeClasses = {
+  xs: "w-4 h-4",
   sm: "w-6 h-6",
   md: "w-8 h-8",
   lg: "w-12 h-12",
@@ -24,7 +24,6 @@ const sizeClasses = {
  * - Carregamento lazy
  */
 export function TeamLogo({
-  teamId,
   teamName,
   logoUrl,
   className = "",
@@ -36,7 +35,7 @@ export function TeamLogo({
   if (!logoUrl || error) {
     return (
       <div
-        className={`${sizeClasses[size]} bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-xs ${className}`}
+        className={`${sizeClasses[size]} bg-gray-200 rounded-sm flex items-center justify-center text-gray-500 font-bold text-xs ${className}`}
         title={teamName}
       >
         {teamName.charAt(0).toUpperCase()}
@@ -49,7 +48,7 @@ export function TeamLogo({
     <img
       src={logoUrl}
       alt={teamName}
-      className={`${sizeClasses[size]} object-contain rounded-full bg-white ${className}`}
+      className={`${sizeClasses[size]} object-contain ${className}`}
       loading="lazy"
       onError={() => setError(true)}
     />
