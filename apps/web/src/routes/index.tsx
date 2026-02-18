@@ -200,6 +200,21 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
       },
     });
 
+    // --- DEBUGGING PRODUCTION ISSUE ---
+    console.log("--- DEBUG: getHomeTournamentDataFn ---");
+    const dbUrl = process.env.DATABASE_URL || "UNDEFINED";
+    console.log("DB URL (Masked):", dbUrl.replace(/:[^@]+@/, ":***@"));
+    console.log("Matches Found Count:", allMatches.length);
+    if (allMatches.length > 0) {
+      console.log(
+        "First 5 Match IDs:",
+        allMatches.slice(0, 5).map((m) => m.id),
+      );
+    } else {
+      console.log("No matches found for Tournament ID:", tournamentId);
+    }
+    // ----------------------------------
+
     const formattedMatches = formatMatches(allMatches, tournament);
 
     let userBetsData: any[] = [];
