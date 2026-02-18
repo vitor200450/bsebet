@@ -1,0 +1,43 @@
+{
+  "indexes": [
+    {
+      "indexname": "bets_pkey",
+      "indexdef": "CREATE UNIQUE INDEX bets_pkey ON public.bets USING btree (id)"
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "bets_match_id_matches_id_fk",
+      "contype": "f",
+      "def": "FOREIGN KEY (match_id) REFERENCES matches(id)"
+    },
+    {
+      "conname": "bets_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "bets_predicted_winner_id_teams_id_fk",
+      "contype": "f",
+      "def": "FOREIGN KEY (predicted_winner_id) REFERENCES teams(id)"
+    }
+  ],
+  "triggers": [
+    {
+      "tgname": "RI_ConstraintTrigger_c_17620",
+      "def": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_17620\" AFTER INSERT ON public.bets FROM matches NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "tgname": "RI_ConstraintTrigger_c_17621",
+      "def": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_17621\" AFTER UPDATE ON public.bets FROM matches NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    },
+    {
+      "tgname": "RI_ConstraintTrigger_c_17625",
+      "def": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_17625\" AFTER INSERT ON public.bets FROM teams NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_ins\"()"
+    },
+    {
+      "tgname": "RI_ConstraintTrigger_c_17626",
+      "def": "CREATE CONSTRAINT TRIGGER \"RI_ConstraintTrigger_c_17626\" AFTER UPDATE ON public.bets FROM teams NOT DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION \"RI_FKey_check_upd\"()"
+    }
+  ]
+}

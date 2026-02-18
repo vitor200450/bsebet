@@ -302,34 +302,57 @@ const submitMultipleBetsFn = createServerFn({
 
   // 4. Safe "Upsert" Strategy: Transactional Delete + Insert
   // This guarantees atomicity: no other request can see the "deleted" state or insert in between.
-  const inserted = await db.transaction(async (tx) => {
-    // Execute DELETE within transaction
-    await tx
-      .delete(bets)
-      .where(and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)));
-
-    // Execute INSERT within transaction
-    const newBets = await tx
-      .insert(bets)
-      .values(
-        validData.bets.map((bet) => ({
-          userId,
-          matchId: bet.matchId,
-          predictedWinnerId: bet.predictedWinnerId,
-          predictedScoreA: bet.predictedScoreA,
-          predictedScoreB: bet.predictedScoreB,
-        })),
-      )
-      .returning();
-
-    return newBets;
+  // Filter out duplicates (keep last one wins strategy or first one? usually last one)
+  const uniqueBets = new Map();
+  validData.bets.forEach((bet) => {
+    uniqueBets.set(bet.matchId, bet);
   });
+  const finalBets = Array.from(uniqueBets.values());
 
-  return {
-    success: true,
-    bets: inserted,
-    message: `${inserted.length} aposta(s) salva(s) com sucesso`,
-  };
+  try {
+    // 4. Safe "Upsert" Strategy: Transactional Delete + Insert
+    // This guarantees atomicity: no other request can see the "deleted" state or insert in between.
+    const inserted = await db.transaction(async (tx) => {
+      // Execute DELETE within transaction
+      await tx
+        .delete(bets)
+        .where(and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)));
+
+      // Execute INSERT within transaction
+      if (finalBets.length === 0) return [];
+
+      const newBets = await tx
+        .insert(bets)
+        .values(
+          finalBets.map((bet) => ({
+            userId,
+            matchId: bet.matchId,
+            predictedWinnerId: bet.predictedWinnerId,
+            predictedScoreA: bet.predictedScoreA,
+            predictedScoreB: bet.predictedScoreB,
+          })),
+        )
+        .returning();
+
+      return newBets;
+    });
+
+    return {
+      success: true,
+      bets: inserted,
+      message: `${inserted.length} aposta(s) salva(s) com sucesso`,
+    };
+  } catch (error: any) {
+    console.error("CRITICAL ERROR submitting bets:", error);
+    console.error("Error Detail:", {
+      code: error.code,
+      constraint: error.constraint,
+      detail: error.detail,
+      table: error.table,
+    });
+    console.error("Payload causing error:", JSON.stringify(finalBets));
+    throw new Error(`Falha ao salvar apostas: ${error.message}`);
+  }
 });
 
 export const submitMultipleBets = submitMultipleBetsFn as unknown as (opts: {
