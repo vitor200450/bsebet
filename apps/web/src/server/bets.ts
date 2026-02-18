@@ -300,28 +300,30 @@ const submitMultipleBetsFn = createServerFn({
     throw new Error(`Erros de validação:\n${errors.join("\n")}`);
   }
 
-  // 4. Safe "Upsert" Strategy: Delete existing bets for these matches correctly first, then Insert new ones.
-  // This avoids unique constraint issues and complex upsert logic.
-  // Since we only allow betting on unstarted matches (points=0), we don't lose any scoring data.
+  // 4. Safe "Upsert" Strategy: Transactional Delete + Insert
+  // This guarantees atomicity: no other request can see the "deleted" state or insert in between.
+  const inserted = await db.transaction(async (tx) => {
+    // Execute DELETE within transaction
+    await tx
+      .delete(bets)
+      .where(and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)));
 
-  // Execute DELETE
-  await db
-    .delete(bets)
-    .where(and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)));
+    // Execute INSERT within transaction
+    const newBets = await tx
+      .insert(bets)
+      .values(
+        validData.bets.map((bet) => ({
+          userId,
+          matchId: bet.matchId,
+          predictedWinnerId: bet.predictedWinnerId,
+          predictedScoreA: bet.predictedScoreA,
+          predictedScoreB: bet.predictedScoreB,
+        })),
+      )
+      .returning();
 
-  // Execute INSERT
-  const inserted = await db
-    .insert(bets)
-    .values(
-      validData.bets.map((bet) => ({
-        userId,
-        matchId: bet.matchId,
-        predictedWinnerId: bet.predictedWinnerId,
-        predictedScoreA: bet.predictedScoreA,
-        predictedScoreB: bet.predictedScoreB,
-      })),
-    )
-    .returning();
+    return newBets;
+  });
 
   return {
     success: true,
