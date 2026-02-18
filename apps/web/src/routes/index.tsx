@@ -169,7 +169,7 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
     const { tournamentId } = ctx.data;
 
     const { db, matches, matchDays, tournaments } = await import("@bsebet/db");
-    const { eq, asc } = await import("drizzle-orm");
+    const { eq, asc, sql } = await import("drizzle-orm");
 
     // Import auth locally or verify it's imported
     const { auth } = await import("@bsebet/auth");
@@ -204,6 +204,16 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
     console.log("--- DEBUG: getHomeTournamentDataFn ---");
     const dbUrl = process.env.DATABASE_URL || "UNDEFINED";
     console.log("DB URL (Masked):", dbUrl.replace(/:[^@]+@/, ":***@"));
+
+    try {
+      const connInfo = await db.execute(
+        sql`SELECT inet_server_addr(), inet_server_port(), current_database(), current_user, current_schema()`,
+      );
+      console.log("Connection Info:", JSON.stringify(connInfo, null, 2));
+    } catch (e) {
+      console.error("Failed to get connection info:", e);
+    }
+
     console.log("Matches Found Count:", allMatches.length);
     if (allMatches.length > 0) {
       console.log(

@@ -15,6 +15,12 @@ async function checkData() {
   );
   console.log("Teams found:", JSON.stringify(teams, null, 2));
 
+  // Check Connection Info
+  const connInfo = await db.execute(
+    sql`SELECT inet_server_addr(), inet_server_port(), current_database(), current_user, current_schema()`,
+  );
+  console.log("Connection Info:", JSON.stringify(connInfo, null, 2));
+
   // List first 50 matches in DB, only ID and Name
   const matches = await db.execute(
     sql`SELECT id, name FROM matches ORDER BY id ASC LIMIT 50`,
