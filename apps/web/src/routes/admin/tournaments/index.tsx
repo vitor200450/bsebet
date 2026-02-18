@@ -310,10 +310,10 @@ function AdminTournamentsPage() {
               {/* Table Header */}
               <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
                 <div className="col-span-4">Tournament Info</div>
-                <div className="col-span-3">Details</div>
+                <div className="col-span-2">Details</div>
                 <div className="col-span-2">Dates</div>
                 <div className="col-span-2 text-center">Status</div>
-                <div className="col-span-1 text-right">Actions</div>
+                <div className="col-span-2 text-right">Actions</div>
               </div>
 
               {/* Table Rows */}
@@ -359,7 +359,7 @@ function AdminTournamentsPage() {
                       </div>
 
                       {/* Details (Region, Format, Players) */}
-                      <div className="col-span-3 flex flex-col gap-1">
+                      <div className="col-span-2 flex flex-col gap-1">
                         {t.region && (
                           <span className="text-xs font-bold uppercase text-black flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>{" "}
@@ -408,7 +408,7 @@ function AdminTournamentsPage() {
                         </span>
                       </div>
 
-                      <div className="col-span-1 flex justify-end gap-2">
+                      <div className="col-span-2 flex justify-end gap-2">
                         <Link
                           to="/admin/tournaments/$tournamentId/matches"
                           params={{ tournamentId: String(t.id) }}
