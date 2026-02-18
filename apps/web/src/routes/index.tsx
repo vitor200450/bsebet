@@ -937,6 +937,7 @@ function ReviewScreen({
                             ? "text-black"
                             : "text-[#ccff00]",
                         )}
+                        suppressHydrationWarning
                       >
                         <span className="material-symbols-outlined text-xs">
                           schedule
@@ -944,6 +945,7 @@ function ReviewScreen({
                         {new Date(match.startTime).toLocaleTimeString("pt-BR", {
                           hour: "2-digit",
                           minute: "2-digit",
+                          timeZone: "America/Sao_Paulo",
                         })}
                       </div>
                     </div>

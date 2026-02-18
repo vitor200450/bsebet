@@ -432,13 +432,17 @@ export function BettingCarousel({
             <div className="mt-4 font-body font-bold text-gray-800 text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
               <span>{currentMatch.label}</span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-              <span className="text-gray-400 flex items-center gap-1">
+              <span
+                className="text-gray-400 flex items-center gap-1"
+                suppressHydrationWarning
+              >
                 <span className="material-symbols-outlined text-xs">
                   schedule
                 </span>
                 {new Date(currentMatch.startTime).toLocaleTimeString("pt-BR", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "America/Sao_Paulo",
                 })}
               </span>
             </div>

@@ -15,10 +15,11 @@ export default defineConfig({
     tsconfigPaths(),
     tailwindcss(),
     tanstackStart({
+      // @ts-expect-error - TanStack Start types sometimes lag behind the actual Nitro configuration support
       nitro: {
-        preset: 'node-server',
+        preset: "node-server",
         output: {
-          dir: './dist',
+          dir: "./dist",
         },
       },
     }),
@@ -28,6 +29,10 @@ export default defineConfig({
   server: {
     port: 3001,
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
+
   envDir: "../../",
   define: {
     "process.env.GOOGLE_CLIENT_ID": JSON.stringify(

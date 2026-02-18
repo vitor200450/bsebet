@@ -71,6 +71,7 @@ export function MatchCard({
     {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "America/Sao_Paulo",
     },
   );
 
@@ -78,6 +79,7 @@ export function MatchCard({
     .toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "short",
+      timeZone: "America/Sao_Paulo",
     })
     .toUpperCase()
     .replace(".", "");
@@ -219,7 +221,10 @@ export function MatchCard({
                     LIVE
                   </span>
                 ) : (
-                  <span className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mb-1">
+                  <span
+                    className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mb-1"
+                    suppressHydrationWarning
+                  >
                     {formattedStartDate}
                   </span>
                 )}
@@ -230,7 +235,10 @@ export function MatchCard({
                   </span>
                 </div>
 
-                <span className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mt-1 tabular-nums">
+                <span
+                  className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-none mt-1 tabular-nums"
+                  suppressHydrationWarning
+                >
                   {formattedStartTime}
                 </span>
               </div>
