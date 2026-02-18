@@ -17,6 +17,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TournamentsIndexRouteImport } from './routes/tournaments/index'
 import { Route as TournamentsSlugRouteImport } from './routes/tournaments/$slug'
+import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTournamentsRouteImport } from './routes/admin/tournaments'
 import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
@@ -66,6 +67,11 @@ const TournamentsSlugRoute = TournamentsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => TournamentsRoute,
+} as any)
+const TeamsTeamIdRoute = TeamsTeamIdRouteImport.update({
+  id: '/teams/$teamId',
+  path: '/teams/$teamId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
   '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
   '/tournaments': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
   '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
+    | '/teams/$teamId'
     | '/tournaments/$slug'
     | '/tournaments/'
     | '/admin/live/$matchId'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/users'
+    | '/teams/$teamId'
     | '/tournaments/$slug'
     | '/tournaments'
     | '/admin/live/$matchId'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
+    | '/teams/$teamId'
     | '/tournaments/$slug'
     | '/tournaments/'
     | '/admin/live/$matchId'
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   AdminTeamsRoute: typeof AdminTeamsRoute
   AdminTournamentsRoute: typeof AdminTournamentsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
+  TeamsTeamIdRoute: typeof TeamsTeamIdRoute
   AdminLiveMatchIdRoute: typeof AdminLiveMatchIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tournaments/$slug'
       preLoaderRoute: typeof TournamentsSlugRouteImport
       parentRoute: typeof TournamentsRoute
+    }
+    '/teams/$teamId': {
+      id: '/teams/$teamId'
+      path: '/teams/$teamId'
+      fullPath: '/teams/$teamId'
+      preLoaderRoute: typeof TeamsTeamIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
       id: '/admin/users'
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTeamsRoute: AdminTeamsRoute,
   AdminTournamentsRoute: AdminTournamentsRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,
+  TeamsTeamIdRoute: TeamsTeamIdRoute,
   AdminLiveMatchIdRoute: AdminLiveMatchIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,

@@ -27,8 +27,11 @@ export function GlobalHeader() {
     setIsMobileMenuOpen(false);
   }, [router.location.pathname]);
 
+  // Dynamic navigation based on authentication
+  const isAuthenticated = !!session;
+
   const navItems = [
-    { label: "Home", to: "/landing" },
+    { label: "Home", to: isAuthenticated ? "/dashboard" : "/landing" },
     { label: "Matches", to: "/" },
     { label: "Torneios", to: "/tournaments" },
     { label: "Leaderboard", to: "/leaderboard" },
@@ -50,8 +53,11 @@ export function GlobalHeader() {
       {/* MAIN ROW (Logo, Title, UserMenu) */}
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 w-full flex items-center justify-between h-16 md:h-20 relative gap-4 md:gap-6 shrink-0">
         <div className="flex items-center gap-4 md:gap-6 min-w-0 flex-1">
-          {/* LOGO AREA */}
-          <Link to="/" className="relative group flex items-center shrink-0">
+          {/* LOGO AREA - Dynamic link based on auth */}
+          <Link
+            to={isAuthenticated ? "/dashboard" : "/landing"}
+            className="relative group flex items-center shrink-0"
+          >
             <div
               className={clsx(
                 "border-[2px] md:border-[3px] px-2 py-1 md:px-4 md:py-2 transform -skew-x-12 shadow-comic transition-transform group-hover:scale-105 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
@@ -114,10 +120,16 @@ export function GlobalHeader() {
             {!isInsideAdmin && (
               <div className="flex items-center gap-8">
                 {navItems.map((item) => {
-                  const isActive = router.location.pathname === item.to;
+                  // For "Home", consider both /landing and /dashboard as active
+                  const isActive =
+                    item.label === "Home"
+                      ? router.location.pathname === "/landing" ||
+                        router.location.pathname === "/dashboard"
+                      : router.location.pathname === item.to;
+
                   return (
                     <Link
-                      key={item.to}
+                      key={item.label}
                       to={item.to}
                       className={clsx(
                         "text-xl font-black italic uppercase tracking-tighter transition-all relative group",
@@ -208,10 +220,16 @@ export function GlobalHeader() {
           {!isInsideAdmin && (
             <nav className="flex flex-col gap-4 mb-6">
               {navItems.map((item) => {
-                const isActive = router.location.pathname === item.to;
+                // For "Home", consider both /landing and /dashboard as active
+                const isActive =
+                  item.label === "Home"
+                    ? router.location.pathname === "/landing" ||
+                      router.location.pathname === "/dashboard"
+                    : router.location.pathname === item.to;
+
                 return (
                   <Link
-                    key={item.to}
+                    key={item.label}
                     to={item.to}
                     className={clsx(
                       "text-3xl font-black italic uppercase tracking-tighter transition-all px-4 py-2 border-l-[6px]",
@@ -243,13 +261,13 @@ export function GlobalHeader() {
       {isInsideAdmin && (
         <div
           className={clsx(
-            "w-full border-t relative z-40 overflow-x-auto",
+            "w-full border-t relative",
             variant === "dark"
               ? "border-white/10 bg-black/50"
               : "border-black/5 bg-gray-50",
           )}
         >
-          <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-[50px] md:h-[68px] flex items-center justify-between gap-4 min-w-max">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-6 min-h-[50px] md:h-[68px] flex flex-wrap items-center justify-between gap-x-4 gap-y-3 py-2 md:py-0">
             {/* Admin Navigation Tabs */}
             <div className="flex items-center gap-2 md:gap-3">
               {[
@@ -308,7 +326,7 @@ export function GlobalHeader() {
       )}
 
       {/* SPLIT BORDER RAILS (Screen-wide) */}
-      <div className="absolute bottom-0 left-0 right-0 h-[4px] flex w-full z-50">
+      <div className="absolute bottom-0 left-0 right-0 h-[4px] flex w-full z-40 font-bold">
         <div className="flex-1 bg-[#2e5cff]" />
         <div className="flex-1 bg-[#ff2e2e]" />
       </div>

@@ -60,3 +60,5 @@ heroku_dump.sql
 
 .vercel
 .env*.local
+
+.dev/

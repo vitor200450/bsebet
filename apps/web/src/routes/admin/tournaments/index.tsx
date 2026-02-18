@@ -3,6 +3,7 @@ import {
   deleteTournament,
   getTournaments,
   saveTournament,
+  copyTournament,
 } from "@/server/tournaments";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
@@ -42,6 +43,11 @@ function AdminTournamentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [itemToDuplicate, setItemToDuplicate] = useState<{
     id: number;
     name: string;
   } | null>(null);
@@ -234,6 +240,33 @@ function AdminTournamentsPage() {
     }
   };
 
+  const handleDuplicate = (item: { id: number; name: string }) => {
+    setItemToDuplicate(item);
+    setIsDuplicateModalOpen(true);
+  };
+
+  const confirmDuplicate = async () => {
+    if (!itemToDuplicate) return;
+
+    // Optimistically close modal or keep open?
+    // Let's keep open with loading state like delete/save
+    try {
+      // We'll wrap the promise here inside the component logic or just use the toast promise
+      // but we want to wait for it to close the modal.
+      await toast.promise(copyTournament({ data: itemToDuplicate.id }), {
+        loading: "Duplicating tournament...",
+        success: "Tournament duplicated!",
+        error: "Failed to duplicate tournament",
+      });
+
+      router.invalidate();
+      setIsDuplicateModalOpen(false);
+      setItemToDuplicate(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -385,6 +418,15 @@ function AdminTournamentsPage() {
                           <Calendar className="w-4 h-4" strokeWidth={2.5} />
                         </Link>
                         <button
+                          onClick={() =>
+                            handleDuplicate({ id: t.id, name: t.name })
+                          }
+                          className="bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Duplicate"
+                        >
+                          <Copy className="w-4 h-4" strokeWidth={2.5} />
+                        </button>
+                        <button
                           onClick={() => handleEdit(t)}
                           className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Edit"
@@ -507,7 +549,9 @@ function AdminTournamentsPage() {
                       { value: "EMEA", label: "EMEA" },
                       { value: "SA", label: "South America" },
                       { value: "CN", label: "China" },
-                      { value: "APAC", label: "APAC" },
+                      { value: "EA", label: "East Asia (KR/JP)" },
+                      { value: "SEA", label: "Southeast Asia" },
+                      { value: "SAS", label: "South Asia" },
                     ]}
                   />
                 </div>
@@ -772,6 +816,54 @@ function AdminTournamentsPage() {
                 </button>
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
+                  className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* DUPLICATE CONFIRMATION MODAL */}
+      {isDuplicateModalOpen && itemToDuplicate && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full max-w-md overflow-hidden transform animate-in zoom-in-95 duration-200">
+            <div className="bg-[#ccff00] border-b-[4px] border-black p-4 flex items-center gap-3">
+              <div className="bg-white border-[3px] border-black p-1">
+                <Copy className="w-6 h-6 text-black stroke-[3px]" />
+              </div>
+              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-black">
+                DUPLICATE TOURNAMENT
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <p className="text-black font-bold text-lg mb-4">
+                Are you sure you want to duplicate{" "}
+                <span className="font-black italic">
+                  {itemToDuplicate.name}
+                </span>
+                ?
+              </p>
+
+              <div className="bg-yellow-50 border-2 border-yellow-200 p-3 mb-6 rounded text-sm text-yellow-800 font-bold">
+                This will create a new tournament with the same settings, but
+                <span className="underline ml-1">
+                  without participants or logo
+                </span>
+                .
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={confirmDuplicate}
+                  className="w-full bg-[#ccff00] hover:bg-[#bbe000] text-black py-4 font-black italic uppercase border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2"
+                >
+                  Confirm Duplicate
+                </button>
+                <button
+                  onClick={() => setIsDuplicateModalOpen(false)}
                   className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
                 >
                   Cancel

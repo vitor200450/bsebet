@@ -13,6 +13,7 @@ interface StandardGroupViewProps {
   ) => void;
   onRemovePrediction?: (matchId: number) => void;
   renderMatchCard?: (match: Match) => React.ReactNode;
+  isReadOnly?: boolean;
 }
 
 export function StandardGroupView({
@@ -22,6 +23,7 @@ export function StandardGroupView({
   onUpdatePrediction,
   onRemovePrediction,
   renderMatchCard,
+  isReadOnly = false,
 }: StandardGroupViewProps) {
   const standings = useStandings(matches, predictions);
 
@@ -32,6 +34,7 @@ export function StandardGroupView({
       prediction={predictions[m.id]}
       onUpdatePrediction={onUpdatePrediction}
       onRemovePrediction={onRemovePrediction}
+      isReadOnly={isReadOnly}
     />
   );
 

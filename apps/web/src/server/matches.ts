@@ -439,14 +439,13 @@ export const generateNextRound = generateNextRoundFn as unknown as (opts: {
 const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
   async (ctx: any) => {
     const { db } = await import("@bsebet/db");
-    console.log("generateFullBracketFn called with:", ctx.data);
+
     const { tournamentId, stageId } = z
       .object({
         tournamentId: z.number(),
         stageId: z.string().optional(),
       })
       .parse(ctx.data);
-    console.log("Parsed data:", { tournamentId, stageId });
 
     try {
       const tournament = await db.query.tournaments.findFirst({
@@ -454,7 +453,6 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
       });
 
       if (!tournament) throw new Error("Tournament not found");
-      console.log("Tournament found:", tournament.id);
 
       const stages = (tournament.stages as any[]) || [];
       let stage;
@@ -472,9 +470,12 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 
       // Clear ghost matches:
       if (stageId) {
-        // Find matches to be deleted
+        // Find matches to be deleted - CRITICAL: Filter by tournamentId too!
         const matchesToDelete = await db.query.matches.findMany({
-          where: eq(matches.stageId, stageId),
+          where: and(
+            eq(matches.tournamentId, tournamentId),
+            eq(matches.stageId, stageId),
+          ),
           columns: { id: true },
         });
         const matchIds = matchesToDelete.map((m) => m.id);

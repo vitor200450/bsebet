@@ -10,34 +10,36 @@ import {
 import { LandingPage } from "../components/LandingPage";
 import { TournamentSelector } from "../components/TournamentSelector";
 import { MatchDaySelector } from "../components/MatchDaySelector";
-import { getUser } from "../functions/get-user";
 import { useState, useMemo, useEffect } from "react";
 import { clsx } from "clsx";
 import { Trophy } from "lucide-react";
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
-  async () => {
+  async (ctx: any) => {
     const { db, matches, tournaments, bets } = await import("@bsebet/db");
-    const user = await getUser();
+    // const user = await getUser(); // Original line, replaced by session check
 
-    // Step 1: Get all active tournaments (simplified query without nested with)
+    // Step 1: Get all active/visible tournaments (broaden status check)
     const activeTournaments = await db.query.tournaments.findMany({
       where: and(
         eq(tournaments.isActive, true),
-        eq(tournaments.status, "active"),
+        inArray(tournaments.status, ["active", "upcoming"]), // Include upcoming too
         not(like(tournaments.name, "Test Tournament%")),
       ),
     });
 
     // Step 2: Get matches with betting enabled for these tournaments
     const tournamentIds = activeTournaments.map((t: any) => t.id);
-    const bettingMatches = await db.query.matches.findMany({
-      where: and(
-        inArray(matches.tournamentId, tournamentIds),
-        eq(matches.isBettingEnabled, true),
-      ),
-      columns: { id: true, tournamentId: true },
-    });
+    const bettingMatches =
+      tournamentIds.length > 0
+        ? await db.query.matches.findMany({
+            where: and(
+              inArray(matches.tournamentId, tournamentIds),
+              eq(matches.isBettingEnabled, true),
+            ),
+            columns: { id: true, tournamentId: true },
+          })
+        : [];
 
     const bettingEnabledTournamentIds = new Set(
       bettingMatches.map((m: any) => m.tournamentId),
@@ -45,9 +47,14 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 
     // Step 3: Get tournament IDs where user has bets
     let userBetTournamentIds = new Set<number>();
-    if (user) {
+
+    const { auth } = await import("@bsebet/auth");
+    const session = await auth.api.getSession({ headers: ctx.request.headers });
+    const serverUser = session?.user;
+
+    if (serverUser) {
       const userBetsData = await db.query.bets.findMany({
-        where: eq(bets.userId, user.user.id),
+        where: eq(bets.userId, serverUser.id),
         columns: { matchId: true },
       });
 
@@ -64,7 +71,10 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
     }
 
     // Step 4: Combine all tournament IDs we need to fetch
+    const activeTournamentIds = activeTournaments.map((t) => t.id);
+
     const allTournamentIdsToFetch = new Set([
+      ...activeTournamentIds,
       ...bettingEnabledTournamentIds,
       ...userBetTournamentIds,
     ]);
@@ -73,10 +83,7 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
     let allTournaments: any[] = [];
     if (allTournamentIdsToFetch.size > 0) {
       allTournaments = await db.query.tournaments.findMany({
-        where: and(
-          inArray(tournaments.id, Array.from(allTournamentIdsToFetch)),
-          not(like(tournaments.name, "Test Tournament%")),
-        ),
+        where: inArray(tournaments.id, Array.from(allTournamentIdsToFetch)),
       });
 
       // Fetch matches separately for each tournament
@@ -103,9 +110,20 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
       }));
     }
 
-    // Step 6: Filter to only include tournaments that have matches
+    // Step 6: Filter
+    // We keep a tournament if:
+    // 1. It has matches
+    // 2. OR the user has bets in it
+    // 3. OR it's one of the explicitly active tournaments we found in Step 1
     const tournamentsWithBetting = allTournaments
-      .filter((t: any) => t.matches && t.matches.length > 0)
+      .filter((t: any) => {
+        const hasMatches = t.matches && t.matches.length > 0;
+        const hasBets = userBetTournamentIds.has(t.id);
+        const isActive = activeTournamentIds.includes(t.id);
+        const keep = hasMatches || hasBets || isActive;
+
+        return keep;
+      })
       .map((t: any) => {
         // Find the "active stage" (the label of the first scheduled/live match)
         const activeMatch =
@@ -123,6 +141,7 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
         return {
           id: t.id,
           name: t.name,
+          slug: t.slug,
           logoUrl: t.logoUrl,
           status: t.status,
           startDate: t.startDate,
@@ -140,7 +159,7 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
         );
       });
 
-    return { tournaments: tournamentsWithBetting, user };
+    return { tournaments: tournamentsWithBetting, user: serverUser };
   },
 );
 
@@ -148,8 +167,14 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
   async (ctx: any) => {
     const { tournamentId } = ctx.data;
+
     const { db, matches, matchDays, tournaments } = await import("@bsebet/db");
-    const user = await getUser();
+    const { eq, asc } = await import("drizzle-orm");
+
+    // Import auth locally or verify it's imported
+    const { auth } = await import("@bsebet/auth");
+    const session = await auth.api.getSession({ headers: ctx.request.headers });
+    const user = session?.user;
 
     // Get tournament info once (instead of joining on every match)
     const tournament = await db.query.tournaments.findFirst({
@@ -179,14 +204,16 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 
     let userBetsData: any[] = [];
     if (user && allMatches.length > 0) {
-      const matchIds = allMatches.map((m) => m.id);
+      const matchIds = allMatches.map((m: any) => m.id);
+
       userBetsData = await db.query.bets.findMany({
         where: (betsTable, { eq, and, inArray }) =>
           and(
-            eq(betsTable.userId, user.user.id),
+            eq(betsTable.userId, user.id),
             inArray(betsTable.matchId, matchIds),
           ),
       });
+    } else {
     }
 
     return {
@@ -224,6 +251,8 @@ function formatMatches(data: any[], tournament?: any): Match[] {
     nextMatchWinnerSlot: m.nextMatchWinnerSlot,
     nextMatchLoserId: m.nextMatchLoserId,
     nextMatchLoserSlot: m.nextMatchLoserSlot,
+    teamAPreviousMatchId: m.teamAPreviousMatchId,
+    teamBPreviousMatchId: m.teamBPreviousMatchId,
     winnerId: m.winnerId,
     labelTeamA: m.labelTeamA,
     labelTeamB: m.labelTeamB,
@@ -236,18 +265,24 @@ function formatMatches(data: any[], tournament?: any): Match[] {
     scoreA: m.scoreA,
     scoreB: m.scoreB,
     startTime: m.startTime,
-    teamA: {
-      id: m.teamA?.id ?? 0,
-      name: m.teamA?.name ?? m.labelTeamA ?? "?",
-      logoUrl: m.teamA?.logoUrl ?? undefined,
-      color: "blue" as const,
-    },
-    teamB: {
-      id: m.teamB?.id ?? 0,
-      name: m.teamB?.name ?? m.labelTeamB ?? "?",
-      logoUrl: m.teamB?.logoUrl ?? undefined,
-      color: "red" as const,
-    },
+    teamA: m.teamA
+      ? {
+          id: m.teamA.id,
+          name: m.teamA.name,
+          logoUrl: m.teamA.logoUrl ?? undefined,
+          slug: m.teamA.slug ?? undefined,
+          color: "blue" as const,
+        }
+      : null,
+    teamB: m.teamB
+      ? {
+          id: m.teamB.id,
+          name: m.teamB.name,
+          logoUrl: m.teamB.logoUrl ?? undefined,
+          slug: m.teamB.slug ?? undefined,
+          color: "red" as const,
+        }
+      : null,
     tournamentName: tournament?.name ?? null,
     tournamentLogoUrl: tournament?.logoUrl ?? null,
     scoringRules: tournament?.scoringRules ?? {
@@ -340,12 +375,19 @@ function formatMatches(data: any[], tournament?: any): Match[] {
 
 // 4. A ROTA: Define o loader e renderiza a página
 export const Route = createFileRoute("/")({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tournament?: string } => {
+    return {
+      tournament: search.tournament as string | undefined,
+    };
+  },
   loader: async () => {
     const { tournaments, user } = await getActiveTournaments();
     return {
       tournaments,
       isAuthenticated: !!user,
-      userId: user?.user?.id,
+      userId: user?.id,
     };
   },
   component: Home,
@@ -661,8 +703,8 @@ function ReviewScreen({
 
   return (
     <>
-      <div className="fixed inset-0 z-[100] bg-paper bg-paper-texture flex flex-col p-6 overflow-y-auto animate-in fade-in slide-in-from-bottom-5 duration-300">
-        <div className="w-full max-w-2xl lg:max-w-3xl mx-auto flex flex-col items-center">
+      <div className="w-full min-h-screen bg-paper bg-paper-texture flex flex-col p-4 md:p-6 animate-in fade-in slide-in-from-bottom-5 duration-300 relative pb-32">
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
           {/* Header */}
           <header className="text-center mb-8">
             <div className="bg-black text-[10px] font-black text-white px-3 py-1 rounded-full tracking-[0.2em] transform -skew-x-12 inline-flex items-center gap-1.5 mb-2">
@@ -788,8 +830,8 @@ function ReviewScreen({
           )}
 
           {/* Matches List */}
-          <div className="w-full space-y-6 mb-12 px-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="w-full space-y-8 mb-12 px-1 max-w-4xl mx-auto">
+            <div className="flex flex-col gap-8">
               {matchesToDisplay.map((match, idx) => {
                 const prediction = predictions[match.id];
                 const betData = filteredUserBets.find(
@@ -906,8 +948,8 @@ function ReviewScreen({
                       </div>
                     </div>
 
-                    {/* Match Body - Split Design */}
-                    <div className="relative min-h-[112px] h-auto flex overflow-visible group">
+                    {/* Match Body - Responsive Design */}
+                    <div className="relative min-h-[140px] md:min-h-[112px] h-auto flex flex-col md:flex-row overflow-visible group">
                       {/* Perfect Pick Overlay Effect */}
                       {betData?.isPerfectPick && match.winnerId !== null && (
                         <>
@@ -972,10 +1014,10 @@ function ReviewScreen({
                             </div>
                           </>
                         )}
-                      {/* VS Divider Badge */}
-                      <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-40">
-                        <div className="bg-white border-[3px] border-black rotate-[8deg] px-1.5 py-0.5 shadow-[2px_2px_0px_0px_#000]">
-                          <span className="font-display font-black text-black text-xs italic">
+                      {/* VS Divider Badge - Centered for both layouts */}
+                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
+                        <div className="bg-white border-[3px] border-black rotate-[8deg] px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
+                          <span className="font-display font-black text-black text-[10px] md:text-xs italic">
                             VS
                           </span>
                         </div>
@@ -988,7 +1030,7 @@ function ReviewScreen({
                             onUpdatePrediction(match.id, match.teamA.id);
                         }}
                         className={clsx(
-                          "flex-1 min-w-0 flex items-center pr-14 pl-6 py-4 relative transition-all duration-300 border-r-2 border-black/10 hover:z-20",
+                          "flex-1 min-w-0 flex items-center px-4 py-4 md:pr-14 md:pl-6 md:py-4 relative transition-all duration-300 border-b-2 md:border-b-0 md:border-r-2 border-black/10 hover:z-20",
                           !showResult && !isReadOnly
                             ? "cursor-pointer"
                             : "cursor-default",
@@ -1006,16 +1048,16 @@ function ReviewScreen({
                           <>
                             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                             {isWinnerA && (
-                              <div className="absolute top-2 left-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
+                              <div className="absolute top-1.5 left-2 bg-white text-black font-black italic text-[8px] md:text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
                                 PICK
                               </div>
                             )}
                           </>
                         )}
-                        <div className="flex items-center gap-4 relative z-10 w-full overflow-hidden">
+                        <div className="flex items-center gap-3 md:gap-4 relative z-10 w-full overflow-hidden">
                           <div
                             className={clsx(
-                              "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
+                              "w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
                               isWinnerA
                                 ? "bg-white/20 border-white shadow-sm"
                                 : "bg-black/5 border-black/10",
@@ -1029,13 +1071,13 @@ function ReviewScreen({
                           </div>
                           <span
                             className={clsx(
-                              "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 line-clamp-2 px-1",
+                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 truncate px-1 flex-1",
                               isActualWinnerA
                                 ? "text-black"
                                 : isWinnerA
                                   ? "text-white"
                                   : showResult
-                                    ? "text-zinc-500" // Dimmer for losers
+                                    ? "text-zinc-500"
                                     : "text-zinc-400",
                             )}
                           >
@@ -1051,7 +1093,7 @@ function ReviewScreen({
                             onUpdatePrediction(match.id, match.teamB.id);
                         }}
                         className={clsx(
-                          "flex-1 min-w-0 flex items-center justify-end pl-14 pr-6 py-4 relative transition-all duration-300 border-l-2 border-black/10 hover:z-20",
+                          "flex-1 min-w-0 flex items-center justify-start md:justify-end px-4 py-4 md:pl-14 md:pr-6 md:py-4 relative transition-all duration-300 md:border-l-2 border-black/10 hover:z-20",
                           !showResult && !isReadOnly
                             ? "cursor-pointer"
                             : "cursor-default",
@@ -1069,22 +1111,22 @@ function ReviewScreen({
                           <>
                             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                             {isWinnerB && (
-                              <div className="absolute top-2 right-2 bg-white text-black font-black italic text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
+                              <div className="absolute top-1.5 right-2 md:left-auto md:right-2 bg-white text-black font-black italic text-[8px] md:text-[9px] px-2 py-0.5 border border-black shadow-sm z-30">
                                 PICK
                               </div>
                             )}
                           </>
                         )}
-                        <div className="flex items-center gap-4 justify-end relative z-10 w-full overflow-hidden">
+                        <div className="flex items-center gap-3 md:gap-4 justify-start md:justify-end relative z-10 w-full overflow-hidden flex-row-reverse md:flex-row">
                           <span
                             className={clsx(
-                              "font-display font-black uppercase italic text-xl md:text-2xl tracking-tighter leading-tight transform -skew-x-6 text-right line-clamp-2 px-1",
+                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 text-left md:text-right truncate px-1 flex-1",
                               isActualWinnerB
                                 ? "text-black"
                                 : isWinnerB
                                   ? "text-white"
                                   : showResult
-                                    ? "text-zinc-500" // Dimmer for losers
+                                    ? "text-zinc-500"
                                     : "text-zinc-400",
                             )}
                           >
@@ -1092,7 +1134,7 @@ function ReviewScreen({
                           </span>
                           <div
                             className={clsx(
-                              "w-14 h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
+                              "w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
                               isWinnerB
                                 ? "bg-white/20 border-white shadow-sm"
                                 : "bg-black/5 border-black/10",
@@ -1605,6 +1647,7 @@ function SubmitBetsModal({
 
 function Home() {
   const { tournaments, isAuthenticated, userId } = Route.useLoaderData() as any;
+  const searchParams = Route.useSearch();
 
   // Tournament selection state
   const [selectedTournamentId, setSelectedTournamentId] = useState<
@@ -1633,12 +1676,29 @@ function Home() {
     setShowReview(false);
   }, [userId]);
 
-  // Auto-select if only 1 tournament (no choice to make)
+  // Auto-select if slug provided in URL via dashboard or if only 1 tournament
   useEffect(() => {
+    // 1. URL Parameter has highest priority
+    if (searchParams.tournament) {
+      const target = tournaments.find(
+        (t: any) => t.slug === searchParams.tournament,
+      );
+
+      // Only select if found
+      if (target) {
+        if (selectedTournamentId !== target.id) {
+          handleSelectTournament(target.id);
+        }
+        // Found the specific target, so we stop here
+        return;
+      }
+    }
+
+    // 2. If no URL param OR param not found, auto-select if only 1 tournament exists
     if (tournaments.length === 1 && !selectedTournamentId) {
       handleSelectTournament(tournaments[0].id);
     }
-  }, [tournaments, selectedTournamentId]);
+  }, [tournaments, selectedTournamentId, searchParams.tournament]);
 
   // Reset view mode to carousel when match day changes
   useEffect(() => {
@@ -1670,6 +1730,35 @@ function Home() {
         matchDays: data.matchDays,
         activeMatchDayId: data.activeMatchDayId,
       });
+
+      // Auto-select match day with priority:
+      // 1. Server-defined active day
+      // 2. Day where user already has bets
+      // 3. Last day as fallback
+      let dayToSelect = data.activeMatchDayId;
+
+      if (
+        !dayToSelect &&
+        data.userBets.length > 0 &&
+        data.matchDays.length > 0
+      ) {
+        const betMatchIds = new Set(data.userBets.map((b) => b.matchId));
+        const dayWithBets = data.matchDays.find((md) =>
+          data.matches.some(
+            (m) => m.matchDayId === md.id && betMatchIds.has(m.id),
+          ),
+        );
+        if (dayWithBets) {
+          dayToSelect = dayWithBets.id;
+        }
+      }
+
+      if (dayToSelect) {
+        setSelectedMatchDayId(dayToSelect);
+      } else if (data.matchDays.length > 0) {
+        // Prefer the last match day (most recent) if no active one
+        setSelectedMatchDayId(data.matchDays[data.matchDays.length - 1].id);
+      }
     } catch (err) {
       console.error("Failed to load tournament data", err);
     } finally {
@@ -1786,58 +1875,48 @@ function Home() {
   );
 
   // Auto-redirect to review if user has bets but no matches available to bet on FOR THE SELECTED MATCH DAY
-  // OR exit review mode if switching to a match day with available bets
   useEffect(() => {
     if (!tournamentData || !selectedMatchDayId) return;
 
-    const scheduledMatches = carouselMatches.filter(
-      (m: any) => m.status === "scheduled",
-    );
-    const scheduledMatchesCount = scheduledMatches.length;
-
-    // Check if all scheduled matches have complete predictions
-    const allScheduledMatchesHaveBets = scheduledMatches.every(
-      (m: any) =>
-        predictions[m.id] &&
-        predictions[m.id].winnerId &&
-        predictions[m.id].score &&
-        predictions[m.id].score.trim() !== "",
-    );
-
-    // Get selected match day info
     const selectedMatchDay = matchDays.find(
       (md: any) => md.id === selectedMatchDayId,
     );
 
-    // If in review mode and there are new matches available WITHOUT complete bets, exit review
-    // BUT allow review if user has completed all bets (they clicked "Review All Bets" button)
-    // ALSO don't exit review if match day is finished (results mode)
-    if (
-      showReview &&
-      !isReadOnly &&
-      scheduledMatchesCount > 0 &&
-      !allScheduledMatchesHaveBets &&
-      selectedMatchDay?.status !== "finished"
-    ) {
-      setShowReview(false);
-    }
+    const matchIdsInSelectedDay = allCarouselMatches
+      .filter((m: any) => m.matchDayId === selectedMatchDayId)
+      .map((m: any) => m.id);
 
-    // Automatically go to review screen if:
-    // 1. User has bets for this match day (show their predictions)
-    // 2. OR match day is finished (show results)
+    const hasBetsInSelectedDay = userBets.some((bet: any) =>
+      matchIdsInSelectedDay.includes(bet.matchId),
+    );
+
+    // If the match day is locked/finished or user has server bets, auto-enter review
     if (
-      !showReview &&
-      (isReadOnly || selectedMatchDay?.status === "finished")
+      isReadOnly ||
+      selectedMatchDay?.status === "finished" ||
+      selectedMatchDay?.status === "locked" ||
+      hasBetsInSelectedDay
     ) {
-      setShowReview(true);
+      if (!showReview) {
+        setShowReview(true);
+      }
+    } else {
+      // Only auto-exit review if user has NO server bets AND NO local predictions
+      const hasLocalPredictions = Object.keys(predictions).length > 0;
+      if (showReview && !hasLocalPredictions) {
+        setShowReview(false);
+      }
     }
   }, [
-    isReadOnly,
-    tournamentData,
-    showReview,
-    carouselMatches,
     selectedMatchDayId,
+    selectedTournamentId,
+    tournamentData,
+    userBets,
+    isReadOnly,
+    matchDays,
+    allCarouselMatches,
     predictions,
+    showReview,
   ]);
 
   // Persistence: Load from localStorage on mount (ONLY if not read-only)
@@ -2005,7 +2084,7 @@ function Home() {
   const hasMatches = carouselMatches.length > 0;
 
   return (
-    <div className="min-h-screen bg-paper bg-paper-texture">
+    <div className="min-h-screen w-full flex flex-col bg-paper bg-paper-texture">
       {/* BACK BUTTON - returns to match day selector or tournament selector */}
       {selectedMatchDayId && (
         <button
@@ -2014,7 +2093,7 @@ function Home() {
             setShowReview(false);
             setPredictions({});
           }}
-          className="fixed top-28 left-4 z-[60] bg-white hover:bg-gray-50 text-black font-black py-2 px-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all text-xs uppercase flex items-center gap-2"
+          className="fixed top-28 left-4 z-[90] bg-white hover:bg-gray-50 text-black font-black py-2.5 px-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all text-[10px] md:text-xs uppercase flex items-center gap-2"
         >
           <span className="material-symbols-outlined text-base">
             arrow_back
@@ -2025,160 +2104,57 @@ function Home() {
 
       {/* VIEW SWITCHER & ACTIONS */}
       {hasMatches && !showReview && (
-        <div className="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 items-end">
+        <div className="fixed top-28 right-4 md:top-auto md:bottom-8 md:right-6 z-[90] flex flex-col gap-3 items-end md:items-end w-auto">
           {/* View Results Button - Only show if user has bets */}
           {isReadOnly && (
             <button
               onClick={() => setShowReview(true)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-3 px-6 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all text-sm uppercase flex items-center gap-2 animate-pulse"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black py-2.5 px-4 md:py-3 md:px-6 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all text-[10px] md:text-sm uppercase flex items-center gap-2 animate-pulse whitespace-nowrap"
             >
               <span className="material-symbols-outlined text-base">
                 emoji_events
               </span>
-              Ver Meus Resultados
+              Ver Resultados
             </button>
           )}
 
           {!isReadOnly && (
-            <>
-              {/* Debug Button */}
+            <div className="inline-flex bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000] overflow-hidden">
               <button
-                onClick={async () => {
-                  const allMatches = [...carouselMatches, ...bracketMatches];
-                  let currentPredictions: Record<number, any> = {};
-                  const matchMap = new Map<number, any>();
-
-                  allMatches.forEach((m) => {
-                    matchMap.set(m.id, {
-                      ...m,
-                      teamA: { ...m.teamA },
-                      teamB: { ...m.teamB },
-                    });
-                  });
-
-                  let changed = true;
-                  let iterations = 0;
-
-                  while (changed && iterations < 10) {
-                    changed = false;
-                    iterations++;
-
-                    const sortedIds = Array.from(matchMap.keys()).sort(
-                      (a, b) => {
-                        const mA = matchMap.get(a);
-                        const mB = matchMap.get(b);
-                        return (
-                          (mA.displayOrder || 0) - (mB.displayOrder || 0) ||
-                          (mA.roundIndex || 0) - (mB.roundIndex || 0)
-                        );
-                      },
-                    );
-
-                    for (const id of sortedIds) {
-                      const match = matchMap.get(id);
-                      if (!match || currentPredictions[match.id]) continue;
-
-                      const isGhost = match.isGhost;
-                      const isBettingEnabled = match.isBettingEnabled ?? true;
-                      const isMatchStarted =
-                        match.status === "live" || match.status === "finished";
-                      const canInteract =
-                        !isGhost && isBettingEnabled && !isMatchStarted;
-
-                      if (!canInteract) continue;
-
-                      if (
-                        !match.teamA?.id ||
-                        !match.teamB?.id ||
-                        match.teamA.id === 0 ||
-                        match.teamB.id === 0
-                      ) {
-                        continue;
-                      }
-
-                      const isTeamA = Math.random() > 0.5;
-                      const winnerId = isTeamA
-                        ? match.teamA.id
-                        : match.teamB.id;
-                      const winsNeeded = match.format === "bo5" ? 3 : 2;
-                      const loserWins = Math.floor(Math.random() * winsNeeded);
-                      const score = isTeamA
-                        ? `${winsNeeded} - ${loserWins}`
-                        : `${loserWins} - ${winsNeeded}`;
-
-                      currentPredictions[match.id] = { winnerId, score };
-                      changed = true;
-
-                      const winnerTeam = isTeamA ? match.teamA : match.teamB;
-                      const loserTeam = isTeamA ? match.teamB : match.teamA;
-
-                      if (match.nextMatchWinnerId) {
-                        const next = matchMap.get(match.nextMatchWinnerId);
-                        if (next) {
-                          if (match.nextMatchWinnerSlot === "A")
-                            next.teamA = winnerTeam;
-                          if (match.nextMatchWinnerSlot === "B")
-                            next.teamB = winnerTeam;
-                        }
-                      }
-                      if (match.nextMatchLoserId) {
-                        const next = matchMap.get(match.nextMatchLoserId);
-                        if (next) {
-                          if (match.nextMatchLoserSlot === "A")
-                            next.teamA = loserTeam;
-                          if (match.nextMatchLoserSlot === "B")
-                            next.teamB = loserTeam;
-                        }
-                      }
-                    }
-                  }
-
-                  setPredictions(currentPredictions);
-                }}
-                className="bg-white hover:bg-gray-50 text-black font-black py-2 px-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all text-xs uppercase flex items-center gap-2 self-end mb-2"
-                title="Debug: Fill all matches with random predictions"
+                onClick={() => setViewMode("list")}
+                className={clsx(
+                  "px-3 md:px-6 py-2 font-black uppercase text-[10px] md:text-sm transition-all flex items-center gap-2 relative",
+                  viewMode === "list"
+                    ? "bg-black text-white"
+                    : "bg-white text-black hover:bg-gray-100",
+                )}
               >
-                <span className="text-sm">🎲</span>
-                <span>Fill Random</span>
+                {viewMode === "list" && (
+                  <div className="absolute inset-0 border-[3px] border-[#ccff00] pointer-events-none" />
+                )}
+                <span className="material-symbols-outlined text-base hidden xs:inline">
+                  view_carousel
+                </span>
+                <span>Feed</span>
               </button>
-
-              <div className="inline-flex bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_#000] overflow-hidden">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={clsx(
-                    "px-6 py-2 font-black uppercase text-sm transition-all flex items-center gap-2 relative",
-                    viewMode === "list"
-                      ? "bg-black text-white"
-                      : "bg-white text-black hover:bg-gray-100",
-                  )}
-                >
-                  {viewMode === "list" && (
-                    <div className="absolute inset-0 border-[3px] border-[#ccff00] pointer-events-none" />
-                  )}
-                  <span className="material-symbols-outlined text-base">
-                    view_carousel
-                  </span>
-                  Carrossel
-                </button>
-                <button
-                  onClick={() => setViewMode("bracket")}
-                  className={clsx(
-                    "px-6 py-2 font-black uppercase text-sm transition-all flex items-center gap-2 border-l-[3px] border-black relative",
-                    viewMode === "bracket"
-                      ? "bg-black text-white"
-                      : "bg-white text-black hover:bg-gray-100",
-                  )}
-                >
-                  {viewMode === "bracket" && (
-                    <div className="absolute inset-0 border-[3px] border-[#ccff00] pointer-events-none" />
-                  )}
-                  <span className="material-symbols-outlined text-base">
-                    account_tree
-                  </span>
-                  Chaves
-                </button>
-              </div>
-            </>
+              <button
+                onClick={() => setViewMode("bracket")}
+                className={clsx(
+                  "px-3 md:px-6 py-2 font-black uppercase text-[10px] md:text-sm transition-all flex items-center gap-2 border-l-[3px] border-black relative",
+                  viewMode === "bracket"
+                    ? "bg-black text-white"
+                    : "bg-white text-black hover:bg-gray-100",
+                )}
+              >
+                {viewMode === "bracket" && (
+                  <div className="absolute inset-0 border-[3px] border-[#ccff00] pointer-events-none" />
+                )}
+                <span className="material-symbols-outlined text-base hidden xs:inline">
+                  account_tree
+                </span>
+                <span>Bracket</span>
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -2187,10 +2163,12 @@ function Home() {
       {selectedMatchDay &&
         selectedTournamentId &&
         !showReview &&
-        hasMatches && (
-          <div className="px-4 pt-24 pb-4 max-w-4xl mx-auto">
+        hasMatches &&
+        (selectedMatchDay.status === "finished" ||
+          selectedMatchDay.status === "locked") && (
+          <div className="px-4 pt-48 md:pt-24 pb-4 max-w-4xl mx-auto w-full">
             {selectedMatchDay.status === "finished" && (
-              <div className="bg-blue-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top duration-300">
+              <div className="bg-blue-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top-4 duration-300">
                 <div className="flex items-start gap-3">
                   <span className="material-symbols-outlined text-2xl text-white flex-shrink-0">
                     check_circle
@@ -2206,24 +2184,11 @@ function Home() {
                         : "Aguarde o próximo match day."}
                     </p>
                   </div>
-                  {matchDays.find((md: any) => md.status === "open") && (
-                    <button
-                      onClick={() => {
-                        const nextMD = matchDays.find(
-                          (md: any) => md.status === "open",
-                        );
-                        if (nextMD) setSelectedMatchDayId(nextMD.id);
-                      }}
-                      className="bg-[#ccff00] hover:bg-[#bbe000] text-black font-black px-3 py-1 border-2 border-black text-xs uppercase whitespace-nowrap"
-                    >
-                      Ir para o novo →
-                    </button>
-                  )}
                 </div>
               </div>
             )}
             {selectedMatchDay.status === "locked" && (
-              <div className="bg-yellow-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top duration-300">
+              <div className="bg-yellow-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top-4 duration-300">
                 <div className="flex items-start gap-3">
                   <span className="material-symbols-outlined text-2xl text-black flex-shrink-0">
                     lock
@@ -2243,44 +2208,61 @@ function Home() {
           </div>
         )}
 
-      {showReview ? (
-        <ReviewScreen
-          matches={
-            selectedMatchDayId
-              ? bracketMatches.filter(
-                  (m: any) => m.matchDayId === selectedMatchDayId,
-                )
-              : bracketMatches
-          }
-          predictions={predictions}
-          onUpdatePrediction={updatePrediction}
-          onBack={() => setShowReview(false)}
-          isReadOnly={isReadOnly}
-          tournamentId={selectedTournamentId!}
-          userId={userId}
-          userBets={userBets}
-          setSelectedTournamentId={setSelectedTournamentId}
-          setSelectedMatchDayId={setSelectedMatchDayId}
-          setShowReview={setShowReview}
-          setPredictions={setPredictions}
-          handleSelectTournament={handleSelectTournament}
-        />
-      ) : viewMode === "list" ? (
-        <BettingCarousel
-          matches={carouselMatches.filter((m: any) => m.status === "scheduled")}
-          predictions={predictions}
-          onUpdatePrediction={updatePrediction}
-          onShowReview={() => setShowReview(true)}
-        />
-      ) : (
-        <TournamentBracket
-          matches={bracketMatches}
-          predictions={predictions}
-          onUpdatePrediction={updatePrediction}
-          onRemovePrediction={removePrediction}
-          onReview={() => setShowReview(true)}
-        />
-      )}
+      <div className="flex-grow">
+        {showReview ? (
+          <ReviewScreen
+            matches={
+              selectedMatchDayId
+                ? bracketMatches.filter(
+                    (m: any) => m.matchDayId === selectedMatchDayId,
+                  )
+                : bracketMatches
+            }
+            predictions={predictions}
+            onUpdatePrediction={updatePrediction}
+            onBack={() => setShowReview(false)}
+            isReadOnly={isReadOnly}
+            tournamentId={selectedTournamentId!}
+            userId={userId}
+            userBets={userBets}
+            setSelectedTournamentId={setSelectedTournamentId}
+            setSelectedMatchDayId={setSelectedMatchDayId}
+            setShowReview={setShowReview}
+            setPredictions={setPredictions}
+            handleSelectTournament={handleSelectTournament}
+          />
+        ) : viewMode === "list" ? (
+          <BettingCarousel
+            matches={carouselMatches.filter(
+              (m: any) => m.status === "scheduled",
+            )}
+            predictions={predictions}
+            onUpdatePrediction={updatePrediction}
+            onShowReview={() => setShowReview(true)}
+            hasUserBets={
+              !!selectedMatchDayId &&
+              userBets.some((bet: any) =>
+                allCarouselMatches
+                  .filter((m: any) => m.matchDayId === selectedMatchDayId)
+                  .map((m: any) => m.id)
+                  .includes(bet.matchId),
+              )
+            }
+            isReadOnly={isReadOnly}
+          />
+        ) : (
+          <div className="pt-48 md:pt-4">
+            <TournamentBracket
+              matches={bracketMatches}
+              predictions={predictions}
+              onUpdatePrediction={updatePrediction}
+              onRemovePrediction={removePrediction}
+              onReview={() => setShowReview(true)}
+              isReadOnly={isReadOnly}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

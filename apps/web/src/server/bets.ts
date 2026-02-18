@@ -1,6 +1,6 @@
 import { bets, matches } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@bsebet/auth";
 
@@ -300,41 +300,33 @@ const submitMultipleBetsFn = createServerFn({
     throw new Error(`Erros de validação:\n${errors.join("\n")}`);
   }
 
-  // 4. Get existing bets for this user
-  const existingBets = await db.query.bets.findMany({
-    where: (bets, { eq, and, inArray }) =>
-      and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)),
-  });
+  // 4. Safe "Upsert" Strategy: Delete existing bets for these matches correctly first, then Insert new ones.
+  // This avoids unique constraint issues and complex upsert logic.
+  // Since we only allow betting on unstarted matches (points=0), we don't lose any scoring data.
 
-  // 5. BLOCK RE-BETTING: If user already has bets for ANY of these matches, reject
-  if (existingBets.length > 0) {
-    const existingMatchIds = existingBets.map((b) => b.matchId).join(", ");
-    throw new Error(
-      `Você já tem apostas registradas para as partidas: ${existingMatchIds}. Não é possível alterar apostas após o envio inicial.`,
-    );
-  }
+  // Execute DELETE
+  await db
+    .delete(bets)
+    .where(and(eq(bets.userId, userId), inArray(bets.matchId, matchIds)));
 
-  // 6. Insert new bets
-  const results = [];
-
-  for (const betData of validData.bets) {
-    const inserted = await db
-      .insert(bets)
-      .values({
+  // Execute INSERT
+  const inserted = await db
+    .insert(bets)
+    .values(
+      validData.bets.map((bet) => ({
         userId,
-        matchId: betData.matchId,
-        predictedWinnerId: betData.predictedWinnerId,
-        predictedScoreA: betData.predictedScoreA,
-        predictedScoreB: betData.predictedScoreB,
-      })
-      .returning();
-    results.push(inserted[0]);
-  }
+        matchId: bet.matchId,
+        predictedWinnerId: bet.predictedWinnerId,
+        predictedScoreA: bet.predictedScoreA,
+        predictedScoreB: bet.predictedScoreB,
+      })),
+    )
+    .returning();
 
   return {
     success: true,
-    bets: results,
-    message: `${results.length} aposta(s) salva(s) com sucesso`,
+    bets: inserted,
+    message: `${inserted.length} aposta(s) salva(s) com sucesso`,
   };
 });
 

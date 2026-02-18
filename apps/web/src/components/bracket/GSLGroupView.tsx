@@ -14,7 +14,7 @@ interface GSLGroupViewProps {
   ) => void;
   onRemovePrediction?: (matchId: number) => void;
   renderMatchCard?: (match: Match) => React.ReactNode;
-  // Optional custom renderer for Editor vs Public view
+  isReadOnly?: boolean;
 }
 
 export function GSLGroupView({
@@ -24,6 +24,7 @@ export function GSLGroupView({
   onUpdatePrediction,
   onRemovePrediction,
   renderMatchCard,
+  isReadOnly = false,
 }: GSLGroupViewProps) {
   // Sort matches by displayOrder (1-5)
   const sortedMatches = useMemo(() => {
@@ -59,6 +60,7 @@ export function GSLGroupView({
       prediction={predictions[m.id]}
       onUpdatePrediction={onUpdatePrediction}
       onRemovePrediction={onRemovePrediction}
+      isReadOnly={isReadOnly}
     />
   );
 

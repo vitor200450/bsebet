@@ -1,38 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { clsx } from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { TeamLogo } from "./TeamLogo";
 
-// --- TYPES ---
-export type Team = {
-  id: number;
-  name: string;
-  logoUrl?: string;
-  color: "blue" | "red";
-};
-
-export type Match = {
-  id: number;
-  label: string;
-  teamA: Team;
-  teamB: Team;
-  format: "bo3" | "bo5" | "bo7";
-  stats: {
-    regionA: string;
-    regionB: string;
-    pointsA: number;
-    pointsB: number;
-    winRateA: string;
-    winRateB: string;
-  };
-  nextMatchWinnerId?: number | null;
-  nextMatchWinnerSlot?: string | null;
-  nextMatchLoserId?: number | null;
-  nextMatchLoserSlot?: string | null;
-  tournamentName?: string | null;
-  tournamentLogoUrl?: string | null;
-  startTime: string | Date;
-};
+import type { Match, Prediction } from "./bracket/types";
 
 // --- SVG COMPONENTS ---
 // --- SVG COMPONENTS ---
@@ -109,16 +81,13 @@ const PaintSplatterRed = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export type Prediction = {
-  winnerId: number;
-  score: string;
-};
-
 export function BettingCarousel({
   matches,
   predictions,
   onUpdatePrediction,
   onShowReview,
+  hasUserBets,
+  isReadOnly = false,
 }: {
   matches: Match[];
   predictions: Record<number, Prediction>;
@@ -128,6 +97,8 @@ export function BettingCarousel({
     score?: string,
   ) => void;
   onShowReview?: () => void;
+  hasUserBets?: boolean;
+  isReadOnly?: boolean;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -144,8 +115,8 @@ export function BettingCarousel({
     // Clone matches to avoid mutating props
     const projected = matches.map((m) => ({
       ...m,
-      teamA: { ...m.teamA },
-      teamB: { ...m.teamB },
+      teamA: m.teamA ? { ...m.teamA } : null,
+      teamB: m.teamB ? { ...m.teamB } : null,
     }));
 
     // Iterate through all matches to propagate results
@@ -155,8 +126,11 @@ export function BettingCarousel({
 
       const winnerId = prediction.winnerId;
       const winnerTeam =
-        winnerId === match.teamA.id ? match.teamA : match.teamB;
-      const loserTeam = winnerId === match.teamA.id ? match.teamB : match.teamA;
+        match.teamA && winnerId === match.teamA.id ? match.teamA : match.teamB;
+      const loserTeam =
+        match.teamA && winnerId === match.teamA.id ? match.teamB : match.teamA;
+
+      if (!winnerTeam || !loserTeam) return;
 
       // Move Winner
       if (match.nextMatchWinnerId) {
@@ -262,12 +236,12 @@ export function BettingCarousel({
   const updatePrediction = onUpdatePrediction;
 
   const setSelectedWinnerId = (winnerId: number) => {
-    if (!currentMatch) return;
+    if (!currentMatch || isReadOnly) return;
     updatePrediction(currentMatch.id, winnerId);
   };
 
   const setSelectedScore = (score: string) => {
-    if (!currentMatch.id) return;
+    if (!currentMatch?.id || isReadOnly) return;
     updatePrediction(currentMatch.id, selectedWinnerId || 0, score);
   };
 
@@ -277,7 +251,8 @@ export function BettingCarousel({
     const winsNeeded =
       currentMatch.format === "bo5" ? 3 : currentMatch.format === "bo3" ? 2 : 3;
     const options = [];
-    const isWinnerA = selectedWinnerId === currentMatch.teamA.id;
+    const isWinnerA =
+      currentMatch.teamA && selectedWinnerId === currentMatch.teamA.id;
 
     for (let loserWins = 0; loserWins < winsNeeded; loserWins++) {
       const label = isWinnerA
@@ -294,7 +269,7 @@ export function BettingCarousel({
       });
     }
     return options;
-  }, [currentMatch?.format, currentMatch?.teamA.id, selectedWinnerId]);
+  }, [currentMatch?.format, currentMatch?.teamA?.id, selectedWinnerId]);
 
   // Helper to check if a team is selected
   const isSelected = (teamId: number) => selectedWinnerId === teamId;
@@ -302,7 +277,9 @@ export function BettingCarousel({
     selectedWinnerId !== null && selectedWinnerId !== teamId;
 
   const activeAccentColor =
-    currentMatch && selectedWinnerId === currentMatch.teamA.id
+    currentMatch &&
+    currentMatch.teamA &&
+    selectedWinnerId === currentMatch.teamA.id
       ? "brawl-blue"
       : "brawl-red";
 
@@ -336,7 +313,8 @@ export function BettingCarousel({
               mais tarde para apostar!
             </p>
 
-            {Object.keys(predictions).length > 0 && onShowReview ? (
+            {(Object.keys(predictions).length > 0 || hasUserBets) &&
+            onShowReview ? (
               <button
                 onClick={onShowReview}
                 className="w-full bg-brawl-red hover:bg-[#d41d1d] text-white py-4 font-black italic uppercase border-[3px] border-black shadow-comic active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2 group"
@@ -364,7 +342,7 @@ export function BettingCarousel({
 
   return (
     <>
-      <div className="bg-paper bg-paper-texture font-body min-h-screen flex flex-col items-center pt-24 pb-8 relative overflow-x-hidden text-ink pencil-texture">
+      <div className="bg-paper bg-paper-texture font-body w-full flex flex-col items-center pt-24 pb-24 md:pb-12 relative overflow-x-hidden text-ink pencil-texture">
         {/* Header / Navbar */}
 
         {/* Decorations */}
@@ -507,41 +485,48 @@ export function BettingCarousel({
                       <div
                         role="button"
                         onClick={() =>
+                          currentMatch.teamA &&
                           setSelectedWinnerId(currentMatch.teamA.id)
                         }
                         className={clsx(
                           "relative flex flex-col items-center p-0 overflow-hidden h-full border-r border-black cursor-pointer transition-all duration-200 group",
-                          isSelected(currentMatch.teamA.id)
+                          currentMatch.teamA &&
+                            isSelected(currentMatch.teamA.id)
                             ? "bg-brawl-blue"
-                            : isOtherTeamSelected(currentMatch.teamA.id)
+                            : currentMatch.teamA &&
+                                isOtherTeamSelected(currentMatch.teamA.id)
                               ? "bg-gray-200 grayscale"
-                              : "bg-brawl-blue hover:brightness-110",
+                              : isReadOnly
+                                ? "bg-brawl-blue/80"
+                                : "bg-brawl-blue hover:brightness-110",
                         )}
                       >
-                        {isSelected(currentMatch.teamA.id) && (
-                          <div className="absolute inset-0 border-[4px] border-[#ccff00] z-20 pointer-events-none animate-pulse"></div>
-                        )}
+                        {!isReadOnly &&
+                          currentMatch.teamA &&
+                          isSelected(currentMatch.teamA.id) && (
+                            <div className="absolute inset-0 border-[4px] border-[#ccff00] z-20 pointer-events-none animate-pulse"></div>
+                          )}
 
                         <div className="w-full h-full flex flex-col relative z-10">
                           <div className="w-full pt-3 pb-1 px-2 text-left">
                             <span
                               className={clsx(
                                 "text-[9px] md:text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm truncate",
-                                isSelected(currentMatch.teamA.id) ||
+                                isSelected(currentMatch.teamA?.id || 0) ||
                                   !selectedWinnerId
                                   ? "text-white"
                                   : "text-gray-600",
                               )}
                             >
-                              {currentMatch.teamA.name}
+                              {currentMatch.teamA?.name || "TBD"}
                             </span>
                           </div>
                           <div className="flex-grow flex items-center justify-center p-2">
                             <TeamLogo
-                              teamName={currentMatch.teamA.name}
-                              logoUrl={currentMatch.teamA.logoUrl}
+                              teamName={currentMatch.teamA?.name || "TBD"}
+                              logoUrl={currentMatch.teamA?.logoUrl}
                               size="lg"
-                              className="md:scale-125"
+                              className="!w-16 !h-16 md:!w-28 md:!h-28 drop-shadow-md"
                             />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
@@ -556,40 +541,47 @@ export function BettingCarousel({
                       <div
                         role="button"
                         onClick={() =>
+                          currentMatch.teamB &&
                           setSelectedWinnerId(currentMatch.teamB.id)
                         }
                         className={clsx(
                           "relative flex flex-col items-center p-0 overflow-hidden h-full bg-brawl-red cursor-pointer transition-all duration-200 group",
-                          isSelected(currentMatch.teamB.id)
+                          currentMatch.teamB &&
+                            isSelected(currentMatch.teamB.id)
                             ? "bg-brawl-red"
-                            : isOtherTeamSelected(currentMatch.teamB.id)
+                            : currentMatch.teamB &&
+                                isOtherTeamSelected(currentMatch.teamB.id)
                               ? "bg-gray-200 grayscale"
-                              : "bg-brawl-red hover:brightness-110",
+                              : isReadOnly
+                                ? "bg-brawl-red/80"
+                                : "bg-brawl-red hover:brightness-110",
                         )}
                       >
-                        {isSelected(currentMatch.teamB.id) && (
-                          <div className="absolute inset-0 border-[4px] border-[#ccff00] z-20 pointer-events-none animate-pulse"></div>
-                        )}
+                        {!isReadOnly &&
+                          currentMatch.teamB &&
+                          isSelected(currentMatch.teamB.id) && (
+                            <div className="absolute inset-0 border-[4px] border-[#ccff00] z-20 pointer-events-none animate-pulse"></div>
+                          )}
                         <div className="w-full h-full flex flex-col relative z-10">
                           <div className="w-full pt-3 pb-1 px-2 text-right">
                             <span
                               className={clsx(
                                 "text-[9px] md:text-[10px] font-bold font-body uppercase tracking-wider block text-shadow-sm truncate",
-                                isSelected(currentMatch.teamB.id) ||
+                                isSelected(currentMatch.teamB?.id || 0) ||
                                   !selectedWinnerId
                                   ? "text-white"
                                   : "text-gray-600",
                               )}
                             >
-                              {currentMatch.teamB.name}
+                              {currentMatch.teamB?.name || "TBD"}
                             </span>
                           </div>
                           <div className="flex-grow flex items-center justify-center p-2">
                             <TeamLogo
-                              teamName={currentMatch.teamB.name}
-                              logoUrl={currentMatch.teamB.logoUrl}
+                              teamName={currentMatch.teamB?.name || "TBD"}
+                              logoUrl={currentMatch.teamB?.logoUrl}
                               size="lg"
-                              className="md:scale-125"
+                              className="!w-16 !h-16 md:!w-28 md:!h-28 drop-shadow-md"
                             />
                           </div>
                           <div className="w-full py-1 text-center border-t border-white/20 bg-black/10">
@@ -628,24 +620,54 @@ export function BettingCarousel({
                       </div>
                     </div>
 
-                    {/* Buttons */}
+                    {/* Buttons - Team Pages */}
                     <div className="grid grid-cols-2 p-3 gap-3 bg-ink border-x border-b border-black">
-                      <button className="bg-ink text-white hover:bg-gray-800 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none hover:border-white transition-all rounded-sm group">
-                        <span className="material-symbols-outlined text-sm">
-                          visibility
-                        </span>
-                        <span className="font-display font-bold text-xs tracking-wider">
-                          TEAM PAGE
-                        </span>
-                      </button>
-                      <button className="bg-ink text-white hover:bg-gray-800 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none hover:border-white transition-all rounded-sm group">
-                        <span className="material-symbols-outlined text-sm">
-                          shield
-                        </span>
-                        <span className="font-display font-bold text-xs tracking-wider">
-                          TEAM PAGE
-                        </span>
-                      </button>
+                      {currentMatch.teamA?.slug ? (
+                        <Link
+                          to="/teams/$teamId"
+                          params={{ teamId: currentMatch.teamA?.slug || "" }}
+                          className="bg-ink text-white hover:bg-gray-800 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none hover:border-white transition-all rounded-sm group"
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            visibility
+                          </span>
+                          <span className="font-display font-bold text-xs tracking-wider">
+                            {currentMatch.teamA?.name || "TBD"}
+                          </span>
+                        </Link>
+                      ) : (
+                        <div className="bg-gray-700 text-gray-400 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none rounded-sm cursor-not-allowed">
+                          <span className="material-symbols-outlined text-sm">
+                            visibility_off
+                          </span>
+                          <span className="font-display font-bold text-xs tracking-wider">
+                            TBD
+                          </span>
+                        </div>
+                      )}
+                      {currentMatch.teamB?.slug ? (
+                        <Link
+                          to="/teams/$teamId"
+                          params={{ teamId: currentMatch.teamB?.slug || "" }}
+                          className="bg-ink text-white hover:bg-gray-800 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none hover:border-white transition-all rounded-sm group"
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            shield
+                          </span>
+                          <span className="font-display font-bold text-xs tracking-wider">
+                            {currentMatch.teamB?.name || "TBD"}
+                          </span>
+                        </Link>
+                      ) : (
+                        <div className="bg-gray-700 text-gray-400 py-2 px-3 flex items-center justify-center gap-2 border border-gray-600 shadow-none rounded-sm cursor-not-allowed">
+                          <span className="material-symbols-outlined text-sm">
+                            visibility_off
+                          </span>
+                          <span className="font-display font-bold text-xs tracking-wider">
+                            TBD
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -656,7 +678,7 @@ export function BettingCarousel({
                     {scoreOptions.map((option) => {
                       const isOptionSelected = selectedScore === option.label;
                       // Only allow selecting score if a winner is selected
-                      const isDisabled = !selectedWinnerId;
+                      const isDisabled = !selectedWinnerId || isReadOnly;
 
                       return (
                         <button

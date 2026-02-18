@@ -22,13 +22,17 @@
     "db:migrate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:migrate",
     "db:studio:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:studio",
     "db:generate:prod": "bun --env-file=.env.production run turbo -F @bsebet/db db:generate",
-    "db:import:prod": "bun run import-local.ts",
+    "db:import:prod": "bun run .dev/scripts/import-local.ts",
+    "db:sync:dev": "powershell -ExecutionPolicy Bypass -File .dev/scripts/sync-from-heroku.ps1",
     "deploy": "turbo -F @bsebet/infra deploy",
     "destroy": "turbo -F @bsebet/infra destroy"
   },
   "dependencies": {
     "@bsebet/env": "workspace:*",
     "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8",
+    "sharp": "^0.34.5",
     "zod": "^4.1.13"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
   // Hide header for unauthenticated users (landing page has its own branding)
   useSetHeader(!isAuthenticated ? { hideHeader: true } : {});
 
-  const ctaLink = isAuthenticated ? "/leaderboard" : "/login";
+  const ctaLink = isAuthenticated ? "/dashboard" : "/login";
 
   return (
     <div className="min-h-screen flex flex-col">

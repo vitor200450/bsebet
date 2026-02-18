@@ -22,6 +22,7 @@ export function TournamentBracket({
   onUpdatePrediction,
   onRemovePrediction,
   onReview,
+  isReadOnly = false,
 }: {
   matches: Match[];
   predictions: Record<number, Prediction>;
@@ -32,14 +33,15 @@ export function TournamentBracket({
   ) => void;
   onRemovePrediction?: (matchId: number) => void;
   onReview?: () => void;
+  isReadOnly?: boolean;
 }) {
   // Logic to project matches based on predictions
   const projectedMatches = useMemo(() => {
     // Clone matches
     const projected = matches.map((m) => ({
       ...m,
-      teamA: { ...m.teamA },
-      teamB: { ...m.teamB },
+      teamA: m.teamA ? { ...m.teamA } : null,
+      teamB: m.teamB ? { ...m.teamB } : null,
     }));
 
     // Reset teams that are dependent on previous matches to "TBD" if not decided yet
@@ -57,32 +59,91 @@ export function TournamentBracket({
     // Create a map for quick access
     const matchMap = new Map(projected.map((m) => [m.id, m]));
 
-    // Apply predictions to move teams forward
-    Object.entries(predictions).forEach(([matchIdStr, prediction]) => {
-      const matchId = parseInt(matchIdStr);
-      const match = matchMap.get(matchId);
-      if (!match) return;
+    // Apply both actual results and predictions multiple times to handle deep propagation
+    for (let i = 0; i < 5; i++) {
+      let changed = false;
 
-      const winnerId = prediction.winnerId;
-      const winnerTeam =
-        winnerId === match.teamA.id ? match.teamA : match.teamB;
-      const loserTeam = winnerId === match.teamA.id ? match.teamB : match.teamA;
+      matches.forEach((originalMatch) => {
+        const match = matchMap.get(originalMatch.id);
+        if (!match) return;
 
-      // Update Winner Path
-      if (match.nextMatchWinnerId) {
-        const nextMatch = matchMap.get(match.nextMatchWinnerId);
-        if (nextMatch) {
-          if (match.nextMatchWinnerSlot === "A") nextMatch.teamA = winnerTeam;
-          if (match.nextMatchWinnerSlot === "B") nextMatch.teamB = winnerTeam;
+        // Use actual winner if finished, otherwise use prediction
+        const prediction = predictions[match.id];
+        const isFinished = match.status === "finished";
+        const winnerId = isFinished ? match.winnerId : prediction?.winnerId;
+
+        if (!winnerId) return;
+
+        const winnerTeam =
+          match.teamA && winnerId === match.teamA.id
+            ? match.teamA
+            : match.teamB;
+        const loserTeam =
+          match.teamA && winnerId === match.teamA.id
+            ? match.teamB
+            : match.teamA;
+
+        if (!winnerTeam) return;
+
+        // Update Winner Path
+        if (match.nextMatchWinnerId) {
+          const nextMatch = matchMap.get(match.nextMatchWinnerId);
+          if (nextMatch) {
+            if (
+              match.nextMatchWinnerSlot === "A" &&
+              nextMatch.teamA?.id !== winnerTeam.id
+            ) {
+              nextMatch.teamA = winnerTeam;
+              changed = true;
+            }
+            if (
+              match.nextMatchWinnerSlot === "B" &&
+              nextMatch.teamB?.id !== winnerTeam.id
+            ) {
+              nextMatch.teamB = winnerTeam;
+              changed = true;
+            }
+          }
+        }
+
+        // Update Loser Path
+        if (match.nextMatchLoserId) {
+          const nextMatch = matchMap.get(match.nextMatchLoserId);
+          if (nextMatch) {
+            if (
+              match.nextMatchLoserSlot === "A" &&
+              nextMatch.teamA?.id !== loserTeam?.id
+            ) {
+              nextMatch.teamA = loserTeam;
+              changed = true;
+            }
+            if (
+              match.nextMatchLoserSlot === "B" &&
+              nextMatch.teamB?.id !== loserTeam?.id
+            ) {
+              nextMatch.teamB = loserTeam;
+              changed = true;
+            }
+          }
+        }
+      });
+
+      if (!changed) break;
+    }
+
+    // Mark dependencies - lock matches if parents are not predicted OR finished
+    projected.forEach((m) => {
+      if (m.teamAPreviousMatchId) {
+        const parent = matchMap.get(m.teamAPreviousMatchId);
+        // If parent exists, isn't finished, and has no prediction -> lock child
+        if (parent && parent.status !== "finished" && !predictions[parent.id]) {
+          m.isLockedDependency = true;
         }
       }
-
-      // Update Loser Path
-      if (match.nextMatchLoserId) {
-        const nextMatch = matchMap.get(match.nextMatchLoserId);
-        if (nextMatch) {
-          if (match.nextMatchLoserSlot === "A") nextMatch.teamA = loserTeam;
-          if (match.nextMatchLoserSlot === "B") nextMatch.teamB = loserTeam;
+      if (m.teamBPreviousMatchId) {
+        const parent = matchMap.get(m.teamBPreviousMatchId);
+        if (parent && parent.status !== "finished" && !predictions[parent.id]) {
+          m.isLockedDependency = true;
         }
       }
     });
@@ -272,6 +333,7 @@ export function TournamentBracket({
                         predictions={predictions}
                         onUpdatePrediction={onUpdatePrediction}
                         onRemovePrediction={onRemovePrediction}
+                        isReadOnly={isReadOnly}
                       />
                     );
                   }
@@ -284,6 +346,7 @@ export function TournamentBracket({
                       predictions={predictions}
                       onUpdatePrediction={onUpdatePrediction}
                       onRemovePrediction={onRemovePrediction}
+                      isReadOnly={isReadOnly}
                     />
                   );
                 })}
@@ -310,7 +373,7 @@ export function TournamentBracket({
                     {upperRounds.map((roundIdx) => (
                       <div
                         key={`upper-${roundIdx}`}
-                        className="flex flex-col gap-2"
+                        className="flex flex-col gap-2 w-72 shrink-0"
                       >
                         <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
                           {getRoundTitle("upper", roundIdx)}
@@ -323,6 +386,7 @@ export function TournamentBracket({
                               prediction={predictions[match.id]}
                               onUpdatePrediction={onUpdatePrediction}
                               onRemovePrediction={onRemovePrediction}
+                              isReadOnly={isReadOnly}
                             />
                           ))}
                         </div>
@@ -331,7 +395,7 @@ export function TournamentBracket({
 
                     {/* GRAND FINAL */}
                     {grandFinal.length > 0 && (
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 w-72 shrink-0">
                         <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
                           GRAND FINAL
                         </div>
@@ -343,6 +407,7 @@ export function TournamentBracket({
                               prediction={predictions[match.id]}
                               onUpdatePrediction={onUpdatePrediction}
                               onRemovePrediction={onRemovePrediction}
+                              isReadOnly={isReadOnly}
                             />
                           ))}
                         </div>
@@ -364,7 +429,7 @@ export function TournamentBracket({
                     {lowerRounds.map((roundIdx) => (
                       <div
                         key={`lower-${roundIdx}`}
-                        className="flex flex-col gap-2"
+                        className="flex flex-col gap-2 w-72 shrink-0"
                       >
                         <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider">
                           {getRoundTitle("lower", roundIdx)}
@@ -377,6 +442,7 @@ export function TournamentBracket({
                               prediction={predictions[match.id]}
                               onUpdatePrediction={onUpdatePrediction}
                               onRemovePrediction={onRemovePrediction}
+                              isReadOnly={isReadOnly}
                             />
                           ))}
                         </div>

@@ -49,7 +49,7 @@ const ScorePicker = ({
   }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className={clsx("relative", isOpen && "z-[70]")} ref={containerRef}>
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -130,19 +130,49 @@ export const MatchCard = ({
   onRemovePrediction?: (matchId: number) => void;
   isReadOnly?: boolean;
 }) => {
-  const isGhost = match.isGhost;
+  const isGhost =
+    match.isGhost ||
+    !match.teamA ||
+    !match.teamB ||
+    match.teamA?.name?.includes("TBD") ||
+    match.teamB?.name?.includes("TBD") ||
+    match.teamA?.name?.includes("Winner of") ||
+    match.teamB?.name?.includes("Winner of") ||
+    match.teamA?.name?.includes("Loser of") ||
+    match.teamB?.name?.includes("Loser of");
+
+  const isLocked = isGhost || match.isLockedDependency;
+
   const isBettingEnabled = match.isBettingEnabled ?? true;
-  // Can interact if betting is enabled AND match is not finished/live AND not readOnly
+  // Can interact if betting is enabled AND match is not finished/live AND not readOnly AND not locked
   const isMatchStarted = match.status === "live" || match.status === "finished";
   const canInteract =
-    !isGhost && isBettingEnabled && !isMatchStarted && !isReadOnly;
+    !isLocked && isBettingEnabled && !isMatchStarted && !isReadOnly;
 
-  if (isGhost) {
+  if (isLocked) {
     return (
-      <div className="w-full bg-gray-100 border-[3px] border-black/20 h-28 flex items-center justify-center">
-        <span className="text-black/20 font-black italic uppercase text-sm">
-          TBD
-        </span>
+      <div className="w-full bg-gray-100/50 border-[3px] border-black/10 h-28 flex flex-col items-center justify-center relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-black/5"></div>
+        <div className="flex flex-col items-center gap-1 opacity-40 grayscale">
+          <div className="flex items-center gap-6">
+            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate">
+              {match.labelTeamA || "TBD"}
+            </span>
+            <div className="w-6 h-6 rounded-full border-2 border-dashed border-black/20 flex items-center justify-center">
+              <span className="text-[8px] font-black italic">VS</span>
+            </div>
+            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate">
+              {match.labelTeamB || "TBD"}
+            </span>
+          </div>
+        </div>
+        <div className="mt-2 bg-black/5 px-3 py-1 border border-black/10">
+          <span className="text-[8px] font-black uppercase italic text-black/40 tracking-widest">
+            Aguardando Apostas Anteriores
+          </span>
+        </div>
+        {/* Diagonal stripes overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(45deg,black_25%,transparent_25%,transparent_50%,black_50%,black_75%,transparent_75%,transparent)] bg-[length:20px_20px]"></div>
       </div>
     );
   }
@@ -151,8 +181,8 @@ export const MatchCard = ({
   const showResult = isMatchStarted; // Show actual result if match started
   const winnerId = showResult ? match.winnerId : prediction?.winnerId; // Use actual winner if available, else prediction
 
-  const isWinnerA = winnerId === match.teamA.id;
-  const isWinnerB = winnerId === match.teamB.id;
+  const isWinnerA = match.teamA && winnerId === match.teamA.id;
+  const isWinnerB = match.teamB && winnerId === match.teamB.id;
 
   const displayScoreA = showResult ? (match.scoreA ?? 0) : undefined;
   const displayScoreB = showResult ? (match.scoreB ?? 0) : undefined;
@@ -161,8 +191,9 @@ export const MatchCard = ({
     <div
       className={clsx(
         "w-full bg-white border-[3px] border-black shadow-[3px_3px_0px_0px_#000] overflow-visible transition-all duration-200 relative group z-10 text-black",
-        canInteract && "hover:-translate-y-0.5 hover:z-50 cursor-pointer",
-        !canInteract && !showResult && "opacity-60",
+        canInteract &&
+          "hover:-translate-y-0.5 hover:z-50 focus-within:z-[60] active:z-[60] cursor-pointer",
+        !canInteract && !showResult && "opacity-60 cursor-not-allowed",
       )}
     >
       {/* Status Badges */}
@@ -208,15 +239,15 @@ export const MatchCard = ({
                         </div>
                         <div className="text-[9px] text-gray-300">
                           Você apostou em:{" "}
-                          {match.teamA.id === prediction.winnerId
+                          {match.teamA && match.teamA.id === prediction.winnerId
                             ? match.teamA.name
-                            : match.teamB.name}
+                            : match.teamB?.name || "Time B"}
                         </div>
                         <div className="text-[9px] text-gray-300">
                           Vencedor real:{" "}
-                          {match.teamA.id === match.winnerId
+                          {match.teamA && match.teamA.id === match.winnerId
                             ? match.teamA.name
-                            : match.teamB.name}
+                            : match.teamB?.name || "Time B"}
                         </div>
                         <div className="border-t border-gray-600 pt-1 mt-1 font-bold">
                           Total: 0 pontos
@@ -277,7 +308,7 @@ export const MatchCard = ({
         )}
 
       {/* Header */}
-      <div className="bg-black flex justify-between items-center px-2 py-1">
+      <div className="bg-black flex justify-between items-center px-2 h-6">
         <div className="text-white text-[8px] font-black uppercase tracking-wider truncate flex-1">
           {match.name || match.label}
         </div>
@@ -310,10 +341,25 @@ export const MatchCard = ({
           </div>
         )}
 
+        {/* Helper for LOCKED matches */}
+        {!canInteract && !showResult && !isReadOnly && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-black/40 backdrop-blur-[1px]">
+            <div className="flex flex-col items-center gap-1 bg-black text-white px-3 py-2 border-2 border-[#ccff00] transform -rotate-1">
+              <span className="material-symbols-outlined text-sm">lock</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-tight">
+                Aposte nos jogos
+                <br />
+                anteriores primeiro
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Team A Row */}
         <div
           onClick={() =>
             canInteract &&
+            match.teamA &&
             onUpdatePrediction(
               match.id,
               match.teamA.id,
@@ -321,7 +367,7 @@ export const MatchCard = ({
             )
           }
           className={clsx(
-            "flex items-center justify-between px-2 py-1.5 border-b border-black/10 min-h-[3rem] transition-all duration-200 relative",
+            "flex items-center justify-between px-2 py-1.5 border-b border-black/10 h-12 transition-all duration-200 relative",
             canInteract ? "cursor-pointer" : "",
             isWinnerA
               ? showResult
@@ -338,14 +384,14 @@ export const MatchCard = ({
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2 relative z-10">
             <TeamLogo
-              teamName={match.teamA.name}
-              logoUrl={match.teamA.logoUrl}
+              teamName={match.teamA?.name || "TBD"}
+              logoUrl={match.teamA?.logoUrl}
               size="md"
               className=""
             />
             <span
               className={clsx(
-                "text-[10px] font-black uppercase italic line-clamp-2 leading-tight w-full break-words",
+                "text-[10px] font-black uppercase italic truncate",
                 isWinnerA
                   ? showResult
                     ? "text-black"
@@ -353,7 +399,7 @@ export const MatchCard = ({
                   : "text-black",
               )}
             >
-              {match.teamA.name}
+              {match.teamA?.name || match.labelTeamA || "TBD"}
             </span>
           </div>
 
@@ -381,16 +427,18 @@ export const MatchCard = ({
                       {prediction?.score || "0-0"}
                     </span>
                   ) : (
-                    <ScorePicker
-                      winnerId={match.teamA.id}
-                      teamA={match.teamA}
-                      currentScore={prediction?.score}
-                      format={match.format}
-                      onSelectScore={(score) =>
-                        onUpdatePrediction(match.id, match.teamA.id, score)
-                      }
-                      onClear={() => onRemovePrediction?.(match.id)}
-                    />
+                    match.teamA && (
+                      <ScorePicker
+                        winnerId={match.teamA.id}
+                        teamA={match.teamA}
+                        currentScore={prediction?.score}
+                        format={match.format}
+                        onSelectScore={(score) =>
+                          onUpdatePrediction(match.id, match.teamA!.id, score)
+                        }
+                        onClear={() => onRemovePrediction?.(match.id)}
+                      />
+                    )
                   )}
                 </>
               )
@@ -402,6 +450,7 @@ export const MatchCard = ({
         <div
           onClick={() =>
             canInteract &&
+            match.teamB &&
             onUpdatePrediction(
               match.id,
               match.teamB.id,
@@ -409,7 +458,7 @@ export const MatchCard = ({
             )
           }
           className={clsx(
-            "flex items-center justify-between px-2 py-1.5 min-h-[3rem] transition-all duration-200 relative",
+            "flex items-center justify-between px-2 py-1.5 h-12 transition-all duration-200 relative",
             canInteract ? "cursor-pointer" : "",
             isWinnerB
               ? showResult
@@ -426,14 +475,14 @@ export const MatchCard = ({
 
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             <TeamLogo
-              teamName={match.teamB.name}
-              logoUrl={match.teamB.logoUrl}
+              teamName={match.teamB?.name || "TBD"}
+              logoUrl={match.teamB?.logoUrl}
               size="md"
               className=""
             />
             <span
               className={clsx(
-                "text-[10px] font-black uppercase italic line-clamp-2 leading-tight w-full break-words",
+                "text-[10px] font-black uppercase italic truncate",
                 isWinnerB
                   ? showResult
                     ? "text-black"
@@ -441,7 +490,7 @@ export const MatchCard = ({
                   : "text-black",
               )}
             >
-              {match.teamB.name}
+              {match.teamB?.name || match.labelTeamB || "TBD"}
             </span>
           </div>
 
@@ -468,16 +517,18 @@ export const MatchCard = ({
                       {prediction?.score || "0-0"}
                     </span>
                   ) : (
-                    <ScorePicker
-                      winnerId={match.teamB.id}
-                      teamA={match.teamA}
-                      currentScore={prediction?.score}
-                      format={match.format}
-                      onSelectScore={(score) =>
-                        onUpdatePrediction(match.id, match.teamB.id, score)
-                      }
-                      onClear={() => onRemovePrediction?.(match.id)}
-                    />
+                    match.teamB && (
+                      <ScorePicker
+                        winnerId={match.teamB.id}
+                        teamA={match.teamA!}
+                        currentScore={prediction?.score}
+                        format={match.format}
+                        onSelectScore={(score) =>
+                          onUpdatePrediction(match.id, match.teamB!.id, score)
+                        }
+                        onClear={() => onRemovePrediction?.(match.id)}
+                      />
+                    )
                   )}
                 </>
               )

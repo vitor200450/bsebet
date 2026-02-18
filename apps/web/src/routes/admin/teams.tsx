@@ -34,6 +34,8 @@ const getRegionColor = (region: string) => {
       return "bg-[#ff9f43] text-black shadow-[1px_1px_0px_0px_#000]";
     case "SEA":
       return "bg-[#1dd1a1] text-black shadow-[1px_1px_0px_0px_#000]";
+    case "SAS":
+      return "bg-[#f39c12] text-white shadow-[1px_1px_0px_0px_#000]";
     case "SA":
     default:
       return "bg-[#2ecc71] text-white shadow-[1px_1px_0px_0px_#000]";
@@ -52,6 +54,8 @@ const getRegionHoverColor = (region?: string) => {
       return "group-hover:bg-[#ff9f43]";
     case "SEA":
       return "group-hover:bg-[#1dd1a1]";
+    case "SAS":
+      return "group-hover:bg-[#f39c12]";
     case "SA":
     default:
       return "group-hover:bg-[#2ecc71]";
@@ -74,6 +78,8 @@ const getRegionHoverBorderColor = (
         return "hover:!border-[#ff9f43]";
       case "SEA":
         return "hover:!border-[#1dd1a1]";
+      case "SAS":
+        return "hover:!border-[#f39c12]";
       case "SA":
       default:
         return "hover:!border-[#2ecc71]";
@@ -90,6 +96,8 @@ const getRegionHoverBorderColor = (
       return "group-hover:border-[#ff9f43]";
     case "SEA":
       return "group-hover:border-[#1dd1a1]";
+    case "SAS":
+      return "group-hover:border-[#f39c12]";
     case "SA":
     default:
       return "group-hover:border-[#2ecc71]";
@@ -491,19 +499,21 @@ function AdminTeamsPage() {
                     {/* Dropdown Menu */}
                     {isRegionDropdownOpen && (
                       <div className="absolute top-full left-0 w-full bg-white border-[3px] border-black border-t-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 max-h-48 overflow-y-auto">
-                        {["SA", "NA", "EMEA", "EA", "SEA", "CN"].map((r) => (
-                          <button
-                            key={r}
-                            type="button"
-                            onClick={() => {
-                              setFormData({ ...formData, region: r });
-                              setIsRegionDropdownOpen(false);
-                            }}
-                            className="w-full text-center py-2 font-bold hover:bg-[#ffc700] hover:text-black border-b-2 border-gray-100 last:border-0 transition-colors uppercase text-black"
-                          >
-                            {r}
-                          </button>
-                        ))}
+                        {["SA", "NA", "EMEA", "CN", "EA", "SEA", "SAS"].map(
+                          (r) => (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, region: r });
+                                setIsRegionDropdownOpen(false);
+                              }}
+                              className="w-full text-center py-2 font-bold hover:bg-[#ffc700] hover:text-black border-b-2 border-gray-100 last:border-0 transition-colors uppercase text-black"
+                            >
+                              {r}
+                            </button>
+                          ),
+                        )}
                       </div>
                     )}
                   </div>

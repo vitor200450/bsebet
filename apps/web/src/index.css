@@ -169,6 +169,15 @@
     0 0 20px #ff2e2e,
     0 0 40px #ff0000;
 }
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

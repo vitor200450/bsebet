@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getTournamentBySlug } from "@/server/tournaments";
+import { extractColorsServer } from "@/server/color-extractor";
 import { MatchCard } from "@/components/MatchCard";
 import { clsx } from "clsx";
 import {
@@ -12,9 +13,10 @@ import {
   Sparkles,
   Workflow,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard as BracketMatchCard } from "@/components/bracket/MatchCard";
+import { getIntermediateColor } from "@/lib/color-extractor";
 
 export const Route = createFileRoute("/tournaments/$slug")({
   loader: ({ params }) => getTournamentBySlug({ data: params.slug }),
@@ -26,6 +28,34 @@ function TournamentDetailsPage() {
   const [filter, setFilter] = useState<
     "all" | "my-bets" | "upcoming" | "finished"
   >("all");
+
+  // State for tournament colors extracted from logo
+  const [tournamentColors, setTournamentColors] = useState({
+    primary: "#2e5cff",
+    secondary: "#ff2e2e",
+    intermediate: "#7f46d6",
+  });
+
+  // Extract colors from tournament logo using server-side function
+  useEffect(() => {
+    if (tournament.logoUrl) {
+      extractColorsServer({ data: tournament.logoUrl })
+        .then((colors) => {
+          const intermediate = getIntermediateColor(
+            colors.primary,
+            colors.secondary,
+          );
+          setTournamentColors({
+            primary: colors.primary,
+            secondary: colors.secondary,
+            intermediate,
+          });
+        })
+        .catch((error) => {
+          console.error("Error extracting colors:", error);
+        });
+    }
+  }, [tournament.logoUrl]);
 
   // PROPAGATION LOGIC: Separated into Real and Predicted tracks
   const { realMatches, predictedMatches } = useMemo(() => {
@@ -232,21 +262,33 @@ function TournamentDetailsPage() {
 
   return (
     <div className="min-h-screen bg-paper bg-paper-texture font-sans text-ink pb-20">
-      {/* Header Banner */}
-      <div className="relative bg-zinc-900 text-white overflow-hidden border-b-4 border-black">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+      {/* Header Banner - Tournament Colors (Dynamic) */}
+      <div
+        className="relative text-white overflow-hidden border-b-4 border-black transition-all duration-500"
+        style={{
+          background: `linear-gradient(90deg,
+            ${tournamentColors.primary} 0%,
+            ${tournamentColors.primary} 15%,
+            ${tournamentColors.intermediate} 50%,
+            ${tournamentColors.secondary} 85%,
+            ${tournamentColors.secondary} 100%)`,
+        }}
+      >
+        {/* Pattern Overlay */}
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
-        {/* Abstract Shapes */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brawl-blue/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brawl-red/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        {/* Shine Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12" />
+
+        {/* Soft Darkening Overlays for depth */}
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 via-transparent to-black/20" />
 
         <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
           <div className="flex justify-between items-start mb-6">
             <Link
               to="/tournaments"
               search={{ filter: "active" }}
-              className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-bold uppercase tracking-wider text-sm"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors font-bold uppercase tracking-wider text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               Voltar para Torneios
@@ -266,21 +308,39 @@ function TournamentDetailsPage() {
           </div>
 
           <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
-            {/* Logo */}
+            {/* Logo - Platinum 3D Style */}
             <div className="relative">
-              <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-2xl border-4 border-black shadow-comic flex items-center justify-center overflow-hidden rotate-[-3deg]">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-white/40 blur-3xl rounded-full scale-110" />
+
+              <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-2xl border-[6px] border-black shadow-[8px_8px_0_0_#000,12px_12px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center overflow-hidden p-6 bg-gradient-to-br from-gray-300 via-gray-100 to-gray-300">
+                {/* Metallic shine bars */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/50 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
+
+                {/* Reflective highlights */}
+                <div className="absolute top-4 left-4 w-12 h-12 bg-white/70 rounded-full blur-xl" />
+                <div className="absolute bottom-6 right-6 w-8 h-8 bg-black/10 rounded-full blur-lg" />
+
                 {tournament.logoUrl ? (
                   <img
                     src={tournament.logoUrl}
                     alt={tournament.name}
-                    className="w-full h-full object-contain p-4"
+                    className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] relative z-10"
                   />
                 ) : (
-                  <Trophy className="w-16 h-16 text-gray-300" />
+                  <Trophy className="w-16 h-16 text-gray-400 relative z-10" />
                 )}
+
+                {/* Inner border highlight - platinum edge */}
+                <div className="absolute inset-3 border-2 border-white/60 rounded-xl pointer-events-none" />
+                <div className="absolute inset-2 border border-black/10 rounded-xl pointer-events-none" />
               </div>
+
               {isActive && (
-                <div className="absolute -bottom-4 -right-4 bg-[#ccff00] text-black text-xs font-black px-3 py-1 rounded border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-3 animate-pulse">
+                <div className="absolute -bottom-4 -right-4 bg-[#ccff00] text-black text-xs font-black px-3 py-1 rounded border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] transform rotate-3 animate-pulse">
                   AO VIVO
                 </div>
               )}
@@ -290,23 +350,23 @@ function TournamentDetailsPage() {
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
                 {tournament.region && (
-                  <span className="bg-black/50 text-white border border-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm">
+                  <span className="bg-black text-[#ccff00] border-2 border-black px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] flex items-center gap-1.5">
                     <MapPin className="w-3 h-3" />
                     {tournament.region}
                   </span>
                 )}
-                <span className="bg-black/50 text-white border border-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm">
+                <span className="bg-black text-[#ccff00] border-2 border-black px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] flex items-center gap-1.5">
                   <Calendar className="w-3 h-3" />
                   {formatDate(tournament.startDate)} -{" "}
                   {formatDate(tournament.endDate)}
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-2 text-shadow-sm">
+              <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-3 text-white drop-shadow-[4px_4px_8px_rgba(0,0,0,0.4)]">
                 {tournament.name}
               </h1>
 
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-gray-400 font-mono text-sm uppercase">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/90 font-mono text-sm uppercase font-bold">
                 <span className="flex items-center gap-1.5">
                   <Users className="w-4 h-4" />
                   {tournament.participantsCount || 0} Times

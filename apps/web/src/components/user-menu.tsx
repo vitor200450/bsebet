@@ -143,10 +143,25 @@ export default function UserMenu({
             {session.user.email}
           </div>
           <DropdownMenuSeparator className="bg-black/10 h-[2px]" />
+          <DropdownMenuItem
+            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            onClick={() => navigate({ to: "/dashboard" })}
+          >
+            <span className="material-symbols-outlined text-sm mr-2">
+              dashboard
+            </span>
+            Command Center
+          </DropdownMenuItem>
           <DropdownMenuItem className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black">
+            <span className="material-symbols-outlined text-sm mr-2">
+              person
+            </span>
             Perfil do Usuário
           </DropdownMenuItem>
           <DropdownMenuItem className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black">
+            <span className="material-symbols-outlined text-sm mr-2">
+              sports
+            </span>
             Minhas Apostas
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-black/10 h-[2px]" />

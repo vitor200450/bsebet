@@ -2,6 +2,7 @@ export type Team = {
   id: number;
   name: string;
   logoUrl?: string;
+  slug?: string;
   color: "blue" | "red";
 };
 
@@ -10,8 +11,8 @@ export type Match = {
   label: string;
   name?: string | null;
   displayOrder?: number | null;
-  teamA: Team;
-  teamB: Team;
+  teamA: Team | null;
+  teamB: Team | null;
   format: "bo3" | "bo5" | "bo7";
   stats: {
     regionA: string;
@@ -25,6 +26,9 @@ export type Match = {
   nextMatchWinnerSlot?: string | null;
   nextMatchLoserId?: number | null;
   nextMatchLoserSlot?: string | null;
+  teamAPreviousMatchId?: number | null;
+  teamBPreviousMatchId?: number | null;
+  isLockedDependency?: boolean;
   winnerId?: number | null;
   labelTeamA?: string | null;
   labelTeamB?: string | null;

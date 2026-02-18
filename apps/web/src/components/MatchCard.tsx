@@ -1,9 +1,11 @@
 import { clsx } from "clsx";
+import { Link } from "@tanstack/react-router";
 import { TeamLogo } from "./TeamLogo";
 
 export type Team = {
   id: number;
   name: string;
+  slug?: string | null;
   logoUrl?: string | null;
   region?: string | null;
 };
@@ -150,20 +152,39 @@ export function MatchCard({
             )}
           >
             <div className="flex flex-col items-end leading-tight shrink min-w-0 max-w-full z-10">
-              <span
-                className={clsx(
-                  "font-black uppercase tracking-tighter text-right transition-colors break-normal w-full block",
-                  userPredictedWinnerA ? "text-black" : "text-zinc-800",
-                  // Dynamic sizing based on JOINT MAX length to keep text consistent
-                  maxLen > 16
-                    ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-                    : maxLen > 8
-                      ? "text-[10px] md:text-xs lg:text-[13px]" // Long
-                      : "text-xs md:text-sm lg:text-base", // Normal
-                )}
-              >
-                {teamA?.name || match.labelTeamA || "TBD"}
-              </span>
+              {teamA?.slug ? (
+                <Link
+                  to="/teams/$teamId"
+                  params={{ teamId: teamA.slug }}
+                  className={clsx(
+                    "font-black uppercase tracking-tighter text-right transition-colors break-normal w-full block hover:text-brawl-blue hover:underline",
+                    userPredictedWinnerA ? "text-black" : "text-zinc-800",
+                    // Dynamic sizing based on JOINT MAX length to keep text consistent
+                    maxLen > 16
+                      ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                      : maxLen > 8
+                        ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                        : "text-xs md:text-sm lg:text-base", // Normal
+                  )}
+                >
+                  {teamA.name}
+                </Link>
+              ) : (
+                <span
+                  className={clsx(
+                    "font-black uppercase tracking-tighter text-right transition-colors break-normal w-full block",
+                    userPredictedWinnerA ? "text-black" : "text-zinc-800",
+                    // Dynamic sizing based on JOINT MAX length to keep text consistent
+                    maxLen > 16
+                      ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                      : maxLen > 8
+                        ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                        : "text-xs md:text-sm lg:text-base", // Normal
+                  )}
+                >
+                  {match.labelTeamA || "TBD"}
+                </span>
+              )}
               {initialBet && !showPredictionScore && (
                 <span className="text-[10px] font-black text-black/40 uppercase mt-0.5 whitespace-nowrap">
                   Palpite: {initialBet.predictedScoreA}
@@ -241,20 +262,39 @@ export function MatchCard({
             />
 
             <div className="flex flex-col items-start leading-tight shrink min-w-0 max-w-full z-10">
-              <span
-                className={clsx(
-                  "font-black uppercase tracking-tighter text-left transition-colors break-normal w-full block",
-                  userPredictedWinnerB ? "text-black" : "text-zinc-800",
-                  // Dynamic sizing based on JOINT MAX length to keep text consistent
-                  maxLen > 16
-                    ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-                    : maxLen > 8
-                      ? "text-[10px] md:text-xs lg:text-[13px]" // Long
-                      : "text-xs md:text-sm lg:text-base", // Normal
-                )}
-              >
-                {teamB?.name || match.labelTeamB || "TBD"}
-              </span>
+              {teamB?.slug ? (
+                <Link
+                  to="/teams/$teamId"
+                  params={{ teamId: teamB.slug }}
+                  className={clsx(
+                    "font-black uppercase tracking-tighter text-left transition-colors break-normal w-full block hover:text-brawl-red hover:underline",
+                    userPredictedWinnerB ? "text-black" : "text-zinc-800",
+                    // Dynamic sizing based on JOINT MAX length to keep text consistent
+                    maxLen > 16
+                      ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                      : maxLen > 8
+                        ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                        : "text-xs md:text-sm lg:text-base", // Normal
+                  )}
+                >
+                  {teamB.name}
+                </Link>
+              ) : (
+                <span
+                  className={clsx(
+                    "font-black uppercase tracking-tighter text-left transition-colors break-normal w-full block",
+                    userPredictedWinnerB ? "text-black" : "text-zinc-800",
+                    // Dynamic sizing based on JOINT MAX length to keep text consistent
+                    maxLen > 16
+                      ? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
+                      : maxLen > 8
+                        ? "text-[10px] md:text-xs lg:text-[13px]" // Long
+                        : "text-xs md:text-sm lg:text-base", // Normal
+                  )}
+                >
+                  {match.labelTeamB || "TBD"}
+                </span>
+              )}
               {initialBet && !showPredictionScore && (
                 <span className="text-[10px] font-black text-black/40 uppercase mt-0.5 whitespace-nowrap">
                   Palpite: {initialBet.predictedScoreB}

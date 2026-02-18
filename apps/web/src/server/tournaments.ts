@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@bsebet/auth";
 import {
   uploadLogoToR2,
+  deleteLogoFromR2,
   base64ToBuffer,
   getTournamentLogoKey,
   isBase64DataUrl,
@@ -120,11 +121,34 @@ const saveTournamentFn = createServerFn({
   if (validData.id) {
     // Handling existing tournament
     if (finalLogoUrl && isBase64DataUrl(finalLogoUrl)) {
+      // 1. Check for existing logo to delete
+      const currentTournament = await db.query.tournaments.findFirst({
+        where: eq(tournaments.id, validData.id),
+        columns: { logoUrl: true },
+      });
+
+      if (currentTournament?.logoUrl) {
+        try {
+          // Format usually: .../tournaments/{id}/logo.{ext}
+          const urlWithoutParams = currentTournament.logoUrl.split("?")[0];
+          const urlParts = urlWithoutParams.split("/");
+          const keyIndex = urlParts.indexOf("tournaments");
+          if (keyIndex !== -1) {
+            const oldKey = urlParts.slice(keyIndex).join("/");
+            await deleteLogoFromR2(oldKey);
+          }
+        } catch (error) {
+          console.error("Failed to delete old tournament logo:", error);
+        }
+      }
+
+      // 2. Upload new logo
       const { buffer, contentType } = base64ToBuffer(finalLogoUrl);
       const extension = contentType.split("/")[1] || "png";
       const key = getTournamentLogoKey(validData.id, extension);
       const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
-      finalLogoUrl = publicUrl;
+      // Append timestamp to force cache bypass
+      finalLogoUrl = `${publicUrl}?t=${Date.now()}`;
     }
 
     const updated = await db
@@ -177,7 +201,7 @@ const saveTournamentFn = createServerFn({
       // Update with the R2 URL
       const finalUpdate = await db
         .update(tournaments)
-        .set({ logoUrl: publicUrl })
+        .set({ logoUrl: `${publicUrl}?t=${Date.now()}` })
         .where(eq(tournaments.id, newTournament.id))
         .returning();
       return finalUpdate[0];
@@ -315,3 +339,63 @@ export const getTournamentBySlug = getTournamentBySlugFn as unknown as (opts: {
   matches: (typeof matches.$inferSelect & { teamA: any; teamB: any })[];
   userBets: (typeof bets.$inferSelect)[];
 }>;
+
+/**
+ * Copy a tournament and its participants
+ */
+const copyTournamentFn = createServerFn({
+  method: "POST",
+}).handler(async (ctx: any) => {
+  const { db } = await import("@bsebet/db");
+  const { tournaments } = await import("@bsebet/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const tournamentId = Number(ctx.data);
+
+  if (!tournamentId) {
+    throw new Error("Invalid Tournament ID");
+  }
+
+  // 1. Get Original Tournament
+  const original = await db.query.tournaments.findFirst({
+    where: eq(tournaments.id, tournamentId),
+  });
+
+  if (!original) {
+    throw new Error("Tournament not found");
+  }
+
+  // 2. Create New Tournament Data
+  const timestamp = Date.now();
+  const newName = `${original.name} (Copy)`;
+  const newSlug = `${original.slug}-copy-${timestamp}`; // Ensure uniqueness
+
+  const inserted = await db
+    .insert(tournaments)
+    .values({
+      name: newName,
+      slug: newSlug,
+      logoUrl: null, // Reset logo
+      format: original.format,
+      region: original.region,
+      participantsCount: original.participantsCount,
+      stages: original.stages, // Copy stages config
+      status: "upcoming", // Reset status
+      isActive: false, // Start inactive
+      scoringRules: original.scoringRules, // Copy scoring rules
+      startDate: null, // Reset dates
+      endDate: null,
+    })
+    .returning();
+
+  const newTournament = inserted[0];
+
+  // 3. Skip Copying Participants (User requested clean state)
+  // Logic removed here to keep new tournament empty of teams
+
+  return newTournament;
+});
+
+export const copyTournament = copyTournamentFn as unknown as (opts: {
+  data: number;
+}) => Promise<typeof tournaments.$inferSelect>;
