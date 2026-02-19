@@ -5,6 +5,7 @@ import { Trophy, ChevronRight } from "lucide-react";
 
 import { getUser } from "@/functions/get-user";
 import { getDashboardData } from "@/functions/get-dashboard-data";
+import { getMyProfile } from "@/server/users";
 import { TeamLogo } from "@/components/TeamLogo";
 
 export const Route = createFileRoute("/dashboard")({
@@ -29,6 +30,14 @@ function RouteComponent() {
     queryKey: ["dashboard"],
     queryFn: () => getDashboardData(),
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["myProfile"],
+    queryFn: () => getMyProfile(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const displayName = profile?.nickname || session?.user.name;
 
   const stats = data?.stats ?? {
     totalBets: 0,
@@ -69,7 +78,7 @@ function RouteComponent() {
               waving_hand
             </span>
             <span className="text-sm md:text-base font-bold text-gray-600">
-              Bem-vindo, <span className="text-black">{session?.user.name}</span>
+              Bem-vindo, <span className="text-black">{displayName}</span>
             </span>
           </div>
         </div>
@@ -207,7 +216,7 @@ function RouteComponent() {
         {/* My Active Bets Section */}
         <section className="mb-10 md:mb-14">
           {/* Section Header */}
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center gap-3 mb-5 flex-wrap">
             <div className="bg-[#2e5cff] p-2 border-2 border-black shadow-[2px_2px_0_0_#000] transform -rotate-3">
               <span className="material-symbols-outlined text-white text-xl md:text-2xl">
                 sports_esports
@@ -221,6 +230,13 @@ function RouteComponent() {
                 {activeBets.length}
               </div>
             )}
+            <Link
+              to="/my-bets"
+              className="ml-auto flex items-center gap-1 text-sm font-black uppercase tracking-wider text-[#2e5cff] hover:text-black transition-colors"
+            >
+              Ver todas
+              <ChevronRight className="w-4 h-4" strokeWidth={3} />
+            </Link>
           </div>
 
           {isLoading ? (

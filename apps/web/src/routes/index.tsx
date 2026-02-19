@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { eq, asc, and, not, like, inArray } from "drizzle-orm";
 import { BettingCarousel } from "../components/BettingCarousel";
@@ -145,7 +145,8 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
           logoUrl: t.logoUrl,
           status: t.status,
           startDate: t.startDate,
-          matchCount: t.matches.length,
+          // Only count matches that are actually open for betting
+          matchCount: t.matches.filter((m: any) => m.isBettingEnabled).length,
           activeStage,
           hasUserBets: userBetTournamentIds.has(t.id),
         };
@@ -169,7 +170,7 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
     const { tournamentId } = ctx.data;
 
     const { db, matches, matchDays, tournaments } = await import("@bsebet/db");
-    const { eq, asc, sql } = await import("drizzle-orm");
+    const { eq, asc } = await import("drizzle-orm");
 
     // Import auth locally or verify it's imported
     const { auth } = await import("@bsebet/auth");
@@ -199,31 +200,6 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
         matchDay: true,
       },
     });
-
-    // --- DEBUGGING PRODUCTION ISSUE ---
-    console.log("--- DEBUG: getHomeTournamentDataFn ---");
-    const dbUrl = process.env.DATABASE_URL || "UNDEFINED";
-    console.log("DB URL (Masked):", dbUrl.replace(/:[^@]+@/, ":***@"));
-
-    try {
-      const connInfo = await db.execute(
-        sql`SELECT inet_server_addr(), inet_server_port(), current_database(), current_user, current_schema()`,
-      );
-      console.log("Connection Info:", JSON.stringify(connInfo, null, 2));
-    } catch (e) {
-      console.error("Failed to get connection info:", e);
-    }
-
-    console.log("Matches Found Count:", allMatches.length);
-    if (allMatches.length > 0) {
-      console.log(
-        "First 5 Match IDs:",
-        allMatches.slice(0, 5).map((m) => m.id),
-      );
-    } else {
-      console.log("No matches found for Tournament ID:", tournamentId);
-    }
-    // ----------------------------------
 
     const formattedMatches = formatMatches(allMatches, tournament);
 
@@ -1525,6 +1501,7 @@ function SubmitBetsModal({
   >;
   handleSelectTournament?: (id: number) => Promise<void>;
 }) {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
@@ -1609,14 +1586,8 @@ function SubmitBetsModal({
           <button
             onClick={() => {
               onClose();
-              // Clear selected match day to show selector
-              setSelectedMatchDayId?.(null);
-              setShowReview?.(false);
-              setPredictions?.({});
-              // Reload tournament data to get fresh user bets
-              if (tournamentId) {
-                handleSelectTournament?.(tournamentId);
-              }
+              // Navigate to my-bets page
+              navigate({ to: "/my-bets" });
             }}
             className="w-full bg-black hover:bg-zinc-800 text-white py-4 font-black uppercase border-[4px] border-black shadow-[6px_6px_0px_0px_#ccff00] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-lg tracking-widest"
           >
@@ -1918,8 +1889,8 @@ function Home() {
     );
 
     // If the match day is locked/finished or user has server bets, auto-enter review
+    // We EXCLUDE "draft" status here because we want users to see the "Coming Soon" empty state
     if (
-      isReadOnly ||
       selectedMatchDay?.status === "finished" ||
       selectedMatchDay?.status === "locked" ||
       hasBetsInSelectedDay

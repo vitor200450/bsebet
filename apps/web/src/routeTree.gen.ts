@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TournamentsRouteImport } from './routes/tournaments'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MyBetsRouteImport } from './routes/my-bets'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LandingRouteImport } from './routes/landing'
@@ -31,6 +33,16 @@ import { Route as AdminTournamentsTournamentIdMatchesRouteImport } from './route
 const TournamentsRoute = TournamentsRouteImport.update({
   id: '/tournaments',
   path: '/tournaments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyBetsRoute = MyBetsRouteImport.update({
+  id: '/my-bets',
+  path: '/my-bets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -126,6 +138,8 @@ export interface FileRoutesByFullPath {
   '/landing': typeof LandingRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/my-bets': typeof MyBetsRoute
+  '/profile': typeof ProfileRoute
   '/tournaments': typeof TournamentsRouteWithChildren
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
@@ -146,6 +160,8 @@ export interface FileRoutesByTo {
   '/landing': typeof LandingRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/my-bets': typeof MyBetsRoute
+  '/profile': typeof ProfileRoute
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -165,6 +181,8 @@ export interface FileRoutesById {
   '/landing': typeof LandingRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/my-bets': typeof MyBetsRoute
+  '/profile': typeof ProfileRoute
   '/tournaments': typeof TournamentsRouteWithChildren
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
@@ -187,6 +205,8 @@ export interface FileRouteTypes {
     | '/landing'
     | '/leaderboard'
     | '/login'
+    | '/my-bets'
+    | '/profile'
     | '/tournaments'
     | '/admin/migrate-logos'
     | '/admin/teams'
@@ -207,6 +227,8 @@ export interface FileRouteTypes {
     | '/landing'
     | '/leaderboard'
     | '/login'
+    | '/my-bets'
+    | '/profile'
     | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/users'
@@ -225,6 +247,8 @@ export interface FileRouteTypes {
     | '/landing'
     | '/leaderboard'
     | '/login'
+    | '/my-bets'
+    | '/profile'
     | '/tournaments'
     | '/admin/migrate-logos'
     | '/admin/teams'
@@ -246,6 +270,8 @@ export interface RootRouteChildren {
   LandingRoute: typeof LandingRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  MyBetsRoute: typeof MyBetsRoute
+  ProfileRoute: typeof ProfileRoute
   TournamentsRoute: typeof TournamentsRouteWithChildren
   AdminMigrateLogosRoute: typeof AdminMigrateLogosRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
@@ -264,6 +290,20 @@ declare module '@tanstack/react-router' {
       path: '/tournaments'
       fullPath: '/tournaments'
       preLoaderRoute: typeof TournamentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-bets': {
+      id: '/my-bets'
+      path: '/my-bets'
+      fullPath: '/my-bets'
+      preLoaderRoute: typeof MyBetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -422,6 +462,8 @@ const rootRouteChildren: RootRouteChildren = {
   LandingRoute: LandingRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  MyBetsRoute: MyBetsRoute,
+  ProfileRoute: ProfileRoute,
   TournamentsRoute: TournamentsRouteWithChildren,
   AdminMigrateLogosRoute: AdminMigrateLogosRoute,
   AdminTeamsRoute: AdminTeamsRoute,

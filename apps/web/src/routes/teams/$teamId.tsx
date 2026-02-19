@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { getTeamBySlug } from "@/server/teams";
 import { extractColorsServer } from "@/server/color-extractor";
 import { TeamLogo } from "@/components/TeamLogo";
-import { ArrowLeft, Trophy, Target, TrendingUp, Award } from "lucide-react";
+import { ArrowLeft, Trophy, Target, TrendingUp, Award, Calendar } from "lucide-react";
 import { clsx } from "clsx";
 import { useState, useEffect } from "react";
 import { getIntermediateColor } from "@/lib/color-extractor";
@@ -72,6 +72,11 @@ function TeamDetailsPage() {
 
   // Recent matches (last 10)
   const recentMatches = finishedMatches.slice(0, 10);
+
+  // Upcoming matches (scheduled and live)
+  const upcomingMatches = matches.filter(
+    (m) => m.status === "scheduled" || m.status === "live"
+  ).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   return (
     <div className="min-h-screen bg-paper bg-paper-texture font-sans text-ink pb-20">
@@ -204,6 +209,318 @@ function TeamDetailsPage() {
           />
         </div>
 
+        {/* Upcoming Matches */}
+        {upcomingMatches.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-black italic uppercase mb-6 flex items-center gap-3">
+              <div className="h-1 w-12 bg-[#2e5cff]" />
+              Próximas Partidas
+              {upcomingMatches.some(m => m.status === "live") && (
+                <span className="bg-[#ff2e2e] text-white px-3 py-1 text-xs font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] animate-pulse">
+                  🔴 AO VIVO
+                </span>
+              )}
+            </h2>
+
+            <div className="space-y-4">
+              {upcomingMatches.map((match) => {
+                const isTeamA = match.teamAId === team.id;
+                const opponent = isTeamA ? match.teamB : match.teamA;
+                const isLive = match.status === "live";
+
+                return (
+                  <div
+                    key={match.id}
+                    className={clsx(
+                      "relative bg-white border-[3px] border-black shadow-[4px_4px_0_0_#000] overflow-hidden",
+                      isLive && "ring-2 ring-[#ff2e2e] ring-offset-2"
+                    )}
+                  >
+                    {/* Live indicator stripe */}
+                    {isLive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#ff2e2e] animate-pulse" />
+                    )}
+
+                    {/* Mobile Layout */}
+                    <div className={clsx("p-4 md:hidden", isLive && "pl-6")}>
+                      {/* Header: Status + Tournament + Date */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          {/* Status Badge - Smaller on mobile */}
+                          <div
+                            className={clsx(
+                              "px-2 py-1 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0_0_#000]",
+                              isLive
+                                ? "bg-[#ff2e2e] text-white"
+                                : "bg-[#ccff00] text-black"
+                            )}
+                          >
+                            {isLive ? "🔴 LIVE" : "VS"}
+                          </div>
+                          {/* Tournament Name */}
+                          {match.tournament?.name && (
+                            <span className="text-[10px] font-bold uppercase text-gray-500 truncate max-w-[120px]">
+                              {match.tournament.name}
+                            </span>
+                          )}
+                        </div>
+                        {/* Date */}
+                        <div className="text-[10px] font-black uppercase text-gray-500">
+                          {isLive
+                            ? "AGORA"
+                            : new Date(match.startTime).toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                timeZone: "UTC",
+                              })}
+                        </div>
+                      </div>
+
+                      {/* Teams: Stacked vertically on mobile */}
+                      <div className="flex items-center justify-center gap-3 mb-4">
+                        {/* Our Team */}
+                        <div className="flex flex-col items-center gap-2 flex-1">
+                          <div className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] p-2 rounded-sm">
+                            <TeamLogo
+                              teamName={team.name}
+                              logoUrl={team.logoUrl}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span className="font-black uppercase text-xs text-center leading-tight">
+                            {team.name}
+                          </span>
+                        </div>
+
+                        {/* VS */}
+                        <div className="bg-black text-[#ccff00] px-2 py-1 font-black text-xs uppercase italic border-2 border-black shadow-[2px_2px_0_0_#000] -skew-x-12">
+                          <span className="inline-block skew-x-12">VS</span>
+                        </div>
+
+                        {/* Opponent */}
+                        <div className="flex flex-col items-center gap-2 flex-1">
+                          {opponent?.id ? (
+                            <Link
+                              to="/teams/$teamId"
+                              params={{ teamId: opponent.slug }}
+                              className="flex flex-col items-center gap-2"
+                            >
+                              <div className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] p-2 rounded-sm">
+                                <TeamLogo
+                                  teamName={opponent.name}
+                                  logoUrl={opponent.logoUrl}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <span className="font-black uppercase text-xs text-center leading-tight hover:text-[#2e5cff]">
+                                {opponent.name}
+                              </span>
+                            </Link>
+                          ) : (
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] p-2 rounded-sm">
+                                <TeamLogo
+                                  teamName={opponent?.name || "TBD"}
+                                  logoUrl={opponent?.logoUrl}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <span className="font-black uppercase text-xs text-center leading-tight">
+                                {opponent?.name || "TBD"}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CTA Button - Full width on mobile */}
+                      <Link
+                        to="/"
+                        className="bg-[#ffc700] hover:bg-[#e6b200] text-black border-[3px] border-black py-3 font-black text-sm uppercase shadow-[2px_2px_0_0_#000] block text-center w-full"
+                      >
+                        {isLive ? "🔴 Assistir Ao Vivo" : "Fazer Aposta"}
+                      </Link>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className={clsx("p-5 hidden md:flex items-center gap-4", isLive && "pl-6")}>
+                      {/* Status Badge */}
+                      <div className="relative flex-shrink-0">
+                        <div
+                          className={clsx(
+                            "w-16 h-16 border-[3px] border-black flex items-center justify-center font-black text-xs uppercase shadow-[3px_3px_0_0_#000]",
+                            isLive
+                              ? "bg-[#ff2e2e] text-white"
+                              : "bg-[#ccff00] text-black"
+                          )}
+                        >
+                          {isLive ? "LIVE" : "VS"}
+                        </div>
+                      </div>
+
+                      {/* Tournament Badge */}
+                      <div className="flex-shrink-0">
+                        <div className="relative group">
+                          <div className="absolute -inset-1 bg-[#2e5cff]/30 rounded blur opacity-0 group-hover:opacity-40 transition-opacity" />
+
+                          {match.tournament?.slug ? (
+                            <Link
+                              to="/tournaments/$slug"
+                              params={{ slug: match.tournament.slug }}
+                              className="relative w-14 h-14 bg-white border-[3px] border-black flex items-center justify-center overflow-hidden shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:-translate-y-0.5 transition-all rounded-sm p-2 block"
+                            >
+                              {match.tournament.logoUrl ? (
+                                <img
+                                  src={match.tournament.logoUrl}
+                                  alt={match.tournament.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <Trophy className="w-7 h-7 text-gray-400" />
+                              )}
+                            </Link>
+                          ) : (
+                            <div className="relative w-14 h-14 bg-white border-[3px] border-black flex items-center justify-center overflow-hidden shadow-[2px_2px_0_0_#000] rounded-sm p-2">
+                              {match.tournament?.logoUrl ? (
+                                <img
+                                  src={match.tournament.logoUrl}
+                                  alt={match.tournament.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <Trophy className="w-7 h-7 text-gray-400" />
+                              )}
+                            </div>
+                          )}
+
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-black text-white text-[10px] font-bold uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] border-2 border-black z-50">
+                            {match.tournament?.name}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-black" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* VS Section */}
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {/* Our Team */}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="relative group">
+                            <div
+                              className="absolute -inset-1 rounded blur opacity-0 group-hover:opacity-30 transition-opacity"
+                              style={{ backgroundColor: teamColors.primary }}
+                            />
+                            <div className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] p-2 rounded-sm">
+                              <TeamLogo
+                                teamName={team.name}
+                                logoUrl={team.logoUrl}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                          <span className="font-black uppercase text-sm hidden lg:inline-block">
+                            {team.name}
+                          </span>
+                        </div>
+
+                        {/* VS Badge */}
+                        <div className="bg-black text-[#ccff00] px-3 py-1.5 font-black text-xs uppercase italic border-[3px] border-black shadow-[2px_2px_0_0_#000] -skew-x-12 flex-shrink-0">
+                          <span className="inline-block skew-x-12">VS</span>
+                        </div>
+
+                        {/* Opponent */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="relative group flex-shrink-0">
+                            <div className="absolute -inset-1 bg-gray-400 rounded blur opacity-0 group-hover:opacity-30 transition-opacity" />
+                            {opponent?.id ? (
+                              <Link
+                                to="/teams/$teamId"
+                                params={{ teamId: opponent.slug }}
+                                className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] hover:shadow-[5px_5px_0_0_#000] hover:-translate-y-0.5 transition-all p-2 rounded-sm"
+                              >
+                                <TeamLogo
+                                  teamName={opponent.name}
+                                  logoUrl={opponent.logoUrl}
+                                  className="w-full h-full object-contain"
+                                />
+                              </Link>
+                            ) : (
+                              <div className="relative w-16 h-16 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#000] p-2 rounded-sm">
+                                <TeamLogo
+                                  teamName={opponent?.name || "TBD"}
+                                  logoUrl={opponent?.logoUrl}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          {opponent?.id ? (
+                            <Link
+                              to="/teams/$teamId"
+                              params={{ teamId: opponent.slug }}
+                              className="font-black uppercase text-sm truncate hover:text-[#2e5cff] hover:underline transition-colors"
+                            >
+                              {opponent.name}
+                            </Link>
+                          ) : (
+                            <span className="font-black uppercase text-sm truncate">
+                              {opponent?.name || "TBD"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Date/Time Badge */}
+                      <div className="flex-shrink-0">
+                        <div className="bg-[#f0f0f0] border-[3px] border-black px-4 py-3 text-center shadow-[2px_2px_0_0_#000]">
+                          <Calendar className="w-4 h-4 mx-auto mb-1 text-gray-500" />
+                          <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                            {isLive
+                              ? "AGORA"
+                              : new Date(match.startTime)
+                                  .toLocaleDateString("pt-BR", {
+                                    month: "short",
+                                    timeZone: "UTC",
+                                  })
+                                  .toUpperCase()
+                                  .replace(".", "")}
+                          </div>
+                          <div className="text-xl font-black text-black">
+                            {isLive
+                              ? "🔴"
+                              : new Date(match.startTime).getUTCDate()}
+                          </div>
+                          {!isLive && (
+                            <div className="text-[9px] font-bold text-gray-500 mt-0.5">
+                              {new Date(match.startTime).toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                timeZone: "UTC",
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Betting Button */}
+                      <div className="flex-shrink-0">
+                        <Link
+                          to="/"
+                          className="bg-[#ffc700] hover:bg-[#e6b200] text-black border-[3px] border-black px-4 py-2 font-black text-xs uppercase shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:-translate-y-0.5 transition-all block text-center"
+                        >
+                          {isLive ? "Assistir" : "Apostar"}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Recent Match History */}
         <div className="mb-12">
           <h2 className="text-3xl font-black italic uppercase mb-6 flex items-center gap-3">
@@ -233,7 +550,158 @@ function TeamDetailsPage() {
                       )}
                     />
 
-                    <div className="p-5 pl-6 flex items-center gap-4">
+                    {/* Mobile Layout */}
+                    <div className="p-4 pl-6 md:hidden">
+                      {/* Header: Result + Date + Tournament */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          {/* Win/Loss Badge - Smaller */}
+                          <div
+                            className={clsx(
+                              "w-10 h-10 border-[3px] border-black flex items-center justify-center font-black text-lg uppercase italic shadow-[2px_2px_0_0_#000]",
+                              isWin
+                                ? "bg-[#ccff00] text-black"
+                                : "bg-black text-white",
+                            )}
+                          >
+                            {isWin ? "W" : "L"}
+                          </div>
+                          {/* Score - Prominent */}
+                          <div className="bg-tape border-[3px] border-black px-3 py-1.5 flex items-center gap-1 shadow-[2px_2px_0_0_#000]">
+                            <span
+                              className={clsx(
+                                "font-body text-xl font-black",
+                                isWin ? "text-brawl-blue" : "text-black",
+                              )}
+                            >
+                              {teamScore}
+                            </span>
+                            <span className="text-black font-black">:</span>
+                            <span
+                              className={clsx(
+                                "font-body text-xl font-black",
+                                !isWin ? "text-brawl-red" : "text-black",
+                              )}
+                            >
+                              {opponentScore}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Date */}
+                        <div className="text-right">
+                          <div className="text-[10px] font-black uppercase tracking-wider text-gray-500">
+                            {new Date(match.startTime)
+                              .toLocaleDateString("pt-BR", {
+                                month: "short",
+                                timeZone: "UTC",
+                              })
+                              .toUpperCase()
+                              .replace(".", "")}
+                          </div>
+                          <div className="text-lg font-black text-black">
+                            {new Date(match.startTime).getUTCDate()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Teams: Stacked vertically on mobile */}
+                      <div className="space-y-3 mb-4">
+                        {/* Our Team */}
+                        <div className="flex items-center gap-3 bg-gray-50 p-2 border-[2px] border-black">
+                          <div className="w-12 h-12 border-[2px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[2px_2px_0_0_#000] p-1">
+                            <TeamLogo
+                              teamName={team.name}
+                              logoUrl={team.logoUrl}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span className="font-black uppercase text-sm flex-1">
+                            {team.name}
+                          </span>
+                          <span className="font-body text-xl font-black">
+                            {teamScore}
+                          </span>
+                        </div>
+
+                        {/* Opponent */}
+                        {opponent?.id ? (
+                          <Link
+                            to="/teams/$teamId"
+                            params={{ teamId: opponent.slug }}
+                            className="flex items-center gap-3 p-2 border-[2px] border-black hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="w-12 h-12 border-[2px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[2px_2px_0_0_#000] p-1">
+                              <TeamLogo
+                                teamName={opponent.name}
+                                logoUrl={opponent.logoUrl}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <span className="font-black uppercase text-sm flex-1">
+                              {opponent.name}
+                            </span>
+                            <span className="font-body text-xl font-black">
+                              {opponentScore}
+                            </span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-3 p-2 border-[2px] border-black bg-gray-100">
+                            <div className="w-12 h-12 border-[2px] border-black bg-white flex items-center justify-center overflow-hidden shadow-[2px_2px_0_0_#000] p-1">
+                              <TeamLogo
+                                teamName={opponent?.name || "TBD"}
+                                logoUrl={opponent?.logoUrl}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <span className="font-black uppercase text-sm flex-1">
+                              {opponent?.name || "TBD"}
+                            </span>
+                            <span className="font-body text-xl font-black">
+                              {opponentScore}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tournament Badge */}
+                      <div className="flex items-center gap-2 text-xs">
+                        {match.tournament?.slug ? (
+                          <Link
+                            to="/tournaments/$slug"
+                            params={{ slug: match.tournament.slug }}
+                            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                          >
+                            <div className="w-6 h-6 bg-white border-[2px] border-black flex items-center justify-center p-0.5">
+                              {match.tournament.logoUrl ? (
+                                <img
+                                  src={match.tournament.logoUrl}
+                                  alt={match.tournament.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <Trophy className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <span className="font-bold uppercase text-gray-600">
+                              {match.tournament.name}
+                            </span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-white border-[2px] border-black flex items-center justify-center p-0.5">
+                              <Trophy className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <span className="font-bold uppercase text-gray-600">
+                              {match.tournament?.name || "Torneio"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="p-5 pl-6 hidden md:flex items-center gap-4">
                       {/* Win/Loss Badge - Straight */}
                       <div className="relative flex-shrink-0">
                         <div

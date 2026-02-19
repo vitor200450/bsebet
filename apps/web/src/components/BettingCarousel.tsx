@@ -425,9 +425,25 @@ export function BettingCarousel({
               </div>
             </div>
 
-            <div className="bg-black text-[10px] font-black text-white px-3 py-1 rounded-full tracking-[0.2em] transform -skew-x-12 inline-flex items-center gap-1.5 shadow-sm mt-6">
-              <span className="w-1.5 h-1.5 bg-brawl-yellow rounded-full animate-pulse"></span>
-              LIVE BRACKET
+            <div
+              className={clsx(
+                "text-[10px] font-black text-white px-3 py-1 rounded-full tracking-[0.2em] transform -skew-x-12 inline-flex items-center gap-1.5 shadow-sm mt-6",
+                isReadOnly ? "bg-gray-500" : "bg-black",
+              )}
+            >
+              {isReadOnly ? (
+                <>
+                  <span className="material-symbols-outlined text-[10px]">
+                    lock
+                  </span>
+                  BETS LOCKED
+                </>
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 bg-brawl-yellow rounded-full animate-pulse"></span>
+                  LIVE BRACKET
+                </>
+              )}
             </div>
             <div className="mt-4 font-body font-bold text-gray-800 text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
               <span>{currentMatch.label}</span>
@@ -495,13 +511,14 @@ export function BettingCarousel({
                         className={clsx(
                           "relative flex flex-col items-center p-0 overflow-hidden h-full border-r border-black cursor-pointer transition-all duration-200 group",
                           currentMatch.teamA &&
+                            currentMatch.teamA &&
                             isSelected(currentMatch.teamA.id)
                             ? "bg-brawl-blue"
                             : currentMatch.teamA &&
                                 isOtherTeamSelected(currentMatch.teamA.id)
                               ? "bg-gray-200 grayscale"
                               : isReadOnly
-                                ? "bg-brawl-blue/80"
+                                ? "bg-brawl-blue/60 cursor-not-allowed grayscale-[0.5]"
                                 : "bg-brawl-blue hover:brightness-110",
                         )}
                       >
@@ -551,13 +568,14 @@ export function BettingCarousel({
                         className={clsx(
                           "relative flex flex-col items-center p-0 overflow-hidden h-full bg-brawl-red cursor-pointer transition-all duration-200 group",
                           currentMatch.teamB &&
+                            currentMatch.teamB &&
                             isSelected(currentMatch.teamB.id)
                             ? "bg-brawl-red"
                             : currentMatch.teamB &&
                                 isOtherTeamSelected(currentMatch.teamB.id)
                               ? "bg-gray-200 grayscale"
                               : isReadOnly
-                                ? "bg-brawl-red/80"
+                                ? "bg-brawl-red/60 cursor-not-allowed grayscale-[0.5]"
                                 : "bg-brawl-red hover:brightness-110",
                         )}
                       >

@@ -16,6 +16,7 @@ import { Skeleton } from "./ui/skeleton";
 import { User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserPoints } from "@/functions/get-user-points";
+import { getMyProfile } from "@/server/users";
 
 export default function UserMenu({
   variant = "light",
@@ -30,6 +31,15 @@ export default function UserMenu({
     queryFn: () => getUserPoints(),
     enabled: !!session?.user?.id,
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["myProfile"],
+    queryFn: () => getMyProfile(),
+    enabled: !!session?.user?.id,
+    staleTime: 1000 * 60 * 5, // 5 min
+  });
+
+  const displayName = profile?.nickname || session?.user?.name;
 
   if (isPending) {
     return (
@@ -88,7 +98,7 @@ export default function UserMenu({
                   variant === "dark" ? "text-white" : "text-black",
                 )}
               >
-                {session.user.name}
+                {displayName}
               </span>
 
               <span className="text-[9px] font-black text-[#ff2e2e] uppercase tracking-widest mt-0.5">
@@ -105,10 +115,10 @@ export default function UserMenu({
                 )}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {session.user.image ? (
+                  {(profile?.image ?? session.user.image) ? (
                     <img
-                      src={session.user.image}
-                      alt={session.user.name ?? "User"}
+                      src={(profile?.image ?? session.user.image)!}
+                      alt={displayName ?? "User"}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -152,13 +162,19 @@ export default function UserMenu({
             </span>
             Command Center
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black">
+          <DropdownMenuItem
+            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            onClick={() => navigate({ to: "/profile" })}
+          >
             <span className="material-symbols-outlined text-sm mr-2">
               person
             </span>
             Perfil do Usuário
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black">
+          <DropdownMenuItem
+            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            onClick={() => navigate({ to: "/my-bets" })}
+          >
             <span className="material-symbols-outlined text-sm mr-2">
               sports
             </span>

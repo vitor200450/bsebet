@@ -32,9 +32,10 @@ export function GlobalHeader() {
 
   const navItems = [
     { label: "Home", to: isAuthenticated ? "/dashboard" : "/landing" },
-    { label: "Matches", to: "/" },
+    { label: "Apostar", to: "/" },
     { label: "Torneios", to: "/tournaments" },
     { label: "Leaderboard", to: "/leaderboard" },
+    ...(isAuthenticated ? [{ label: "Minhas Apostas", to: "/my-bets" }] : []),
   ];
 
   const isAdmin = session?.user?.role === "admin";

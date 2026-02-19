@@ -49,6 +49,8 @@ const CARD_PATTERNS = [
   "repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)",
 ];
 
+import { clsx } from "clsx";
+
 export function TournamentSelector({
   tournaments,
   onSelect,
@@ -88,13 +90,27 @@ export function TournamentSelector({
           const bgColor = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
           const pattern = CARD_PATTERNS[index % CARD_PATTERNS.length];
 
+          const isDisabled =
+            tournament.matchCount === 0 && !tournament.hasUserBets;
+
           return (
             <div
               key={tournament.id}
-              className="group relative w-full max-w-md cursor-pointer"
-              onClick={() => onSelect(tournament.id)}
+              className={clsx(
+                "group relative w-full max-w-md transition-all duration-200",
+                isDisabled
+                  ? "opacity-60 grayscale cursor-not-allowed pointer-events-none"
+                  : "cursor-pointer",
+              )}
+              onClick={() => !isDisabled && onSelect(tournament.id)}
             >
-              <div className="bg-white border-4 border-black rounded-xl p-6 shadow-[6px_6px_0px_0px_#000] group-hover:shadow-[3px_3px_0px_0px_#000] transform group-hover:translate-x-[3px] group-hover:translate-y-[3px] transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+              <div
+                className={clsx(
+                  "bg-white border-4 border-black rounded-xl p-6 shadow-[6px_6px_0px_0px_#000] flex flex-col h-full relative overflow-hidden transition-all duration-200",
+                  !isDisabled &&
+                    "group-hover:shadow-[3px_3px_0px_0px_#000] group-hover:translate-x-[3px] group-hover:translate-y-[3px]",
+                )}
+              >
                 {/* User Bets Badge */}
                 {tournament.hasUserBets && (
                   <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-[10px] px-2 py-1 border-2 border-black rounded-full shadow-[3px_3px_0px_0px_#000] uppercase flex items-center gap-1 z-20 animate-pulse">
@@ -105,7 +121,7 @@ export function TournamentSelector({
 
                 {/* Status Badge */}
                 <div
-                  className={`absolute top-4 right-4 ${statusStyle.bg} text-black font-bold text-sm px-3 py-1 border-2 border-black rounded-full shadow-[3px_3px_0px_0px_#000] uppercase flex items-center gap-1 z-20`}
+                  className={`absolute top-4 right-4 ${isDisabled ? "bg-gray-400" : statusStyle.bg} text-black font-bold text-sm px-3 py-1 border-2 border-black rounded-full shadow-[3px_3px_0px_0px_#000] uppercase flex items-center gap-1 z-20`}
                 >
                   {statusStyle.icon}
                   {statusStyle.label}
@@ -113,7 +129,7 @@ export function TournamentSelector({
 
                 {/* Card Hero */}
                 <div
-                  className={`w-full h-64 ${bgColor} rounded-lg border-2 border-black mb-6 flex items-center justify-center relative overflow-hidden`}
+                  className={`w-full h-64 ${isDisabled ? "bg-gray-200" : bgColor} rounded-lg border-2 border-black mb-6 flex items-center justify-center relative overflow-hidden`}
                 >
                   <div
                     className="absolute inset-0 opacity-20"
@@ -126,10 +142,18 @@ export function TournamentSelector({
                     <img
                       src={tournament.logoUrl}
                       alt={tournament.name}
-                      className="relative z-10 w-48 h-48 object-contain drop-shadow-2xl transform hover:scale-105 transition-transform"
+                      className={clsx(
+                        "relative z-10 w-48 h-48 object-contain drop-shadow-2xl transition-transform",
+                        !isDisabled && "hover:scale-105",
+                      )}
                     />
                   ) : (
-                    <div className="relative z-10 transform hover:scale-110 transition-transform">
+                    <div
+                      className={clsx(
+                        "relative z-10 transition-transform",
+                        !isDisabled && "hover:scale-110",
+                      )}
+                    >
                       {icon}
                     </div>
                   )}
@@ -167,7 +191,14 @@ export function TournamentSelector({
                       <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">
                         Current Phase
                       </span>
-                      <div className="flex items-center gap-2 text-zinc-600 font-display text-sm font-bold bg-[#ccff00]/10 border-2 border-[#ccff00] px-3 py-1.5 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis">
+                      <div
+                        className={clsx(
+                          "flex items-center gap-2 text-zinc-600 font-display text-sm font-bold border-2 px-3 py-1.5 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis",
+                          isDisabled
+                            ? "bg-gray-100 border-gray-300"
+                            : "bg-[#ccff00]/10 border-[#ccff00]",
+                        )}
+                      >
                         <Trophy className="w-4 h-4 text-black min-w-[16px]" />
                         <span className="uppercase">
                           {tournament.activeStage || "Fase de Grupos"}
@@ -176,7 +207,12 @@ export function TournamentSelector({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-white font-display text-xs font-black bg-black w-fit px-4 py-1.5 rounded-full border-2 border-black shadow-[3px_3px_0px_0px_#ccff00]">
+                  <div
+                    className={clsx(
+                      "flex items-center gap-2 text-white font-display text-xs font-black w-fit px-4 py-1.5 rounded-full border-2 border-black shadow-[3px_3px_0px_0px_#ccff00]",
+                      isDisabled ? "bg-gray-500 shadow-none" : "bg-black",
+                    )}
+                  >
                     <Gamepad2 className="w-4 h-4" />
                     <span>{tournament.matchCount} MATCHES AVAILABLE</span>
                   </div>
@@ -184,9 +220,23 @@ export function TournamentSelector({
 
                 {/* Action Button */}
                 <div className="mt-8">
-                  <button className="w-full bg-black hover:bg-zinc-800 text-white font-bold uppercase py-3 px-6 rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000] group-hover:shadow-[1px_1px_0px_0px_#000] transform group-hover:translate-x-[1px] group-hover:translate-y-[1px] transition-all duration-200 flex items-center justify-center gap-2">
-                    {tournament.hasUserBets ? "Ver Apostas" : "Bet Now"}
-                    <ArrowRight className="w-5 h-5 text-[#ccff00]" />
+                  <button
+                    disabled={isDisabled}
+                    className={clsx(
+                      "w-full text-white font-bold uppercase py-3 px-6 rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200 flex items-center justify-center gap-2",
+                      isDisabled
+                        ? "bg-gray-400 cursor-not-allowed shadow-none border-gray-500"
+                        : "bg-black hover:bg-zinc-800 group-hover:shadow-[1px_1px_0px_0px_#000] group-hover:translate-x-[1px] group-hover:translate-y-[1px]",
+                    )}
+                  >
+                    {isDisabled ? (
+                      "AGUARDE"
+                    ) : (
+                      <>
+                        {tournament.hasUserBets ? "Ver Apostas" : "Bet Now"}
+                        <ArrowRight className="w-5 h-5 text-[#ccff00]" />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

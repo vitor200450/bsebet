@@ -99,6 +99,13 @@ export function getTournamentLogoKey(tournamentId: number, extension: string = "
 }
 
 /**
+ * Generate the R2 key for a user avatar
+ */
+export function getUserAvatarKey(userId: string, extension: string = "png"): string {
+  return `users/${userId}/avatar.${extension}`;
+}
+
+/**
  * Convert Base64 to Buffer for upload
  */
 export function base64ToBuffer(base64String: string): { buffer: Buffer; contentType: string } {

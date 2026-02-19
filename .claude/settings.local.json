@@ -21,7 +21,8 @@
       "Bash(gh run list:*)",
       "Bash(curl:*)",
       "Bash(nslookup:*)",
-      "Bash(bun run check-types:*)"
+      "Bash(bun run check-types:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
