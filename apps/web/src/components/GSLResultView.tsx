@@ -17,6 +17,7 @@ export function GSLResultView({
   groupName,
   matches,
   userBets,
+  showPredictionScore,
 }: GSLResultViewProps) {
   // Map main app matches to BracketMatch for logic compatibility
   const bracketMatches: BracketMatch[] = useMemo(() => {
@@ -58,8 +59,21 @@ export function GSLResultView({
     );
   }, [matches]);
 
-  // Calculate Standings (using real results, no predictions)
-  const standings = useStandings(bracketMatches, {});
+  // Transform userBets for standings logic if showPredictionScore is active
+  const predictionsMap = useMemo(() => {
+    if (!showPredictionScore || !userBets) return {};
+    const map: Record<number, any> = {};
+    userBets.forEach((bet) => {
+      map[bet.matchId] = {
+        winnerId: bet.predictedWinnerId,
+        score: `${bet.predictedScoreA} - ${bet.predictedScoreB}`,
+      };
+    });
+    return map;
+  }, [userBets, showPredictionScore]);
+
+  // Calculate Standings (using real results + predictions if requested)
+  const standings = useStandings(bracketMatches, predictionsMap);
 
   // Identify GSL Links
   // Logic:
@@ -129,7 +143,7 @@ export function GSLResultView({
           prediction={
             initialBet
               ? {
-                  winnerId: initialBet.predictedWinnerId,
+                  winnerId: initialBet.predictedWinnerId ?? 0,
                   score: `${initialBet.predictedScoreA} - ${initialBet.predictedScoreB}`,
                 }
               : undefined

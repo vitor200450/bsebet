@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
 
@@ -41,7 +42,12 @@ export default function UserMenu({
 
   const displayName = profile?.nickname || session?.user?.name;
 
-  if (isPending) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isPending) {
     return (
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-end gap-1.5">

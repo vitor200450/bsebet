@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { getTournamentBySlug } from "@/server/tournaments";
 import { extractColorsServer } from "@/server/color-extractor";
 import { MatchCard } from "@/components/MatchCard";
@@ -59,69 +59,96 @@ function TournamentDetailsPage() {
 
   // PROPAGATION LOGIC: Separated into Real and Predicted tracks
   const { realMatches, predictedMatches } = useMemo(() => {
+    const teamsPool = new Map<string, any>();
+    matches.forEach((m: any) => {
+      if (m.teamA?.id) teamsPool.set(String(m.teamA.id), m.teamA);
+      if (m.teamB?.id) teamsPool.set(String(m.teamB.id), m.teamB);
+    });
+
     const runPropagation = (includePredictions: boolean) => {
       // 1. Clone matches to avoid mutating the original data
-      const matchMap = new Map<number, any>();
+      const matchMap = new Map<string, any>();
       const cloned = JSON.parse(JSON.stringify(matches));
-      cloned.forEach((m: any) => matchMap.set(m.id, m));
+      cloned.forEach((m: any) => matchMap.set(String(m.id), m));
 
       // 2. Sort by order to ensure we process early rounds first
       const sortedIds = Array.from(matchMap.keys()).sort((a, b) => {
         const mA = matchMap.get(a);
         const mB = matchMap.get(b);
-        return (mA.displayOrder || 0) - (mB.displayOrder || 0) || mA.id - mB.id;
+        return (
+          (mA.roundIndex || 0) - (mB.roundIndex || 0) ||
+          (mA.displayOrder || 0) - (mB.displayOrder || 0) ||
+          mA.id - mB.id
+        );
       });
 
-      // 3. Propagate (3 passes for depth)
-      for (let i = 0; i < 3; i++) {
+      // 3. Propagate (5 passes for depth - supports up to 32 team brackets)
+      for (let i = 0; i < 5; i++) {
         sortedIds.forEach((matchId) => {
           const match = matchMap.get(matchId);
-          const bet = userBets.find((b) => b.matchId === match.id);
+          if (!match) return;
+
+          // Skip group-stage matches – they use GSL propagation below
+          if (match.bracketSide === "groups" || match.label?.includes("Group"))
+            return;
+
+          const bet = userBets.find((b: any) => String(b.matchId) === matchId);
 
           // Determine winner: Real result takes precedence. Prediction only if enabled.
-          let winnerId = match.winnerId;
-          if (!winnerId && includePredictions && bet) {
-            winnerId = bet.predictedWinnerId;
+          let winnerValue = match.winnerId;
+          if (!winnerValue && includePredictions && bet) {
+            winnerValue = bet.predictedWinnerId;
           }
 
-          const propagateTo = (
-            targetMatchId: number | null,
-            slot: string | null,
-            team: any,
-          ) => {
-            if (!targetMatchId || !team) return;
-            const next = matchMap.get(targetMatchId);
-            if (next && next.status !== "finished") {
-              if (slot === "A") {
-                next.teamA = team;
-                next.labelTeamA = null;
-              }
-              if (slot === "B") {
-                next.teamB = team;
-                next.labelTeamB = null;
+          const winnerId = winnerValue ? String(winnerValue) : null;
+          if (!winnerId) return;
+
+          const teamAId = match.teamA?.id ? String(match.teamA.id) : null;
+          const teamBId = match.teamB?.id ? String(match.teamB.id) : null;
+
+          const winnerTeam =
+            winnerId === teamAId
+              ? match.teamA
+              : winnerId === teamBId
+                ? match.teamB
+                : (teamsPool.get(winnerId) ?? null);
+
+          const loserId = winnerId === teamAId ? teamBId : teamAId;
+          const loserTeam = loserId
+            ? ((teamAId === loserId ? match.teamA : match.teamB) ??
+              teamsPool.get(loserId) ??
+              null)
+            : null;
+
+          // FIX: The bracket generator uses teamAPreviousMatchId/B (backward links).
+          // nextMatchWinnerId is NEVER populated, so we scan child matches instead.
+          matchMap.forEach((child) => {
+            if (child.status === "finished") return;
+            if (
+              child.teamAPreviousMatchId &&
+              String(child.teamAPreviousMatchId) === matchId
+            ) {
+              const needsWinner =
+                (child.teamAPreviousMatchResult || "winner") === "winner";
+              const team = needsWinner ? winnerTeam : loserTeam;
+              if (team) {
+                child.teamA = team;
+                child.labelTeamA = null;
               }
             }
-          };
-
-          if (winnerId) {
-            const winnerTeam =
-              winnerId === match.teamA?.id ? match.teamA : match.teamB;
-            const loserTeam =
-              winnerId === match.teamA?.id ? match.teamB : match.teamA;
-
-            if (winnerTeam)
-              propagateTo(
-                match.nextMatchWinnerId,
-                match.nextMatchWinnerSlot,
-                winnerTeam,
-              );
-            if (loserTeam)
-              propagateTo(
-                match.nextMatchLoserId,
-                match.nextMatchLoserSlot,
-                loserTeam,
-              );
-          }
+            if (
+              child.teamBPreviousMatchId &&
+              String(child.teamBPreviousMatchId) === matchId
+            ) {
+              const needsWinner =
+                (child.teamBPreviousMatchResult || "winner") === "winner";
+              const team = needsWinner ? winnerTeam : loserTeam;
+              if (team) {
+                child.teamB = team;
+                child.labelTeamB = null;
+              }
+            }
+          });
         });
 
         // GSL Specific Propagation
@@ -173,9 +200,26 @@ function TournamentDetailsPage() {
                 m.winnerId ||
                 (includePredictions && bet ? bet.predictedWinnerId : null);
               if (!wId) return { w: null, l: null };
+
+              const winnerTeam =
+                wId === m.teamA?.id
+                  ? m.teamA
+                  : wId === m.teamB?.id
+                    ? m.teamB
+                    : teamsPool.get(wId);
+
+              // Find loser: if winner is A, loser is B.
+              const isWinnerA = wId === m.teamA?.id;
+              const loserId = isWinnerA ? m.teamB?.id : m.teamA?.id;
+              const loserTeam = loserId
+                ? teamsPool.get(loserId)
+                : isWinnerA
+                  ? m.teamB
+                  : m.teamA;
+
               return {
-                w: wId === m.teamA?.id ? m.teamA : m.teamB,
-                l: wId === m.teamA?.id ? m.teamB : m.teamA,
+                w: winnerTeam,
+                l: loserTeam,
               };
             };
 
@@ -216,9 +260,26 @@ function TournamentDetailsPage() {
                 m.winnerId ||
                 (includePredictions && bet ? bet.predictedWinnerId : null);
               if (!wId) return { w: null, l: null };
+
+              const winnerTeam =
+                wId === m.teamA?.id
+                  ? m.teamA
+                  : wId === m.teamB?.id
+                    ? m.teamB
+                    : teamsPool.get(wId);
+
+              // Find loser: if winner is A, loser is B.
+              const isWinnerA = wId === m.teamA?.id;
+              const loserId = isWinnerA ? m.teamB?.id : m.teamA?.id;
+              const loserTeam = loserId
+                ? teamsPool.get(loserId)
+                : isWinnerA
+                  ? m.teamB
+                  : m.teamA;
+
               return {
-                w: wId === m.teamA?.id ? m.teamA : m.teamB,
-                l: wId === m.teamA?.id ? m.teamB : m.teamA,
+                w: winnerTeam,
+                l: loserTeam,
               };
             };
             const outWin = getOutcome(winnersMatch);
@@ -247,7 +308,12 @@ function TournamentDetailsPage() {
     filter === "my-bets" ? predictedMatches : realMatches
   ).filter((match: any) => {
     if (filter === "my-bets") {
-      return userBets.some((bet) => bet.matchId === match.id);
+      // For personal bets view, always show the playoff matches to maintain bracket structure
+      // even if no direct bet exists yet for a specific round.
+      if (match.bracketSide !== "groups" && !match.label?.includes("Group")) {
+        return true;
+      }
+      return userBets.some((bet: any) => bet.matchId === match.id);
     }
     if (filter === "upcoming") {
       return match.status === "scheduled";
@@ -259,6 +325,60 @@ function TournamentDetailsPage() {
   });
 
   const isActive = tournament.status === "active";
+
+  // Performance Optimization: Group matches by side and round
+  const groupedMatches = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    const other: any[] = [];
+
+    filteredMatches.forEach((m: any) => {
+      if (
+        m.bracketSide === "groups" ||
+        (m.label && m.label.includes("Group"))
+      ) {
+        const groupName =
+          m.label?.match(/Group\s+(\w+)/i)?.[0] || m.label || "Group Stage";
+        if (!groups[groupName]) groups[groupName] = [];
+        groups[groupName].push(m);
+      } else {
+        other.push(m);
+      }
+    });
+
+    // Group otherMatches by Rounds
+    const rounds: Record<number, any[]> = {};
+    other.forEach((m: any) => {
+      const r = m.roundIndex || 0;
+      if (!rounds[r]) rounds[r] = [];
+      rounds[r].push(m);
+    });
+
+    const sortedRoundIndices = Object.keys(rounds)
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    const roundNamesMap: Record<number, string> = {};
+    sortedRoundIndices.forEach((rIdx) => {
+      const totalRounds = sortedRoundIndices.length;
+      const reverseIdx = totalRounds - rIdx - 1;
+      if (reverseIdx === 0) roundNamesMap[rIdx] = "GRAND FINAL";
+      else if (reverseIdx === 1) roundNamesMap[rIdx] = "SEMI-FINALS";
+      else if (reverseIdx === 2) roundNamesMap[rIdx] = "QUARTER-FINALS";
+      else roundNamesMap[rIdx] = `ROUND ${rIdx + 1}`;
+    });
+
+    return {
+      groups: Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)),
+      otherMatchesByRound: sortedRoundIndices.map((rIdx) => ({
+        rIdx,
+        matches: rounds[rIdx].sort(
+          (mA, mB) =>
+            (mA.displayOrder || 0) - (mB.displayOrder || 0) || mA.id - mB.id,
+        ),
+      })),
+      roundNames: roundNamesMap,
+    };
+  }, [filteredMatches]);
 
   return (
     <div className="min-h-screen bg-paper bg-paper-texture font-sans text-ink pb-20">
@@ -426,264 +546,180 @@ function TournamentDetailsPage() {
         {/* Matches Grid */}
         <div className="space-y-4">
           {filteredMatches.length > 0 ? (
-            <>
-              {filter === "all" || filter === "my-bets"
-                ? // Group by "Group Name" for GSL View
-                  (() => {
-                    const groups: Record<string, typeof matches> = {};
-                    const otherMatches: typeof matches = [];
-
-                    filteredMatches.forEach((m: any) => {
-                      if (
-                        m.bracketSide === "groups" ||
-                        (m.label && m.label.includes("Group"))
-                      ) {
-                        const groupName =
-                          m.label?.match(/Group\s+(\w+)/i)?.[0] ||
-                          m.label ||
-                          "Group Stage";
-                        if (!groups[groupName]) groups[groupName] = [];
-                        groups[groupName].push(m);
-                      } else {
-                        otherMatches.push(m);
-                      }
+            <div className="flex flex-col gap-12">
+              {filter === "all" || filter === "my-bets" ? (
+                <>
+                  {/* Render GSL Groups */}
+                  {groupedMatches.groups.map(([groupName, groupMatches]) => {
+                    const hasOpening = groupMatches.some((m) => {
+                      const text = (m.label || m.name || "").toLowerCase();
+                      return (
+                        text.includes("opening") ||
+                        text.includes("abertura") ||
+                        text.includes("rodada 1") ||
+                        text.includes("round 1")
+                      );
                     });
 
+                    const isGSL = hasOpening || groupMatches.length === 5;
+
+                    if (isGSL) {
+                      return (
+                        <GSLResultView
+                          key={groupName}
+                          groupName={groupName}
+                          matches={groupMatches}
+                          userBets={userBets}
+                          showPredictionScore={filter === "my-bets"}
+                        />
+                      );
+                    }
+
                     return (
-                      <div className="flex flex-col gap-12">
-                        {/* Render GSL Groups */}
-                        {Object.entries(groups)
-                          .sort(([a], [b]) => a.localeCompare(b))
-                          .map(([groupName, groupMatches]) => {
-                            // Check for GSL structure (Opening, Winners, etc.) or just typical Group size (4-5 matches)
-                            const hasOpening = groupMatches.some((m) => {
-                              const text = (
-                                m.label ||
-                                m.name ||
-                                ""
-                              ).toLowerCase();
-                              return (
-                                text.includes("opening") ||
-                                text.includes("abertura") ||
-                                text.includes("rodada 1") ||
-                                text.includes("round 1")
-                              );
-                            });
-
-                            const isGSL =
-                              hasOpening || groupMatches.length === 5;
-
-                            // If it looks like GSL and has enough matches (or at least some structure), use GSL View
-                            if (isGSL) {
-                              return (
-                                <GSLResultView
-                                  key={groupName}
-                                  groupName={groupName}
-                                  matches={groupMatches as any[]}
-                                  userBets={userBets}
-                                  showPredictionScore={filter === "my-bets"}
-                                />
-                              );
+                      <div key={groupName} className="space-y-4">
+                        <h3 className="text-2xl font-black italic uppercase text-white bg-black px-4 py-2 inline-block transform -skew-x-12">
+                          {groupName}
+                        </h3>
+                        {groupMatches.map((match) => (
+                          <MatchCard
+                            key={match.id}
+                            match={{
+                              ...match,
+                              category:
+                                match.bracketSide === "groups"
+                                  ? "Fase de Grupos"
+                                  : "Playoffs",
+                              isBettingEnabled: match.isBettingEnabled ?? false,
+                              status: match.status as
+                                | "scheduled"
+                                | "live"
+                                | "finished",
+                              format: "bo3",
+                              teamA: match.teamA as any,
+                              teamB: match.teamB as any,
+                            }}
+                            initialBet={
+                              filter === "my-bets"
+                                ? (userBets.find(
+                                    (b) => b.matchId === match.id,
+                                  ) as any)
+                                : undefined
                             }
-                            // Fallback to standard grid for this group if not GSL
-                            return (
-                              <div key={groupName} className="space-y-4">
-                                <h3 className="text-2xl font-black italic uppercase text-white bg-black px-4 py-2 inline-block transform -skew-x-12">
-                                  {groupName}
-                                </h3>
-                                {groupMatches.map((match) => (
-                                  <MatchCard
-                                    key={match.id}
-                                    match={{
-                                      ...match,
-                                      label: match.label,
-                                      name: match.name, // Pass name explicitly
-                                      category: `${match.bracketSide === "groups" ? "Fase de Grupos" : "Playoffs"}`,
-                                      isBettingEnabled:
-                                        match.isBettingEnabled ?? false,
-                                      status: match.status as
-                                        | "scheduled"
-                                        | "live"
-                                        | "finished",
-                                      startTime: match.startTime,
-                                      format: "bo3",
-                                      labelTeamA: match.labelTeamA as
-                                        | string
-                                        | null,
-                                      labelTeamB: match.labelTeamB as
-                                        | string
-                                        | null,
-                                      teamA: match.teamA as any,
-                                      teamB: match.teamB as any,
-                                    }}
-                                    initialBet={
-                                      userBets.find(
-                                        (b) => b.matchId === match.id,
-                                      ) as any
-                                    }
-                                    showPredictionScore={filter === "my-bets"}
-                                  />
-                                ))}
-                              </div>
-                            );
-                          })}
-
-                        {/* Render Others (Playoffs, etc.) as a Bracket */}
-                        {otherMatches.length > 0 && (
-                          <div className="flex flex-col gap-8 items-center mt-12 bg-white/40 p-8 rounded-3xl border-4 border-black/5 shadow-inner backdrop-blur-sm">
-                            <div className="flex items-center gap-4 w-full mb-8">
-                              <Workflow className="w-8 h-8 text-black" />
-                              <h3 className="text-4xl font-black italic uppercase text-black">
-                                Playoff Bracket
-                              </h3>
-                              <div className="h-1 bg-black/10 flex-grow rounded-full" />
-                            </div>
-
-                            <div className="flex gap-12 overflow-x-auto w-full pb-10 items-stretch">
-                              {/* Group by Rounds */}
-                              {(() => {
-                                const rounds: Record<number, any[]> = {};
-                                otherMatches.forEach((m: any) => {
-                                  const r = m.roundIndex || 0;
-                                  if (!rounds[r]) rounds[r] = [];
-                                  rounds[r].push(m);
-                                });
-
-                                return Object.keys(rounds)
-                                  .map(Number)
-                                  .sort((a, b) => a - b)
-                                  .map((rIdx) => (
-                                    <div
-                                      key={rIdx}
-                                      className="flex flex-col gap-6"
-                                    >
-                                      <div className="text-center">
-                                        <span className="text-sm font-black uppercase bg-black text-[#ccff00] px-4 py-1.5 -skew-x-12 inline-block shadow-sm">
-                                          {(() => {
-                                            const totalRounds =
-                                              Object.keys(rounds).length;
-                                            const reverseIdx =
-                                              totalRounds - rIdx - 1;
-                                            if (reverseIdx === 0)
-                                              return "GRAND FINAL";
-                                            if (reverseIdx === 1)
-                                              return "SEMI-FINALS";
-                                            if (reverseIdx === 2)
-                                              return "QUARTER-FINALS";
-                                            return `ROUND ${rIdx + 1}`;
-                                          })()}
-                                        </span>
-                                      </div>
-                                      <div className="flex flex-col gap-8 justify-around h-full min-w-max px-4">
-                                        {rounds[rIdx]
-                                          .sort(
-                                            (a, b) =>
-                                              (a.displayOrder || 0) -
-                                              (b.displayOrder || 0),
-                                          )
-                                          .map((match) => (
-                                            <div
-                                              key={match.id}
-                                              className="w-72"
-                                            >
-                                              <BracketMatchCard
-                                                match={{
-                                                  ...match,
-                                                  teamA:
-                                                    match.teamA ||
-                                                    ({
-                                                      id: 0,
-                                                      name:
-                                                        match.labelTeamA ||
-                                                        "TBD",
-                                                      color: "blue",
-                                                    } as any),
-                                                  teamB:
-                                                    match.teamB ||
-                                                    ({
-                                                      id: 0,
-                                                      name:
-                                                        match.labelTeamB ||
-                                                        "TBD",
-                                                      color: "red",
-                                                    } as any),
-                                                }}
-                                                prediction={
-                                                  (() => {
-                                                    const bet = userBets.find(
-                                                      (b) =>
-                                                        b.matchId === match.id,
-                                                    );
-                                                    if (!bet) return undefined;
-
-                                                    // Check if prediction was correct
-                                                    const isCorrect =
-                                                      match.winnerId ===
-                                                      bet.predictedWinnerId;
-
-                                                    return {
-                                                      winnerId:
-                                                        bet.predictedWinnerId,
-                                                      score:
-                                                        bet.predictedScoreA +
-                                                        " - " +
-                                                        bet.predictedScoreB,
-                                                      pointsEarned:
-                                                        bet.pointsEarned ?? 0,
-                                                      isCorrect,
-                                                      isUnderdogPick:
-                                                        bet.isUnderdogPick ??
-                                                        false,
-                                                    };
-                                                  })() as any
-                                                }
-                                                onUpdatePrediction={() => {}} // Read-only in details page
-                                                isReadOnly={true}
-                                              />
-                                            </div>
-                                          ))}
-                                      </div>
-                                    </div>
-                                  ));
-                              })()}
-                            </div>
-                          </div>
-                        )}
+                            showPredictionScore={filter === "my-bets"}
+                          />
+                        ))}
                       </div>
                     );
-                  })()
-                : // Standard List View for filters
-                  filteredMatches.map((match: any) => (
-                    <MatchCard
-                      key={match.id}
-                      match={{
-                        ...match,
-                        label: match.label,
-                        name: match.name, // Pass name explicitly
-                        category: `${match.bracketSide === "groups" ? "Fase de Grupos" : "Playoffs"}`,
-                        isBettingEnabled: match.isBettingEnabled ?? false,
-                        status: match.status as
-                          | "scheduled"
-                          | "live"
-                          | "finished",
-                        startTime: match.startTime,
-                        format: "bo3",
-                        labelTeamA: match.labelTeamA as string | null,
-                        labelTeamB: match.labelTeamB as string | null,
-                        teamA: match.teamA as any,
-                        teamB: match.teamB as any,
-                      }}
-                      initialBet={
-                        filter === "upcoming"
-                          ? undefined
-                          : (userBets.find(
-                              (b) => b.matchId === match.id,
-                            ) as any)
-                      }
-                      showPredictionScore={false}
-                    />
-                  ))}
-            </>
+                  })}
+
+                  {/* Render Others (Playoffs, etc.) as a Bracket */}
+                  {groupedMatches.otherMatchesByRound.length > 0 && (
+                    <div className="flex flex-col gap-8 items-center mt-12 bg-white/40 p-8 rounded-3xl border-4 border-black/5 shadow-inner backdrop-blur-sm">
+                      <div className="flex items-center gap-4 w-full mb-8">
+                        <Workflow className="w-8 h-8 text-black" />
+                        <h3 className="text-4xl font-black italic uppercase text-black">
+                          Playoff Bracket
+                        </h3>
+                        <div className="h-1 bg-black/10 flex-grow rounded-full" />
+                      </div>
+
+                      <div className="flex gap-12 overflow-x-auto w-full pb-10 items-stretch">
+                        {groupedMatches.otherMatchesByRound.map(
+                          ({ rIdx, matches }) => (
+                            <div key={rIdx} className="flex flex-col gap-6">
+                              <div className="text-center">
+                                <span className="text-sm font-black uppercase bg-black text-[#ccff00] px-4 py-1.5 -skew-x-12 inline-block shadow-sm">
+                                  {groupedMatches.roundNames[rIdx]}
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-8 justify-around h-full min-w-max px-4">
+                                {matches.map((match) => (
+                                  <div key={match.id} className="w-72">
+                                    <BracketMatchCard
+                                      match={{
+                                        ...match,
+                                        teamA: match.teamA || {
+                                          id: 0,
+                                          name: match.labelTeamA || "TBD",
+                                          color: "blue",
+                                        },
+                                        teamB: match.teamB || {
+                                          id: 0,
+                                          name: match.labelTeamB || "TBD",
+                                          color: "red",
+                                        },
+                                      }}
+                                      prediction={
+                                        filter === "my-bets"
+                                          ? (() => {
+                                              const bet = userBets.find(
+                                                (b) => b.matchId === match.id,
+                                              );
+                                              if (!bet) return undefined;
+                                              return {
+                                                winnerId:
+                                                  bet.predictedWinnerId ?? 0,
+                                                score: `${bet.predictedScoreA} - ${bet.predictedScoreB}`,
+                                                pointsEarned:
+                                                  bet.pointsEarned ?? 0,
+                                                isCorrect:
+                                                  match.winnerId ===
+                                                  bet.predictedWinnerId,
+                                                isUnderdogPick:
+                                                  bet.isUnderdogPick ?? false,
+                                              };
+                                            })()
+                                          : undefined
+                                      }
+                                      onUpdatePrediction={() => {}}
+                                      isReadOnly={true}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Simple List View for Status Filtering */
+                <div className="flex flex-col gap-4">
+                  {filteredMatches
+                    .sort(
+                      (a, b) =>
+                        new Date(a.startTime).getTime() -
+                        new Date(b.startTime).getTime(),
+                    )
+                    .map((match) => (
+                      <MatchCard
+                        key={match.id}
+                        match={{
+                          ...match,
+                          category:
+                            match.bracketSide === "groups"
+                              ? "Fase de Grupos"
+                              : "Playoffs",
+                          isBettingEnabled: match.isBettingEnabled ?? false,
+                          status: match.status as
+                            | "scheduled"
+                            | "live"
+                            | "finished",
+                          format: "bo3",
+                          teamA: match.teamA as any,
+                          teamB: match.teamB as any,
+                        }}
+                        initialBet={userBets.find(
+                          (b) => b.matchId === match.id,
+                        )}
+                        showPredictionScore={false}
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
           ) : (
             <div className="text-center py-20 bg-white border-4 border-black/10 rounded-xl border-dashed">
               <Filter className="w-12 h-12 mx-auto text-gray-300 mb-4" />

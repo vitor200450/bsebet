@@ -149,26 +149,28 @@ export const MatchCard = ({
   const canInteract =
     !isLocked && isBettingEnabled && !isMatchStarted && !isReadOnly;
 
-  if (isLocked) {
+  if (isLocked && !isReadOnly) {
     return (
       <div className="w-full bg-gray-100/50 border-[3px] border-black/10 h-28 flex flex-col items-center justify-center relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-black/5"></div>
         <div className="flex flex-col items-center gap-1 opacity-40 grayscale">
           <div className="flex items-center gap-6">
-            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate">
+            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate px-0.5">
               {match.labelTeamA || "TBD"}
             </span>
             <div className="w-6 h-6 rounded-full border-2 border-dashed border-black/20 flex items-center justify-center">
               <span className="text-[8px] font-black italic">VS</span>
             </div>
-            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate">
+            <span className="text-[10px] font-black uppercase italic tracking-tighter w-20 text-center truncate px-0.5">
               {match.labelTeamB || "TBD"}
             </span>
           </div>
         </div>
         <div className="mt-2 bg-black/5 px-3 py-1 border border-black/10">
           <span className="text-[8px] font-black uppercase italic text-black/40 tracking-widest">
-            Aguardando Apostas Anteriores
+            {isReadOnly
+              ? "Aguardando Resultados"
+              : "Aguardando Apostas Anteriores"}
           </span>
         </div>
         {/* Diagonal stripes overlay */}
@@ -193,11 +195,14 @@ export const MatchCard = ({
         "w-full bg-white border-[3px] border-black shadow-[3px_3px_0px_0px_#000] overflow-visible transition-all duration-200 relative group z-10 text-black",
         canInteract &&
           "hover:-translate-y-0.5 hover:z-50 focus-within:z-[60] active:z-[60] cursor-pointer",
-        !canInteract && !showResult && "opacity-60 cursor-not-allowed",
+        !canInteract &&
+          !showResult &&
+          !isReadOnly &&
+          "opacity-60 cursor-not-allowed",
       )}
     >
       {/* Status Badges */}
-      {!canInteract && !showResult && (
+      {!canInteract && !showResult && !isReadOnly && (
         <div className="absolute -top-2 -right-2 bg-gray-500 text-white text-[7px] font-black uppercase px-1.5 py-0.5 border-2 border-black z-20">
           CLOSED
         </div>
@@ -391,7 +396,7 @@ export const MatchCard = ({
             />
             <span
               className={clsx(
-                "text-[10px] font-black uppercase italic truncate",
+                "text-[10px] font-black uppercase italic truncate pr-1",
                 isWinnerA
                   ? showResult
                     ? "text-black"
@@ -482,7 +487,7 @@ export const MatchCard = ({
             />
             <span
               className={clsx(
-                "text-[10px] font-black uppercase italic truncate",
+                "text-[10px] font-black uppercase italic truncate pr-1",
                 isWinnerB
                   ? showResult
                     ? "text-black"

@@ -9,6 +9,12 @@ export interface TournamentOption {
   startDate?: string | null;
   activeStage?: string;
   hasUserBets?: boolean;
+  colors?: {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+    style: "linear" | "radial";
+  } | null;
 }
 
 interface TournamentSelectorProps {
@@ -66,15 +72,16 @@ export function TournamentSelector({
       />
 
       {/* Header Section */}
-      <header className="w-full flex justify-center pt-24 pb-12 z-10 relative">
-        <div className="transform -rotate-1">
-          <div className="bg-black text-white px-8 py-4 border-b-4 border-[#ccff00] relative shadow-[6px_6px_0px_0px_#000]">
-            <h1 className="font-display font-black text-3xl md:text-5xl italic tracking-tighter uppercase">
+      {/* Header Section */}
+      <header className="w-full flex justify-center pt-32 pb-8 md:pt-40 md:pb-16 z-10 relative px-4">
+        <div className="transform -rotate-1 w-full max-w-2xl mx-auto">
+          <div className="bg-black text-white px-4 py-3 md:px-8 md:py-4 border-b-4 border-[#ccff00] relative shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000] text-center">
+            <h1 className="font-display font-black text-2xl sm:text-3xl md:text-5xl italic tracking-tighter uppercase leading-tight">
               Choose Your Tournament
             </h1>
             {/* Corner decorations */}
-            <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#ccff00] border-2 border-black" />
-            <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#ccff00] border-2 border-black" />
+            <div className="absolute -top-1.5 -right-1.5 w-3 h-3 md:-top-2 md:-right-2 md:w-4 md:h-4 bg-[#ccff00] border-2 border-black" />
+            <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 md:-bottom-2 md:-left-2 md:w-4 md:h-4 bg-[#ccff00] border-2 border-black" />
           </div>
         </div>
       </header>
@@ -87,7 +94,26 @@ export function TournamentSelector({
           const icon = tournament.logoUrl
             ? null
             : CARD_ICONS[index % CARD_ICONS.length];
-          const bgColor = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+
+          // Dynamic Gradient Logic
+          let customStyle = {};
+          let cardBgClass = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+
+          if (tournament.colors) {
+            const { primary, secondary, tertiary, style } = tournament.colors;
+            cardBgClass = ""; // Remove default class if custom colors exist
+
+            if (style === "radial") {
+              customStyle = {
+                background: `radial-gradient(ellipse at center, ${primary} 0%, ${primary} 40%, ${tertiary} 80%, ${secondary} 100%)`,
+              };
+            } else {
+              customStyle = {
+                background: `linear-gradient(135deg, ${primary} 0%, ${tertiary} 50%, ${secondary} 100%)`,
+              };
+            }
+          }
+
           const pattern = CARD_PATTERNS[index % CARD_PATTERNS.length];
 
           const isDisabled =
@@ -129,7 +155,8 @@ export function TournamentSelector({
 
                 {/* Card Hero */}
                 <div
-                  className={`w-full h-64 ${isDisabled ? "bg-gray-200" : bgColor} rounded-lg border-2 border-black mb-6 flex items-center justify-center relative overflow-hidden`}
+                  className={`w-full h-64 ${isDisabled ? "bg-gray-200" : cardBgClass} rounded-lg border-2 border-black mb-6 flex items-center justify-center relative overflow-hidden`}
+                  style={!isDisabled ? customStyle : undefined}
                 >
                   <div
                     className="absolute inset-0 opacity-20"

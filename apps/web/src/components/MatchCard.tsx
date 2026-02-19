@@ -34,9 +34,9 @@ export type Bet = {
   predictedWinnerId: number | null;
   predictedScoreA: number;
   predictedScoreB: number;
-  pointsEarned?: number;
-  isUnderdogPick?: boolean;
-  isPerfectPick?: boolean;
+  pointsEarned?: number | null;
+  isUnderdogPick?: boolean | null;
+  isPerfectPick?: boolean | null;
 };
 
 interface MatchCardProps {
@@ -313,7 +313,7 @@ export function MatchCard({
         </div>
 
         {/* Bet Result Badge - Show points earned for finished matches */}
-        {isFinished && initialBet && initialBet.pointsEarned !== undefined && (
+        {isFinished && initialBet && initialBet.pointsEarned != null && (
           <div
             className={clsx(
               "absolute -bottom-2 -right-2 text-[8px] font-black uppercase px-2 py-1 border-2 border-black z-20 flex items-center gap-1.5 cursor-help group/badge",

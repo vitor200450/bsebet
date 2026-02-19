@@ -8,7 +8,12 @@
  * - Native integration with Cloudflare Workers
  */
 
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // R2 uses S3-compatible API
@@ -19,7 +24,9 @@ function getR2Client(): S3Client {
   if (!r2Client) {
     const endpoint = process.env.R2_ENDPOINT;
     if (!endpoint || endpoint.includes("<account-id>")) {
-      throw new Error("R2_ENDPOINT not configured. Check your .env.production file.");
+      throw new Error(
+        "R2_ENDPOINT not configured. Check your .env.production file.",
+      );
     }
 
     r2Client = new S3Client({
@@ -34,8 +41,9 @@ function getR2Client(): S3Client {
   return r2Client;
 }
 
-const getBucketName = () => process.env.R2_BUCKET_NAME || "bsebet-logos";
-const getPublicUrl = () => process.env.R2_PUBLIC_URL || "https://logos.bsebet.com";
+export const getBucketName = () => process.env.R2_BUCKET_NAME || "bsebet-logos";
+export const getPublicUrl = () =>
+  process.env.R2_PUBLIC_URL || "https://logos.bsebet.com";
 
 /**
  * Upload a logo to R2
@@ -43,7 +51,7 @@ const getPublicUrl = () => process.env.R2_PUBLIC_URL || "https://logos.bsebet.co
 export async function uploadLogoToR2(
   key: string,
   buffer: Buffer,
-  contentType: string
+  contentType: string,
 ): Promise<{ publicUrl: string }> {
   const command = new PutObjectCommand({
     Bucket: getBucketName(),
@@ -63,7 +71,10 @@ export async function uploadLogoToR2(
 /**
  * Get a signed URL for temporary access (if needed)
  */
-export async function getSignedLogoUrl(key: string, expiresIn: number = 3600): Promise<string> {
+export async function getSignedLogoUrl(
+  key: string,
+  expiresIn: number = 3600,
+): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: getBucketName(),
     Key: key,
@@ -87,28 +98,40 @@ export async function deleteLogoFromR2(key: string): Promise<void> {
 /**
  * Generate the R2 key for a team logo
  */
-export function getTeamLogoKey(teamId: number, extension: string = "png"): string {
+export function getTeamLogoKey(
+  teamId: number,
+  extension: string = "png",
+): string {
   return `teams/${teamId}/logo.${extension}`;
 }
 
 /**
  * Generate the R2 key for a tournament logo
  */
-export function getTournamentLogoKey(tournamentId: number, extension: string = "png"): string {
+export function getTournamentLogoKey(
+  tournamentId: number,
+  extension: string = "png",
+): string {
   return `tournaments/${tournamentId}/logo.${extension}`;
 }
 
 /**
  * Generate the R2 key for a user avatar
  */
-export function getUserAvatarKey(userId: string, extension: string = "png"): string {
-  return `users/${userId}/avatar.${extension}`;
+export function getUserAvatarKey(
+  userId: string,
+  extension: string = "png",
+): string {
+  return `users/${userId}/avatar-${Date.now()}.${extension}`;
 }
 
 /**
  * Convert Base64 to Buffer for upload
  */
-export function base64ToBuffer(base64String: string): { buffer: Buffer; contentType: string } {
+export function base64ToBuffer(base64String: string): {
+  buffer: Buffer;
+  contentType: string;
+} {
   // Extract content type and base64 data
   const matches = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
 

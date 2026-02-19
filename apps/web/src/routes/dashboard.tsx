@@ -57,8 +57,9 @@ function RouteComponent() {
       <div
         className="fixed inset-0 opacity-[0.15] pointer-events-none mix-blend-multiply"
         style={{
-          backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-          backgroundRepeat: 'repeat'
+          backgroundImage:
+            'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+          backgroundRepeat: "repeat",
         }}
       />
 
@@ -226,7 +227,7 @@ function RouteComponent() {
               MEUS PALPITES ATIVOS
             </h2>
             {activeBets.length > 0 && (
-              <div className="bg-[#ccff00] px-2 py-1 border-2 border-black text-xs font-black">
+              <div className="bg-[#ccff00] px-2 py-1 border-2 border-black text-xs font-black text-black">
                 {activeBets.length}
               </div>
             )}
@@ -261,7 +262,7 @@ function RouteComponent() {
                       "absolute -top-3 -right-3 px-3 py-1 border-[3px] border-black text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_0_#000] transform rotate-6",
                       bet.match.status === "live"
                         ? "bg-[#ff2e2e] text-white animate-pulse"
-                        : "bg-[#f0f0f0] text-black"
+                        : "bg-[#f0f0f0] text-black",
                     )}
                   >
                     {bet.match.status === "live" ? "🔴 AO VIVO" : "⏰ AGENDADO"}
@@ -292,7 +293,7 @@ function RouteComponent() {
                         "flex-1 flex flex-col items-center justify-between gap-2 p-3 rounded-sm transition-all border-[3px] min-h-[120px]",
                         bet.predictedWinnerId === bet.match.teamA?.id
                           ? "bg-[#ccff00]/40 border-[#ccff00] shadow-[3px_3px_0_0_#ccff00]"
-                          : "bg-white border-black"
+                          : "bg-white border-black",
                       )}
                     >
                       {bet.match.teamA?.slug ? (
@@ -342,7 +343,7 @@ function RouteComponent() {
                         "flex-1 flex flex-col items-center justify-between gap-2 p-3 rounded-sm transition-all border-[3px] min-h-[120px]",
                         bet.predictedWinnerId === bet.match.teamB?.id
                           ? "bg-[#ccff00]/40 border-[#ccff00] shadow-[3px_3px_0_0_#ccff00]"
-                          : "bg-white border-black"
+                          : "bg-white border-black",
                       )}
                     >
                       {bet.match.teamB?.slug ? (
@@ -447,7 +448,10 @@ function RouteComponent() {
           {/* Section Header */}
           <div className="flex items-center gap-3 mb-5">
             <div className="bg-[#ffc700] p-2 border-2 border-black shadow-[2px_2px_0_0_#000] transform rotate-2">
-              <Trophy className="w-5 h-5 md:w-6 md:h-6 text-black" strokeWidth={3} />
+              <Trophy
+                className="w-5 h-5 md:w-6 md:h-6 text-black"
+                strokeWidth={3}
+              />
             </div>
             <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-black">
               TORNEIOS ATIVOS

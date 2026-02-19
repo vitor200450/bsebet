@@ -12,6 +12,7 @@ import { useHeader } from "./HeaderContext";
 export function GlobalHeader() {
   const router = useRouterState();
   const { config } = useHeader();
+  const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { data: session } = authClient.useSession();
@@ -22,13 +23,17 @@ export function GlobalHeader() {
     refetchInterval: 30000,
   });
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [router.location.pathname]);
 
   // Dynamic navigation based on authentication
-  const isAuthenticated = !!session;
+  const isAuthenticated = mounted && !!session;
 
   const navItems = [
     { label: "Home", to: isAuthenticated ? "/dashboard" : "/landing" },

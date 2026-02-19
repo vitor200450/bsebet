@@ -160,7 +160,27 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
         );
       });
 
-    return { tournaments: tournamentsWithBetting, user: serverUser };
+    // Step 7: Fetch colors for tournaments with logos
+    const tournamentsWithColors = await Promise.all(
+      tournamentsWithBetting.map(async (t: any) => {
+        let colors = null;
+        if (t.logoUrl) {
+          try {
+            const { extractColorsFromImage } =
+              await import("../server/color-extractor");
+            colors = await extractColorsFromImage(t.logoUrl);
+          } catch (e) {
+            console.error(
+              `Failed to extract colors for tournament ${t.name}:`,
+              e,
+            );
+          }
+        }
+        return { ...t, colors };
+      }),
+    );
+
+    return { tournaments: tournamentsWithColors, user: serverUser };
   },
 );
 
@@ -407,7 +427,6 @@ function ReviewScreen({
   setSelectedMatchDayId,
   setShowReview,
   setPredictions,
-  handleSelectTournament,
   setSelectedTournamentId,
 }: {
   matches: any[];
@@ -427,7 +446,6 @@ function ReviewScreen({
   setPredictions?: React.Dispatch<
     React.SetStateAction<Record<number, Prediction>>
   >;
-  handleSelectTournament?: (id: number) => Promise<void>;
   setSelectedTournamentId?: (id: number | null) => void;
 }) {
   const [editingScoreMatchId, setEditingScoreMatchId] = useState<number | null>(
@@ -1468,10 +1486,6 @@ function ReviewScreen({
           onClose={() => setIsSuccessModalOpen(false)}
           tournamentId={tournamentId}
           userId={userId}
-          setSelectedMatchDayId={setSelectedMatchDayId}
-          setShowReview={setShowReview}
-          setPredictions={setPredictions}
-          handleSelectTournament={handleSelectTournament}
         />
       )}
     </>
@@ -1484,22 +1498,12 @@ function SubmitBetsModal({
   onClose,
   tournamentId,
   userId,
-  setSelectedMatchDayId,
-  setShowReview,
-  setPredictions,
-  handleSelectTournament,
 }: {
   predictions: Record<number, Prediction>;
   matchList: Match[];
   onClose: () => void;
   tournamentId: number;
   userId: string;
-  setSelectedMatchDayId?: (id: number | null) => void;
-  setShowReview?: (show: boolean) => void;
-  setPredictions?: React.Dispatch<
-    React.SetStateAction<Record<number, Prediction>>
-  >;
-  handleSelectTournament?: (id: number) => Promise<void>;
 }) {
   const navigate = useNavigate();
   const [status, setStatus] = useState<
@@ -1940,7 +1944,14 @@ function Home() {
         }
       }
     }
-  }, [isReadOnly, userBets, tournamentData, selectedTournamentId, userId]);
+  }, [
+    isReadOnly,
+    userBets,
+    tournamentData,
+    selectedTournamentId,
+    userId,
+    selectedMatchDayId,
+  ]);
 
   // Persistence: Save to localStorage when change (ONLY if not read-only)
   useEffect(() => {
@@ -2089,7 +2100,6 @@ function Home() {
           onClick={() => {
             setSelectedMatchDayId(null);
             setShowReview(false);
-            setPredictions({});
           }}
           className="fixed top-28 left-4 z-[90] bg-white hover:bg-gray-50 text-black font-black py-2.5 px-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all text-[10px] md:text-xs uppercase flex items-center gap-2"
         >
@@ -2227,7 +2237,6 @@ function Home() {
             setSelectedMatchDayId={setSelectedMatchDayId}
             setShowReview={setShowReview}
             setPredictions={setPredictions}
-            handleSelectTournament={handleSelectTournament}
           />
         ) : viewMode === "list" ? (
           <BettingCarousel

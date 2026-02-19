@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { HeaderProvider } from "@/components/HeaderContext";
 
-import appCss from "../index.css?url";
+import "../index.css";
 
 export interface RouterAppContext {
   trpc: TRPCOptionsProxy<AppRouter>;
@@ -36,10 +36,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     ],
     links: [
       {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      {
         rel: "manifest",
         href: "/manifest.webmanifest",
       },
@@ -52,10 +48,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
+      <head suppressHydrationWarning>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <HeaderProvider>
           <div className="min-h-screen w-full font-sans overflow-x-hidden">
             <GlobalHeader />

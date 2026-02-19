@@ -3,7 +3,14 @@ import { user, account } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { uploadLogoToR2, base64ToBuffer, isBase64DataUrl, getUserAvatarKey } from "./r2";
+import {
+  uploadLogoToR2,
+  base64ToBuffer,
+  isBase64DataUrl,
+  getUserAvatarKey,
+  deleteLogoFromR2,
+  getPublicUrl,
+} from "./r2";
 import { authMiddleware } from "@/middleware/auth";
 
 const getMyProfileFn = createServerFn({ method: "GET" })
@@ -15,7 +22,13 @@ const getMyProfileFn = createServerFn({ method: "GET" })
 
     const profile = await db.query.user.findFirst({
       where: eq(user.id, context.session.user.id),
-      columns: { id: true, name: true, email: true, image: true, nickname: true },
+      columns: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        nickname: true,
+      },
     });
 
     return profile ?? null;
@@ -184,9 +197,10 @@ const restoreGoogleAvatarFn = createServerFn({ method: "POST" }).handler(
   },
 );
 
-export const restoreGoogleAvatar = restoreGoogleAvatarFn as unknown as () => Promise<{
-  pictureUrl: string;
-}>;
+export const restoreGoogleAvatar =
+  restoreGoogleAvatarFn as unknown as () => Promise<{
+    pictureUrl: string;
+  }>;
 
 /**
  * Upload user avatar to R2 and update the user's image field
@@ -205,6 +219,22 @@ const uploadUserAvatarFn = createServerFn({ method: "POST" }).handler(
 
     if (!isBase64DataUrl(imageBase64)) {
       throw new Error("Invalid image format");
+    }
+
+    // Delete old avatar if it exists on R2
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: { image: true },
+    });
+
+    if (currentUser?.image) {
+      const publicUrl = getPublicUrl();
+      if (currentUser.image.startsWith(publicUrl)) {
+        const oldKey = currentUser.image.slice(publicUrl.length + 1);
+        await deleteLogoFromR2(oldKey).catch((err) => {
+          console.error("Failed to delete old avatar:", err);
+        });
+      }
     }
 
     const { buffer, contentType } = base64ToBuffer(imageBase64);

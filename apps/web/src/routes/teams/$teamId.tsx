@@ -2,46 +2,53 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { getTeamBySlug } from "@/server/teams";
 import { extractColorsServer } from "@/server/color-extractor";
 import { TeamLogo } from "@/components/TeamLogo";
-import { ArrowLeft, Trophy, Target, TrendingUp, Award, Calendar } from "lucide-react";
+import {
+  ArrowLeft,
+  Trophy,
+  Target,
+  TrendingUp,
+  Award,
+  Calendar,
+} from "lucide-react";
 import { clsx } from "clsx";
-import { useState, useEffect } from "react";
 import { getIntermediateColor } from "@/lib/color-extractor";
 
 export const Route = createFileRoute("/teams/$teamId")({
-  loader: ({ params }) => getTeamBySlug({ data: params.teamId }),
+  loader: async ({ params }) => {
+    const data = await getTeamBySlug({ data: params.teamId });
+
+    let colors = {
+      primary: "#2e5cff",
+      secondary: "#ff2e2e",
+      tertiary: "#7f46d6",
+      style: "linear" as "linear" | "radial",
+    };
+
+    if (data.team.logoUrl) {
+      try {
+        colors = await extractColorsServer({ data: data.team.logoUrl });
+      } catch (e) {
+        console.error("Failed to extract colors in loader", e);
+      }
+    }
+
+    return { ...data, colors };
+  },
   component: TeamDetailsPage,
 });
 
 function TeamDetailsPage() {
-  const { team, matches, tournaments } = Route.useLoaderData();
+  const { team, matches, tournaments, colors } = Route.useLoaderData();
 
-  // State for team colors extracted from logo
-  const [teamColors, setTeamColors] = useState({
-    primary: "#2e5cff",
-    secondary: "#ff2e2e",
-    intermediate: "#7f46d6",
-  });
+  // Calculate intermediate color for gradient (fallback)
+  const intermediate = getIntermediateColor(colors.primary, colors.secondary);
 
-  // Extract colors from team logo using server-side function
-  useEffect(() => {
-    if (team.logoUrl) {
-      extractColorsServer({ data: team.logoUrl })
-        .then((colors) => {
-          const intermediate = getIntermediateColor(
-            colors.primary,
-            colors.secondary,
-          );
-          setTeamColors({
-            primary: colors.primary,
-            secondary: colors.secondary,
-            intermediate,
-          });
-        })
-        .catch((error) => {
-          console.error("Error extracting colors:", error);
-        });
-    }
-  }, [team.logoUrl]);
+  const teamColors = {
+    primary: colors.primary,
+    secondary: colors.secondary,
+    tertiary: colors.tertiary || intermediate,
+    style: colors.style || "linear",
+  };
 
   // Calculate stats
   const finishedMatches = matches.filter((m) => m.status === "finished");
@@ -63,7 +70,10 @@ function TeamDetailsPage() {
     if (i === 0) {
       streakType = isWin ? "W" : "L";
       currentStreak = 1;
-    } else if ((isWin && streakType === "W") || (!isWin && streakType === "L")) {
+    } else if (
+      (isWin && streakType === "W") ||
+      (!isWin && streakType === "L")
+    ) {
       currentStreak++;
     } else {
       break;
@@ -74,9 +84,17 @@ function TeamDetailsPage() {
   const recentMatches = finishedMatches.slice(0, 10);
 
   // Upcoming matches (scheduled and live)
-  const upcomingMatches = matches.filter(
-    (m) => m.status === "scheduled" || m.status === "live"
-  ).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  const upcomingMatches = matches
+    .filter((m) => m.status === "scheduled" || m.status === "live")
+    .sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    );
+
+  const backgroundGradient =
+    teamColors.style === "radial"
+      ? `radial-gradient(ellipse at center, ${teamColors.primary} 0%, ${teamColors.primary} 40%, ${teamColors.tertiary} 80%, ${teamColors.secondary} 100%)`
+      : `linear-gradient(90deg, ${teamColors.primary} 0%, ${teamColors.primary} 15%, ${teamColors.tertiary} 50%, ${teamColors.secondary} 85%, ${teamColors.secondary} 100%)`;
 
   return (
     <div className="min-h-screen bg-paper bg-paper-texture font-sans text-ink pb-20">
@@ -84,12 +102,7 @@ function TeamDetailsPage() {
       <div
         className="relative text-white overflow-hidden border-b-4 border-black transition-all duration-500"
         style={{
-          background: `linear-gradient(90deg,
-            ${teamColors.primary} 0%,
-            ${teamColors.primary} 15%,
-            ${teamColors.intermediate} 50%,
-            ${teamColors.secondary} 85%,
-            ${teamColors.secondary} 100%)`,
+          background: backgroundGradient,
         }}
       >
         {/* Pattern Overlay */}
@@ -194,11 +207,7 @@ function TeamDetailsPage() {
           <StatCard
             icon={<Award className="w-5 h-5" />}
             label="Sequência Atual"
-            value={
-              currentStreak > 0
-                ? `${currentStreak}${streakType}`
-                : "—"
-            }
+            value={currentStreak > 0 ? `${currentStreak}${streakType}` : "—"}
             color={
               streakType === "W"
                 ? "bg-green-100 border-green-500"
@@ -215,7 +224,7 @@ function TeamDetailsPage() {
             <h2 className="text-3xl font-black italic uppercase mb-6 flex items-center gap-3">
               <div className="h-1 w-12 bg-[#2e5cff]" />
               Próximas Partidas
-              {upcomingMatches.some(m => m.status === "live") && (
+              {upcomingMatches.some((m) => m.status === "live") && (
                 <span className="bg-[#ff2e2e] text-white px-3 py-1 text-xs font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] animate-pulse">
                   🔴 AO VIVO
                 </span>
@@ -233,7 +242,7 @@ function TeamDetailsPage() {
                     key={match.id}
                     className={clsx(
                       "relative bg-white border-[3px] border-black shadow-[4px_4px_0_0_#000] overflow-hidden",
-                      isLive && "ring-2 ring-[#ff2e2e] ring-offset-2"
+                      isLive && "ring-2 ring-[#ff2e2e] ring-offset-2",
                     )}
                   >
                     {/* Live indicator stripe */}
@@ -252,7 +261,7 @@ function TeamDetailsPage() {
                               "px-2 py-1 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0_0_#000]",
                               isLive
                                 ? "bg-[#ff2e2e] text-white"
-                                : "bg-[#ccff00] text-black"
+                                : "bg-[#ccff00] text-black",
                             )}
                           >
                             {isLive ? "🔴 LIVE" : "VS"}
@@ -268,13 +277,16 @@ function TeamDetailsPage() {
                         <div className="text-[10px] font-black uppercase text-gray-500">
                           {isLive
                             ? "AGORA"
-                            : new Date(match.startTime).toLocaleDateString("pt-BR", {
-                                day: "2-digit",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                timeZone: "UTC",
-                              })}
+                            : new Date(match.startTime).toLocaleDateString(
+                                "pt-BR",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: "UTC",
+                                },
+                              )}
                         </div>
                       </div>
 
@@ -345,7 +357,12 @@ function TeamDetailsPage() {
                     </div>
 
                     {/* Desktop Layout */}
-                    <div className={clsx("p-5 hidden md:flex items-center gap-4", isLive && "pl-6")}>
+                    <div
+                      className={clsx(
+                        "p-5 hidden md:flex items-center gap-4",
+                        isLive && "pl-6",
+                      )}
+                    >
                       {/* Status Badge */}
                       <div className="relative flex-shrink-0">
                         <div
@@ -353,7 +370,7 @@ function TeamDetailsPage() {
                             "w-16 h-16 border-[3px] border-black flex items-center justify-center font-black text-xs uppercase shadow-[3px_3px_0_0_#000]",
                             isLive
                               ? "bg-[#ff2e2e] text-white"
-                              : "bg-[#ccff00] text-black"
+                              : "bg-[#ccff00] text-black",
                           )}
                         >
                           {isLive ? "LIVE" : "VS"}
@@ -494,11 +511,14 @@ function TeamDetailsPage() {
                           </div>
                           {!isLive && (
                             <div className="text-[9px] font-bold text-gray-500 mt-0.5">
-                              {new Date(match.startTime).toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                timeZone: "UTC",
-                              })}
+                              {new Date(match.startTime).toLocaleTimeString(
+                                "pt-BR",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: "UTC",
+                                },
+                              )}
                             </div>
                           )}
                         </div>
@@ -848,7 +868,9 @@ function TeamDetailsPage() {
                           >
                             {teamScore}
                           </span>
-                          <span className="text-black text-xl font-black">:</span>
+                          <span className="text-black text-xl font-black">
+                            :
+                          </span>
                           <span
                             className={clsx(
                               "font-body text-3xl font-black",

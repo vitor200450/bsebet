@@ -6,7 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getUser } from "@/functions/get-user";
 import { authClient } from "@/lib/auth-client";
-import { getMyProfile, updateNickname, uploadUserAvatar, restoreGoogleAvatar } from "@/server/users";
+import {
+  getMyProfile,
+  updateNickname,
+  uploadUserAvatar,
+  restoreGoogleAvatar,
+} from "@/server/users";
+import { ImageCropper } from "@/components/image-cropper";
 
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -32,22 +38,42 @@ function RouteComponent() {
 
   const { refetch: refetchSession } = authClient.useSession();
 
-  const user = profile ?? session?.user;
+  const user = (profile ?? session?.user) as {
+    id: string;
+    nickname?: string | null;
+    image?: string | null;
+    name?: string | null;
+    email?: string | null;
+  };
 
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize with user.nickname if available (only on client to avoid mismatch)
+  // SSR will use ""
   const [nickname, setNickname] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
   const [isRestoring, setIsRestoring] = useState(false);
+  const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync nickname when profile loads
   useEffect(() => {
-    if (profile?.nickname !== undefined) {
-      setNickname(profile.nickname ?? "");
+    setMounted(true);
+    // Initialize nickname once mounted
+    if (user?.nickname) {
+      setNickname(user.nickname);
     }
-  }, [profile?.nickname]);
+  }, []);
+
+  // Sync nickname when user data loads/updates (only after mounted)
+  useEffect(() => {
+    if (mounted && user?.nickname !== undefined && user?.nickname !== null) {
+      setNickname(user.nickname);
+    }
+  }, [user?.nickname, mounted]);
 
   async function handleRestoreGoogleAvatar() {
     setIsRestoring(true);
@@ -79,10 +105,18 @@ function RouteComponent() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const result = ev.target?.result as string;
-      setAvatarPreview(result);
-      setAvatarBase64(result);
+      setCroppingImage(result);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // Reset input so same file can be selected again
+      }
     };
     reader.readAsDataURL(file);
+  }
+
+  function handleCropComplete(croppedImage: string) {
+    setAvatarPreview(croppedImage);
+    setAvatarBase64(croppedImage);
+    setCroppingImage(null);
   }
 
   async function handleSave() {
@@ -90,26 +124,22 @@ function RouteComponent() {
 
     setIsSaving(true);
     try {
-      // Avatar and nickname are updated independently so they never interfere
-      const tasks: Promise<unknown>[] = [
-        updateNickname({
-          data: { userId: user.id, nickname: nickname.trim() || null },
-        }),
-      ];
-
+      // Execute updates sequentially to avoid race conditions
       if (avatarBase64) {
-        tasks.push(
-          uploadUserAvatar({
-            data: { userId: user.id, imageBase64: avatarBase64 },
-          }),
-        );
+        await uploadUserAvatar({
+          data: { userId: user.id, imageBase64: avatarBase64 },
+        });
       }
 
-      await Promise.all(tasks);
+      await updateNickname({
+        data: { userId: user.id, nickname: nickname.trim() || null },
+      });
+
       setAvatarBase64(null);
       await Promise.all([refetch(), refetchSession()]);
       toast.success("Perfil atualizado com sucesso!");
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Erro ao salvar. Tente novamente.");
     } finally {
       setIsSaving(false);
@@ -178,7 +208,11 @@ function RouteComponent() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User size={56} strokeWidth={1.5} className="text-gray-400 transform skew-x-6" />
+                  <User
+                    size={56}
+                    strokeWidth={1.5}
+                    className="text-gray-400 transform skew-x-6"
+                  />
                 )}
               </div>
             </div>
@@ -205,8 +239,12 @@ function RouteComponent() {
               title="Restaurar foto do Google"
               className="text-[10px] font-black uppercase tracking-widest text-gray-600 border-[2px] border-gray-400 px-4 py-1.5 hover:border-black hover:text-black transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current" aria-hidden="true">
-                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+              <svg
+                viewBox="0 0 24 24"
+                className="w-3 h-3 fill-current"
+                aria-hidden="true"
+              >
+                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
               </svg>
               {isRestoring ? "..." : "GOOGLE"}
             </button>
@@ -295,9 +333,7 @@ function RouteComponent() {
               <input
                 type="text"
                 value={nickname}
-                onChange={(e) =>
-                  setNickname(e.target.value.slice(0, 50))
-                }
+                onChange={(e) => setNickname(e.target.value.slice(0, 50))}
                 placeholder="Digite seu nickname..."
                 className="w-full border-[3px] border-black px-3 py-3 text-sm font-black text-black bg-white focus:outline-none focus:border-[#ccff00] focus:shadow-[0_0_0_2px_#ccff00] placeholder:font-normal placeholder:text-gray-400 transition-all"
               />
@@ -334,6 +370,14 @@ function RouteComponent() {
           <div className="w-12 h-1 bg-black transform skew-x-12" />
         </div>
       </div>
+
+      {croppingImage && (
+        <ImageCropper
+          imageSrc={croppingImage!}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCroppingImage(null)}
+        />
+      )}
     </div>
   );
 }
