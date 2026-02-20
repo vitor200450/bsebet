@@ -104,14 +104,14 @@ function AdminTournamentsPage() {
   useSetHeader({
     title: "TOURNAMENTS",
     actions: (
-      <div className="flex items-center gap-4">
-        <div className="relative">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+        <div className="relative w-full sm:w-auto">
           <input
             type="text"
             placeholder="SEARCH..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+            className="w-full sm:w-64 border-[3px] border-black px-4 py-2 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
           />
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
@@ -138,10 +138,10 @@ function AdminTournamentsPage() {
             });
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
+          className="flex items-center justify-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" strokeWidth={3} />
-          <span className="hidden sm:inline">NOVO TORNEIO</span>
+          <span className="inline">NOVO TORNEIO</span>
         </button>
       </div>
     ),
@@ -306,9 +306,9 @@ function AdminTournamentsPage() {
       <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
           <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
+            <div className="min-w-full md:min-w-[800px]">
+              {/* Table Header - Hidden on small screens */}
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
                 <div className="col-span-4">Tournament Info</div>
                 <div className="col-span-2">Details</div>
                 <div className="col-span-2">Dates</div>
@@ -327,16 +327,16 @@ function AdminTournamentsPage() {
                   </span>
                 </div>
               ) : (
-                <div>
+                <div className="divide-y-[3px] divide-black">
                   {filteredTournaments.map((t, index) => (
                     <div
                       key={t.id}
-                      className={`grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors ${
+                      className={`flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]"
                       } hover:bg-[#ccff00]/10`}
                     >
                       {/* Tournament Info */}
-                      <div className="col-span-4 flex items-center gap-4">
+                      <div className="w-full md:col-span-4 flex items-center gap-4">
                         <div className="w-14 h-14 rounded-md bg-white border-[3px] border-black flex items-center justify-center overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
                           {t.logoUrl ? (
                             <img
@@ -348,8 +348,8 @@ function AdminTournamentsPage() {
                             <ImageIcon className="text-gray-300 w-6 h-6" />
                           )}
                         </div>
-                        <div>
-                          <h3 className="font-black text-lg text-black uppercase italic leading-none">
+                        <div className="min-w-0">
+                          <h3 className="font-black text-lg text-black uppercase italic leading-none break-words">
                             {t.name}
                           </h3>
                           <span className="text-xs font-bold text-gray-500 font-mono bg-gray-100 px-1 rounded border border-gray-300">
@@ -359,7 +359,7 @@ function AdminTournamentsPage() {
                       </div>
 
                       {/* Details (Region, Format, Players) */}
-                      <div className="col-span-2 flex flex-col gap-1">
+                      <div className="w-full md:col-span-2 flex flex-row md:flex-col gap-2 md:gap-1 flex-wrap">
                         {t.region && (
                           <span className="text-xs font-bold uppercase text-black flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>{" "}
@@ -371,7 +371,8 @@ function AdminTournamentsPage() {
                             className="text-xs text-gray-600 font-bold uppercase truncate"
                             title={t.format}
                           >
-                            Format: {t.format}
+                            <span className="md:hidden mr-1">Fmt:</span>
+                            {t.format}
                           </span>
                         )}
                         {t.participantsCount && (
@@ -382,13 +383,17 @@ function AdminTournamentsPage() {
                       </div>
 
                       {/* Dates */}
-                      <div className="col-span-2 text-sm font-bold text-gray-600 uppercase">
+                      <div className="w-full md:col-span-2 text-sm font-bold text-gray-600 uppercase flex md:block gap-2">
                         {t.startDate ? (
-                          <div className="flex flex-col">
+                          <div className="flex flex-row md:flex-col gap-x-2">
                             <span>{formatDateUTC(t.startDate)}</span>
                             {t.endDate && (
                               <span className="text-xs text-gray-400">
-                                to {formatDateUTC(t.endDate)}
+                                <span className="md:hidden">-</span>
+                                <span className="hidden md:inline">
+                                  to
+                                </span>{" "}
+                                {formatDateUTC(t.endDate)}
                               </span>
                             )}
                           </div>
@@ -398,7 +403,7 @@ function AdminTournamentsPage() {
                       </div>
 
                       {/* Status Badge */}
-                      <div className="col-span-2 flex justify-center">
+                      <div className="w-full md:col-span-2 flex justify-start md:justify-center">
                         <span
                           className={`text-[10px] font-black uppercase italic px-3 py-1 border-[2px] border-black whitespace-nowrap ${getStatusColor(
                             t.status || "upcoming",
@@ -408,11 +413,11 @@ function AdminTournamentsPage() {
                         </span>
                       </div>
 
-                      <div className="col-span-2 flex justify-end gap-2">
+                      <div className="w-full md:col-span-2 flex justify-start md:justify-end gap-2 mt-2 md:mt-0 flex-wrap">
                         <Link
                           to="/admin/tournaments/$tournamentId/matches"
                           params={{ tournamentId: String(t.id) }}
-                          className="bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Match Scheduler"
                         >
                           <Calendar className="w-4 h-4" strokeWidth={2.5} />
@@ -421,28 +426,28 @@ function AdminTournamentsPage() {
                           onClick={() =>
                             handleDuplicate({ id: t.id, name: t.name })
                           }
-                          className="bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#ccff00] hover:text-black text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Duplicate"
                         >
                           <Copy className="w-4 h-4" strokeWidth={2.5} />
                         </button>
                         <button
                           onClick={() => handleEdit(t)}
-                          className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Edit"
                         >
                           <Edit2 className="w-4 h-4" strokeWidth={2.5} />
                         </button>
                         <button
                           onClick={() => handleDelete(t.id, t.name)}
-                          className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" strokeWidth={2.5} />
                         </button>
                       </div>
                       {formData.logoUrl.startsWith("data:") && (
-                        <p className="text-[10px] font-bold text-red-500 mt-1 uppercase italic">
+                        <p className="text-[10px] font-bold text-red-500 mt-1 uppercase italic w-full">
                           ⚠️ Esta logo está em Base64. Salve para converter para
                           R2 ou use a{" "}
                           <Link

@@ -352,7 +352,7 @@ function TeamDetailsPage() {
                         to="/"
                         className="bg-[#ffc700] hover:bg-[#e6b200] text-black border-[3px] border-black py-3 font-black text-sm uppercase shadow-[2px_2px_0_0_#000] block text-center w-full"
                       >
-                        {isLive ? "🔴 Assistir Ao Vivo" : "Fazer Aposta"}
+                        {isLive ? "🔴 Acompanhar" : "Fazer Aposta"}
                       </Link>
                     </div>
 
@@ -530,7 +530,7 @@ function TeamDetailsPage() {
                           to="/"
                           className="bg-[#ffc700] hover:bg-[#e6b200] text-black border-[3px] border-black px-4 py-2 font-black text-xs uppercase shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:-translate-y-0.5 transition-all block text-center"
                         >
-                          {isLive ? "Assistir" : "Apostar"}
+                          {isLive ? "Acompanhar" : "Apostar"}
                         </Link>
                       </div>
                     </div>

@@ -857,10 +857,29 @@ function ReviewScreen({
                   (b) => b.matchId === match.id,
                 );
 
+                const showResult =
+                  match.status === "live" || match.status === "finished";
+                const isEditingScore = editingScoreMatchId === match.id;
+
+                // Check if predicted team is not in the current match (bracket projection changed)
+                const predictedTeamNotInMatch =
+                  (betData?.predictedWinnerId || prediction?.winnerId) &&
+                  match.teamA?.id &&
+                  match.teamB?.id &&
+                  ![match.teamA.id, match.teamB.id].includes(
+                    betData?.predictedWinnerId || prediction?.winnerId || 0,
+                  );
+
+                // If predicted team is not in the match, reset effective prediction
+                // unless the match is already live/finished
+                const isInvalidPrediction =
+                  predictedTeamNotInMatch && !showResult;
+
                 // Use betData as source of truth when available (readonly mode)
                 // BUT only if the match has a valid winnerId (data integrity check)
-                const effectivePrediction =
-                  betData && match.winnerId !== null
+                const effectivePrediction = isInvalidPrediction
+                  ? undefined
+                  : betData && match.winnerId !== null
                     ? {
                         winnerId: betData.predictedWinnerId,
                         score: `${betData.predictedScoreA}-${betData.predictedScoreB}`,
@@ -868,23 +887,14 @@ function ReviewScreen({
                     : prediction;
 
                 const isWinnerA =
-                  effectivePrediction?.winnerId === match.teamA.id;
+                  effectivePrediction?.winnerId === match.teamA?.id;
                 const isWinnerB =
-                  effectivePrediction?.winnerId === match.teamB.id;
-                const isEditingScore = editingScoreMatchId === match.id;
-                const showResult =
-                  match.status === "live" || match.status === "finished";
-                const isActualWinnerA =
-                  showResult && match.winnerId === match.teamA.id;
-                const isActualWinnerB =
-                  showResult && match.winnerId === match.teamB.id;
+                  effectivePrediction?.winnerId === match.teamB?.id;
 
-                // Check if predicted team is not in the current match (bracket projection changed)
-                const predictedTeamNotInMatch =
-                  betData?.predictedWinnerId &&
-                  ![match.teamA.id, match.teamB.id].includes(
-                    betData.predictedWinnerId,
-                  );
+                const isActualWinnerA =
+                  showResult && match.winnerId === match.teamA?.id;
+                const isActualWinnerB =
+                  showResult && match.winnerId === match.teamB?.id;
 
                 const matchActiveColor =
                   isActualWinnerA || (!showResult && isWinnerA)
@@ -970,7 +980,14 @@ function ReviewScreen({
                     </div>
 
                     {/* Match Body - Responsive Design */}
-                    <div className="relative min-h-[140px] md:min-h-[112px] h-auto flex flex-col md:flex-row overflow-visible group">
+                    <div
+                      className={clsx(
+                        "relative h-auto flex flex-col md:flex-row overflow-visible group",
+                        showResult || isEditingScore
+                          ? "min-h-[120px] md:min-h-[112px]"
+                          : "min-h-[140px] md:min-h-[112px]",
+                      )}
+                    >
                       {/* Perfect Pick Overlay Effect */}
                       {betData?.isPerfectPick && match.winnerId !== null && (
                         <>
@@ -1035,15 +1052,6 @@ function ReviewScreen({
                             </div>
                           </>
                         )}
-                      {/* VS Divider Badge - Centered for both layouts */}
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
-                        <div className="bg-white border-[3px] border-black rotate-[8deg] px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
-                          <span className="font-display font-black text-black text-[10px] md:text-xs italic">
-                            VS
-                          </span>
-                        </div>
-                      </div>
-
                       {/* Team A Side */}
                       <div
                         onClick={() => {
@@ -1051,7 +1059,10 @@ function ReviewScreen({
                             onUpdatePrediction(match.id, match.teamA.id);
                         }}
                         className={clsx(
-                          "flex-1 min-w-0 flex items-center px-4 py-4 md:pr-14 md:pl-6 md:py-4 relative transition-all duration-300 border-b-2 md:border-b-0 md:border-r-2 border-black/10 hover:z-20",
+                          "flex-1 min-w-0 flex items-center justify-start px-4 md:pr-14 md:pl-6 md:py-4 relative transition-all duration-300 border-b-2 md:border-b-0 md:border-r-2 border-black/10 hover:z-20",
+                          showResult || isEditingScore
+                            ? "pt-3 pb-7 md:py-4"
+                            : "pt-6 pb-6 md:py-4",
                           !showResult && !isReadOnly
                             ? "cursor-pointer"
                             : "cursor-default",
@@ -1075,7 +1086,7 @@ function ReviewScreen({
                             )}
                           </>
                         )}
-                        <div className="flex items-center gap-3 md:gap-4 relative z-10 w-full overflow-hidden">
+                        <div className="flex items-center justify-start gap-3 md:gap-4 relative z-10 w-full overflow-hidden">
                           <div
                             className={clsx(
                               "w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
@@ -1092,7 +1103,7 @@ function ReviewScreen({
                           </div>
                           <span
                             className={clsx(
-                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 truncate px-1 flex-1",
+                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 truncate px-1 md:flex-1",
                               isActualWinnerA
                                 ? "text-black"
                                 : isWinnerA
@@ -1114,7 +1125,10 @@ function ReviewScreen({
                             onUpdatePrediction(match.id, match.teamB.id);
                         }}
                         className={clsx(
-                          "flex-1 min-w-0 flex items-center justify-start md:justify-end px-4 py-4 md:pl-14 md:pr-6 md:py-4 relative transition-all duration-300 md:border-l-2 border-black/10 hover:z-20",
+                          "flex-1 min-w-0 flex items-center justify-start md:justify-end px-4 md:pl-14 md:pr-6 md:py-4 relative transition-all duration-300 md:border-l-2 border-black/10 hover:z-20",
+                          showResult || isEditingScore
+                            ? "pt-7 pb-3 md:py-4"
+                            : "pt-6 pb-6 md:py-4",
                           !showResult && !isReadOnly
                             ? "cursor-pointer"
                             : "cursor-default",
@@ -1138,21 +1152,7 @@ function ReviewScreen({
                             )}
                           </>
                         )}
-                        <div className="flex items-center gap-3 md:gap-4 justify-start md:justify-end relative z-10 w-full overflow-hidden flex-row-reverse md:flex-row">
-                          <span
-                            className={clsx(
-                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 text-left md:text-right truncate px-1 flex-1",
-                              isActualWinnerB
-                                ? "text-black"
-                                : isWinnerB
-                                  ? "text-white"
-                                  : showResult
-                                    ? "text-zinc-500"
-                                    : "text-zinc-400",
-                            )}
-                          >
-                            {match.teamB.name}
-                          </span>
+                        <div className="flex items-center gap-3 md:gap-4 justify-start md:justify-end relative z-10 w-full overflow-hidden flex-row md:flex-row">
                           <div
                             className={clsx(
                               "w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full p-2 backdrop-blur-sm border-2 transition-all",
@@ -1167,6 +1167,20 @@ function ReviewScreen({
                               alt=""
                             />
                           </div>
+                          <span
+                            className={clsx(
+                              "font-display font-black uppercase italic text-lg md:text-2xl tracking-tighter leading-none md:leading-tight transform -skew-x-6 text-left md:text-right truncate px-1 md:flex-1",
+                              isActualWinnerB
+                                ? "text-black"
+                                : isWinnerB
+                                  ? "text-white"
+                                  : showResult
+                                    ? "text-zinc-500"
+                                    : "text-zinc-400",
+                            )}
+                          >
+                            {match.teamB.name}
+                          </span>
                         </div>
                       </div>
 
@@ -1180,7 +1194,14 @@ function ReviewScreen({
                       )}
 
                       {/* Predicted Score Overlay / Selector */}
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-30">
+                      <div
+                        className={clsx(
+                          "absolute left-1/2 -translate-x-1/2 z-30 transition-all duration-300",
+                          showResult || isEditingScore
+                            ? "top-1/2 -translate-y-1/2 md:top-auto md:translate-y-0 md:-bottom-2"
+                            : "-bottom-2",
+                        )}
+                      >
                         {isEditingScore ? (
                           <div className="flex gap-1 bg-white border-[3px] border-black p-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 animate-in zoom-in-95 duration-200">
                             {scoreOptions.map((opt) => (
@@ -1210,29 +1231,29 @@ function ReviewScreen({
                           </div>
                         ) : showResult && betData ? (
                           // Show comparison: predicted vs actual
-                          <div className="flex flex-col items-center gap-1">
-                            {/* Actual Score (Main) */}
+                          <div className="flex flex-row items-center gap-2">
+                            {/* Actual Score (Left) */}
                             <div className="border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 bg-zinc-800">
                               <span className="font-display font-black text-sm text-white italic">
                                 {displayScore}
                               </span>
                             </div>
-                            {/* Predicted Score (Below) */}
+                            {/* Predicted Score (Right) */}
                             <div
                               className={clsx(
-                                "border-[2px] border-black px-3 py-0.5 rotate-1",
+                                "border-[2px] border-black px-2 py-1 rotate-1 shadow-[2px_2px_0px_0px_#000]",
                                 betData.isPerfectPick && match.winnerId !== null
-                                  ? "bg-[#ccff00] text-black"
+                                  ? "bg-[#ccff00] text-black border-black"
                                   : betData.predictedWinnerId === match.winnerId
                                     ? "bg-green-100 text-green-700"
                                     : "bg-red-100 text-red-600",
                               )}
                             >
-                              <div className="flex items-center gap-1">
-                                <span className="text-[8px] font-bold uppercase">
-                                  Seu palpite:
+                              <div className="flex flex-col items-center leading-none">
+                                <span className="text-[6px] md:text-[7px] font-bold uppercase mb-0.5">
+                                  PALPITE
                                 </span>
-                                <span className="font-display font-black text-xs italic">
+                                <span className="font-display font-black text-[10px] md:text-sm italic">
                                   {betData.predictedScoreA}-
                                   {betData.predictedScoreB}
                                 </span>
@@ -1452,6 +1473,20 @@ function ReviewScreen({
                           </div>
                         )}
                     </div>
+
+                    {/* Orphaned Bet Warning */}
+                    {isInvalidPrediction && (
+                      <div className="absolute inset-x-0 -bottom-8 flex justify-center z-50">
+                        <div className="bg-brawl-red border-2 border-black px-3 py-1 shadow-[4px_4px_0px_0px_#000] rotate-1 animate-pulse">
+                          <span className="text-[9px] font-black text-white italic uppercase flex items-center gap-1.5 leading-none">
+                            <span className="material-symbols-outlined text-xs">
+                              warning
+                            </span>
+                            Pick required: Bracket changed!
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1852,23 +1887,32 @@ function Home() {
       (md: any) => md.id === selectedMatchDayId,
     );
 
-    // If match day is draft, locked or finished, it's read-only (can't place new bets)
+    // Draft or finished = always read only
     if (
       selectedMatchDay?.status === "draft" ||
-      selectedMatchDay?.status === "locked" ||
       selectedMatchDay?.status === "finished"
     ) {
       return true;
     }
 
-    // Check if user has bets specifically for the selected match day
-    const matchIdsInSelectedDay = allCarouselMatches
-      .filter((m: any) => m.matchDayId === selectedMatchDayId)
-      .map((m: any) => m.id);
+    // Open status: Read only if user HAS bets (strict lock)
+    if (selectedMatchDay?.status === "open") {
+      const matchIdsInSelectedDay = allCarouselMatches
+        .filter((m: any) => m.matchDayId === selectedMatchDayId)
+        .map((m: any) => m.id);
 
-    return userBets.some((bet: any) =>
-      matchIdsInSelectedDay.includes(bet.matchId),
-    );
+      return userBets.some((bet: any) =>
+        matchIdsInSelectedDay.includes(bet.matchId),
+      );
+    }
+
+    // Locked status: Read only is FALSE (Recovery Mode)
+    // Individual matches will still be locked if they are live/finished
+    if (selectedMatchDay?.status === "locked") {
+      return false;
+    }
+
+    return false;
   }, [userBets, selectedMatchDayId, allCarouselMatches, matchDays]);
 
   // Shared state for predictions
@@ -1942,6 +1986,22 @@ function Home() {
         } catch (e) {
           console.error("Failed to load predictions", e);
         }
+      } else if (selectedMatchDay?.status === "locked") {
+        // Recovery Mode: Pre-fill with existing server bets if no local draft exists
+        const initial: Record<number, Prediction> = {};
+        userBets.forEach((bet: any) => {
+          // Only include bets for the current match day matches
+          const isForCurrentDay = allCarouselMatches.some(
+            (m) => m.id === bet.matchId && m.matchDayId === selectedMatchDayId,
+          );
+          if (isForCurrentDay) {
+            initial[bet.matchId] = {
+              winnerId: bet.predictedWinnerId ?? 0,
+              score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
+            };
+          }
+        });
+        setPredictions(initial);
       }
     }
   }, [
@@ -1951,6 +2011,8 @@ function Home() {
     selectedTournamentId,
     userId,
     selectedMatchDayId,
+    selectedMatchDay,
+    allCarouselMatches,
   ]);
 
   // Persistence: Save to localStorage when change (ONLY if not read-only)
@@ -2196,18 +2258,19 @@ function Home() {
               </div>
             )}
             {selectedMatchDay.status === "locked" && (
-              <div className="bg-yellow-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top-4 duration-300">
+              <div className="bg-purple-500 border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 mb-4 animate-in slide-in-from-top-4 duration-300">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-2xl text-black flex-shrink-0">
-                    lock
+                  <span className="material-symbols-outlined text-2xl text-white flex-shrink-0">
+                    medical_services
                   </span>
                   <div className="flex-1">
-                    <h3 className="font-black text-black text-sm uppercase">
-                      {selectedMatchDay.label} Fechado
+                    <h3 className="font-black text-white text-sm uppercase">
+                      Modo Recuperação Ativo
                     </h3>
-                    <p className="text-xs text-black/80 mt-1">
-                      As apostas para este match day estão fechadas. As partidas
-                      estão em andamento ou prestes a começar.
+                    <p className="text-xs text-purple-100 mt-1">
+                      O match day está fechado, mas você ainda pode apostar nas
+                      partidas que não começaram! Salve seus palpites para
+                      recuperar pontos.
                     </p>
                   </div>
                 </div>

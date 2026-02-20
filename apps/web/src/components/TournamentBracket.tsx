@@ -23,6 +23,8 @@ export function TournamentBracket({
   onRemovePrediction,
   onReview,
   isReadOnly = false,
+  className,
+  hideHeader = false,
 }: {
   matches: Match[];
   predictions: Record<number, Prediction>;
@@ -34,6 +36,8 @@ export function TournamentBracket({
   onRemovePrediction?: (matchId: number) => void;
   onReview?: () => void;
   isReadOnly?: boolean;
+  className?: string;
+  hideHeader?: boolean;
 }) {
   // Logic to project matches based on predictions
   const projectedMatches = useMemo(() => {
@@ -253,7 +257,12 @@ export function TournamentBracket({
   const showReviewButton = onReview && hasPredictions && allBetsComplete;
 
   return (
-    <div className="bg-paper bg-paper-texture min-h-screen w-full p-6 overflow-x-auto font-body flex flex-col items-center">
+    <div
+      className={
+        className ||
+        "bg-paper bg-paper-texture min-h-screen w-full p-6 overflow-x-auto font-body flex flex-col items-center"
+      }
+    >
       {/* Review Button - Fixed at bottom right */}
       {showReviewButton && (
         <div className="fixed bottom-24 right-6 z-[70]">
@@ -274,16 +283,18 @@ export function TournamentBracket({
       )}
 
       {/* Header Container */}
-      <div className="mb-10 text-center w-full">
-        <div className="inline-block relative">
-          <div className="absolute inset-0 bg-[#ccff00] transform skew-x-[-12deg] translate-x-2 translate-y-2 border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
-          <div className="relative bg-black text-white px-8 py-2 transform skew-x-[-12deg] border-2 border-transparent">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter transform skew-x-[12deg]">
-              COMPETITIVE <span className="text-[#ccff00]">BRACKETS</span>
-            </h2>
+      {!hideHeader && (
+        <div className="mb-10 text-center w-full">
+          <div className="inline-block relative">
+            <div className="absolute inset-0 bg-[#ccff00] transform skew-x-[-12deg] translate-x-2 translate-y-2 border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+            <div className="relative bg-black text-white px-8 py-2 transform skew-x-[-12deg] border-2 border-transparent">
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter transform skew-x-[12deg]">
+                COMPETITIVE <span className="text-[#ccff00]">BRACKETS</span>
+              </h2>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="w-full flex flex-col gap-20 max-w-7xl mx-auto">
         {/* Groups Section */}
@@ -357,13 +368,15 @@ export function TournamentBracket({
         {/* Elimination Section */}
         {hasElimination && (
           <div className="flex flex-col gap-8 items-center">
-            <div className="flex items-center gap-4 w-full">
-              <div className="h-0.5 bg-black flex-grow" />
-              <h3 className="text-xl font-black italic uppercase text-black bg-[#ccff00] px-4 py-1 border-2 border-black transform -skew-x-12">
-                Playoff Bracket
-              </h3>
-              <div className="h-0.5 bg-black flex-grow" />
-            </div>
+            {!hideHeader && (
+              <div className="flex items-center gap-4 w-full">
+                <div className="h-0.5 bg-black flex-grow" />
+                <h3 className="text-xl font-black italic uppercase text-black bg-[#ccff00] px-4 py-1 border-2 border-black transform -skew-x-12">
+                  Playoff Bracket
+                </h3>
+                <div className="h-0.5 bg-black flex-grow" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-12 overflow-x-auto w-full pb-10 scrollbar-hide">
               {/* UPPER BRACKET */}
@@ -375,8 +388,10 @@ export function TournamentBracket({
                         key={`upper-${roundIdx}`}
                         className="flex flex-col gap-2 w-72 shrink-0"
                       >
-                        <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
-                          {getRoundTitle("upper", roundIdx)}
+                        <div className="flex justify-center mb-1">
+                          <span className="bg-black text-[#ccff00] text-[10px] font-black italic uppercase px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transform -skew-x-12">
+                            {getRoundTitle("upper", roundIdx)}
+                          </span>
                         </div>
                         <div className="flex flex-col gap-4 justify-around h-full">
                           {(upperBracket[roundIdx] || []).map((match) => (
@@ -396,8 +411,10 @@ export function TournamentBracket({
                     {/* GRAND FINAL */}
                     {grandFinal.length > 0 && (
                       <div className="flex flex-col gap-2 w-72 shrink-0">
-                        <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider h-4">
-                          GRAND FINAL
+                        <div className="flex justify-center mb-1">
+                          <span className="bg-black text-[#ccff00] text-[10px] font-black italic uppercase px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transform -skew-x-12">
+                            GRAND FINAL
+                          </span>
                         </div>
                         <div className="flex flex-col gap-4 justify-around h-full">
                           {grandFinal.map((match) => (
@@ -431,8 +448,10 @@ export function TournamentBracket({
                         key={`lower-${roundIdx}`}
                         className="flex flex-col gap-2 w-72 shrink-0"
                       >
-                        <div className="text-center text-[9px] font-bold uppercase text-gray-500 tracking-wider">
-                          {getRoundTitle("lower", roundIdx)}
+                        <div className="flex justify-center mb-1">
+                          <span className="bg-white text-black text-[10px] font-black italic uppercase px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transform -skew-x-12">
+                            {getRoundTitle("lower", roundIdx)}
+                          </span>
                         </div>
                         <div className="flex flex-col gap-4 justify-around">
                           {(lowerBracket[roundIdx] || []).map((match) => (

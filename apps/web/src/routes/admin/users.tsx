@@ -187,14 +187,14 @@ function AdminUsersPage() {
   useSetHeader({
     title: "USERS",
     actions: (
-      <div className="flex items-center gap-4">
-        <div className="relative">
+      <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="relative w-full sm:w-auto">
           <input
             type="text"
             placeholder="SEARCH USERS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+            className="border-[3px] border-black px-4 py-2 w-full sm:w-96 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
           />
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
@@ -215,9 +215,9 @@ function AdminUsersPage() {
       <div className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
           <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
+            <div className="min-w-full md:min-w-[800px]">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
                 <div className="col-span-4">User Identity</div>
                 <div className="col-span-4">Contact</div>
                 <div className="col-span-2 text-center">Role</div>
@@ -227,7 +227,7 @@ function AdminUsersPage() {
               {/* List Rows */}
               {filteredUsers.length === 0 ? (
                 <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center border-[3px] border-black border-dashed">
+                  <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center border-[3px] border-black border-dashed">
                     <User className="w-8 h-8 text-gray-400" />
                   </div>
                   <span className="font-black text-gray-400 uppercase italic text-lg">
@@ -235,54 +235,43 @@ function AdminUsersPage() {
                   </span>
                 </div>
               ) : (
-                <div>
+                <div className="divide-y-[3px] divide-black">
                   {filteredUsers.map((u, index) => (
                     <div
                       key={u.id}
                       className={clsx(
-                        "grid grid-cols-12 gap-4 px-6 py-4 items-center border-b-[3px] last:border-0 border-black transition-colors bg-white hover:bg-[#ccff00]/10",
-                        index % 2 !== 0 && "bg-[#f4f4f5]",
+                        "flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center transition-colors hover:bg-[#ccff00]/10",
+                        index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]",
                       )}
                     >
                       {/* User Info */}
-                      <div className="col-span-4 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 border-[3px] border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform flex-shrink-0">
+                      <div className="w-full md:col-span-4 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-md bg-gray-200 border-[3px] border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform flex-shrink-0">
                           {u.image ? (
                             <img
                               src={u.image}
-                              alt={u.name || "User"}
+                              alt={u.nickname || "User"}
                               className="w-full h-full object-cover"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic">
-                              {u.name?.[0]?.toUpperCase() || "?"}
+                              {u.nickname?.[0]?.toUpperCase() || "?"}
                             </div>
                           )}
                         </div>
                         <div>
-                          {/* Nickname Priority */}
-                          {u.nickname ? (
-                            <>
-                              <h3 className="font-black text-lg text-black uppercase italic leading-none text-[#2e5cff]">
-                                {u.nickname}
-                              </h3>
-                              <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
-                                {u.name}
-                              </span>
-                            </>
-                          ) : (
-                            <h3 className="font-black text-lg text-black uppercase italic leading-none">
-                              {u.name || "Unknown"}
-                            </h3>
-                          )}
+                          <h3 className="font-black text-lg text-black uppercase italic leading-none text-[#2e5cff]">
+                            {u.nickname || "No Nickname"}
+                          </h3>
+                          {/* Removed Google Name Display for Privacy */}
                         </div>
                       </div>
 
                       {/* Contact */}
-                      <div className="col-span-4 flex flex-col justify-center">
-                        <span className="text-sm font-bold text-gray-700 font-mono flex items-center gap-2">
+                      <div className="w-full md:col-span-4 flex flex-col justify-center">
+                        <span className="text-sm font-bold text-gray-700 font-mono flex items-center gap-2 break-all">
                           {u.email}
-                          <Copy className="w-3 h-3 text-gray-300 hover:text-black cursor-pointer" />
+                          <Copy className="w-3 h-3 text-gray-300 hover:text-black cursor-pointer shrink-0" />
                         </span>
                         <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
                           ID: {u.id.slice(0, 8)}...
@@ -290,7 +279,7 @@ function AdminUsersPage() {
                       </div>
 
                       {/* Role Badge */}
-                      <div className="col-span-2 flex justify-center">
+                      <div className="w-full md:col-span-2 flex justify-start md:justify-center">
                         <button
                           onClick={() => initiateRoleToggle(u)}
                           className={clsx(
@@ -306,17 +295,17 @@ function AdminUsersPage() {
                       </div>
 
                       {/* Actions */}
-                      <div className="col-span-2 flex justify-end gap-2">
+                      <div className="w-full md:col-span-2 flex justify-start md:justify-end gap-2 mt-2 md:mt-0">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Edit Details"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => initiateDelete(u)}
-                          className="bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                           title="Delete User"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -360,8 +349,8 @@ function AdminUsersPage() {
                   placeholder="Enter custom nickname..."
                   className="w-full border-[3px] border-black p-3 font-bold focus:outline-none focus:ring-4 focus:ring-[#ccff00] shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] text-black"
                 />
-                <p className="text-[10px] text-gray-500 font-mono mt-1">
-                  Real Name: {editingUser?.name}
+                <p className="text-xl font-black italic uppercase text-black mb-6">
+                  {editingUser?.nickname || "User"}
                 </p>
               </div>
 
@@ -373,7 +362,7 @@ function AdminUsersPage() {
 
                 {/* Image Preview */}
                 <div className="flex justify-center mb-4">
-                  <div className="w-24 h-24 rounded-full bg-gray-100 border-[3px] border-black overflow-hidden shadow-sm relative group">
+                  <div className="w-24 h-24 rounded-md bg-gray-100 border-[3px] border-black overflow-hidden shadow-sm relative group">
                     {imageInput ? (
                       <img
                         src={imageInput}
@@ -483,7 +472,7 @@ function AdminUsersPage() {
 
             {/* Content */}
             <div className="p-6 text-center">
-              <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
+              <div className="w-20 h-20 mx-auto rounded-md bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
                 {roleTargetUser.image ? (
                   <img
                     src={roleTargetUser.image}
@@ -506,7 +495,7 @@ function AdminUsersPage() {
                   : "GRANT Admin power to"}
               </p>
               <p className="text-xl font-black italic uppercase text-black mb-6">
-                {roleTargetUser.nickname || roleTargetUser.name}
+                {roleTargetUser.nickname || "User"}
               </p>
 
               <div className="flex flex-col gap-3">
@@ -558,7 +547,7 @@ function AdminUsersPage() {
 
             {/* Content */}
             <div className="p-6 text-center">
-              <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
+              <div className="w-20 h-20 mx-auto rounded-md bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
                 {deleteTargetUser.image ? (
                   <img
                     src={deleteTargetUser.image}
@@ -578,7 +567,7 @@ function AdminUsersPage() {
                 Are you sure you want to permanently delete
               </p>
               <p className="text-xl font-black italic uppercase text-black mb-2">
-                {deleteTargetUser.nickname || deleteTargetUser.name}
+                {deleteTargetUser.nickname || "User"}
               </p>
               <p className="text-sm text-gray-600 mb-6 bg-yellow-50 border-2 border-yellow-300 p-3 rounded">
                 ⚠️ This action cannot be undone. All user data will be

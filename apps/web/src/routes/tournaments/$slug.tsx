@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { GSLResultView } from "@/components/GSLResultView";
-import { MatchCard as BracketMatchCard } from "@/components/bracket/MatchCard";
+import { TournamentBracket } from "@/components/TournamentBracket";
 import { getIntermediateColor } from "@/lib/color-extractor";
 
 export const Route = createFileRoute("/tournaments/$slug")({
@@ -195,7 +195,7 @@ function TournamentDetailsPage() {
             const op2 = openingMatches[1];
 
             const getOutcome = (m: any) => {
-              const bet = userBets.find((b) => b.matchId === m.id);
+              const bet = userBets.find((b: any) => b.matchId === m.id);
               const wId =
                 m.winnerId ||
                 (includePredictions && bet ? bet.predictedWinnerId : null);
@@ -255,7 +255,7 @@ function TournamentDetailsPage() {
             deciderMatch.status !== "finished"
           ) {
             const getOutcome = (m: any) => {
-              const bet = userBets.find((b) => b.matchId === m.id);
+              const bet = userBets.find((b: any) => b.matchId === m.id);
               const wId =
                 m.winnerId ||
                 (includePredictions && bet ? bet.predictedWinnerId : null);
@@ -601,7 +601,7 @@ function TournamentDetailsPage() {
                             initialBet={
                               filter === "my-bets"
                                 ? (userBets.find(
-                                    (b) => b.matchId === match.id,
+                                    (b: any) => b.matchId === match.id,
                                   ) as any)
                                 : undefined
                             }
@@ -623,63 +623,37 @@ function TournamentDetailsPage() {
                         <div className="h-1 bg-black/10 flex-grow rounded-full" />
                       </div>
 
-                      <div className="flex gap-12 overflow-x-auto w-full pb-10 items-stretch">
-                        {groupedMatches.otherMatchesByRound.map(
-                          ({ rIdx, matches }) => (
-                            <div key={rIdx} className="flex flex-col gap-6">
-                              <div className="text-center">
-                                <span className="text-sm font-black uppercase bg-black text-[#ccff00] px-4 py-1.5 -skew-x-12 inline-block shadow-sm">
-                                  {groupedMatches.roundNames[rIdx]}
-                                </span>
-                              </div>
-                              <div className="flex flex-col gap-8 justify-around h-full min-w-max px-4">
-                                {matches.map((match) => (
-                                  <div key={match.id} className="w-72">
-                                    <BracketMatchCard
-                                      match={{
-                                        ...match,
-                                        teamA: match.teamA || {
-                                          id: 0,
-                                          name: match.labelTeamA || "TBD",
-                                          color: "blue",
-                                        },
-                                        teamB: match.teamB || {
-                                          id: 0,
-                                          name: match.labelTeamB || "TBD",
-                                          color: "red",
-                                        },
-                                      }}
-                                      prediction={
-                                        filter === "my-bets"
-                                          ? (() => {
-                                              const bet = userBets.find(
-                                                (b) => b.matchId === match.id,
-                                              );
-                                              if (!bet) return undefined;
-                                              return {
-                                                winnerId:
-                                                  bet.predictedWinnerId ?? 0,
-                                                score: `${bet.predictedScoreA} - ${bet.predictedScoreB}`,
-                                                pointsEarned:
-                                                  bet.pointsEarned ?? 0,
-                                                isCorrect:
-                                                  match.winnerId ===
-                                                  bet.predictedWinnerId,
-                                                isUnderdogPick:
-                                                  bet.isUnderdogPick ?? false,
-                                              };
-                                            })()
-                                          : undefined
-                                      }
-                                      onUpdatePrediction={() => {}}
-                                      isReadOnly={true}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ),
-                        )}
+                      <div className="w-full overflow-x-auto pb-6">
+                        <TournamentBracket
+                          className="w-full flex flex-col items-center min-w-max"
+                          hideHeader={true}
+                          matches={filteredMatches.filter(
+                            (m: any) =>
+                              m.bracketSide !== "groups" &&
+                              !m.label?.includes("Group"),
+                          )}
+                          predictions={
+                            filter === "my-bets"
+                              ? userBets.reduce(
+                                  (acc: any, bet: any) => {
+                                    acc[bet.matchId] = {
+                                      winnerId: bet.predictedWinnerId,
+                                      score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
+                                      pointsEarned: bet.pointsEarned,
+                                      isCorrect:
+                                        bet.match?.winnerId ===
+                                        bet.predictedWinnerId,
+                                      isUnderdogPick: bet.isUnderdogPick,
+                                    };
+                                    return acc;
+                                  },
+                                  {} as Record<number, any>,
+                                )
+                              : {}
+                          }
+                          onUpdatePrediction={() => {}}
+                          isReadOnly={true}
+                        />
                       </div>
                     </div>
                   )}
@@ -712,7 +686,7 @@ function TournamentDetailsPage() {
                           teamB: match.teamB as any,
                         }}
                         initialBet={userBets.find(
-                          (b) => b.matchId === match.id,
+                          (b: any) => b.matchId === match.id,
                         )}
                         showPredictionScore={false}
                       />

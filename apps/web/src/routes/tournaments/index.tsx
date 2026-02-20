@@ -262,7 +262,7 @@ function TournamentCard({
                 params={{ slug: tournament.slug }}
                 className="w-full bg-brawl-red text-white font-black italic uppercase py-3 border-4 border-black rounded-lg shadow-comic hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-comic-hover transition-all flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                ASSISTIR AGORA
+                ACOMPANHAR
               </Link>
             ) : isFinished ? (
               <Link

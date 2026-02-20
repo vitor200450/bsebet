@@ -33,7 +33,7 @@ export default function UserMenu({
     enabled: !!session?.user?.id,
   });
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ["myProfile"],
     queryFn: () => getMyProfile(),
     enabled: !!session?.user?.id,
@@ -47,7 +47,7 @@ export default function UserMenu({
     setMounted(true);
   }, []);
 
-  if (!mounted || isPending) {
+  if (!mounted || isPending || (session && isProfileLoading)) {
     return (
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-end gap-1.5">

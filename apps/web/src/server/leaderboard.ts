@@ -82,22 +82,24 @@ const getLeaderboardTournamentsFn = createServerFn({
       status: tournaments.status,
     })
     .from(tournaments)
+    .innerJoin(matches, eq(tournaments.id, matches.tournamentId))
+    .innerJoin(bets, eq(matches.id, bets.matchId))
+    .innerJoin(user, eq(bets.userId, user.id))
     .where(
-      or(
-        eq(tournaments.status, "active"),
-        eq(tournaments.status, "finished"),
-      ),
+      or(eq(tournaments.status, "active"), eq(tournaments.status, "finished")),
     )
+    .groupBy(tournaments.id, tournaments.createdAt)
     .orderBy(desc(tournaments.createdAt));
   return result;
 });
 
-export const getLeaderboardTournaments = getLeaderboardTournamentsFn as unknown as () => Promise<
-  {
-    id: number;
-    name: string;
-    slug: string;
-    logoUrl: string | null;
-    status: "active" | "finished";
-  }[]
->;
+export const getLeaderboardTournaments =
+  getLeaderboardTournamentsFn as unknown as () => Promise<
+    {
+      id: number;
+      name: string;
+      slug: string;
+      logoUrl: string | null;
+      status: "active" | "finished";
+    }[]
+  >;

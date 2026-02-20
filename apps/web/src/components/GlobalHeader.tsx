@@ -273,7 +273,7 @@ export function GlobalHeader() {
               : "border-black/5 bg-gray-50",
           )}
         >
-          <div className="max-w-[1600px] mx-auto px-4 md:px-6 min-h-[50px] md:h-[68px] flex flex-wrap items-center justify-between gap-x-4 gap-y-3 py-2 md:py-0">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-6 min-h-[50px] md:h-[68px] flex flex-wrap items-center justify-between gap-x-4 gap-y-3 py-4 md:py-0">
             {/* Admin Navigation Tabs */}
             <div className="flex items-center gap-2 md:gap-3">
               {[
@@ -302,31 +302,31 @@ export function GlobalHeader() {
               })}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-4 flex-1 justify-end">
+            {/* Actions & Exit Button Wrapper */}
+            <div className="flex items-start md:items-center gap-4 w-full md:w-auto md:flex-1 justify-end">
               {config?.actions}
-            </div>
 
-            {isAdmin && (
-              <Link
-                to="/"
-                className={clsx(
-                  "flex items-center gap-2 px-3 py-1.5 md:px-5 md:py-2 font-black italic uppercase text-[10px] md:text-xs tracking-wider border-[2px] md:border-[3px] border-black transition-all shadow-comic transform -skew-x-12 group hover:shadow-comic-hover active:shadow-none active:translate-x-[2px] active:translate-y-[2px] shrink-0",
-                  variant === "dark"
-                    ? "bg-white text-black border-white shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]"
-                    : "bg-[#ccff00] text-black border-black",
-                )}
-              >
-                <LogOut
-                  size={14}
-                  strokeWidth={3}
-                  className="transform skew-x-12"
-                />
-                <span className="transform skew-x-12 whitespace-nowrap hidden md:inline">
-                  Sair Admin
-                </span>
-              </Link>
-            )}
+              {isAdmin && (
+                <Link
+                  to="/"
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-1.5 md:px-5 md:py-2 font-black italic uppercase text-[10px] md:text-xs tracking-wider border-[2px] md:border-[3px] border-black transition-all shadow-comic transform -skew-x-12 group hover:shadow-comic-hover active:shadow-none active:translate-x-[2px] active:translate-y-[2px] shrink-0",
+                    variant === "dark"
+                      ? "bg-white text-black border-white shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]"
+                      : "bg-[#ccff00] text-black border-black",
+                  )}
+                >
+                  <LogOut
+                    size={14}
+                    strokeWidth={3}
+                    className="transform skew-x-12"
+                  />
+                  <span className="transform skew-x-12 whitespace-nowrap hidden md:inline">
+                    Sair Admin
+                  </span>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

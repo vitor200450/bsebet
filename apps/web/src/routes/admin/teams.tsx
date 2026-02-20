@@ -247,13 +247,13 @@ function AdminTeamsPage() {
   useSetHeader({
     title: "TEAMS",
     actions: (
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
         {/* Sorting Dropdown */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-            className="bg-white border-[3px] border-black px-4 py-2 pr-10 font-bold text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 relative min-w-[120px] text-black"
+            className="bg-white border-[3px] border-black px-4 py-2 pr-10 font-bold text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 relative w-full sm:w-auto min-w-[120px] text-black"
           >
             <span className="text-xs text-gray-400 mr-1">Sort:</span>
             {sortOrder === "recent"
@@ -291,13 +291,13 @@ function AdminTeamsPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <input
             type="text"
             placeholder="BUSCAR TIME..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-[3px] border-black px-4 py-2 w-48 lg:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+            className="border-[3px] border-black px-4 py-2 w-full sm:w-64 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
           />
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
@@ -307,10 +307,10 @@ function AdminTeamsPage() {
             setIsModalOpen(true);
             resetForm();
           }}
-          className="flex items-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
+          className="flex items-center justify-center gap-2 bg-[#ccff00] hover:bg-[#bbe000] text-black border-[3px] border-black px-6 py-2 font-black italic uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" strokeWidth={3} />
-          <span className="hidden sm:inline">NOVO TIME</span>
+          <span className="inline">NOVO TIME</span>
         </button>
       </div>
     ),
