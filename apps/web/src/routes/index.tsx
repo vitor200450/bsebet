@@ -528,22 +528,17 @@ function ReviewScreen({
             return null;
           }
 
-          const serverBet = userBets.find((b: any) => b.matchId === matchId);
+          // In recovery mode, editable matches are always re-submittable (server does upsert).
+          // We only block if there's truly no usable score at all.
           const currentPred = predictions[matchId];
-          const serverBetScore = serverBet
-            ? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
-            : "";
-          // Use resolved score (with server fallback) to detect real changes.
-          // A pre-filled empty score that resolves to the same server score counts as "no change".
-          const resolvedCurrentScore =
-            currentPred?.score?.trim() || serverBetScore;
-
-          if (
-            serverBet &&
-            currentPred?.winnerId === serverBet.predictedWinnerId &&
-            resolvedCurrentScore === serverBetScore
-          ) {
-            return null;
+          const serverBet = userBets.find((b: any) => b.matchId === matchId);
+          const resolvedScore =
+            currentPred?.score?.trim() ||
+            (serverBet
+              ? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+              : "");
+          if (!currentPred?.winnerId || !resolvedScore) {
+            return null; // Nothing to submit (no winner or no score at all)
           }
         }
 
