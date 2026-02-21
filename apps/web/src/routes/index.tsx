@@ -1639,16 +1639,16 @@ function SubmitBetsModal({
             return null;
           }
 
-          const serverBet = userBets.find((b: any) => b.matchId === matchId);
+          // In recovery mode, editable matches are always re-submittable (server does upsert).
+          // Only block if there's truly no usable winner or score.
           const currentPred = predictions[matchId];
-
-          // If has server bet and prediction matches, skip (no change)
-          if (
-            serverBet &&
-            currentPred?.winnerId === serverBet.predictedWinnerId &&
-            currentPred?.score ===
-              `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
-          ) {
+          const serverBet = userBets.find((b: any) => b.matchId === matchId);
+          const resolvedScore =
+            currentPred?.score?.trim() ||
+            (serverBet
+              ? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+              : "");
+          if (!currentPred?.winnerId || !resolvedScore) {
             return null;
           }
         }
