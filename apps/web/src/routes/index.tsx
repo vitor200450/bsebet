@@ -793,14 +793,24 @@ function ReviewScreen({
                   match.status === "live" || match.status === "finished";
                 const isEditingScore = editingScoreMatchId === match.id;
 
-                // Check if predicted team is not in the current match (bracket projection changed)
+                // A "valid local pick" means the user has already chosen a team that IS in
+                // this match — in recovery mode this clears the stale warning badges.
+                const hasValidLocalPick =
+                  !!prediction?.winnerId &&
+                  (prediction.winnerId === match.teamA?.id ||
+                    prediction.winnerId === match.teamB?.id);
+
+                // Check if predicted team is not in the current match (bracket projection changed).
+                // Only applies when there IS a prior server-side bet (betData) and the user hasn't
+                // already made a fresh valid local pick.
                 const predictedTeamNotInMatch =
-                  (betData?.predictedWinnerId || prediction?.winnerId) &&
+                  betData?.predictedWinnerId &&
                   match.teamA?.id &&
                   match.teamB?.id &&
                   ![match.teamA.id, match.teamB.id].includes(
-                    betData?.predictedWinnerId || prediction?.winnerId || 0,
-                  );
+                    betData.predictedWinnerId,
+                  ) &&
+                  !hasValidLocalPick; // Suppress once user picks a valid current team
 
                 // If predicted team is not in the match, reset effective prediction
                 // unless the match is already live/finished
@@ -810,12 +820,13 @@ function ReviewScreen({
                 // Check if this prediction is stale (depends on a wrong prediction in a previous match)
                 const isStalePrediction = stalePredictionMatchIds.has(match.id);
 
-                // Use betData as source of truth when available (readonly mode)
-                // BUT only if the match has a valid winnerId (data integrity check)
-                // For stale predictions, still allow the current prediction to show if user just selected it
-                const effectivePrediction = isInvalidPrediction
-                  ? undefined
-                  : betData && match.winnerId !== null
+                // Use betData as source of truth when available (readonly mode or match finished)
+                // BUT only if the match has a valid winnerId (data integrity check).
+                // When the predicted team is no longer in the match (isInvalidPrediction), we STILL
+                // use the local prediction state so the user can select a new team. The warning
+                // badges are shown independently via `predictedTeamNotInMatch`.
+                const effectivePrediction =
+                  betData && match.winnerId !== null
                     ? {
                         winnerId: betData.predictedWinnerId,
                         score: `${betData.predictedScoreA}-${betData.predictedScoreB}`,
@@ -838,15 +849,17 @@ function ReviewScreen({
                     : "brawl-red";
                 const displayScore = showResult
                   ? `${match.scoreA} - ${match.scoreB}`
-                  : effectivePrediction?.score || "N/A";
+                  : effectivePrediction
+                    ? effectivePrediction.score || "?-?"
+                    : "N/A";
 
                 const winsNeeded =
                   match.format === "bo5" ? 3 : match.format === "bo3" ? 2 : 4;
                 const scoreOptions = [];
                 for (let loserWins = 0; loserWins < winsNeeded; loserWins++) {
                   const label = isWinnerA
-                    ? `${winsNeeded} - ${loserWins}`
-                    : `${loserWins} - ${winsNeeded}`;
+                    ? `${winsNeeded}-${loserWins}`
+                    : `${loserWins}-${winsNeeded}`;
                   scoreOptions.push(label);
                 }
 
@@ -1016,7 +1029,13 @@ function ReviewScreen({
                             !isReadOnly &&
                             isEditableInRecovery
                           )
-                            onUpdatePrediction(match.id, match.teamA.id);
+                            // When the prior bet team is no longer in the match (isInvalidPrediction),
+                            // reset score to "" to avoid carrying over and swapping a stale score.
+                            onUpdatePrediction(
+                              match.id,
+                              match.teamA.id,
+                              isInvalidPrediction ? "" : undefined,
+                            );
                         }}
                         className={clsx(
                           "flex-1 min-w-0 flex items-center justify-start px-4 md:pr-14 md:pl-6 md:py-4 relative transition-all duration-300 border-b-2 md:border-b-0 md:border-r-2 border-black/10 hover:z-20",
@@ -1086,7 +1105,11 @@ function ReviewScreen({
                             !isReadOnly &&
                             isEditableInRecovery
                           )
-                            onUpdatePrediction(match.id, match.teamB.id);
+                            onUpdatePrediction(
+                              match.id,
+                              match.teamB.id,
+                              isInvalidPrediction ? "" : undefined,
+                            );
                         }}
                         className={clsx(
                           "flex-1 min-w-0 flex items-center justify-start md:justify-end px-4 md:pl-14 md:pr-6 md:py-4 relative transition-all duration-300 md:border-l-2 border-black/10 hover:z-20",
@@ -1688,7 +1711,17 @@ function SubmitBetsModal({
             }
           }
 
-          const [scoreA, scoreB] = pred.score
+          // Use local score if available; fall back to server bet score if exists.
+          const serverBetForScore = userBets.find(
+            (b: any) => b.matchId === matchId,
+          );
+          const resolvedScore =
+            pred.score?.trim() ||
+            (serverBetForScore
+              ? `${serverBetForScore.predictedScoreA}-${serverBetForScore.predictedScoreB}`
+              : "");
+
+          const [scoreA, scoreB] = resolvedScore
             .split("-")
             .map((s) => parseInt(s.trim()));
 
@@ -1940,7 +1973,6 @@ function Home() {
       }
     }
   }, [tournaments]);
-
 
   // Auto-select if slug provided in URL via dashboard or if only 1 tournament
   useEffect(() => {
@@ -2382,9 +2414,7 @@ function Home() {
       editableRecoveryMatchIds.size === 0 &&
       !isLoadingTournament
     ) {
-      setRecoveryToast((prev) =>
-        prev ? { ...prev, show: false } : prev,
-      );
+      setRecoveryToast((prev) => (prev ? { ...prev, show: false } : prev));
     }
   }, [
     recoveryToast?.show,
@@ -2463,36 +2493,26 @@ function Home() {
           console.error("Failed to load predictions", e);
         }
       } else if (selectedMatchDay?.status === "locked") {
-        // Recovery Mode: Pre-fill with existing server bets if no local draft exists
+        // Recovery Mode: Pre-fill with existing server bets if no local draft exists.
+        // Only pre-fill winnerId (NOT score) so that hasValidBetsToSubmit always detects a
+        // difference vs the server bet (empty score vs saved score), keeping the submit button active.
+        // The score is filled by the user or resolved via server bet fallback in handleSubmit.
         const initial: Record<number, Prediction> = {};
         userBets.forEach((bet: any) => {
-          // Only include bets for the current match day matches
-          const isForCurrentDay = allCarouselMatches.some(
-            (m) => m.id === bet.matchId && m.matchDayId === selectedMatchDayId,
-          );
-          if (isForCurrentDay) {
-            initial[bet.matchId] = {
-              winnerId: bet.predictedWinnerId ?? 0,
-              score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
-            };
-          }
+          initial[bet.matchId] = {
+            winnerId: bet.predictedWinnerId ?? 0,
+            score: "", // intentionally empty — avoid false "no change" detection
+          };
         });
         setPredictions(initial);
       }
     }
 
-    // Load locked recovery bets from localStorage
+    // lockedRecoveryMatchIds is session-only (not persisted).
+    // Clean up any leftover keys from previous sessions to prevent stale locks.
     const recoveryKey = `bse-recovery-locked-${selectedTournamentId}-${userId}-${selectedMatchDayId}`;
-    const savedLocked = localStorage.getItem(recoveryKey);
-    if (savedLocked) {
-      try {
-        setLockedRecoveryMatchIds(new Set(JSON.parse(savedLocked)));
-      } catch (e) {
-        console.error("Failed to load locked recovery bets", e);
-      }
-    } else {
-      setLockedRecoveryMatchIds(new Set());
-    }
+    localStorage.removeItem(recoveryKey);
+    setLockedRecoveryMatchIds(new Set());
   }, [
     isReadOnly,
     userBets,
@@ -2517,28 +2537,10 @@ function Home() {
     }
   }, [predictions, isReadOnly, selectedTournamentId, userId]);
 
-  // Persistence: Save locked recovery bets to localStorage
-  useEffect(() => {
-    if (
-      !isReadOnly &&
-      lockedRecoveryMatchIds.size > 0 &&
-      selectedTournamentId &&
-      userId &&
-      selectedMatchDayId
-    ) {
-      const recoveryKey = `bse-recovery-locked-${selectedTournamentId}-${userId}-${selectedMatchDayId}`;
-      localStorage.setItem(
-        recoveryKey,
-        JSON.stringify(Array.from(lockedRecoveryMatchIds)),
-      );
-    }
-  }, [
-    lockedRecoveryMatchIds,
-    isReadOnly,
-    selectedTournamentId,
-    userId,
-    selectedMatchDayId,
-  ]);
+  // Note: lockedRecoveryMatchIds is intentionally NOT persisted to localStorage.
+  // It's session-only to prevent double-clicking submit within the same session.
+  // On page refresh, matches become editable again. This is safe because the server
+  // stores bets via upsert — submitting again just updates the existing bet.
 
   const updatePrediction = (
     matchId: number,
@@ -2552,7 +2554,7 @@ function Home() {
       if (current && current.winnerId !== winnerId && newScore.includes("-")) {
         const parts = newScore.split("-").map((s: string) => s.trim());
         if (parts.length === 2 && !score) {
-          newScore = `${parts[1]} - ${parts[0]}`;
+          newScore = `${parts[1]}-${parts[0]}`;
         }
       }
 
