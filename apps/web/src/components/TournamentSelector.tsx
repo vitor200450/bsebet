@@ -1,4 +1,5 @@
 import { Trophy, Globe, Gamepad2, ArrowRight, Calendar } from "lucide-react";
+import { clsx } from "clsx";
 
 export interface TournamentOption {
   id: number;
@@ -9,6 +10,8 @@ export interface TournamentOption {
   startDate?: string | null;
   activeStage?: string;
   hasUserBets?: boolean;
+  hasRecoveryBets?: boolean;
+  recoveryMatchCount?: number;
   colors?: {
     primary: string;
     secondary: string;
@@ -54,8 +57,6 @@ const CARD_PATTERNS = [
   "radial-gradient(#000 1px, transparent 1px)",
   "repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)",
 ];
-
-import { clsx } from "clsx";
 
 export function TournamentSelector({
   tournaments,
@@ -137,8 +138,16 @@ export function TournamentSelector({
                     "group-hover:shadow-[3px_3px_0px_0px_#000] group-hover:translate-x-[3px] group-hover:translate-y-[3px]",
                 )}
               >
+                {/* Recovery Bets Badge - Most prominent */}
+                {tournament.hasRecoveryBets && (
+                  <div className="absolute top-4 left-4 bg-brawl-yellow text-black font-black text-[10px] px-2 py-1 border-2 border-black rounded-full shadow-[3px_3px_0px_0px_#000] uppercase flex items-center gap-1 z-20 animate-pulse">
+                    <span className="material-symbols-outlined text-sm">sync_problem</span>
+                    {tournament.recoveryMatchCount} RECUPERAÇÃO
+                  </div>
+                )}
+
                 {/* User Bets Badge */}
-                {tournament.hasUserBets && (
+                {tournament.hasUserBets && !tournament.hasRecoveryBets && (
                   <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-[10px] px-2 py-1 border-2 border-black rounded-full shadow-[3px_3px_0px_0px_#000] uppercase flex items-center gap-1 z-20 animate-pulse">
                     <span>📊</span>
                     SUAS APOSTAS

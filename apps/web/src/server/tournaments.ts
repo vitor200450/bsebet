@@ -246,10 +246,10 @@ const deleteTournamentFn = createServerFn({
   }
 
   try {
-    const { matches, bets } = await import("@bsebet/db/schema");
+    const { matches, bets, matchDays, tournamentTeams } = await import("@bsebet/db/schema");
     const { inArray } = await import("drizzle-orm");
 
-    // First, find all matches associated with this tournament
+    // 1. Find all matches to get their IDs for bet deletion
     const tournamentMatches = await db
       .select({ id: matches.id })
       .from(matches)
@@ -257,15 +257,21 @@ const deleteTournamentFn = createServerFn({
 
     const matchIds = tournamentMatches.map((m) => m.id);
 
+    // 2. Delete bets (FK → matches.id)
     if (matchIds.length > 0) {
-      // Delete all bets for these matches
       await db.delete(bets).where(inArray(bets.matchId, matchIds));
-
-      // Delete the matches
-      await db.delete(matches).where(inArray(matches.id, matchIds));
     }
 
-    // Then delete the tournament
+    // 3. Delete matches (FK → tournaments.id)
+    await db.delete(matches).where(eq(matches.tournamentId, id));
+
+    // 4. Delete match days (FK → tournaments.id)
+    await db.delete(matchDays).where(eq(matchDays.tournamentId, id));
+
+    // 5. Delete tournament teams (FK → tournaments.id)
+    await db.delete(tournamentTeams).where(eq(tournamentTeams.tournamentId, id));
+
+    // 6. Delete the tournament
     await db.delete(tournaments).where(eq(tournaments.id, id));
     return { success: true };
   } catch (error) {

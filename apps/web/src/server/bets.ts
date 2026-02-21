@@ -231,9 +231,23 @@ const submitMultipleBetsFn = createServerFn({
       continue;
     }
 
+    // Allow recovery bets if user already has an invalid bet for this match
+    let existingBet = null;
     if (!match.isBettingEnabled) {
-      errors.push(`Apostas desabilitadas para partida ${betData.matchId}`);
-      continue;
+      // Check if user has an existing bet (recovery mode)
+      existingBet = await db.query.bets.findFirst({
+        where: and(
+          eq(bets.userId, userId),
+          eq(bets.matchId, betData.matchId)
+        ),
+      });
+
+      // If no existing bet, reject
+      if (!existingBet) {
+        errors.push(`Apostas desabilitadas para partida ${betData.matchId}`);
+        continue;
+      }
+      // If has existing bet, allow update (recovery mode)
     }
 
     // RELAXED CHECK: Allow betting if status is 'scheduled', even if time passed.

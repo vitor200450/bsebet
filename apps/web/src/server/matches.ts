@@ -1047,3 +1047,48 @@ const getMatchDaysFn = createServerFn({ method: "GET" }).handler(
 export const getMatchDays = getMatchDaysFn as unknown as (opts: {
   data: { tournamentId: number };
 }) => Promise<any[]>;
+
+const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
+  async (ctx: any) => {
+    const { db } = await import("@bsebet/db");
+    const { tournamentId } = z
+      .object({ tournamentId: z.number() })
+      .parse(ctx.data);
+
+    const tournamentMatches = await db.query.matches.findMany({
+      where: eq(matches.tournamentId, tournamentId),
+    });
+
+    const matchIds = tournamentMatches.map((m) => m.id);
+
+    // Reset each match
+    for (const match of tournamentMatches) {
+      const updates: any = {
+        winnerId: null,
+        scoreA: null,
+        scoreB: null,
+        status: "scheduled",
+        underdogTeamId: null,
+      };
+
+      if (match.teamAPreviousMatchId) updates.teamAId = null;
+      if (match.teamBPreviousMatchId) updates.teamBId = null;
+
+      await db.update(matches).set(updates).where(eq(matches.id, match.id));
+    }
+
+    // Reset bet settlement fields (keep the predictions, clear the scores)
+    if (matchIds.length > 0) {
+      await db
+        .update(bets)
+        .set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
+        .where(inArray(bets.matchId, matchIds));
+    }
+
+    return { success: true, resetCount: tournamentMatches.length };
+  },
+);
+
+export const resetTournamentResults = resetTournamentResultsFn as unknown as (opts: {
+  data: { tournamentId: number };
+}) => Promise<{ success: boolean; resetCount: number }>;

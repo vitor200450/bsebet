@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { clsx } from "clsx";
 
 import { getUser } from "@/functions/get-user";
@@ -25,10 +25,19 @@ type FilterType = "all" | "pending" | "finished";
 function RouteComponent() {
   const [filter, setFilter] = useState<FilterType>("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["myBets"],
     queryFn: () => getMyBets(),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    gcTime: 0,
   });
+
+  // Force refetch on mount
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const allGroups = data?.betsByTournament ?? [];
 

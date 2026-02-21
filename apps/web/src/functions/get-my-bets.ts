@@ -12,6 +12,7 @@ export const getMyBets = createServerFn({ method: "GET" })
       return { stats: null, betsByTournament: [] };
     }
 
+
     // 1. Stats aggregation (same as dashboard)
     const totalBetsResult = await db
       .select({
@@ -76,6 +77,7 @@ export const getMyBets = createServerFn({ method: "GET" })
             teamA: true,
             teamB: true,
             tournament: true,
+            winner: true,
           },
         })
       : [];
@@ -83,28 +85,40 @@ export const getMyBets = createServerFn({ method: "GET" })
     // Create a map of all matches for lookup
     const allMatchesMap = new Map(allTournamentMatches.map(m => [m.id, m]));
 
-    // Create a map of user's predicted winners by matchId
-    const userPredictions = new Map(
-      userBets.map(bet => [bet.matchId, bet.predictedWinner])
-    );
+    // Create a map of match results: use REAL winner for finished matches, predicted for others
+    const matchResults = new Map<number, typeof allTournamentMatches[0]['winner']>();
+
+    console.log('[getMyBets] Total matches:', allTournamentMatches.length);
+    console.log('[getMyBets] Match 18 status:', allTournamentMatches.find(m => m.id === 18)?.status, 'winner:', allTournamentMatches.find(m => m.id === 18)?.winner?.name);
+    console.log('[getMyBets] Match 21 teamA:', allTournamentMatches.find(m => m.id === 21)?.teamA?.name, 'teamB:', allTournamentMatches.find(m => m.id === 21)?.teamB?.name);
+
+    for (const match of allTournamentMatches) {
+      if (match.status === 'finished' && match.winner) {
+        // Use real result for finished matches
+        matchResults.set(match.id, match.winner);
+        console.log(`[getMyBets] Match ${match.id}: using REAL winner ${match.winner.name}`);
+      } else {
+        // Use user's prediction for non-finished matches
+        const userBet = userBets.find(b => b.matchId === match.id);
+        if (userBet?.predictedWinner) {
+          matchResults.set(match.id, userBet.predictedWinner);
+          console.log(`[getMyBets] Match ${match.id}: using PREDICTED winner ${userBet.predictedWinner.name}`);
+        }
+      }
+    }
+
+    console.log('[getMyBets] Match results map:', Array.from(matchResults.entries()).map(([id, w]) => `${id}=${w?.name}`).join(', '));
 
     // 3. PROJECT WINNERS FORWARD
-    // For each match the user bet on, project the winner to matches that depend on it
-    // The system uses teamAPreviousMatchId/teamBPreviousMatchId (backward links)
-    // So we need to find matches where this match is a previous match
-
-    // First, build a map of which matches feed into which slots
-    // matchId -> [{ targetMatchId, slot }]
+    // Build a map of which matches feed into which slots
     const matchFeedsInto = new Map<number, Array<{ targetId: number; slot: 'A' | 'B' }>>();
 
     for (const match of allTournamentMatches) {
-      // This match feeds into slot A of another match
       if (match.teamAPreviousMatchId) {
         const feeds = matchFeedsInto.get(match.teamAPreviousMatchId) || [];
         feeds.push({ targetId: match.id, slot: 'A' });
         matchFeedsInto.set(match.teamAPreviousMatchId, feeds);
       }
-      // This match feeds into slot B of another match
       if (match.teamBPreviousMatchId) {
         const feeds = matchFeedsInto.get(match.teamBPreviousMatchId) || [];
         feeds.push({ targetId: match.id, slot: 'B' });
@@ -112,9 +126,9 @@ export const getMyBets = createServerFn({ method: "GET" })
       }
     }
 
-    // Now project winners
-    for (const [matchId, predictedWinner] of userPredictions) {
-      if (!predictedWinner) continue;
+    // Project winners (real results first, then predictions)
+    for (const [matchId, winner] of matchResults) {
+      if (!winner) continue;
 
       const targets = matchFeedsInto.get(matchId);
       if (!targets || targets.length === 0) continue;
@@ -125,12 +139,14 @@ export const getMyBets = createServerFn({ method: "GET" })
 
         // Project the winner
         if (target.slot === 'A') {
-          targetMatch.teamA = predictedWinner;
+          targetMatch.teamA = winner;
         } else {
-          targetMatch.teamB = predictedWinner;
+          targetMatch.teamB = winner;
         }
       }
     }
+
+    console.log('[getMyBets] After projection - Match 21 teamA:', allMatchesMap.get(21)?.teamA?.name, 'teamB:', allMatchesMap.get(21)?.teamB?.name);
 
     // 4. Group by tournament
     type BetWithRelations = (typeof userBets)[number];
@@ -165,16 +181,16 @@ export const getMyBets = createServerFn({ method: "GET" })
 
       // Check slot A
       if (match.teamAPreviousMatchId) {
-        const prevMatchPrediction = userPredictions.get(match.teamAPreviousMatchId);
-        if (prevMatchPrediction && match.teamA?.id === prevMatchPrediction.id) {
+        const prevMatchResult = matchResults.get(match.teamAPreviousMatchId);
+        if (prevMatchResult && match.teamA?.id === prevMatchResult.id) {
           hasProjectedTeam = true;
         }
       }
 
       // Check slot B
       if (match.teamBPreviousMatchId) {
-        const prevMatchPrediction = userPredictions.get(match.teamBPreviousMatchId);
-        if (prevMatchPrediction && match.teamB?.id === prevMatchPrediction.id) {
+        const prevMatchResult = matchResults.get(match.teamBPreviousMatchId);
+        if (prevMatchResult && match.teamB?.id === prevMatchResult.id) {
           hasProjectedTeam = true;
         }
       }

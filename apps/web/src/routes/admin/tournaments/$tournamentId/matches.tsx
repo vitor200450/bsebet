@@ -5,7 +5,7 @@ import {
   getTournamentTeams,
   removeTeamFromTournament,
 } from "@/server/tournament-teams";
-import { getMatches, deleteMatch } from "@/server/matches";
+import { getMatches, deleteMatch, resetTournamentResults } from "@/server/matches";
 import { getTeams } from "@/server/teams"; // Global teams
 import { getMatchDays } from "@/server/match-days";
 import { useState, useMemo } from "react";
@@ -146,6 +146,11 @@ function TournamentMatchesPage() {
   const [matchToReset, setMatchToReset] = useState<number | null>(null);
   const [isResetting, setIsResetting] = useState(false);
 
+  // Reset Tournament State
+  const [isResetTournamentModalOpen, setIsResetTournamentModalOpen] =
+    useState(false);
+  const [isResettingTournament, setIsResettingTournament] = useState(false);
+
   const handleResetMatch = async () => {
     if (!matchToReset) return;
     setIsResetting(true);
@@ -162,6 +167,22 @@ function TournamentMatchesPage() {
       toast.error("Erro ao resetar placar");
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const handleResetTournament = async () => {
+    setIsResettingTournament(true);
+    try {
+      const result = await resetTournamentResults({
+        data: { tournamentId: tournament.id },
+      });
+      toast.success(`${result.resetCount} partidas resetadas com sucesso!`);
+      setIsResetTournamentModalOpen(false);
+      router.invalidate();
+    } catch (e) {
+      toast.error("Erro ao resetar resultados do torneio");
+    } finally {
+      setIsResettingTournament(false);
     }
   };
 
@@ -348,6 +369,14 @@ function TournamentMatchesPage() {
               Order
             </button>
           </div>
+
+          <button
+            onClick={() => setIsResetTournamentModalOpen(true)}
+            className="px-4 py-1.5 font-black uppercase text-[10px] border-[2px] border-black transition-all flex items-center gap-2 bg-white text-[#ff2e2e] hover:bg-[#ff2e2e] hover:text-white"
+          >
+            <RotateCcw size={12} strokeWidth={3} />
+            Reset Resultados
+          </button>
 
           <Link
             to="/admin/tournaments"
@@ -919,6 +948,18 @@ function TournamentMatchesPage() {
             : "ATENÇÃO: Já existem partidas de playoffs geradas. Gerar novamente poderá duplicar ou resetar progresso. Deseja continuar?"
         }
         confirmLabel="Sim, Regenerar"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={isResetTournamentModalOpen}
+        onClose={() => setIsResetTournamentModalOpen(false)}
+        onConfirm={handleResetTournament}
+        isLoading={isResettingTournament}
+        title="Resetar Todos os Resultados"
+        description="ATENÇÃO: Isso irá zerar scores, winners e status de TODAS as partidas do torneio, e limpar as equipes auto-propagadas pelo bracket. As apostas dos usuários NÃO serão afetadas. Esta ação não pode ser desfeita."
+        confirmLabel="Sim, Resetar Tudo"
         cancelLabel="Cancelar"
         variant="danger"
       />

@@ -22,7 +22,8 @@
       "Bash(curl:*)",
       "Bash(nslookup:*)",
       "Bash(bun run check-types:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(head:*)"
     ]
   }
 }
