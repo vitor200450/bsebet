@@ -530,13 +530,18 @@ function ReviewScreen({
 
           const serverBet = userBets.find((b: any) => b.matchId === matchId);
           const currentPred = predictions[matchId];
+          const serverBetScore = serverBet
+            ? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+            : "";
+          // Use resolved score (with server fallback) to detect real changes.
+          // A pre-filled empty score that resolves to the same server score counts as "no change".
+          const resolvedCurrentScore =
+            currentPred?.score?.trim() || serverBetScore;
 
-          // If has server bet and prediction matches, skip (no change)
           if (
             serverBet &&
             currentPred?.winnerId === serverBet.predictedWinnerId &&
-            currentPred?.score ===
-              `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+            resolvedCurrentScore === serverBetScore
           ) {
             return null;
           }
@@ -1562,6 +1567,7 @@ function ReviewScreen({
           stalePredictionMatchIds={stalePredictionMatchIds}
           editableRecoveryMatchIds={editableRecoveryMatchIds}
           onLockRecoveryMatch={onLockRecoveryMatch}
+          onUpdatePrediction={onUpdatePrediction}
           userBets={userBets}
           onSuccess={() => {
             // Invalidar query de minhas apostas para recarregar
@@ -1586,6 +1592,7 @@ function SubmitBetsModal({
   stalePredictionMatchIds = new Set(),
   editableRecoveryMatchIds = new Set(),
   onLockRecoveryMatch,
+  onUpdatePrediction,
   userBets = [],
   onSuccess,
   matchDayStatus,
@@ -1595,6 +1602,11 @@ function SubmitBetsModal({
   onClose: () => void;
   tournamentId: number;
   userId: string;
+  onUpdatePrediction?: (
+    matchId: number,
+    winnerId: number,
+    score?: string,
+  ) => void;
   stalePredictionMatchIds?: Set<number>;
   editableRecoveryMatchIds?: Set<number>;
   onLockRecoveryMatch?: (matchId: number) => void;
@@ -1703,16 +1715,21 @@ function SubmitBetsModal({
               return null;
             }
 
-            // Check if this is a new or changed bet
+            // Check if this is a new or changed bet.
+            // Use resolved score (with server fallback) to avoid false "changed" detection
+            // when user hasn't modified a pre-filled bet.
             const serverBet = userBets.find((b: any) => b.matchId === matchId);
             const currentPred = predictions[matchId];
+            const serverBetScore = serverBet
+              ? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+              : "";
+            const resolvedCurrentScore =
+              currentPred?.score?.trim() || serverBetScore;
 
-            // If has server bet and prediction matches, skip (no change)
             if (
               serverBet &&
               currentPred?.winnerId === serverBet.predictedWinnerId &&
-              currentPred?.score ===
-                `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
+              resolvedCurrentScore === serverBetScore
             ) {
               return null;
             }
@@ -1748,12 +1765,22 @@ function SubmitBetsModal({
       const { submitMultipleBets } = await import("../server/bets");
       await submitMultipleBets({ data: { bets: betsToSubmit } });
 
-      // Lock recovery matches after successful submission
+      // After successful submission:
+      // 1. Update local predictions with the resolved scores so the review screen
+      //    shows the correct score (e.g. "3-2") instead of "?-?" on next open.
+      // 2. Lock recovery matches so they can't be re-edited in this session.
       betsToSubmit.forEach((bet) => {
+        onUpdatePrediction?.(
+          bet.matchId,
+          bet.predictedWinnerId,
+          `${bet.predictedScoreA}-${bet.predictedScoreB}`,
+        );
         onLockRecoveryMatch?.(bet.matchId);
       });
 
       setStatus("success");
+      // Clear localStorage after updating predictions — localStorage will be written
+      // again immediately by the persistence effect with the correct scores above.
       const key = `bse-predictions-${tournamentId}-${userId}`;
       localStorage.removeItem(key);
     } catch (error: any) {
@@ -2514,12 +2541,6 @@ function Home() {
         setPredictions(initial);
       }
     }
-
-    // lockedRecoveryMatchIds is session-only (not persisted).
-    // Clean up any leftover keys from previous sessions to prevent stale locks.
-    const recoveryKey = `bse-recovery-locked-${selectedTournamentId}-${userId}-${selectedMatchDayId}`;
-    localStorage.removeItem(recoveryKey);
-    setLockedRecoveryMatchIds(new Set());
   }, [
     isReadOnly,
     userBets,
@@ -2543,6 +2564,17 @@ function Home() {
       localStorage.setItem(key, JSON.stringify(predictions));
     }
   }, [predictions, isReadOnly, selectedTournamentId, userId]);
+
+  // Reset session-only lockedRecoveryMatchIds when the user navigates to a different
+  // tournament or match day. Does NOT run on userBets refresh (after submit), preserving
+  // the in-session lock so submitted recovery bets stay locked until navigation.
+  useEffect(() => {
+    if (!selectedTournamentId || !selectedMatchDayId) return;
+    // Also clean up any stale localStorage key from an old persistence mechanism.
+    const recoveryKey = `bse-recovery-locked-${selectedTournamentId}-${userId}-${selectedMatchDayId}`;
+    localStorage.removeItem(recoveryKey);
+    setLockedRecoveryMatchIds(new Set());
+  }, [selectedTournamentId, selectedMatchDayId, userId]);
 
   // Note: lockedRecoveryMatchIds is intentionally NOT persisted to localStorage.
   // It's session-only to prevent double-clicking submit within the same session.
