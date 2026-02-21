@@ -512,8 +512,12 @@ function ReviewScreen({
           return null;
         }
 
-        // Skip stale predictions (depend on wrong predictions in previous matches)
-        if (effectiveStaleIds.has(matchId)) {
+        // Skip stale predictions, UNLESS this is a recovery bet (editable in locked mode).
+        // Recovery bets are intentionally overriding stale data, so we allow them.
+        if (
+          effectiveStaleIds.has(matchId) &&
+          !effectiveEditableIds.has(matchId)
+        ) {
           return null;
         }
 
@@ -1480,19 +1484,22 @@ function ReviewScreen({
                       </div>
                     )}
 
-                    {/* Stale Prediction Warning - depends on wrong prediction */}
-                    {isStalePrediction && !isInvalidPrediction && (
-                      <div className="absolute inset-x-0 -bottom-8 flex justify-center z-50">
-                        <div className="bg-orange-500 border-2 border-black px-3 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 animate-pulse">
-                          <span className="text-[9px] font-black text-white italic uppercase flex items-center gap-1.5 leading-none">
-                            <span className="material-symbols-outlined text-xs">
-                              refresh
+                    {/* Stale Prediction Warning - depends on wrong prediction.
+                        Hidden for recovery matches since user is intentionally re-picking. */}
+                    {isStalePrediction &&
+                      !isInvalidPrediction &&
+                      !isRecoveryMatch && (
+                        <div className="absolute inset-x-0 -bottom-8 flex justify-center z-50">
+                          <div className="bg-orange-500 border-2 border-black px-3 py-1 shadow-[4px_4px_0px_0px_#000] -rotate-1 animate-pulse">
+                            <span className="text-[9px] font-black text-white italic uppercase flex items-center gap-1.5 leading-none">
+                              <span className="material-symbols-outlined text-xs">
+                                refresh
+                              </span>
+                              Pick again: Wrong prediction above!
                             </span>
-                            Pick again: Wrong prediction above!
-                          </span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Recovery Mode Lock - match is not editable */}
                     {matchDayStatus === "locked" &&
