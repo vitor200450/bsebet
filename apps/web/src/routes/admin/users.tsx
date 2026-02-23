@@ -1,10 +1,4 @@
-import {
-  deleteUser,
-  getUsers,
-  toggleRole,
-  updateUserDetails,
-} from "@/server/users";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import {
   AlertTriangle,
@@ -21,6 +15,12 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  deleteUser,
+  getUsers,
+  toggleRole,
+  updateUserDetails,
+} from "@/server/users";
 import { useSetHeader } from "../../components/HeaderContext";
 
 export const Route = createFileRoute("/admin/users")({
@@ -187,16 +187,16 @@ function AdminUsersPage() {
   useSetHeader({
     title: "USERS",
     actions: (
-      <div className="flex items-center gap-4 w-full sm:w-auto">
+      <div className="flex w-full items-center gap-4 sm:w-auto">
         <div className="relative w-full sm:w-auto">
           <input
             type="text"
             placeholder="SEARCH USERS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-[3px] border-black px-4 py-2 w-full sm:w-96 font-bold text-sm uppercase placeholder-gray-400 focus:outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+            className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-96"
           />
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
         </div>
       </div>
     ),
@@ -210,14 +210,14 @@ function AdminUsersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-paper bg-paper-texture font-sans pb-20">
+    <div className="min-h-screen bg-paper bg-paper-texture pb-20 font-sans">
       {/* LIST CONTENT */}
-      <div className="px-6 py-8 max-w-[1600px] mx-auto">
-        <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] overflow-hidden">
+      <div className="mx-auto max-w-[1600px] px-6 py-8">
+        <div className="overflow-hidden border-[4px] border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]">
           <div className="overflow-x-auto">
             <div className="min-w-full md:min-w-[800px]">
               {/* Table Header */}
-              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-black text-white text-sm font-black uppercase italic tracking-wider border-b-[4px] border-black">
+              <div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
                 <div className="col-span-4">User Identity</div>
                 <div className="col-span-4">Contact</div>
                 <div className="col-span-2 text-center">Role</div>
@@ -226,11 +226,11 @@ function AdminUsersPage() {
 
               {/* List Rows */}
               {filteredUsers.length === 0 ? (
-                <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-                  <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center border-[3px] border-black border-dashed">
-                    <User className="w-8 h-8 text-gray-400" />
+                <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-md border-[3px] border-black border-dashed bg-gray-200">
+                    <User className="h-8 w-8 text-gray-400" />
                   </div>
-                  <span className="font-black text-gray-400 uppercase italic text-lg">
+                  <span className="font-black text-gray-400 text-lg uppercase italic">
                     No users found
                   </span>
                 </div>
@@ -240,75 +240,83 @@ function AdminUsersPage() {
                     <div
                       key={u.id}
                       className={clsx(
-                        "flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center transition-colors hover:bg-[#ccff00]/10",
+                        "flex flex-col items-start gap-4 px-6 py-4 transition-colors hover:bg-[#ccff00]/10 md:grid md:grid-cols-12 md:items-center",
                         index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]",
                       )}
                     >
                       {/* User Info */}
-                      <div className="w-full md:col-span-4 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-md bg-gray-200 border-[3px] border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform flex-shrink-0">
+                      <div className="flex w-full items-center gap-4 md:col-span-4">
+                        <Link
+                          to="/users/$userId"
+                          params={{ userId: u.id }}
+                          className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-transform hover:scale-105"
+                        >
                           {u.image ? (
                             <img
                               src={u.image}
                               alt={u.nickname || "User"}
-                              className="w-full h-full object-cover"
+                              className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic">
+                            <div className="flex h-full w-full items-center justify-center bg-[#e0e0e0] font-black text-black italic">
                               {u.nickname?.[0]?.toUpperCase() || "?"}
                             </div>
                           )}
-                        </div>
+                        </Link>
                         <div>
-                          <h3 className="font-black text-lg text-black uppercase italic leading-none text-[#2e5cff]">
+                          <Link
+                            to="/users/$userId"
+                            params={{ userId: u.id }}
+                            className="font-black text-[#2e5cff] text-lg uppercase italic leading-none hover:underline"
+                          >
                             {u.nickname || "No Nickname"}
-                          </h3>
+                          </Link>
                           {/* Removed Google Name Display for Privacy */}
                         </div>
                       </div>
 
                       {/* Contact */}
-                      <div className="w-full md:col-span-4 flex flex-col justify-center">
-                        <span className="text-sm font-bold text-gray-700 font-mono flex items-center gap-2 break-all">
+                      <div className="flex w-full flex-col justify-center md:col-span-4">
+                        <span className="flex items-center gap-2 break-all font-bold font-mono text-gray-700 text-sm">
                           {u.email}
-                          <Copy className="w-3 h-3 text-gray-300 hover:text-black cursor-pointer shrink-0" />
+                          <Copy className="h-3 w-3 shrink-0 cursor-pointer text-gray-300 hover:text-black" />
                         </span>
-                        <span className="text-[10px] font-bold text-gray-400 font-mono uppercase">
+                        <span className="font-bold font-mono text-[10px] text-gray-400 uppercase">
                           ID: {u.id.slice(0, 8)}...
                         </span>
                       </div>
 
                       {/* Role Badge */}
-                      <div className="w-full md:col-span-2 flex justify-start md:justify-center">
+                      <div className="flex w-full justify-start md:col-span-2 md:justify-center">
                         <button
                           onClick={() => initiateRoleToggle(u)}
                           className={clsx(
-                            "px-3 py-1 text-[10px] font-black uppercase italic border-[2px] border-black transform transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none flex items-center gap-1",
+                            "flex transform items-center gap-1 border-[2px] border-black px-3 py-1 font-black text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-none",
                             u.role === "admin"
-                              ? "bg-[#ccff00] text-black -skew-x-6"
-                              : "bg-gray-200 text-gray-500 -skew-x-6",
+                              ? "-skew-x-6 bg-[#ccff00] text-black"
+                              : "-skew-x-6 bg-gray-200 text-gray-500",
                           )}
                         >
-                          {u.role === "admin" && <Shield className="w-3 h-3" />}
+                          {u.role === "admin" && <Shield className="h-3 w-3" />}
                           {u.role}
                         </button>
                       </div>
 
                       {/* Actions */}
-                      <div className="w-full md:col-span-2 flex justify-start md:justify-end gap-2 mt-2 md:mt-0">
+                      <div className="mt-2 flex w-full justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#2e5cff] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
                           title="Edit Details"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => initiateDelete(u)}
-                          className="flex-1 md:flex-none flex items-center justify-center bg-white hover:bg-[#ff2e2e] hover:text-white text-black p-2 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
                           title="Delete User"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -322,24 +330,24 @@ function AdminUsersPage() {
 
       {/* EDIT MODAL */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border-[4px] border-black shadow-[10px_10px_0px_0px_#000] w-full max-w-md relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-            <div className="bg-[#2e5cff] p-3 flex justify-between items-center border-b-[4px] border-black sticky top-0 z-10">
-              <h2 className="text-white font-black italic uppercase text-lg">
+        <div className="fade-in fixed inset-0 z-[100] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+          <div className="zoom-in-95 relative max-h-[90vh] w-full max-w-md animate-in overflow-y-auto border-[4px] border-black bg-white shadow-[10px_10px_0px_0px_#000] duration-200">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
+              <h2 className="font-black text-lg text-white uppercase italic">
                 EDIT USER
               </h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="bg-black hover:bg-[#ff2e2e] text-white p-1 border-2 border-white rounded-sm transition-colors"
+                className="rounded-sm border-2 border-white bg-black p-1 text-white transition-colors hover:bg-[#ff2e2e]"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveDetails} className="p-6 space-y-6">
+            <form onSubmit={handleSaveDetails} className="space-y-6 p-6">
               {/* Nickname Field */}
               <div>
-                <label className="block text-xs font-black uppercase mb-1 text-black">
+                <label className="mb-1 block font-black text-black text-xs uppercase">
                   Display Name (Nickname)
                 </label>
                 <input
@@ -347,31 +355,31 @@ function AdminUsersPage() {
                   value={nicknameInput}
                   onChange={(e) => setNicknameInput(e.target.value)}
                   placeholder="Enter custom nickname..."
-                  className="w-full border-[3px] border-black p-3 font-bold focus:outline-none focus:ring-4 focus:ring-[#ccff00] shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] text-black"
+                  className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
                 />
-                <p className="text-xl font-black italic uppercase text-black mb-6">
+                <p className="mb-6 font-black text-black text-xl uppercase italic">
                   {editingUser?.nickname || "User"}
                 </p>
               </div>
 
               {/* Image Field */}
               <div>
-                <label className="block text-xs font-black uppercase mb-1 text-black">
+                <label className="mb-1 block font-black text-black text-xs uppercase">
                   Profile Picture
                 </label>
 
                 {/* Image Preview */}
-                <div className="flex justify-center mb-4">
-                  <div className="w-24 h-24 rounded-md bg-gray-100 border-[3px] border-black overflow-hidden shadow-sm relative group">
+                <div className="mb-4 flex justify-center">
+                  <div className="group relative h-24 w-24 overflow-hidden rounded-md border-[3px] border-black bg-gray-100 shadow-sm">
                     {imageInput ? (
                       <img
                         src={imageInput}
                         alt="Preview"
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <ImageIcon className="w-8 h-8" />
+                      <div className="flex h-full w-full items-center justify-center text-gray-300">
+                        <ImageIcon className="h-8 w-8" />
                       </div>
                     )}
                   </div>
@@ -379,21 +387,21 @@ function AdminUsersPage() {
 
                 <div className="space-y-2">
                   <div className="relative">
-                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <ImageIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <input
                       type="url"
                       value={imageInput}
                       onChange={(e) => setImageInput(e.target.value)}
-                      className="w-full border-[3px] border-black p-2 pl-9 text-xs font-mono focus:outline-none focus:border-black bg-white text-black placeholder:text-gray-400"
+                      className="w-full border-[3px] border-black bg-white p-2 pl-9 font-mono text-black text-xs placeholder:text-gray-400 focus:border-black focus:outline-none"
                       placeholder="Paste image URL..."
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase text-gray-400">
+                    <span className="font-bold text-[10px] text-gray-400 uppercase">
                       OR
                     </span>
-                    <div className="h-[1px] bg-gray-200 flex-1"></div>
+                    <div className="h-[1px] flex-1 bg-gray-200" />
                   </div>
 
                   <input
@@ -406,28 +414,28 @@ function AdminUsersPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full bg-white hover:bg-gray-100 text-black py-2 border-[3px] border-black font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none transition-all"
+                    className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white py-2 font-bold text-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-100 active:translate-y-[1px] active:shadow-none"
                   >
-                    <Upload className="w-3 h-3" />
+                    <Upload className="h-3 w-3" />
                     Upload from Device
                   </button>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4 border-t-2 border-gray-100">
+              <div className="flex gap-2 border-gray-100 border-t-2 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 py-3 font-black uppercase hover:bg-gray-100 border-[3px] border-transparent text-gray-500"
+                  className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-[2] bg-[#ccff00] hover:bg-[#bbe000] text-black py-3 font-black italic uppercase border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000] transition-all flex items-center justify-center gap-2"
+                  className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000]"
                 >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   SAVE CHANGES
                 </button>
               </div>
@@ -438,27 +446,27 @@ function AdminUsersPage() {
 
       {/* NEW ROLE CONFIRMATION MODAL */}
       {isRoleModalOpen && roleTargetUser && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full max-w-md overflow-hidden transform animate-in zoom-in-95 duration-200">
+        <div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+          <div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
             {/* Header */}
             <div
               className={clsx(
-                "p-4 flex items-center gap-3 border-b-[4px] border-black",
+                "flex items-center gap-3 border-black border-b-[4px] p-4",
                 roleTargetUser.currentRole === "admin"
                   ? "bg-[#ff2e2e]"
                   : "bg-[#ccff00]",
               )}
             >
-              <div className="bg-white border-[3px] border-black p-1">
+              <div className="border-[3px] border-black bg-white p-1">
                 {roleTargetUser.currentRole === "admin" ? (
-                  <AlertTriangle className="w-6 h-6 text-[#ff2e2e] stroke-[3px]" />
+                  <AlertTriangle className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
                 ) : (
-                  <Shield className="w-6 h-6 text-[#ccff00] bg-black stroke-[3px]" />
+                  <Shield className="h-6 w-6 bg-black stroke-[3px] text-[#ccff00]" />
                 )}
               </div>
               <h3
                 className={clsx(
-                  "text-2xl font-black italic uppercase tracking-tighter",
+                  "font-black text-2xl uppercase italic tracking-tighter",
                   roleTargetUser.currentRole === "admin"
                     ? "text-white"
                     : "text-black",
@@ -472,15 +480,15 @@ function AdminUsersPage() {
 
             {/* Content */}
             <div className="p-6 text-center">
-              <div className="w-20 h-20 mx-auto rounded-md bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
+              <div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-sm">
                 {roleTargetUser.image ? (
                   <img
                     src={roleTargetUser.image}
                     alt={roleTargetUser.name || "User"}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic text-2xl">
+                  <div className="flex h-full w-full items-center justify-center bg-[#e0e0e0] font-black text-2xl text-black italic">
                     {roleTargetUser.nickname?.[0] ||
                       roleTargetUser.name?.[0] ||
                       "?"}
@@ -488,13 +496,13 @@ function AdminUsersPage() {
                 )}
               </div>
 
-              <p className="text-lg font-bold text-gray-800 mb-2">
+              <p className="mb-2 font-bold text-gray-800 text-lg">
                 Are you sure you want to{" "}
                 {roleTargetUser.currentRole === "admin"
                   ? "REMOVE privileges from"
                   : "GRANT Admin power to"}
               </p>
-              <p className="text-xl font-black italic uppercase text-black mb-6">
+              <p className="mb-6 font-black text-black text-xl uppercase italic">
                 {roleTargetUser.nickname || "User"}
               </p>
 
@@ -503,14 +511,14 @@ function AdminUsersPage() {
                   onClick={confirmRoleToggle}
                   disabled={isSubmitting}
                   className={clsx(
-                    "w-full py-4 font-black italic uppercase border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2",
+                    "flex w-full items-center justify-center gap-2 border-[4px] border-black py-4 font-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
                     roleTargetUser.currentRole === "admin"
-                      ? "bg-[#ff2e2e] hover:bg-[#d41d1d] text-white"
-                      : "bg-[#ccff00] hover:bg-[#bbe000] text-black",
+                      ? "bg-[#ff2e2e] text-white hover:bg-[#d41d1d]"
+                      : "bg-[#ccff00] text-black hover:bg-[#bbe000]",
                   )}
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
                     <>
                       {roleTargetUser.currentRole === "admin"
@@ -521,7 +529,7 @@ function AdminUsersPage() {
                 </button>
                 <button
                   onClick={() => setIsRoleModalOpen(false)}
-                  className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
+                  className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
                 >
                   Cancel
                 </button>
@@ -533,29 +541,29 @@ function AdminUsersPage() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {isDeleteModalOpen && deleteTargetUser && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full max-w-md overflow-hidden transform animate-in zoom-in-95 duration-200">
+        <div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+          <div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
             {/* Header */}
-            <div className="p-4 flex items-center gap-3 border-b-[4px] border-black bg-[#ff2e2e]">
-              <div className="bg-white border-[3px] border-black p-1">
-                <AlertTriangle className="w-6 h-6 text-[#ff2e2e] stroke-[3px]" />
+            <div className="flex items-center gap-3 border-black border-b-[4px] bg-[#ff2e2e] p-4">
+              <div className="border-[3px] border-black bg-white p-1">
+                <AlertTriangle className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
               </div>
-              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
+              <h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
                 DELETE USER?
               </h3>
             </div>
 
             {/* Content */}
             <div className="p-6 text-center">
-              <div className="w-20 h-20 mx-auto rounded-md bg-gray-200 border-[3px] border-black mb-4 overflow-hidden shadow-sm">
+              <div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-sm">
                 {deleteTargetUser.image ? (
                   <img
                     src={deleteTargetUser.image}
                     alt={deleteTargetUser.name || "User"}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#e0e0e0] text-black font-black italic text-2xl">
+                  <div className="flex h-full w-full items-center justify-center bg-[#e0e0e0] font-black text-2xl text-black italic">
                     {deleteTargetUser.nickname?.[0] ||
                       deleteTargetUser.name?.[0] ||
                       "?"}
@@ -563,13 +571,13 @@ function AdminUsersPage() {
                 )}
               </div>
 
-              <p className="text-lg font-bold text-gray-800 mb-2">
+              <p className="mb-2 font-bold text-gray-800 text-lg">
                 Are you sure you want to permanently delete
               </p>
-              <p className="text-xl font-black italic uppercase text-black mb-2">
+              <p className="mb-2 font-black text-black text-xl uppercase italic">
                 {deleteTargetUser.nickname || "User"}
               </p>
-              <p className="text-sm text-gray-600 mb-6 bg-yellow-50 border-2 border-yellow-300 p-3 rounded">
+              <p className="mb-6 rounded border-2 border-yellow-300 bg-yellow-50 p-3 text-gray-600 text-sm">
                 ⚠️ This action cannot be undone. All user data will be
                 permanently deleted.
               </p>
@@ -578,17 +586,17 @@ function AdminUsersPage() {
                 <button
                   onClick={confirmDelete}
                   disabled={isSubmitting}
-                  className="w-full py-4 font-black italic uppercase border-[4px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-center gap-2 bg-[#ff2e2e] hover:bg-[#d41d1d] text-white"
+                  className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
                     <>YES, DELETE USER</>
                   )}
                 </button>
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="w-full bg-white hover:bg-gray-100 text-black py-3 font-black uppercase border-[3px] border-black transition-colors"
+                  className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
                 >
                   Cancel
                 </button>

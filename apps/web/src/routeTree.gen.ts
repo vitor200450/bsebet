@@ -18,12 +18,14 @@ import { Route as LandingRouteImport } from './routes/landing'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TournamentsIndexRouteImport } from './routes/tournaments/index'
+import { Route as UsersUserIdRouteImport } from './routes/users/$userId'
 import { Route as TournamentsSlugRouteImport } from './routes/tournaments/$slug'
 import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTournamentsRouteImport } from './routes/admin/tournaments'
 import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
 import { Route as AdminMigrateLogosRouteImport } from './routes/admin/migrate-logos'
+import { Route as AdminCompensationsRouteImport } from './routes/admin/compensations'
 import { Route as AdminTournamentsIndexRouteImport } from './routes/admin/tournaments/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -75,6 +77,11 @@ const TournamentsIndexRoute = TournamentsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TournamentsRoute,
 } as any)
+const UsersUserIdRoute = UsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TournamentsSlugRoute = TournamentsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -103,6 +110,11 @@ const AdminTeamsRoute = AdminTeamsRouteImport.update({
 const AdminMigrateLogosRoute = AdminMigrateLogosRouteImport.update({
   id: '/admin/migrate-logos',
   path: '/admin/migrate-logos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCompensationsRoute = AdminCompensationsRouteImport.update({
+  id: '/admin/compensations',
+  path: '/admin/compensations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTournamentsIndexRoute = AdminTournamentsIndexRouteImport.update({
@@ -141,12 +153,14 @@ export interface FileRoutesByFullPath {
   '/my-bets': typeof MyBetsRoute
   '/profile': typeof ProfileRoute
   '/tournaments': typeof TournamentsRouteWithChildren
+  '/admin/compensations': typeof AdminCompensationsRoute
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/users/$userId': typeof UsersUserIdRoute
   '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -162,11 +176,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/my-bets': typeof MyBetsRoute
   '/profile': typeof ProfileRoute
+  '/admin/compensations': typeof AdminCompensationsRoute
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/users': typeof AdminUsersRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/users/$userId': typeof UsersUserIdRoute
   '/tournaments': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -184,12 +200,14 @@ export interface FileRoutesById {
   '/my-bets': typeof MyBetsRoute
   '/profile': typeof ProfileRoute
   '/tournaments': typeof TournamentsRouteWithChildren
+  '/admin/compensations': typeof AdminCompensationsRoute
   '/admin/migrate-logos': typeof AdminMigrateLogosRoute
   '/admin/teams': typeof AdminTeamsRoute
   '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/tournaments/$slug': typeof TournamentsSlugRoute
+  '/users/$userId': typeof UsersUserIdRoute
   '/tournaments/': typeof TournamentsIndexRoute
   '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -208,12 +226,14 @@ export interface FileRouteTypes {
     | '/my-bets'
     | '/profile'
     | '/tournaments'
+    | '/admin/compensations'
     | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
     | '/teams/$teamId'
     | '/tournaments/$slug'
+    | '/users/$userId'
     | '/tournaments/'
     | '/admin/live/$matchId'
     | '/api/auth/$'
@@ -229,11 +249,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/my-bets'
     | '/profile'
+    | '/admin/compensations'
     | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/users'
     | '/teams/$teamId'
     | '/tournaments/$slug'
+    | '/users/$userId'
     | '/tournaments'
     | '/admin/live/$matchId'
     | '/api/auth/$'
@@ -250,12 +272,14 @@ export interface FileRouteTypes {
     | '/my-bets'
     | '/profile'
     | '/tournaments'
+    | '/admin/compensations'
     | '/admin/migrate-logos'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/users'
     | '/teams/$teamId'
     | '/tournaments/$slug'
+    | '/users/$userId'
     | '/tournaments/'
     | '/admin/live/$matchId'
     | '/api/auth/$'
@@ -273,11 +297,13 @@ export interface RootRouteChildren {
   MyBetsRoute: typeof MyBetsRoute
   ProfileRoute: typeof ProfileRoute
   TournamentsRoute: typeof TournamentsRouteWithChildren
+  AdminCompensationsRoute: typeof AdminCompensationsRoute
   AdminMigrateLogosRoute: typeof AdminMigrateLogosRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
   AdminTournamentsRoute: typeof AdminTournamentsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
   TeamsTeamIdRoute: typeof TeamsTeamIdRoute
+  UsersUserIdRoute: typeof UsersUserIdRoute
   AdminLiveMatchIdRoute: typeof AdminLiveMatchIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
@@ -348,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TournamentsIndexRouteImport
       parentRoute: typeof TournamentsRoute
     }
+    '/users/$userId': {
+      id: '/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof UsersUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tournaments/$slug': {
       id: '/tournaments/$slug'
       path: '/$slug'
@@ -388,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/migrate-logos'
       fullPath: '/admin/migrate-logos'
       preLoaderRoute: typeof AdminMigrateLogosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/compensations': {
+      id: '/admin/compensations'
+      path: '/admin/compensations'
+      fullPath: '/admin/compensations'
+      preLoaderRoute: typeof AdminCompensationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/tournaments/': {
@@ -465,11 +505,13 @@ const rootRouteChildren: RootRouteChildren = {
   MyBetsRoute: MyBetsRoute,
   ProfileRoute: ProfileRoute,
   TournamentsRoute: TournamentsRouteWithChildren,
+  AdminCompensationsRoute: AdminCompensationsRoute,
   AdminMigrateLogosRoute: AdminMigrateLogosRoute,
   AdminTeamsRoute: AdminTeamsRoute,
   AdminTournamentsRoute: AdminTournamentsRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,
   TeamsTeamIdRoute: TeamsTeamIdRoute,
+  UsersUserIdRoute: UsersUserIdRoute,
   AdminLiveMatchIdRoute: AdminLiveMatchIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,

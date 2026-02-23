@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
-
+import { User } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient } from "@/lib/auth-client";
-
-import { Skeleton } from "./ui/skeleton";
-import { User } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { getUserPoints } from "@/functions/get-user-points";
+import { authClient } from "@/lib/auth-client";
 import { getMyProfile } from "@/server/users";
+import { Skeleton } from "./ui/skeleton";
 
 export default function UserMenu({
   variant = "light",
@@ -66,7 +64,7 @@ export default function UserMenu({
         </div>
         <Skeleton
           className={clsx(
-            "h-10 w-10 border-[3px] transform -skew-x-6",
+            "h-10 w-10 -skew-x-6 transform border-[3px]",
             variant === "dark" ? "border-white/20" : "border-black/20",
           )}
         />
@@ -79,13 +77,13 @@ export default function UserMenu({
       <Link to="/login">
         <button
           className={clsx(
-            "px-6 py-2 font-black italic uppercase text-sm border-[3px] shadow-comic transition-all hover:shadow-comic-hover active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transform -skew-x-12",
+            "-skew-x-12 transform border-[3px] px-6 py-2 font-black text-sm uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
             variant === "dark"
-              ? "bg-white text-black border-white"
-              : "bg-[#ccff00] text-black border-black",
+              ? "border-white bg-white text-black"
+              : "border-black bg-[#ccff00] text-black",
           )}
         >
-          <span className="transform skew-x-12 inline-block">Sign In</span>
+          <span className="inline-block skew-x-12 transform">Sign In</span>
         </button>
       </Link>
     );
@@ -96,28 +94,28 @@ export default function UserMenu({
       <DropdownMenuTrigger
         nativeButton={false}
         render={
-          <div className="flex items-center gap-3 cursor-pointer group">
+          <div className="group flex cursor-pointer items-center gap-3">
             <div className="flex flex-col items-end leading-none">
               <span
                 className={clsx(
-                  "font-display font-black text-sm italic uppercase tracking-tighter whitespace-nowrap",
+                  "whitespace-nowrap font-black font-display text-sm uppercase italic tracking-tighter",
                   variant === "dark" ? "text-white" : "text-black",
                 )}
               >
                 {displayName}
               </span>
 
-              <span className="text-[9px] font-black text-[#ff2e2e] uppercase tracking-widest mt-0.5">
+              <span className="mt-0.5 font-black text-[#ff2e2e] text-[9px] uppercase tracking-widest">
                 {totalPoints ?? 0} PTS
               </span>
             </div>
             <div className="relative">
               <div
                 className={clsx(
-                  "w-10 h-10 border-[3px] overflow-hidden transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px] transform -skew-x-6 relative",
+                  "relative h-10 w-10 -skew-x-6 transform overflow-hidden border-[3px] transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px]",
                   variant === "dark"
-                    ? "bg-black border-white shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
-                    : "bg-white border-black shadow-none",
+                    ? "border-white bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
+                    : "border-black bg-white shadow-none",
                 )}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -125,7 +123,7 @@ export default function UserMenu({
                     <img
                       src={(profile?.image ?? session.user.image)!}
                       alt={displayName ?? "User"}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <User
@@ -140,8 +138,8 @@ export default function UserMenu({
                 </div>
               </div>
               {/* Status dot */}
-              <div className="absolute -top-1 -right-1 z-20 w-4 h-4 bg-[#ff2e2e] border-[2px] border-black rounded-full flex items-center justify-center shadow-sm">
-                <span className="text-[8px] font-black text-white">1</span>
+              <div className="absolute -top-1 -right-1 z-20 flex h-4 w-4 items-center justify-center rounded-full border-[2px] border-black bg-[#ff2e2e] shadow-sm">
+                <span className="font-black text-[8px] text-white">1</span>
               </div>
             </div>
           </div>
@@ -149,46 +147,60 @@ export default function UserMenu({
       />
       <DropdownMenuContent
         align="end"
-        className="bg-white border-[3px] border-black shadow-comic w-56 p-2 rounded-none !text-black"
+        className="!text-black w-56 rounded-none border-[3px] border-black bg-white p-2 shadow-comic"
       >
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="font-display font-black italic uppercase text-xs tracking-wider pb-1 !text-black">
+          <DropdownMenuLabel className="!text-black pb-1 font-black font-display text-xs uppercase italic tracking-wider">
             Menu do Jogador
           </DropdownMenuLabel>
-          <div className="px-2 py-1 mb-2 bg-gray-100 border border-black/10 text-[10px] font-bold text-gray-400 truncate">
+          <div className="mb-2 truncate border border-black/10 bg-gray-100 px-2 py-1 font-bold text-[10px] text-gray-400">
             {session.user.email}
           </div>
-          <DropdownMenuSeparator className="bg-black/10 h-[2px]" />
+          <DropdownMenuSeparator className="h-[2px] bg-black/10" />
           <DropdownMenuItem
-            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
             onClick={() => navigate({ to: "/dashboard" })}
           >
-            <span className="material-symbols-outlined text-sm mr-2">
+            <span className="material-symbols-outlined mr-2 text-sm">
               dashboard
             </span>
             Command Center
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
             onClick={() => navigate({ to: "/profile" })}
           >
-            <span className="material-symbols-outlined text-sm mr-2">
+            <span className="material-symbols-outlined mr-2 text-sm">
               person
             </span>
             Perfil do Usuário
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="focus:bg-[#ccff00] focus:!text-black cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
+            onClick={() =>
+              navigate({
+                to: "/users/$userId",
+                params: { userId: session.user.id },
+              })
+            }
+          >
+            <span className="material-symbols-outlined mr-2 text-sm">
+              public
+            </span>
+            Ver Perfil Público
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
             onClick={() => navigate({ to: "/my-bets" })}
           >
-            <span className="material-symbols-outlined text-sm mr-2">
+            <span className="material-symbols-outlined mr-2 text-sm">
               sports
             </span>
             Minhas Apostas
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-black/10 h-[2px]" />
+          <DropdownMenuSeparator className="h-[2px] bg-black/10" />
           <DropdownMenuItem
-            className="focus:bg-[#ff2e2e] focus:!text-white cursor-pointer font-black italic uppercase text-xs p-2 !text-black"
+            className="focus:!text-white !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ff2e2e]"
             onClick={() => {
               authClient.signOut({
                 fetchOptions: {

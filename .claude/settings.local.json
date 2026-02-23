@@ -1,29 +1,31 @@
 {
-  "permissions": {
-    "allow": [
-      "mcp__stitch__list_screens",
-      "mcp__stitch__get_project",
-      "mcp__stitch__get_screen",
-      "Skill(enhance-prompt)",
-      "mcp__stitch__list_projects",
-      "mcp__stitch__generate_screen_from_text",
-      "Bash(npx tsc:*)",
-      "Skill(react:components)",
-      "Bash(bun --env-file=.env run ./scripts/check-playoff-structure.ts)",
-      "Bash(bun --env-file=.env run ./scripts/find-quarterfinals.ts)",
-      "Bash(ls:*)",
-      "Bash(vercel env add:*)",
-      "Bash(vercel:*)",
-      "Bash(gh run view:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(gh run list:*)",
-      "Bash(curl:*)",
-      "Bash(nslookup:*)",
-      "Bash(bun run check-types:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(head:*)"
-    ]
-  }
+	"permissions": {
+		"allow": [
+			"mcp__stitch__list_screens",
+			"mcp__stitch__get_project",
+			"mcp__stitch__get_screen",
+			"Skill(enhance-prompt)",
+			"mcp__stitch__list_projects",
+			"mcp__stitch__generate_screen_from_text",
+			"Bash(npx tsc:*)",
+			"Skill(react:components)",
+			"Bash(bun --env-file=.env run ./scripts/check-playoff-structure.ts)",
+			"Bash(bun --env-file=.env run ./scripts/find-quarterfinals.ts)",
+			"Bash(ls:*)",
+			"Bash(vercel env add:*)",
+			"Bash(vercel:*)",
+			"Bash(gh run view:*)",
+			"Bash(git add:*)",
+			"Bash(git commit:*)",
+			"Bash(git push:*)",
+			"Bash(gh run list:*)",
+			"Bash(curl:*)",
+			"Bash(nslookup:*)",
+			"Bash(bun run check-types:*)",
+			"mcp__ide__getDiagnostics",
+			"Bash(head:*)",
+			"Bash(grep:*)",
+			"Bash(dir C:\\\\Users\\\\vitor\\\\Documents\\\\Code\\\\Web\\\\Projetos_com_IA\\\\bsebet\\\\packages\\\\db\\\\src\\\\schema:*)"
+		]
+	}
 }

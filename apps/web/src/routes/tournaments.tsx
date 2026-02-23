@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/tournaments")({
-  component: TournamentsLayout,
+	component: TournamentsLayout,
 });
 
 function TournamentsLayout() {
-  return <Outlet />;
+	return <Outlet />;
 }

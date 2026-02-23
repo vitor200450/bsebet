@@ -8,6 +8,27 @@
       "when": 1771105551116,
       "tag": "0000_long_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771718942500,
+      "tag": "0001_add_is_recovery_to_bets",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771819717373,
+      "tag": "0002_marvelous_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771827585865,
+      "tag": "0003_short_lizard",
+      "breakpoints": true
     }
   ]
 }

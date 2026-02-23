@@ -1,34 +1,34 @@
 {
-  "name": "@bsebet/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate",
-    "db:seed": "bun run src/seed.ts"
-  },
-  "dependencies": {
-    "@bsebet/env": "workspace:*",
-    "@neondatabase/serverless": "^1.0.2",
-    "dotenv": "^17.2.2",
-    "drizzle-orm": "^0.45.1",
-    "postgres": "^3.4.8",
-    "ws": "^8.18.3",
-    "zod": "^4.1.13"
-  },
-  "devDependencies": {
-    "@bsebet/config": "workspace:*",
-    "@types/ws": "^8.18.1",
-    "drizzle-kit": "^0.31.8",
-    "typescript": "^5"
-  }
+	"name": "@bsebet/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:studio": "drizzle-kit studio",
+		"db:migrate": "drizzle-kit migrate",
+		"db:seed": "bun run src/seed.ts"
+	},
+	"dependencies": {
+		"@bsebet/env": "workspace:*",
+		"@neondatabase/serverless": "^1.0.2",
+		"dotenv": "^17.2.2",
+		"drizzle-orm": "^0.45.1",
+		"postgres": "^3.4.8",
+		"ws": "^8.18.3",
+		"zod": "^4.1.13"
+	},
+	"devDependencies": {
+		"@bsebet/config": "workspace:*",
+		"@types/ws": "^8.18.1",
+		"drizzle-kit": "^0.31.8",
+		"typescript": "^5"
+	}
 }

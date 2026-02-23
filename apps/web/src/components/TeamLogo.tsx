@@ -1,18 +1,18 @@
 import { useState } from "react";
 
 interface TeamLogoProps {
-  teamName: string;
-  logoUrl?: string | null;
-  className?: string;
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
+	teamName: string;
+	logoUrl?: string | null;
+	className?: string;
+	size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 const sizeClasses = {
-  xs: "w-4 h-4",
-  sm: "w-6 h-6",
-  md: "w-8 h-8",
-  lg: "w-12 h-12",
-  xl: "w-16 h-16",
+	xs: "w-4 h-4",
+	sm: "w-6 h-6",
+	md: "w-8 h-8",
+	lg: "w-12 h-12",
+	xl: "w-16 h-16",
 };
 
 /**
@@ -24,33 +24,33 @@ const sizeClasses = {
  * - Carregamento lazy
  */
 export function TeamLogo({
-  teamName,
-  logoUrl,
-  className = "",
-  size = "md",
+	teamName,
+	logoUrl,
+	className = "",
+	size = "md",
 }: TeamLogoProps) {
-  const [error, setError] = useState(false);
+	const [error, setError] = useState(false);
 
-  // Fallback se não tiver logo ou der erro
-  if (!logoUrl || error) {
-    return (
-      <div
-        className={`${sizeClasses[size]} bg-gray-200 rounded-sm flex items-center justify-center text-gray-500 font-bold text-xs ${className}`}
-        title={teamName}
-      >
-        {teamName.charAt(0).toUpperCase()}
-      </div>
-    );
-  }
+	// Fallback se não tiver logo ou der erro
+	if (!logoUrl || error) {
+		return (
+			<div
+				className={`${sizeClasses[size]} flex items-center justify-center rounded-sm bg-gray-200 font-bold text-gray-500 text-xs ${className}`}
+				title={teamName}
+			>
+				{teamName.charAt(0).toUpperCase()}
+			</div>
+		);
+	}
 
-  // Logo do R2 (cacheada pelo CDN)
-  return (
-    <img
-      src={logoUrl}
-      alt={teamName}
-      className={`${sizeClasses[size]} object-contain ${className}`}
-      loading="lazy"
-      onError={() => setError(true)}
-    />
-  );
+	// Logo do R2 (cacheada pelo CDN)
+	return (
+		<img
+			src={logoUrl}
+			alt={teamName}
+			className={`${sizeClasses[size]} object-contain ${className}`}
+			loading="lazy"
+			onError={() => setError(true)}
+		/>
+	);
 }

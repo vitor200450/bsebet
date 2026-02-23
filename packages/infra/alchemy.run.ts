@@ -8,13 +8,13 @@ config({ path: "../../apps/web/.env" });
 const app = await alchemy("bsebet");
 
 export const web = await TanStackStart("web", {
-  cwd: "../../apps/web",
-  bindings: {
-    DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
-    CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
-    BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
-  },
+	cwd: "../../apps/web",
+	bindings: {
+		DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
+		CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
+		BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
+		BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
+	},
 });
 
 await app.finalize();
