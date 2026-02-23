@@ -367,7 +367,7 @@ function RouteComponent() {
 					<Link
 						to="/users/$userId"
 						params={{ userId: user.id }}
-						className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-sm text-black uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
+						className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
 					>
 						<span className="material-symbols-outlined text-sm">public</span>
 						Ver Perfil Público

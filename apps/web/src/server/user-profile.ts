@@ -64,9 +64,7 @@ const getUserStatsFn = createServerFn({ method: "GET" }).handler(
 			perfectPicks: Number(data?.perfectPicks || 0),
 			underdogWins: Number(data?.underdogWins || 0),
 			accuracy:
-				totalBets > 0
-					? Math.round((correctPredictions / totalBets) * 100)
-					: 0,
+				totalBets > 0 ? Math.round((correctPredictions / totalBets) * 100) : 0,
 		};
 	},
 );
@@ -102,9 +100,7 @@ const getUserMedalsFn = createServerFn({ method: "GET" }).handler(
 			.from(bets)
 			.innerJoin(matches, eq(bets.matchId, matches.id))
 			.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
-			.where(
-				and(eq(bets.userId, userId), eq(tournaments.status, "finished")),
-			)
+			.where(and(eq(bets.userId, userId), eq(tournaments.status, "finished")))
 			.groupBy(
 				matches.tournamentId,
 				tournaments.name,
@@ -122,10 +118,9 @@ const getUserMedalsFn = createServerFn({ method: "GET" }).handler(
 			const top3 = await db
 				.select({
 					userId: bets.userId,
-					totalPoints:
-						sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
-							"total_points",
-						),
+					totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
+						"total_points",
+					),
 					perfectPicks:
 						sql<number>`COUNT(CASE WHEN ${bets.isPerfectPick} = true THEN 1 END)`.as(
 							"perfect_picks",
@@ -177,6 +172,76 @@ export const getUserMedals = getUserMedalsFn as unknown as (opts: {
 	data: string;
 }) => Promise<UserMedal[]>;
 
+// --- getUserMedalCounts ---
+// Returns a summary count of medals by tier
+const getUserMedalCountsFn = createServerFn({ method: "GET" }).handler(
+	async (ctx: any) => {
+		const userId = ctx.data as string;
+
+		// Reuse the getUserMedals logic but return counts only
+		const medals = await getUserMedals({ data: userId });
+
+		return {
+			total: medals.length,
+			gold: medals.filter((m) => m.placement === 1).length,
+			silver: medals.filter((m) => m.placement === 2).length,
+			bronze: medals.filter((m) => m.placement === 3).length,
+		};
+	},
+);
+
+export type MedalCounts = {
+	total: number;
+	gold: number;
+	silver: number;
+	bronze: number;
+};
+
+export const getUserMedalCounts = getUserMedalCountsFn as unknown as (opts: {
+	data: string;
+}) => Promise<MedalCounts>;
+
+// --- getUserMedalsExcludingTournament ---
+// Returns medals for a user, optionally excluding a specific tournament
+// Useful for tiebreaker calculations where current tournament medals shouldn't count
+const getUserMedalsExcludingTournamentFn = createServerFn({
+	method: "GET",
+}).handler(async (ctx: any) => {
+	const { userId, excludeTournamentId } = ctx.data as {
+		userId: string;
+		excludeTournamentId?: number;
+	};
+
+	// Get all medals first
+	const allMedals = await getUserMedals({ data: userId });
+
+	// Filter out the excluded tournament if specified
+	const filteredMedals = excludeTournamentId
+		? allMedals.filter((m) => m.tournamentId !== excludeTournamentId)
+		: allMedals;
+
+	return {
+		medals: filteredMedals,
+		gold: filteredMedals.filter((m) => m.placement === 1).length,
+		silver: filteredMedals.filter((m) => m.placement === 2).length,
+		bronze: filteredMedals.filter((m) => m.placement === 3).length,
+		total: filteredMedals.length,
+	};
+});
+
+export type UserMedalsExcludingTournament = {
+	medals: UserMedal[];
+	gold: number;
+	silver: number;
+	bronze: number;
+	total: number;
+};
+
+export const getUserMedalsExcludingTournament =
+	getUserMedalsExcludingTournamentFn as unknown as (opts: {
+		data: { userId: string; excludeTournamentId?: number };
+	}) => Promise<UserMedalsExcludingTournament>;
+
 // --- getUserRecentBets ---
 const getUserRecentBetsFn = createServerFn({ method: "GET" }).handler(
 	async (ctx: any) => {
@@ -226,8 +291,8 @@ export type UserRecentBet = {
 		scoreB: number | null;
 		status: string | null;
 		startTime: Date;
-		teamA: { id: number; name: string; logoUrl: string | null } | null;
-		teamB: { id: number; name: string; logoUrl: string | null } | null;
+		teamA: { id: number; name: string; slug: string; logoUrl: string | null } | null;
+		teamB: { id: number; name: string; slug: string; logoUrl: string | null } | null;
 		winner: { id: number; name: string } | null;
 		tournament: {
 			id: number;
@@ -258,10 +323,9 @@ const getUserTournamentHistoryFn = createServerFn({ method: "GET" }).handler(
 				tournamentStatus: tournaments.status,
 				tournamentCreatedAt: tournaments.createdAt,
 				numBets: sql<number>`count(${bets.id})`.as("num_bets"),
-				totalPoints:
-					sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
-						"total_points",
-					),
+				totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
+					"total_points",
+				),
 				perfectPicks:
 					sql<number>`count(CASE WHEN ${bets.isPerfectPick} = true THEN 1 END)`.as(
 						"perfect_picks",
@@ -291,10 +355,9 @@ const getUserTournamentHistoryFn = createServerFn({ method: "GET" }).handler(
 			const allUsers = await db
 				.select({
 					userId: bets.userId,
-					totalPoints:
-						sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
-							"total_points",
-						),
+					totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as(
+						"total_points",
+					),
 					perfectPicks:
 						sql<number>`COUNT(CASE WHEN ${bets.isPerfectPick} = true THEN 1 END)`.as(
 							"perfect_picks",
@@ -315,8 +378,7 @@ const getUserTournamentHistoryFn = createServerFn({ method: "GET" }).handler(
 					asc(bets.userId),
 				);
 
-			const rank =
-				allUsers.findIndex((u) => u.userId === userId) + 1 || 0;
+			const rank = allUsers.findIndex((u) => u.userId === userId) + 1 || 0;
 
 			result.push({
 				tournamentId: t.tournamentId,

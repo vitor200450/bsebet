@@ -103,9 +103,7 @@ export function MatchCard({
 		<div
 			className={clsx(
 				"group/card relative mx-auto mb-2 w-full max-w-4xl font-sans transition-opacity",
-				isFinished && !showPredictionScore
-					? "opacity-60 grayscale"
-					: "opacity-100",
+				"opacity-100",
 			)}
 		>
 			{/* Match Label Badge (Opening, Winners, etc.) */}

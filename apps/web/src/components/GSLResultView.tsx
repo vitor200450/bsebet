@@ -145,6 +145,12 @@ export function GSLResultView({
 							? {
 									winnerId: initialBet.predictedWinnerId ?? 0,
 									score: `${initialBet.predictedScoreA} - ${initialBet.predictedScoreB}`,
+									pointsEarned: initialBet.pointsEarned,
+									isCorrect: match.winnerId === initialBet.predictedWinnerId,
+									isUnderdogPick: initialBet.isUnderdogPick,
+									isPerfectPick:
+										match.scoreA === initialBet.predictedScoreA &&
+										match.scoreB === initialBet.predictedScoreB,
 								}
 							: undefined
 					}

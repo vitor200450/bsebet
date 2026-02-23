@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ChevronRight, Trophy } from "lucide-react";
+import { MedalSummary } from "@/components/MedalSummary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getDashboardData } from "@/functions/get-dashboard-data";
 import { getUser } from "@/functions/get-user";
+import { getUserMedalCounts, getUserMedals } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";
 
 export const Route = createFileRoute("/dashboard")({
@@ -33,6 +35,20 @@ function RouteComponent() {
 	const { data: profile } = useQuery({
 		queryKey: ["myProfile"],
 		queryFn: () => getMyProfile(),
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data: medalCounts } = useQuery({
+		queryKey: ["myMedalCounts"],
+		queryFn: () => getUserMedalCounts({ data: session?.user?.id || "" }),
+		enabled: !!session?.user?.id,
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data: medals } = useQuery({
+		queryKey: ["myMedals"],
+		queryFn: () => getUserMedals({ data: session?.user?.id || "" }),
+		enabled: !!session?.user?.id,
 		staleTime: 1000 * 60 * 5,
 	});
 
@@ -211,6 +227,34 @@ function RouteComponent() {
 							</div>
 						</div>
 					)}
+				</section>
+
+				{/* Achievements Section */}
+				<section className="mb-10 md:mb-14">
+					<div className="mb-5 flex items-center gap-3">
+						<div className="-rotate-2 transform border-2 border-black bg-[#FFD700] p-2 shadow-[2px_2px_0_0_#000]">
+							<Trophy
+								className="h-5 w-5 text-black md:h-6 md:w-6"
+								strokeWidth={3}
+								fill="black"
+							/>
+						</div>
+						<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
+							CONQUISTAS
+						</h2>
+					</div>
+					<MedalSummary
+						total={medalCounts?.total || 0}
+						gold={medalCounts?.gold || 0}
+						silver={medalCounts?.silver || 0}
+						bronze={medalCounts?.bronze || 0}
+						recentMedals={medals?.slice(0, 3).map((m) => ({
+							tournamentName: m.tournamentName,
+							placement: m.placement,
+							tournamentSlug: m.tournamentSlug,
+						}))}
+						userId={session?.user?.id}
+					/>
 				</section>
 
 				{/* My Active Bets Section */}

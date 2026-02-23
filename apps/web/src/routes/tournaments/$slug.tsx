@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { TournamentBracket } from "@/components/TournamentBracket";
+import { TournamentPodium } from "@/components/TournamentPodium";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTournamentBySlug } from "@/server/tournaments";
@@ -516,6 +517,17 @@ function TournamentDetailsPage() {
 			</div>
 
 			<div className="mx-auto max-w-7xl px-4 py-8">
+				{/* Tournament Podium - Only for finished tournaments */}
+				{tournament.status === "finished" && (
+					<div className="mb-10">
+						<TournamentPodium
+							tournamentId={tournament.id}
+							tournamentName={tournament.name}
+							tournamentLogoUrl={tournament.logoUrl}
+						/>
+					</div>
+				)}
+
 				{/* Filters */}
 				<div className="mb-8 flex flex-wrap items-center gap-4">
 					<FilterButton
@@ -635,14 +647,21 @@ function TournamentDetailsPage() {
 														filter === "my-bets"
 															? userBets.reduce(
 																	(acc: any, bet: any) => {
+																		// Find the match from the matches array to get the real winner
+																		const match = matches.find(
+																			(m: any) => m.id === bet.matchId,
+																		);
 																		acc[bet.matchId] = {
 																			winnerId: bet.predictedWinnerId,
 																			score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
 																			pointsEarned: bet.pointsEarned,
 																			isCorrect:
-																				bet.match?.winnerId ===
+																				match?.winnerId ===
 																				bet.predictedWinnerId,
 																			isUnderdogPick: bet.isUnderdogPick,
+																			isPerfectPick:
+																				match?.scoreA === bet.predictedScoreA &&
+																				match?.scoreB === bet.predictedScoreB,
 																		};
 																		return acc;
 																	},
