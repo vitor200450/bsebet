@@ -1,6 +1,6 @@
 import { bets, matches, tournaments, user } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { asc, desc, eq, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { getUserMedalsExcludingTournament } from "./user-profile";
 
 /**
@@ -76,7 +76,145 @@ const getLeaderboardFn = createServerFn({
     }),
   );
 
-  // Sort with tiebreakers: 1° Pontos · 2° Perfect Picks · 3° Acertos · 4° Underdogs · 5° Medalhas · 6° Nome
+  // For tournament-specific leaderboard, we need additional tiebreaker data
+  let mostImportantMatchId: number | null = null;
+  let mostImportantMatchWinners: Set<string> = new Set();
+  let previousMonthRanks: Map<string, number> = new Map();
+  let globalRanks: Map<string, number> = new Map();
+
+  if (tournamentId) {
+    // 1. Find the most important match (highest roundIndex) in this tournament
+    const mostImportantMatch = await db
+      .select({ id: matches.id })
+      .from(matches)
+      .where(eq(matches.tournamentId, tournamentId))
+      .orderBy(desc(matches.roundIndex))
+      .limit(1);
+
+    if (mostImportantMatch.length > 0) {
+      mostImportantMatchId = mostImportantMatch[0].id;
+
+      // Find users who correctly predicted this match
+      const correctBets = await db
+        .select({ userId: bets.userId })
+        .from(bets)
+        .where(
+          and(
+            eq(bets.matchId, mostImportantMatchId),
+            sql`${bets.pointsEarned} > 0`,
+          ),
+        );
+
+      mostImportantMatchWinners = new Set(
+        correctBets.map((b) => b.userId),
+      );
+    }
+
+    // 2. Calculate best previous month result for each user
+    // Get tournaments that ended in the previous month
+    const now = new Date();
+    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfPreviousMonth = new Date(firstDayOfCurrentMonth.getTime() - 1);
+
+    const previousMonthTournaments = await db
+      .select({ id: tournaments.id })
+      .from(tournaments)
+      .where(
+        and(
+          gte(tournaments.endDate, firstDayOfPreviousMonth),
+          lte(tournaments.endDate, lastDayOfPreviousMonth),
+        ),
+      );
+
+    for (const prevTournament of previousMonthTournaments) {
+      // Get leaderboard for each previous month tournament
+      const prevTournamentBets = await db
+        .select({
+          userId: bets.userId,
+          totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`.as("total_points"),
+        })
+        .from(bets)
+        .innerJoin(matches, eq(bets.matchId, matches.id))
+        .where(eq(matches.tournamentId, prevTournament.id))
+        .groupBy(bets.userId)
+        .orderBy(desc(sql`total_points`));
+
+      // Track best rank for each user across all previous month tournaments
+      prevTournamentBets.forEach((bet, index) => {
+        const currentBest = previousMonthRanks.get(bet.userId);
+        const rank = index + 1;
+        if (currentBest === undefined || rank < currentBest) {
+          previousMonthRanks.set(bet.userId, rank);
+        }
+      });
+    }
+
+    // 3. Calculate global ranking for tiebreaker
+    const globalRows = await baseQuery;
+    const globalMedalsMap = new Map<
+      string,
+      { gold: number; silver: number; bronze: number; total: number }
+    >();
+
+    await Promise.all(
+      globalRows.map(async (row) => {
+        const result = await getUserMedalsExcludingTournament({
+          data: {
+            userId: row.userId,
+            excludeTournamentId: undefined,
+          },
+        });
+        globalMedalsMap.set(row.userId, {
+          gold: result.gold,
+          silver: result.silver,
+          bronze: result.bronze,
+          total: result.total,
+        });
+      }),
+    );
+
+    // Sort global rows with GLOBAL tiebreaker rules
+    const sortedGlobalRows = globalRows
+      .map((row) => ({
+        ...row,
+        medals: globalMedalsMap.get(row.userId) || {
+          gold: 0,
+          silver: 0,
+          bronze: 0,
+          total: 0,
+        },
+      }))
+      .sort((a, b) => {
+        // 1° Pontos (descending)
+        const pointsA = Number(a.totalPoints);
+        const pointsB = Number(b.totalPoints);
+        if (pointsB !== pointsA) return pointsB - pointsA;
+        // 2° Acertos (descending)
+        const correctA = Number(a.correctPredictions);
+        const correctB = Number(b.correctPredictions);
+        if (correctB !== correctA) return correctB - correctA;
+        // 3° Perfect (descending)
+        const perfectA = Number(a.perfectPicks);
+        const perfectB = Number(b.perfectPicks);
+        if (perfectB !== perfectA) return perfectB - perfectA;
+        // 4° Underdogs (descending)
+        const underdogA = Number(a.underdogPicks);
+        const underdogB = Number(b.underdogPicks);
+        if (underdogB !== underdogA) return underdogB - underdogA;
+        // 5° Medalhas (descending)
+        const medalsA = Number(a.medals.total);
+        const medalsB = Number(b.medals.total);
+        if (medalsB !== medalsA) return medalsB - medalsA;
+        return 0;
+      });
+
+    sortedGlobalRows.forEach((row, index) => {
+      globalRanks.set(row.userId, index + 1);
+    });
+  }
+
+  // Sort rows based on leaderboard type
   const sortedRows = rows
     .map((row) => ({
       ...row,
@@ -86,48 +224,58 @@ const getLeaderboardFn = createServerFn({
         bronze: 0,
         total: 0,
       },
+      gotMostImportantMatch: tournamentId
+        ? mostImportantMatchWinners.has(row.userId)
+        : undefined,
+      bestPreviousMonthResult: tournamentId
+        ? previousMonthRanks.get(row.userId) ?? null
+        : undefined,
+      globalRank: tournamentId ? globalRanks.get(row.userId) ?? null : undefined,
     }))
     .sort((a, b) => {
-      // 1° Pontos (descending)
+      // 1° Pontos (descending) - same for both
       const pointsA = Number(a.totalPoints);
       const pointsB = Number(b.totalPoints);
-      if (pointsB !== pointsA) {
-        return pointsB - pointsA;
-      }
-      // 2° Perfect Picks (descending)
-      const perfectA = Number(a.perfectPicks);
-      const perfectB = Number(b.perfectPicks);
-      if (perfectB !== perfectA) {
-        return perfectB - perfectA;
-      }
-      // 3° Acertos (descending)
+      if (pointsB !== pointsA) return pointsB - pointsA;
+
+      // 2° Acertos (descending) - same for both
       const correctA = Number(a.correctPredictions);
       const correctB = Number(b.correctPredictions);
-      if (correctB !== correctA) {
-        return correctB - correctA;
-      }
-      // 4° Underdog Picks (descending) - azarões acertados
+      if (correctB !== correctA) return correctB - correctA;
+
+      // 3° Perfect Picks (descending) - same for both
+      const perfectA = Number(a.perfectPicks);
+      const perfectB = Number(b.perfectPicks);
+      if (perfectB !== perfectA) return perfectB - perfectA;
+
+      // 4° Underdog Picks (descending) - same for both
       const underdogA = Number(a.underdogPicks);
       const underdogB = Number(b.underdogPicks);
-      if (underdogB !== underdogA) {
-        return underdogB - underdogA;
+      if (underdogB !== underdogA) return underdogB - underdogA;
+
+      // Tournament-specific tiebreakers
+      if (tournamentId) {
+        // 5° Got Most Important Match (descending - true > false)
+        const gotMatchA = a.gotMostImportantMatch ? 1 : 0;
+        const gotMatchB = b.gotMostImportantMatch ? 1 : 0;
+        if (gotMatchB !== gotMatchA) return gotMatchB - gotMatchA;
+
+        // 6° Best Previous Month Result (ascending - 1st is better than 10th)
+        const prevMonthA = a.bestPreviousMonthResult ?? Infinity;
+        const prevMonthB = b.bestPreviousMonthResult ?? Infinity;
+        if (prevMonthA !== prevMonthB) return prevMonthA - prevMonthB;
+
+        // 7° Global Rank (ascending - 1st is better than 10th)
+        const globalRankA = a.globalRank ?? Infinity;
+        const globalRankB = b.globalRank ?? Infinity;
+        if (globalRankA !== globalRankB) return globalRankA - globalRankB;
+      } else {
+        // Global leaderboard: 5° Medalhas (descending)
+        const medalsA = Number(a.medals.total);
+        const medalsB = Number(b.medals.total);
+        if (medalsB !== medalsA) return medalsB - medalsA;
       }
-      // 5° Total de Medalhas (descending)
-      const medalsA = Number(a.medals.total);
-      const medalsB = Number(b.medals.total);
-      if (medalsB !== medalsA) {
-        return medalsB - medalsA;
-      }
-      // 6° Nome (ascending - alfabética)
-      const nameA = String(a.nickname || a.name || "")
-        .toLowerCase()
-        .trim();
-      const nameB = String(b.nickname || b.name || "")
-        .toLowerCase()
-        .trim();
-      if (nameA !== nameB) {
-        return nameA.localeCompare(nameB, "pt-BR");
-      }
+
       return 0;
     });
 
@@ -142,6 +290,9 @@ const getLeaderboardFn = createServerFn({
     underdogPicks: Number(row.underdogPicks),
     totalBets: Number(row.totalBets),
     medals: row.medals,
+    gotMostImportantMatch: row.gotMostImportantMatch,
+    bestPreviousMonthResult: row.bestPreviousMonthResult,
+    globalRank: row.globalRank,
   }));
 });
 
@@ -161,6 +312,10 @@ export type LeaderboardEntry = {
     bronze: number;
     total: number;
   };
+  // Tournament-specific tiebreaker fields
+  gotMostImportantMatch?: boolean; // acertou a partida mais importante
+  bestPreviousMonthResult?: number | null; // melhor posição no mês anterior
+  globalRank?: number | null; // posição no ranking global
 };
 
 export const getLeaderboard = getLeaderboardFn as unknown as (opts?: {
