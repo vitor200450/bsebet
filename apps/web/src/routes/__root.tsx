@@ -10,7 +10,7 @@ import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { HeaderProvider } from "@/components/HeaderContext";
 import { Toaster } from "@/components/ui/sonner";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import "../index.css";
 
