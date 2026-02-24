@@ -5,6 +5,7 @@ import {
   HeadContent,
   Outlet,
   Scripts,
+  useLocation,
 } from "@tanstack/react-router";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { GlobalHeader } from "@/components/GlobalHeader";
@@ -45,6 +46,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootDocument() {
+  const location = useLocation();
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head suppressHydrationWarning>
@@ -58,7 +60,7 @@ function RootDocument() {
           </div>
           <Toaster richColors />
           <Scripts />
-          <SpeedInsights />
+          <SpeedInsights route={location.pathname} />
         </HeaderProvider>
       </body>
     </html>
