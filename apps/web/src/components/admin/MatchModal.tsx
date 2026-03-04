@@ -3,7 +3,11 @@ import clsx from "clsx";
 import { AlertCircle, Check, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { createMatch, updateMatch } from "@/server/matches";
+import {
+	createMatch,
+	refreshWalkoverWinner,
+	updateMatch,
+} from "@/server/matches";
 import {
 	CustomDatePicker,
 	CustomSelect,
@@ -46,6 +50,8 @@ export function MatchModal({
 }: MatchModalProps) {
 	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isRefreshingWalkoverWinner, setIsRefreshingWalkoverWinner] =
+		useState(false);
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 	const debounceRef = useRef<NodeJS.Timeout | null>(null);
 	const isFirstRender = useRef(true);
@@ -211,6 +217,19 @@ export function MatchModal({
 		}
 		return null;
 	}, [matchToEdit?.teamBId, formData.teamBType, formData.teamB]);
+
+	const canAutoResolveOneSidedWalkover =
+		formData.resultType === "wo" &&
+		((!!resolvedTeamAId && !resolvedTeamBId) ||
+			(!resolvedTeamAId && !!resolvedTeamBId));
+
+	const canShowRefreshWalkoverWinner =
+		!!matchToEdit &&
+		formData.resultType === "wo" &&
+		formData.status === "finished";
+
+	const canRefreshWalkoverWinner =
+		canShowRefreshWalkoverWinner && !!resolvedTeamAId && !!resolvedTeamBId;
 
 	// Auto-determine winner based on score and validate max score
 	useEffect(() => {
@@ -416,8 +435,14 @@ export function MatchModal({
 			displayOrder: Number(formData.displayOrder),
 			status: formData.status,
 			resultType: formData.resultType,
-			scoreA: Number(formData.scoreA),
-			scoreB: Number(formData.scoreB),
+			scoreA:
+				formData.resultType === "wo" && !formData.winnerId
+					? null
+					: Number(formData.scoreA),
+			scoreB:
+				formData.resultType === "wo" && !formData.winnerId
+					? null
+					: Number(formData.scoreB),
 			winnerId: formData.winnerId ? Number(formData.winnerId) : null,
 		};
 	}, [formData, matches, tournamentId, stages]);
@@ -440,10 +465,7 @@ export function MatchModal({
 
 		if (formData.status === "finished" && !formData.winnerId) {
 			if (formData.resultType === "wo") {
-				const hasTeamA = !!resolvedTeamAId;
-				const hasTeamB = !!resolvedTeamBId;
-
-				if (hasTeamA !== hasTeamB) {
+				if (canAutoResolveOneSidedWalkover) {
 					return null;
 				}
 			}
@@ -559,6 +581,38 @@ export function MatchModal({
 			}
 		}
 		setIsSubmitting(false);
+	};
+
+	const handleRefreshWalkoverWinner = async () => {
+		if (!matchToEdit || !canRefreshWalkoverWinner) return;
+
+		setIsRefreshingWalkoverWinner(true);
+		try {
+			const updated = await refreshWalkoverWinner({
+				data: { matchId: matchToEdit.id },
+			});
+
+			setFormData((prev) => {
+				const next = {
+					...prev,
+					winnerId: updated.winnerId ?? null,
+					scoreA: updated.scoreA ?? 0,
+					scoreB: updated.scoreB ?? 0,
+				};
+				lastSavedData.current = JSON.stringify(next);
+				return next;
+			});
+
+			setSaveStatus("saved");
+			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
+			await onSuccess();
+			toast.success("Vencedor do W.O. atualizado com sucesso");
+			setTimeout(() => setSaveStatus("idle"), 2000);
+		} catch (error) {
+			console.error("Failed to refresh W.O. winner:", error);
+			toast.error("Nao foi possivel atualizar o vencedor do W.O.");
+		}
+		setIsRefreshingWalkoverWinner(false);
 	};
 
 	const handleClose = async () => {
@@ -852,16 +906,56 @@ export function MatchModal({
 											{matchToEdit?.teamB?.name || "Team B"}
 										</button>
 									</div>
-									{formData.resultType === "wo" &&
-										((!!resolvedTeamAId && !resolvedTeamBId) ||
-											(!resolvedTeamAId && !!resolvedTeamBId)) && (
-											<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-blue-700 uppercase">
-												<AlertCircle className="h-3 w-3" />
-												W.O. com um único time definido será resolvido
-												automaticamente.
+									{canAutoResolveOneSidedWalkover && (
+										<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-blue-700 uppercase">
+											<AlertCircle className="h-3 w-3" />
+											W.O. com um único time definido será resolvido
+											automaticamente.
+										</p>
+									)}
+									{canAutoResolveOneSidedWalkover && formData.winnerId && (
+										<button
+											type="button"
+											onClick={() =>
+												setFormData({
+													...formData,
+													winnerId: null,
+													scoreA: 0,
+													scoreB: 0,
+												})
+											}
+											className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-black text-[10px] text-black uppercase hover:bg-yellow-300"
+										>
+											Limpar vencedor (auto-resolver quando time aparecer)
+										</button>
+									)}
+									{canShowRefreshWalkoverWinner && (
+										<button
+											type="button"
+											onClick={handleRefreshWalkoverWinner}
+											disabled={
+												!canRefreshWalkoverWinner || isRefreshingWalkoverWinner
+											}
+											className="mt-2 w-full border-2 border-black bg-blue-100 px-2 py-2 font-black text-[10px] text-black uppercase hover:bg-blue-200 disabled:opacity-60"
+										>
+											{isRefreshingWalkoverWinner ? (
+												<span className="inline-flex items-center gap-1">
+													<Loader2 className="h-3 w-3 animate-spin" />
+													Atualizando...
+												</span>
+											) : (
+												"Refresh vencedor W.O."
+											)}
+										</button>
+									)}
+									{canShowRefreshWalkoverWinner &&
+										!canRefreshWalkoverWinner && (
+											<p className="mt-1 text-center font-bold text-[9px] text-gray-600 uppercase">
+												Refresh disponivel quando os dois times estiverem
+												definidos.
 											</p>
 										)}
-									{!formData.winnerId ? (
+									{!formData.winnerId && !canAutoResolveOneSidedWalkover ? (
 										<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
 											<p className="flex items-center gap-2 font-black text-[10px] text-red-600 uppercase">
 												<AlertCircle className="h-4 w-4" />

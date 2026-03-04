@@ -211,24 +211,19 @@ export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 			const hasTeamB = !!matchData.teamBId;
 
 			if (hasTeamA !== hasTeamB) {
-				const inferredWinnerId = hasTeamA
-					? matchData.teamAId
-					: matchData.teamBId;
+				// One-sided WO with pending opponent definition.
+				// Clear any previously settled points and skip settlement for now;
+				// bracket progression will auto-resolve when both teams are known.
+				await db
+					.update(bets)
+					.set({
+						pointsEarned: 0,
+						isPerfectPick: false,
+						isUnderdogPick: false,
+					})
+					.where(eq(bets.matchId, matchId));
 
-				if (inferredWinnerId) {
-					await db
-						.update(matches)
-						.set({
-							winnerId: inferredWinnerId,
-							scoreA: hasTeamA ? 3 : 0,
-							scoreB: hasTeamB ? 3 : 0,
-						})
-						.where(eq(matches.id, matchId));
-
-					matchData.winnerId = inferredWinnerId;
-					matchData.scoreA = hasTeamA ? 3 : 0;
-					matchData.scoreB = hasTeamB ? 3 : 0;
-				}
+				return { success: true, betsSettled: 0 };
 			}
 
 			if (!matchData.winnerId) {

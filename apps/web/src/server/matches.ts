@@ -51,18 +51,6 @@ function applyWalkoverDefaults(updateData: {
 		}
 		return;
 	}
-
-	const hasTeamA = !!updateData.teamAId;
-	const hasTeamB = !!updateData.teamBId;
-
-	// Auto-resolve one-sided walkover (only one team defined).
-	if (hasTeamA !== hasTeamB) {
-		updateData.winnerId = hasTeamA
-			? (updateData.teamAId ?? null)
-			: (updateData.teamBId ?? null);
-		updateData.scoreA = hasTeamA ? 3 : 0;
-		updateData.scoreB = hasTeamB ? 3 : 0;
-	}
 }
 
 function validateLiveStatusByStartTime(input: {
@@ -161,20 +149,22 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 
 			const nextTeamAId = updates.teamAId ?? depMatch.teamAId;
 			const nextTeamBId = updates.teamBId ?? depMatch.teamBId;
+			const teamAWasResolvedNow = !depMatch.teamAId && !!updates.teamAId;
+			const teamBWasResolvedNow = !depMatch.teamBId && !!updates.teamBId;
 
 			const isPendingWalkoverResolution =
 				depMatch.resultType === "wo" &&
 				depMatch.status === "finished" &&
-				!depMatch.winnerId &&
+				(teamAWasResolvedNow || teamBWasResolvedNow) &&
 				nextTeamAId &&
 				nextTeamBId;
 
 			if (isPendingWalkoverResolution) {
 				let autoWinnerId: number | null = null;
 
-				if (!depMatch.teamAId && updates.teamAId) {
+				if (teamAWasResolvedNow) {
 					autoWinnerId = updates.teamAId;
-				} else if (!depMatch.teamBId && updates.teamBId) {
+				} else if (teamBWasResolvedNow) {
 					autoWinnerId = updates.teamBId;
 				}
 
@@ -324,6 +314,9 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 		const { db } = await import("@bsebet/db");
 		const { matchId, ...updateData } = ctx.data;
 
+		const hasField = (field: string): boolean =>
+			Object.hasOwn(updateData, field);
+
 		// Load current match state to check for status transitions
 		const currentMatch = await db.query.matches.findFirst({
 			where: eq(matches.id, matchId),
@@ -335,14 +328,36 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			updateData.startTime = new Date(updateData.startTime);
 		}
 
+		const nextStatus = hasField("status")
+			? updateData.status
+			: currentMatch.status;
+		const nextResultType = hasField("resultType")
+			? updateData.resultType
+			: currentMatch.resultType;
+		const nextWinnerId = hasField("winnerId")
+			? updateData.winnerId
+			: currentMatch.winnerId;
+		const nextTeamAId = hasField("teamAId")
+			? updateData.teamAId
+			: currentMatch.teamAId;
+		const nextTeamBId = hasField("teamBId")
+			? updateData.teamBId
+			: currentMatch.teamBId;
+		const nextScoreA = hasField("scoreA")
+			? updateData.scoreA
+			: currentMatch.scoreA;
+		const nextScoreB = hasField("scoreB")
+			? updateData.scoreB
+			: currentMatch.scoreB;
+
 		const normalizedWalkoverState = {
-			status: updateData.status ?? currentMatch.status,
-			resultType: updateData.resultType ?? currentMatch.resultType,
-			winnerId: updateData.winnerId ?? currentMatch.winnerId,
-			teamAId: updateData.teamAId ?? currentMatch.teamAId,
-			teamBId: updateData.teamBId ?? currentMatch.teamBId,
-			scoreA: updateData.scoreA ?? currentMatch.scoreA,
-			scoreB: updateData.scoreB ?? currentMatch.scoreB,
+			status: nextStatus,
+			resultType: nextResultType,
+			winnerId: nextWinnerId,
+			teamAId: nextTeamAId,
+			teamBId: nextTeamBId,
+			scoreA: nextScoreA,
+			scoreB: nextScoreB,
 		};
 
 		applyWalkoverDefaults(normalizedWalkoverState);
@@ -384,11 +399,11 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 		}
 
 		validateWalkoverData({
-			status: updateData.status ?? currentMatch.status,
-			resultType: updateData.resultType ?? currentMatch.resultType,
-			winnerId: updateData.winnerId ?? currentMatch.winnerId,
-			teamAId: updateData.teamAId ?? currentMatch.teamAId,
-			teamBId: updateData.teamBId ?? currentMatch.teamBId,
+			status: nextStatus,
+			resultType: nextResultType,
+			winnerId: nextWinnerId,
+			teamAId: nextTeamAId,
+			teamBId: nextTeamBId,
 		});
 
 		validateLiveStatusByStartTime({
@@ -401,8 +416,6 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			.set(updateData)
 			.where(eq(matches.id, matchId))
 			.returning();
-
-		const nextStatus = updateData.status ?? currentMatch.status;
 
 		// Trigger bet settlement when match remains/turns finished
 		if (nextStatus === "finished") {
@@ -423,6 +436,125 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 export const updateMatch = updateMatchFn as unknown as (opts: {
 	data: { matchId: number; [key: string]: any };
 }) => Promise<any>;
+
+const refreshWalkoverWinnerFn = createServerFn({ method: "POST" }).handler(
+	async (ctx: any) => {
+		const { db } = await import("@bsebet/db");
+		const { matchId } = z.object({ matchId: z.number() }).parse(ctx.data);
+
+		const match = await db.query.matches.findFirst({
+			where: eq(matches.id, matchId),
+		});
+
+		if (!match) throw new Error("Match not found");
+		if (match.resultType !== "wo" || match.status !== "finished") {
+			throw new Error("Refresh is only available for finished W.O. matches");
+		}
+		if (!match.teamAId || !match.teamBId) {
+			throw new Error(
+				"Both teams must be defined before refreshing W.O. winner",
+			);
+		}
+
+		const sourceMatchIds = [
+			match.teamAPreviousMatchId,
+			match.teamBPreviousMatchId,
+		].filter((id): id is number => !!id);
+
+		const sourceMatches =
+			sourceMatchIds.length > 0
+				? await db.query.matches.findMany({
+						where: inArray(matches.id, sourceMatchIds),
+						columns: {
+							id: true,
+							teamAId: true,
+							teamBId: true,
+							winnerId: true,
+						},
+					})
+				: [];
+
+		const sourceById = new Map(
+			sourceMatches.map((source) => [source.id, source]),
+		);
+
+		const resolveExpectedTeam = (side: "A" | "B"): number | null => {
+			const previousMatchId =
+				side === "A" ? match.teamAPreviousMatchId : match.teamBPreviousMatchId;
+			const previousMatchResult =
+				side === "A"
+					? match.teamAPreviousMatchResult
+					: match.teamBPreviousMatchResult;
+
+			if (!previousMatchId || !previousMatchResult) {
+				return null;
+			}
+
+			const source = sourceById.get(previousMatchId);
+			if (!source?.winnerId) {
+				return null;
+			}
+
+			if (previousMatchResult === "winner") {
+				return source.winnerId;
+			}
+
+			if (source.teamAId === source.winnerId) {
+				return source.teamBId ?? null;
+			}
+
+			if (source.teamBId === source.winnerId) {
+				return source.teamAId ?? null;
+			}
+
+			return null;
+		};
+
+		const expectedTeamA = resolveExpectedTeam("A");
+		const expectedTeamB = resolveExpectedTeam("B");
+
+		const teamAIsProgressed =
+			expectedTeamA !== null && expectedTeamA === match.teamAId;
+		const teamBIsProgressed =
+			expectedTeamB !== null && expectedTeamB === match.teamBId;
+
+		let nextWinnerId: number | null = null;
+
+		if (teamAIsProgressed && !teamBIsProgressed) {
+			nextWinnerId = match.teamAId;
+		} else if (teamBIsProgressed && !teamAIsProgressed) {
+			nextWinnerId = match.teamBId;
+		} else if (match.winnerId) {
+			nextWinnerId = match.winnerId;
+		}
+
+		if (!nextWinnerId) {
+			throw new Error(
+				"Could not infer W.O. winner automatically. Please select winner manually.",
+			);
+		}
+
+		const [updated] = await db
+			.update(matches)
+			.set({
+				winnerId: nextWinnerId,
+				scoreA: nextWinnerId === match.teamAId ? 3 : 0,
+				scoreB: nextWinnerId === match.teamBId ? 3 : 0,
+			})
+			.where(eq(matches.id, matchId))
+			.returning();
+
+		await settleBets({ data: { matchId } });
+		await updateBracketProgression(db, updated);
+
+		return updated;
+	},
+);
+
+export const refreshWalkoverWinner =
+	refreshWalkoverWinnerFn as unknown as (opts: {
+		data: { matchId: number };
+	}) => Promise<any>;
 
 const createMatchFn = createServerFn({ method: "POST" }).handler(
 	async (ctx: any) => {
