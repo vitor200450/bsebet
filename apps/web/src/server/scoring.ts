@@ -1,6 +1,6 @@
-import { bets, matches } from "@bsebet/db/schema";
+import { bets, matches, pointAdjustments } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 type ScoringRules = {
@@ -8,6 +8,8 @@ type ScoringRules = {
 	exact: number;
 	underdog_25: number; // Extreme underdog (≤25%)
 	underdog_50: number; // Moderate underdog (26-50%)
+	underdog_tier1_max_pct?: number;
+	underdog_tier2_max_pct?: number;
 };
 
 /**
@@ -38,6 +40,8 @@ export function calculatePoints(
 		exact: rules.exact ?? 3,
 		underdog_25: rules.underdog_25 ?? 2,
 		underdog_50: rules.underdog_50 ?? 1,
+		underdog_tier1_max_pct: rules.underdog_tier1_max_pct ?? 0.25,
+		underdog_tier2_max_pct: rules.underdog_tier2_max_pct ?? 0.5,
 	};
 
 	let points = 0;
@@ -100,8 +104,24 @@ export function calculateUnderdogStatus(
 	bets: { predictedWinnerId: number | null }[],
 	teamAId: number,
 	teamBId: number,
+	thresholds?: {
+		tier1MaxPct?: number;
+		tier2MaxPct?: number;
+	},
 ): { teamId: number; tier: 1 | 2 } | null {
 	if (bets.length === 0) return null;
+
+	const tier1MaxPct = thresholds?.tier1MaxPct ?? 0.25;
+	const tier2MaxPct = thresholds?.tier2MaxPct ?? 0.5;
+
+	const hasValidThresholds =
+		tier1MaxPct > 0 &&
+		tier2MaxPct > 0 &&
+		tier1MaxPct <= tier2MaxPct &&
+		tier2MaxPct <= 1;
+
+	const safeTier1 = hasValidThresholds ? tier1MaxPct : 0.25;
+	const safeTier2 = hasValidThresholds ? tier2MaxPct : 0.5;
 
 	const teamAVotes = bets.filter((b) => b.predictedWinnerId === teamAId).length;
 	const teamBVotes = bets.filter((b) => b.predictedWinnerId === teamBId).length;
@@ -113,18 +133,18 @@ export function calculateUnderdogStatus(
 	const teamBPercent = teamBVotes / totalVotes;
 
 	// Tier 1: Extreme underdog (≤25%)
-	if (teamAPercent <= 0.25) {
+	if (teamAPercent <= safeTier1) {
 		return { teamId: teamAId, tier: 1 };
 	}
-	if (teamBPercent <= 0.25) {
+	if (teamBPercent <= safeTier1) {
 		return { teamId: teamBId, tier: 1 };
 	}
 
 	// Tier 2: Moderate underdog (26-50%)
-	if (teamAPercent > 0.25 && teamAPercent <= 0.5) {
+	if (teamAPercent > safeTier1 && teamAPercent <= safeTier2) {
 		return { teamId: teamAId, tier: 2 };
 	}
-	if (teamBPercent > 0.25 && teamBPercent <= 0.5) {
+	if (teamBPercent > safeTier1 && teamBPercent <= safeTier2) {
 		return { teamId: teamBId, tier: 2 };
 	}
 
@@ -140,7 +160,12 @@ export function calculateUnderdogStatus(
 export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 	async (ctx: any) => {
 		const { db } = await import("@bsebet/db");
-		const { matchId } = z.object({ matchId: z.number() }).parse(ctx.data);
+		const { matchId, includeAdjustments } = z
+			.object({
+				matchId: z.number(),
+				includeAdjustments: z.boolean().optional().default(true),
+			})
+			.parse(ctx.data);
 
 		// 1. Fetch match and tournament rules
 		const matchData = await db.query.matches.findFirst({
@@ -179,21 +204,98 @@ export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 			// throw new Error("Tournament scoring rules not found");
 		}
 
+		const isWalkover = matchData.resultType === "wo";
+
+		if (isWalkover && !matchData.winnerId) {
+			const hasTeamA = !!matchData.teamAId;
+			const hasTeamB = !!matchData.teamBId;
+
+			if (hasTeamA !== hasTeamB) {
+				const inferredWinnerId = hasTeamA
+					? matchData.teamAId
+					: matchData.teamBId;
+
+				if (inferredWinnerId) {
+					await db
+						.update(matches)
+						.set({
+							winnerId: inferredWinnerId,
+							scoreA: hasTeamA ? 3 : 0,
+							scoreB: hasTeamB ? 3 : 0,
+						})
+						.where(eq(matches.id, matchId));
+
+					matchData.winnerId = inferredWinnerId;
+					matchData.scoreA = hasTeamA ? 3 : 0;
+					matchData.scoreB = hasTeamB ? 3 : 0;
+				}
+			}
+
+			if (!matchData.winnerId) {
+				throw new Error("Walkover match requires winnerId before settlement");
+			}
+		}
+
 		// 2. Fetch all bets for this match
-		const matchBets = await db.query.bets.findMany({
+		let matchBets = await db.query.bets.findMany({
 			where: eq(bets.matchId, matchId),
 		});
+
+		// WO fallback: if the match had no betting window (no bets at all),
+		// award base winner points to active bettors of the tournament.
+		// This allows retroactive settlement on recalculation without manual adjustments.
+		if (
+			isWalkover &&
+			matchBets.length === 0 &&
+			matchData.tournamentId &&
+			matchData.winnerId
+		) {
+			const tournamentBettors = await db
+				.select({ userId: bets.userId })
+				.from(bets)
+				.innerJoin(matches, eq(bets.matchId, matches.id))
+				.where(eq(matches.tournamentId, matchData.tournamentId))
+				.groupBy(bets.userId);
+
+			if (tournamentBettors.length > 0) {
+				const defaultScoreA =
+					matchData.scoreA ??
+					(matchData.winnerId === matchData.teamAId ? 3 : 0);
+				const defaultScoreB =
+					matchData.scoreB ??
+					(matchData.winnerId === matchData.teamBId ? 3 : 0);
+
+				await db.insert(bets).values(
+					tournamentBettors.map((bettor) => ({
+						userId: bettor.userId,
+						matchId,
+						predictedWinnerId: matchData.winnerId,
+						predictedScoreA: defaultScoreA,
+						predictedScoreB: defaultScoreB,
+						isRecovery: true,
+					})),
+				);
+
+				matchBets = await db.query.bets.findMany({
+					where: eq(bets.matchId, matchId),
+				});
+			}
+		}
 
 		// 2.5 Calculate Underdog (Dynamic Calculation with Tiers)
 		// Tier 1: ≤25% of votes, Tier 2: 26-50% of votes
 		let calculatedUnderdogId: number | null = null;
 		let calculatedUnderdogTier: 1 | 2 | null = null;
 
-		if (matchData.teamAId && matchData.teamBId) {
+		if (!isWalkover && matchData.teamAId && matchData.teamBId) {
 			const underdogResult = calculateUnderdogStatus(
 				matchBets,
 				matchData.teamAId,
 				matchData.teamBId,
+				{
+					tier1MaxPct: rules.underdog_tier1_max_pct,
+					tier2MaxPct: rules.underdog_tier2_max_pct,
+				},
 			);
 
 			if (underdogResult) {
@@ -211,7 +313,35 @@ export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 		}
 
 		// 3. Calculate points for each bet and prepare updates
+		const adjustmentPointsByUserId = new Map<string, number>();
+
+		if (includeAdjustments) {
+			const adjustments = await db
+				.select({
+					userId: pointAdjustments.userId,
+					totalPoints: sql<number>`coalesce(sum(${pointAdjustments.points}), 0)`,
+				})
+				.from(pointAdjustments)
+				.where(eq(pointAdjustments.matchId, matchId))
+				.groupBy(pointAdjustments.userId);
+
+			for (const adj of adjustments) {
+				adjustmentPointsByUserId.set(adj.userId, Number(adj.totalPoints || 0));
+			}
+		}
+
 		const updates = matchBets.map((bet) => {
+			const adjustmentPoints = adjustmentPointsByUserId.get(bet.userId) ?? 0;
+
+			if (isWalkover) {
+				return {
+					id: bet.id,
+					points: rules.winner + adjustmentPoints,
+					isPerfectPick: false,
+					isUnderdogPick: false,
+				};
+			}
+
 			const calculation = calculatePoints(
 				{
 					predictedWinnerId: bet.predictedWinnerId,
@@ -230,7 +360,9 @@ export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 
 			return {
 				id: bet.id,
-				...calculation,
+				points: calculation.points + adjustmentPoints,
+				isPerfectPick: calculation.isPerfectPick,
+				isUnderdogPick: calculation.isUnderdogPick,
 			};
 		});
 
@@ -254,5 +386,5 @@ export const settleBetsFn = createServerFn({ method: "POST" }).handler(
 );
 
 export const settleBets = settleBetsFn as unknown as (opts: {
-	data: { matchId: number };
+	data: { matchId: number; includeAdjustments?: boolean };
 }) => Promise<{ success: boolean; betsSettled: number }>;

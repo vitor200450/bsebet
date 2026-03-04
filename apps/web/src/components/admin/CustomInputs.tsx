@@ -125,6 +125,14 @@ export const CustomDatePicker = ({
 	);
 
 	useEffect(() => {
+		if (!value) return;
+		const parsed = new Date(value);
+		if (!isNaN(parsed.getTime())) {
+			setCurrentDate(parsed);
+		}
+	}, [value]);
+
+	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
 				containerRef.current &&

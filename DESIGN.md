@@ -70,6 +70,21 @@
 - **Effects**: `text-shadow-sm` (subtle shadow for legibility).
 - **Contrast**: Text color MUST NEVER match the background color (e.g. no white text on light gray). Always force `text-black` or `text-white` explicitly.
 
+### Mandatory Contrast Rules (Hard Requirement)
+
+- Never ship implicit text colors on colored surfaces. Always set explicit text color classes.
+- Light surfaces (`paper`, `tape`, `white`, `yellow`, `neon green`) must use `text-black`/`text-ink`.
+- Dark or saturated surfaces (`black`, `ink`, `brawl-red`, `brawl-blue`) may use `text-white`.
+- Avoid `text-white` on low-contrast backgrounds (`bg-white`, `bg-gray-*`, `bg-[#f0f0f0]`, `bg-[#e6e6e6]`, `bg-[#ffc700]`, `bg-[#ccff00]`).
+- For badges/pills/chips, enforce pairings explicitly:
+  - `bg-[#ccff00]` -> `text-black`
+  - `bg-[#ffc700]` -> `text-black`
+  - `bg-black` -> `text-white`
+  - `bg-[#ff2e2e]` -> `text-white`
+  - `bg-[#2e5cff]` -> `text-white`
+- In hover/active states, verify text remains readable after background transition.
+- If uncertain, prefer black text and darken the background instead of forcing white text.
+
 ## 4. Shapes & Geometry
 
 ### Transformations

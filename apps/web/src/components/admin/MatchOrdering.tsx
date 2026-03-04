@@ -202,6 +202,10 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 		const { active, over } = event;
 		setActiveId(null);
 
+		if (!over) {
+			return;
+		}
+
 		if (active.id !== over.id) {
 			setMatches((items) => {
 				const oldIndex = items.findIndex((i) => i.id === active.id);

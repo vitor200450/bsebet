@@ -11,6 +11,44 @@ import {
 	uploadLogoToR2,
 } from "./r2";
 
+const scoringRulesSchema = z
+	.object({
+		winner: z.number(),
+		exact: z.number(),
+		underdog_25: z.number(),
+		underdog_50: z.number(),
+		underdog_tier1_max_pct: z.number().optional(),
+		underdog_tier2_max_pct: z.number().optional(),
+	})
+	.superRefine((rules, ctx) => {
+		const tier1 = rules.underdog_tier1_max_pct ?? 0.25;
+		const tier2 = rules.underdog_tier2_max_pct ?? 0.5;
+
+		if (tier1 <= 0 || tier1 > 1) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["underdog_tier1_max_pct"],
+				message: "Tier 1 must be between 0 and 1.",
+			});
+		}
+
+		if (tier2 <= 0 || tier2 > 1) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["underdog_tier2_max_pct"],
+				message: "Tier 2 must be between 0 and 1.",
+			});
+		}
+
+		if (tier1 > tier2) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["underdog_tier1_max_pct"],
+				message: "Tier 1 threshold cannot be greater than Tier 2.",
+			});
+		}
+	});
+
 // Schema for Tournament Input
 const tournamentSchema = z.object({
 	id: z.number().optional(),
@@ -45,13 +83,7 @@ const tournamentSchema = z.object({
 				}),
 				startDate: z.string().optional(),
 				endDate: z.string().optional(),
-				scoringRules: z
-					.object({
-						winner: z.number(),
-						exact: z.number(),
-						underdog_25: z.number(),
-					})
-					.optional(),
+				scoringRules: scoringRulesSchema.optional(),
 			}),
 		)
 		.default([]),
@@ -60,17 +92,14 @@ const tournamentSchema = z.object({
 	status: z.enum(["upcoming", "active", "finished"]).default("upcoming"),
 	isActive: z.boolean().default(true),
 	// Default scoring rules if creating new
-	scoringRules: z
-		.object({
-			winner: z.number(),
-			exact: z.number(),
-			underdog_25: z.number(),
-		})
-		.default({
-			winner: 1,
-			exact: 3,
-			underdog_25: 2,
-		}),
+	scoringRules: scoringRulesSchema.default({
+		winner: 1,
+		exact: 3,
+		underdog_25: 2,
+		underdog_50: 1,
+		underdog_tier1_max_pct: 0.25,
+		underdog_tier2_max_pct: 0.5,
+	}),
 });
 
 type TournamentInput = z.input<typeof tournamentSchema>;
@@ -309,7 +338,7 @@ const getTournamentBySlugFn = createServerFn({
 	// 2. Get Matches
 	const tournamentMatches = await db.query.matches.findMany({
 		where: eq(matches.tournamentId, tournament.id),
-		orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
+		orderBy: [asc(matches.displayOrder), asc(matches.startTime)],
 		with: {
 			teamA: true,
 			teamB: true,

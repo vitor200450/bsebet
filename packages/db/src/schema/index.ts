@@ -23,6 +23,11 @@ export const matchStatusEnum = pgEnum("match_status", [
 	"finished",
 ]);
 
+export const matchResultTypeEnum = pgEnum("match_result_type", [
+	"normal",
+	"wo",
+]);
+
 export const tournamentStatusEnum = pgEnum("tournament_status", [
 	"upcoming",
 	"active",
@@ -87,6 +92,9 @@ export const tournaments = pgTable("tournaments", {
 					winner: number;
 					exact: number;
 					underdog_25: number;
+					underdog_50: number;
+					underdog_tier1_max_pct?: number;
+					underdog_tier2_max_pct?: number;
 				};
 			}[]
 		>(),
@@ -99,6 +107,9 @@ export const tournaments = pgTable("tournaments", {
 			winner: number;
 			exact: number;
 			underdog_25: number;
+			underdog_50: number;
+			underdog_tier1_max_pct?: number;
+			underdog_tier2_max_pct?: number;
 		}>()
 		.notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
@@ -144,6 +155,7 @@ export const matches = pgTable(
 
 		startTime: timestamp("start_time").notNull(),
 		status: matchStatusEnum("status").default("scheduled"),
+		resultType: matchResultTypeEnum("result_type").default("normal").notNull(),
 
 		// Resultado Final
 		winnerId: integer("winner_id").references(() => teams.id), // Quem ganhou?

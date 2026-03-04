@@ -12,12 +12,14 @@ interface MatchDaySelectorProps {
 	matchDays: MatchDay[];
 	activeMatchDayId: number | null;
 	onSelect: (matchDayId: number) => void;
+	tournamentName?: string;
 }
 
 export function MatchDaySelector({
 	matchDays,
 	activeMatchDayId,
 	onSelect,
+	tournamentName,
 }: MatchDaySelectorProps) {
 	const getStatusInfo = (status: string) => {
 		switch (status) {
@@ -81,6 +83,16 @@ export function MatchDaySelector({
 							Selecione o Match Day
 						</h1>
 					</div>
+					{tournamentName && (
+						<div className="mt-2 mb-4 flex w-full justify-center">
+							<div className="inline-flex items-center gap-2 border-[3px] border-black bg-[#ccff00] px-4 py-2 shadow-[4px_4px_0px_0px_#000]">
+								<Trophy className="h-4 w-4 text-black" strokeWidth={3} />
+								<span className="font-black text-black text-xs uppercase md:text-sm">
+									Torneio: {tournamentName}
+								</span>
+							</div>
+						</div>
+					)}
 					<p className="font-bold text-gray-600 text-sm uppercase md:text-base">
 						Escolha qual dia de partidas você quer visualizar
 					</p>
@@ -90,21 +102,37 @@ export function MatchDaySelector({
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					{sortedMatchDays.map((md) => {
 						const isActive = md.id === activeMatchDayId;
+						const isDraft = md.status === "draft";
 						const statusInfo = getStatusInfo(md.status);
 						const Icon = statusInfo.icon;
 
 						return (
 							<button
 								key={md.id}
-								onClick={() => onSelect(md.id)}
-								className={`relative border-[4px] border-black bg-white p-6 text-left shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${isActive ? "ring-4 ring-[#ccff00] ring-offset-4" : ""}
-                `}
+								type="button"
+								onClick={() => {
+									if (isDraft) return;
+									onSelect(md.id);
+								}}
+								disabled={isDraft}
+								className={`relative border-[4px] border-black bg-white p-6 text-left shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 ${
+									isDraft
+										? "cursor-not-allowed opacity-70"
+										: "hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+								} ${isActive ? "ring-4 ring-[#ccff00] ring-offset-4" : ""}`}
 							>
 								{/* Active Badge */}
 								{isActive && (
 									<div className="absolute -top-3 -right-3 rotate-12 border-[3px] border-black bg-[#ccff00] px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
 										<span className="font-black text-black text-xs uppercase">
 											🔥 Ativo
+										</span>
+									</div>
+								)}
+								{isDraft && (
+									<div className="absolute inset-0 z-10 flex items-center justify-center bg-black/35">
+										<span className="border-[2px] border-white bg-black px-2 py-1 font-black text-[10px] text-white uppercase">
+											Indisponivel
 										</span>
 									</div>
 								)}
@@ -156,7 +184,7 @@ export function MatchDaySelector({
 													{md.matchCount !== 1 ? "eis" : ""}
 												</span>
 											</>
-										) : (
+										) : isDraft ? (
 											<>
 												<span className="material-symbols-outlined text-base text-red-500">
 													warning
@@ -165,6 +193,10 @@ export function MatchDaySelector({
 													Nenhuma partida atribuída
 												</span>
 											</>
+										) : (
+											<span className="font-bold text-gray-400 text-xs uppercase">
+												Aguardando atualização
+											</span>
 										)}
 									</div>
 								)}

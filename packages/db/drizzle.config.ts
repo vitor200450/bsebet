@@ -2,7 +2,13 @@ import dotenv from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
 dotenv.config({
+	path: "../../.env",
+	override: true,
+});
+
+dotenv.config({
 	path: "../../apps/web/.env",
+	override: false,
 });
 
 let databaseUrl = process.env.DATABASE_URL || "";

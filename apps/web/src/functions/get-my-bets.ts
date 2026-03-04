@@ -81,6 +81,7 @@ export const getMyBets = createServerFn({ method: "GET" })
 				labelTeamB: true,
 				startTime: true,
 				status: true,
+				resultType: true,
 				winnerId: true,
 				scoreA: true,
 				scoreB: true,
@@ -118,6 +119,7 @@ export const getMyBets = createServerFn({ method: "GET" })
 							labelTeamB: true,
 							startTime: true,
 							status: true,
+							resultType: true,
 							winnerId: true,
 							scoreA: true,
 							scoreB: true,
@@ -202,61 +204,83 @@ export const getMyBets = createServerFn({ method: "GET" })
 		// Create a map of all matches for lookup
 		const allMatchesMap = new Map(allTournamentMatches.map((m) => [m.id, m]));
 
-		// Create a map of match results: use REAL winner for finished matches, predicted for others
-		const matchResults = new Map<
+		// Create a map of match outcomes: use REAL winner for finished matches, predicted for others.
+		// This is needed because downstream slots can request either "winner" or "loser".
+		type MatchTeam = (typeof allTournamentMatches)[0]["winner"];
+		const matchOutcomes = new Map<
 			number,
-			(typeof allTournamentMatches)[0]["winner"]
+			{ winner: MatchTeam; loser: MatchTeam }
 		>();
 
 		for (const match of allTournamentMatches) {
+			let winner: MatchTeam = null;
+
 			if (match.status === "finished" && match.winner) {
-				// Use real result for finished matches
-				matchResults.set(match.id, match.winner);
+				winner = match.winner;
 			} else {
-				// Use user's prediction for non-finished matches
 				const userBet = userBets.find((b) => b.matchId === match.id);
-				if (userBet?.predictedWinner) {
-					matchResults.set(match.id, userBet.predictedWinner);
-				}
+				winner = userBet?.predictedWinner ?? null;
 			}
+
+			let loser: MatchTeam = null;
+			if (winner && match.teamA && match.teamB) {
+				loser = match.teamA.id === winner.id ? match.teamB : match.teamA;
+			}
+
+			matchOutcomes.set(match.id, { winner, loser });
 		}
 
 		// 3. PROJECT WINNERS FORWARD
 		// Build a map of which matches feed into which slots
 		const matchFeedsInto = new Map<
 			number,
-			Array<{ targetId: number; slot: "A" | "B" }>
+			Array<{
+				targetId: number;
+				slot: "A" | "B";
+				requiredResult: "winner" | "loser";
+			}>
 		>();
 
 		for (const match of allTournamentMatches) {
 			if (match.teamAPreviousMatchId) {
 				const feeds = matchFeedsInto.get(match.teamAPreviousMatchId) || [];
-				feeds.push({ targetId: match.id, slot: "A" });
+				feeds.push({
+					targetId: match.id,
+					slot: "A",
+					requiredResult:
+						match.teamAPreviousMatchResult === "loser" ? "loser" : "winner",
+				});
 				matchFeedsInto.set(match.teamAPreviousMatchId, feeds);
 			}
 			if (match.teamBPreviousMatchId) {
 				const feeds = matchFeedsInto.get(match.teamBPreviousMatchId) || [];
-				feeds.push({ targetId: match.id, slot: "B" });
+				feeds.push({
+					targetId: match.id,
+					slot: "B",
+					requiredResult:
+						match.teamBPreviousMatchResult === "loser" ? "loser" : "winner",
+				});
 				matchFeedsInto.set(match.teamBPreviousMatchId, feeds);
 			}
 		}
 
-		// Project winners (real results first, then predictions)
-		for (const [matchId, winner] of matchResults) {
-			if (!winner) continue;
-
+		// Project outcomes (winner/loser) forward based on each slot rule.
+		for (const [matchId, outcome] of matchOutcomes) {
 			const targets = matchFeedsInto.get(matchId);
 			if (!targets || targets.length === 0) continue;
 
 			for (const target of targets) {
 				const targetMatch = allMatchesMap.get(target.targetId);
 				if (!targetMatch) continue;
+				const projectedTeam =
+					target.requiredResult === "loser" ? outcome.loser : outcome.winner;
+				if (!projectedTeam) continue;
 
-				// Project the winner
+				// Project to the correct slot.
 				if (target.slot === "A") {
-					targetMatch.teamA = winner;
+					targetMatch.teamA = projectedTeam;
 				} else {
-					targetMatch.teamB = winner;
+					targetMatch.teamB = projectedTeam;
 				}
 			}
 		}
@@ -294,16 +318,24 @@ export const getMyBets = createServerFn({ method: "GET" })
 
 			// Check slot A
 			if (match.teamAPreviousMatchId) {
-				const prevMatchResult = matchResults.get(match.teamAPreviousMatchId);
-				if (prevMatchResult && match.teamA?.id === prevMatchResult.id) {
+				const prevOutcome = matchOutcomes.get(match.teamAPreviousMatchId);
+				const requiredResult =
+					match.teamAPreviousMatchResult === "loser" ? "loser" : "winner";
+				const projectedTeam =
+					requiredResult === "loser" ? prevOutcome?.loser : prevOutcome?.winner;
+				if (projectedTeam && match.teamA?.id === projectedTeam.id) {
 					hasProjectedTeam = true;
 				}
 			}
 
 			// Check slot B
 			if (match.teamBPreviousMatchId) {
-				const prevMatchResult = matchResults.get(match.teamBPreviousMatchId);
-				if (prevMatchResult && match.teamB?.id === prevMatchResult.id) {
+				const prevOutcome = matchOutcomes.get(match.teamBPreviousMatchId);
+				const requiredResult =
+					match.teamBPreviousMatchResult === "loser" ? "loser" : "winner";
+				const projectedTeam =
+					requiredResult === "loser" ? prevOutcome?.loser : prevOutcome?.winner;
+				if (projectedTeam && match.teamB?.id === projectedTeam.id) {
 					hasProjectedTeam = true;
 				}
 			}
@@ -352,6 +384,37 @@ export const getMyBets = createServerFn({ method: "GET" })
 		}
 
 		const betsByTournament = Array.from(tournamentMapProjected.values());
+
+		for (const group of betsByTournament) {
+			group.bets.sort((a, b) => {
+				const aHasOrder =
+					a.match.displayOrder !== null && a.match.displayOrder !== undefined;
+				const bHasOrder =
+					b.match.displayOrder !== null && b.match.displayOrder !== undefined;
+
+				if (aHasOrder && bHasOrder) {
+					const aOrder = a.match.displayOrder ?? 0;
+					const bOrder = b.match.displayOrder ?? 0;
+					if (aOrder !== bOrder) return aOrder - bOrder;
+				} else if (aHasOrder !== bHasOrder) {
+					return aHasOrder ? -1 : 1;
+				}
+
+				const aTime = new Date(a.match.startTime).getTime();
+				const bTime = new Date(b.match.startTime).getTime();
+				if (aTime !== bTime) return aTime - bTime;
+
+				const aRound = a.match.roundIndex ?? 999;
+				const bRound = b.match.roundIndex ?? 999;
+				if (aRound !== bRound) return aRound - bRound;
+
+				return a.match.id - b.match.id;
+			});
+		}
+
+		betsByTournament.sort((a, b) =>
+			a.tournament.name.localeCompare(b.tournament.name, "pt-BR"),
+		);
 
 		return { stats, betsByTournament };
 	});

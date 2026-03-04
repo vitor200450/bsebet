@@ -26,7 +26,7 @@ interface MatchModalProps {
 	matchDays: { id: number; label: string; date: string }[]; // Keep simple matchDays structure
 	matches: any[]; // Matches for dependency selection
 	matchToEdit?: any; // Optional match to edit
-	onSuccess: () => void;
+	onSuccess: () => void | Promise<void>;
 	groupsCount?: number;
 	advancingPerGroup?: number;
 }
@@ -53,6 +53,13 @@ export function MatchModal({
 
 	// Helper to determine initial state from editing match
 	const getInitialState = () => {
+		const toLocalDateString = (date: Date): string => {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, "0");
+			const day = String(date.getDate()).padStart(2, "0");
+			return `${year}-${month}-${day}`;
+		};
+
 		if (!matchToEdit) {
 			return {
 				stageId: stages[0]?.id || "",
@@ -86,6 +93,7 @@ export function MatchModal({
 				displayOrder: 0,
 
 				status: "scheduled" as "scheduled" | "live" | "finished",
+				resultType: "normal" as "normal" | "wo",
 				scoreA: 0,
 				scoreB: 0,
 				winnerId: null as number | null,
@@ -102,7 +110,7 @@ export function MatchModal({
 			stageId: matchToEdit.stageId || matchToEdit.label || stages[0]?.id || "",
 			label: matchToEdit.label || "", // Keep label for reference
 			date: isValidDate
-				? start.toISOString().split("T")[0]
+				? toLocalDateString(start)
 				: matchToEdit.startTime?.split("T")[0] || "",
 			time: isValidDate
 				? start.toLocaleTimeString([], {
@@ -154,6 +162,7 @@ export function MatchModal({
 			status:
 				(matchToEdit.status as "scheduled" | "live" | "finished") ||
 				"scheduled",
+			resultType: (matchToEdit.resultType as "normal" | "wo") || "normal",
 			scoreA: matchToEdit.scoreA ?? 0,
 			scoreB: matchToEdit.scoreB ?? 0,
 			winnerId: matchToEdit.winnerId ?? null,
@@ -189,10 +198,10 @@ export function MatchModal({
 
 	// Auto-determine winner based on score and validate max score
 	useEffect(() => {
-		if (!matchToEdit) return;
+		if (formData.resultType === "wo") return;
 
 		// Determine format from tournament or default to BO5
-		const matchFormat = matchToEdit.tournament?.format?.toLowerCase() || "bo5";
+		const matchFormat = matchToEdit?.tournament?.format?.toLowerCase() || "bo5";
 		let bestOf = 5;
 		if (matchFormat.includes("bo3")) bestOf = 3;
 		else if (matchFormat.includes("bo5")) bestOf = 5;
@@ -200,6 +209,16 @@ export function MatchModal({
 
 		const winsNeeded = Math.ceil(bestOf / 2);
 		const { scoreA, scoreB } = formData;
+		const resolvedTeamAId =
+			matchToEdit?.teamAId ??
+			(formData.teamAType === "team" && formData.teamA
+				? Number(formData.teamA)
+				: null);
+		const resolvedTeamBId =
+			matchToEdit?.teamBId ??
+			(formData.teamBType === "team" && formData.teamB
+				? Number(formData.teamB)
+				: null);
 
 		// Validate scores don't exceed max wins
 		let updatedScoreA = scoreA;
@@ -208,11 +227,15 @@ export function MatchModal({
 
 		if (scoreA > winsNeeded) {
 			updatedScoreA = winsNeeded;
-			needsUpdate = true;
+			if (updatedScoreA !== formData.scoreA) {
+				needsUpdate = true;
+			}
 		}
 		if (scoreB > winsNeeded) {
 			updatedScoreB = winsNeeded;
-			needsUpdate = true;
+			if (updatedScoreB !== formData.scoreB) {
+				needsUpdate = true;
+			}
 		}
 
 		// Auto-determine winner based on higher score
@@ -221,19 +244,23 @@ export function MatchModal({
 		if (
 			updatedScoreA > updatedScoreB &&
 			updatedScoreA >= winsNeeded &&
-			matchToEdit.teamAId
+			resolvedTeamAId
 		) {
 			// Team A wins if they have more points and reached winning threshold
-			autoWinnerId = matchToEdit.teamAId;
-			needsUpdate = true;
+			if (autoWinnerId !== resolvedTeamAId) {
+				autoWinnerId = resolvedTeamAId;
+				needsUpdate = true;
+			}
 		} else if (
 			updatedScoreB > updatedScoreA &&
 			updatedScoreB >= winsNeeded &&
-			matchToEdit.teamBId
+			resolvedTeamBId
 		) {
 			// Team B wins if they have more points and reached winning threshold
-			autoWinnerId = matchToEdit.teamBId;
-			needsUpdate = true;
+			if (autoWinnerId !== resolvedTeamBId) {
+				autoWinnerId = resolvedTeamBId;
+				needsUpdate = true;
+			}
 		} else if (updatedScoreA < winsNeeded && updatedScoreB < winsNeeded) {
 			// Clear winner if neither team reached winning threshold
 			if (formData.winnerId) {
@@ -259,6 +286,12 @@ export function MatchModal({
 	}, [
 		formData.scoreA,
 		formData.scoreB,
+		formData.teamAType,
+		formData.teamA,
+		formData.teamBType,
+		formData.teamB,
+		formData.resultType,
+		formData.status,
 		matchToEdit?.teamAId,
 		matchToEdit?.teamBId,
 		matchToEdit?.tournament?.format,
@@ -377,15 +410,35 @@ export function MatchModal({
 					: formData.bracketSide,
 			displayOrder: Number(formData.displayOrder),
 			status: formData.status,
+			resultType: formData.resultType,
 			scoreA: Number(formData.scoreA),
 			scoreB: Number(formData.scoreB),
 			winnerId: formData.winnerId ? Number(formData.winnerId) : null,
 		};
 	}, [formData, matches, tournamentId, stages]);
 
-	// Validation: Prevent saving "finished" status without a winner
-	const canSaveAsFinished =
-		formData.status === "finished" ? formData.winnerId !== null : true;
+	const validateResultState = () => {
+		if (formData.resultType === "wo" && formData.status !== "finished") {
+			return "W.O. requires match status to be Finished.";
+		}
+
+		if (formData.resultType === "wo" && !formData.winnerId) {
+			const hasTeamA = !!(formData.teamA || matchToEdit?.teamAId);
+			const hasTeamB = !!(formData.teamB || matchToEdit?.teamBId);
+
+			if (hasTeamA !== hasTeamB) {
+				return null;
+			}
+
+			return "W.O. requires a winner when both teams are defined.";
+		}
+
+		if (formData.status === "finished" && !formData.winnerId) {
+			return "Cannot finish match without a winner!";
+		}
+
+		return null;
+	};
 
 	// Auto-save effect (only for editing mode)
 	useEffect(() => {
@@ -410,10 +463,10 @@ export function MatchModal({
 
 		// Debounce save
 		debounceRef.current = setTimeout(async () => {
-			// Prevent auto-saving finished status without a winner
-			if (formData.status === "finished" && !formData.winnerId) {
+			const validationError = validateResultState();
+			if (validationError) {
 				setSaveStatus("error");
-				toast.error("Cannot finish match without a winner!");
+				toast.error(validationError);
 				return;
 			}
 
@@ -434,13 +487,14 @@ export function MatchModal({
 				setSaveStatus("saved");
 				// Invalidate user points cache when match results are updated
 				await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
-				onSuccess();
+				await onSuccess();
 
 				// Reset to idle after 2s
 				setTimeout(() => setSaveStatus("idle"), 2000);
 			} catch (error) {
 				console.error("Auto-save failed:", error);
 				setSaveStatus("error");
+				toast.error("Falha ao salvar atualização da partida");
 			}
 		}, 800);
 
@@ -454,9 +508,9 @@ export function MatchModal({
 	const handleSave = async () => {
 		if (!matchToEdit) return;
 
-		// Prevent saving finished status without a winner
-		if (formData.status === "finished" && !formData.winnerId) {
-			toast.error("Cannot finish match without a winner!");
+		const validationError = validateResultState();
+		if (validationError) {
+			toast.error(validationError);
 			setSaveStatus("error");
 			return;
 		}
@@ -480,7 +534,7 @@ export function MatchModal({
 					setSaveStatus("saved");
 					// Invalidate user points cache when match results are updated
 					await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
-					onSuccess();
+					await onSuccess();
 				}
 			} catch (error) {
 				console.error("Save failed:", error);
@@ -525,7 +579,7 @@ export function MatchModal({
 
 			await createMatch({ data: payload });
 			toast.success("Match created successfully!");
-			onSuccess();
+			await onSuccess();
 			onClose();
 		} catch (error) {
 			console.error(error);
@@ -592,6 +646,29 @@ export function MatchModal({
 									Result & Scores
 								</h3>
 								<div className="flex items-center gap-2">
+									<button
+										type="button"
+										onClick={() =>
+											setFormData((prev) => ({
+												...prev,
+												resultType: prev.resultType === "wo" ? "normal" : "wo",
+												status:
+													prev.resultType === "wo" ? prev.status : "finished",
+												isBettingEnabled:
+													prev.resultType === "wo"
+														? prev.isBettingEnabled
+														: false,
+											}))
+										}
+										className={clsx(
+											"border-2 border-black px-2 py-0.5 font-black text-[10px] uppercase transition-colors",
+											formData.resultType === "wo"
+												? "bg-[#ff2e2e] text-white"
+												: "bg-white text-black hover:bg-gray-100",
+										)}
+									>
+										W.O.
+									</button>
 									<label className="font-black text-[10px] text-black uppercase">
 										Status:
 									</label>
@@ -602,14 +679,16 @@ export function MatchModal({
 												| "scheduled"
 												| "live"
 												| "finished";
-											setFormData({
-												...formData,
+											setFormData((prev) => ({
+												...prev,
 												status,
 												isBettingEnabled:
 													status === "live" || status === "finished"
 														? false
-														: formData.isBettingEnabled,
-											});
+														: prev.isBettingEnabled,
+												resultType:
+													status !== "finished" ? "normal" : prev.resultType,
+											}));
 										}}
 										className="border-2 border-black bg-black px-2 py-0.5 font-black text-[#ccff00] text-[10px] uppercase focus:outline-none"
 									>
@@ -872,12 +951,16 @@ export function MatchModal({
 								const day = matchDays.find((d) => d.id === dayId);
 								let dateStr = "";
 								if (day) {
-									dateStr = new Date(day.date).toISOString();
+									const dayDate = new Date(day.date);
+									const year = dayDate.getFullYear();
+									const month = String(dayDate.getMonth() + 1).padStart(2, "0");
+									const d = String(dayDate.getDate()).padStart(2, "0");
+									dateStr = `${year}-${month}-${d}`;
 								}
 								setFormData({
 									...formData,
 									matchDayId: val ? dayId : null,
-									date: day ? dateStr.split("T")[0] : formData.date,
+									date: day ? dateStr : formData.date,
 								});
 							}}
 							options={[

@@ -272,39 +272,36 @@ export function GlobalHeader() {
 							: "border-black/5 bg-gray-50",
 					)}
 				>
-					<div className="mx-auto flex min-h-[50px] max-w-[1600px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-4 md:h-[68px] md:px-6 md:py-0">
-						{/* Admin Navigation Tabs */}
-						<div className="flex items-center gap-2 md:gap-3">
-							{[
-								{ label: "Torneios", to: "/admin/tournaments" },
-								{ label: "Times", to: "/admin/teams" },
-								{ label: "Usuários", to: "/admin/users" },
-								{ label: "Compensação", to: "/admin/compensations" },
-							].map((tab) => {
-								const isActive = router.location.pathname.startsWith(tab.to);
-								return (
-									<Link
-										key={tab.to}
-										to={tab.to}
-										className={clsx(
-											"relative -skew-x-6 transform border-[2px] border-black px-3 py-1.5 font-black text-xs uppercase italic tracking-tight transition-all md:border-[3px] md:px-4 md:py-2 md:text-sm",
-											isActive
-												? "bg-[#ccff00] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] md:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
-												: "bg-white text-gray-500 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] hover:bg-gray-100 hover:text-black md:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]",
-										)}
-									>
-										<span className="skew-x-6 transform">{tab.label}</span>
-										{isActive && (
-											<div className="absolute right-0 -bottom-[2px] left-0 h-[2px] bg-[#ff2e2e] md:-bottom-[3px] md:h-[3px]" />
-										)}
-									</Link>
-								);
-							})}
-						</div>
-
-						{/* Actions & Exit Button Wrapper */}
-						<div className="flex w-full items-start justify-end gap-4 md:w-auto md:flex-1 md:items-center">
-							{config?.actions}
+					<div className="mx-auto w-full max-w-[1600px] px-4 py-3 md:px-6 md:py-3">
+						<div className="flex min-h-[50px] flex-wrap items-center justify-between gap-x-4 gap-y-3 md:min-h-[56px]">
+							{/* Admin Navigation Tabs */}
+							<div className="flex items-center gap-2 md:gap-3">
+								{[
+									{ label: "Torneios", to: "/admin/tournaments" },
+									{ label: "Times", to: "/admin/teams" },
+									{ label: "Usuários", to: "/admin/users" },
+									{ label: "Compensação", to: "/admin/compensations" },
+								].map((tab) => {
+									const isActive = router.location.pathname.startsWith(tab.to);
+									return (
+										<Link
+											key={tab.to}
+											to={tab.to}
+											className={clsx(
+												"relative -skew-x-6 transform border-[2px] border-black px-3 py-1.5 font-black text-xs uppercase italic tracking-tight transition-all md:border-[3px] md:px-4 md:py-2 md:text-sm",
+												isActive
+													? "bg-[#ccff00] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] md:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+													: "bg-white text-gray-500 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] hover:bg-gray-100 hover:text-black md:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]",
+											)}
+										>
+											<span className="skew-x-6 transform">{tab.label}</span>
+											{isActive && (
+												<div className="absolute right-0 -bottom-[2px] left-0 h-[2px] bg-[#ff2e2e] md:-bottom-[3px] md:h-[3px]" />
+											)}
+										</Link>
+									);
+								})}
+							</div>
 
 							{isAdmin && (
 								<Link
@@ -327,6 +324,12 @@ export function GlobalHeader() {
 								</Link>
 							)}
 						</div>
+
+						{config?.actions && (
+							<div className="mt-3 flex w-full items-start justify-start border-black/10 border-t pt-3">
+								{config.actions}
+							</div>
+						)}
 					</div>
 				</div>
 			)}

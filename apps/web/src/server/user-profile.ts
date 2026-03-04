@@ -265,8 +265,25 @@ const getUserRecentBetsFn = createServerFn({ method: "GET" }).handler(
 			limit: 20,
 		});
 
-		// Only return bets on finished matches
-		return result.filter((bet) => bet.match.status === "finished");
+		// Return bets from finished matches OR from tournaments currently in progress,
+		// but avoid placeholder TBD x TBD matchups in public profile.
+		return result.filter((bet) => {
+			const teamAName = bet.match.teamA?.name?.trim().toLowerCase() ?? "";
+			const teamBName = bet.match.teamB?.name?.trim().toLowerCase() ?? "";
+
+			const isPlaceholderA =
+				!bet.match.teamA || teamAName === "" || teamAName === "tbd";
+			const isPlaceholderB =
+				!bet.match.teamB || teamBName === "" || teamBName === "tbd";
+			const isTbdVsTbd = isPlaceholderA && isPlaceholderB;
+
+			if (isTbdVsTbd) return false;
+
+			return (
+				bet.match.status === "finished" ||
+				bet.match.tournament?.status === "active"
+			);
+		});
 	},
 );
 
@@ -291,14 +308,25 @@ export type UserRecentBet = {
 		scoreB: number | null;
 		status: string | null;
 		startTime: Date;
-		teamA: { id: number; name: string; slug: string; logoUrl: string | null } | null;
-		teamB: { id: number; name: string; slug: string; logoUrl: string | null } | null;
+		teamA: {
+			id: number;
+			name: string;
+			slug: string;
+			logoUrl: string | null;
+		} | null;
+		teamB: {
+			id: number;
+			name: string;
+			slug: string;
+			logoUrl: string | null;
+		} | null;
 		winner: { id: number; name: string } | null;
 		tournament: {
 			id: number;
 			name: string;
 			slug: string;
 			logoUrl: string | null;
+			status: string | null;
 		} | null;
 	};
 };

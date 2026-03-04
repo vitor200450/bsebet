@@ -22,6 +22,7 @@ export type Match = {
 	category: string;
 	startTime: string | Date;
 	status: "scheduled" | "live" | "finished";
+	resultType?: "normal" | "wo";
 	isBettingEnabled: boolean;
 	scoreA?: number | null;
 	scoreB?: number | null;
@@ -52,9 +53,12 @@ export function MatchCard({
 }: MatchCardProps) {
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
+	const isWalkover = match.resultType === "wo";
 
 	const teamA = match.teamA;
 	const teamB = match.teamB;
+	const walkoverScoreA = teamA?.id && match.winnerId === teamA.id ? "W" : "FF";
+	const walkoverScoreB = teamB?.id && match.winnerId === teamB.id ? "W" : "FF";
 
 	// Visual highlights for user predictions
 	const userPredictedWinnerA =
@@ -127,6 +131,11 @@ export function MatchCard({
 						{initialBet && showPredictionScore && (
 							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ccff00] px-2 py-0.5 font-black text-[8px] text-black uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
 								PALPITE SALVO
+							</div>
+						)}
+						{isWalkover && isFinished && (
+							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ff2e2e] px-2 py-0.5 font-black text-[8px] text-white uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
+								W.O.
 							</div>
 						)}
 					</div>
@@ -209,7 +218,7 @@ export function MatchCard({
 						<div className="flex items-center gap-2 md:gap-3">
 							{(isLive || isFinished || showPredictionScore) && (
 								<div className="flex h-10 w-8 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-xl text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
-									{displayScoreA}
+									{isWalkover && isFinished ? walkoverScoreA : displayScoreA}
 								</div>
 							)}
 
@@ -229,7 +238,7 @@ export function MatchCard({
 
 								<div className="flex items-center justify-center rounded border border-zinc-200/50 bg-zinc-100/50 px-2 py-0.5">
 									<span className="font-black text-[10px] text-zinc-500 italic leading-none md:text-xs">
-										VS
+										{isWalkover && isFinished ? "FF" : "VS"}
 									</span>
 								</div>
 
@@ -243,7 +252,7 @@ export function MatchCard({
 
 							{(isLive || isFinished || showPredictionScore) && (
 								<div className="flex h-10 w-8 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-xl text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
-									{displayScoreB}
+									{isWalkover && isFinished ? walkoverScoreB : displayScoreB}
 								</div>
 							)}
 						</div>

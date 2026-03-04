@@ -49,6 +49,10 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 
 		// Step 3: Get tournament IDs where user has bets
 		const userBetTournamentIds = new Set<number>();
+		const userBetsByMatchId = new Map<
+			number,
+			{ predictedWinnerId: number | null; isRecovery: boolean | null }
+		>();
 
 		const { auth } = await import("@bsebet/auth");
 		const session = await auth.api.getSession({ headers: ctx.request.headers });
@@ -57,8 +61,15 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 		if (serverUser) {
 			const userBetsData = await db.query.bets.findMany({
 				where: eq(bets.userId, serverUser.id),
-				columns: { matchId: true },
+				columns: { matchId: true, predictedWinnerId: true, isRecovery: true },
 			});
+
+			for (const b of userBetsData) {
+				userBetsByMatchId.set(Number(b.matchId), {
+					predictedWinnerId: b.predictedWinnerId,
+					isRecovery: b.isRecovery,
+				});
+			}
 
 			if (userBetsData.length > 0) {
 				const userMatchIds = userBetsData.map((b: any) => b.matchId);
@@ -122,6 +133,10 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 		// 3. OR it's one of the explicitly active tournaments we found in Step 1
 		const tournamentsWithBetting = allTournaments
 			.filter((t: any) => {
+				if (t.status === "finished") {
+					return false;
+				}
+
 				const hasMatches = t.matches && t.matches.length > 0;
 				const hasBets = userBetTournamentIds.has(t.id);
 				const isActive = activeTournamentIds.includes(t.id);
@@ -149,13 +164,34 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 					if (m.matchDay?.status !== "locked" || m.status !== "scheduled")
 						return false;
 
+					// Walkovers are resolved administratively and should never open recovery flow.
+					if (m.resultType === "wo") return false;
+
 					// Exclude matches that already have a result defined (winner set)
 					if (m.winnerId) return false;
 
 					// Exclude matches without both teams (not yet determined by bracket)
 					if (!m.teamAId || !m.teamBId) return false;
 
-					return true;
+					// If user has no bet for this match, it's a recovery candidate.
+					const serverBet = userBetsByMatchId.get(Number(m.id));
+					if (!serverBet) return true;
+
+					// If predicted winner no longer belongs to current matchup, user needs recovery.
+					const predictedWinnerId =
+						serverBet.predictedWinnerId !== null
+							? Number(serverBet.predictedWinnerId)
+							: null;
+					if (
+						predictedWinnerId &&
+						predictedWinnerId !== Number(m.teamAId) &&
+						predictedWinnerId !== Number(m.teamBId)
+					) {
+						return true;
+					}
+
+					// Otherwise, this match should not count as pending recovery.
+					return false;
 				});
 
 				return {
@@ -306,6 +342,7 @@ function formatMatches(data: any[], tournament?: any): Match[] {
 		isBettingEnabled: m.isBettingEnabled ?? false,
 		// REAL DATA
 		status: m.status,
+		resultType: m.resultType,
 		scoreA: m.scoreA,
 		scoreB: m.scoreB,
 		startTime: m.startTime,
@@ -334,6 +371,8 @@ function formatMatches(data: any[], tournament?: any): Match[] {
 			exact: 3,
 			underdog_25: 2,
 			underdog_50: 1,
+			underdog_tier1_max_pct: 0.25,
+			underdog_tier2_max_pct: 0.5,
 		},
 		matchDayId: m.matchDayId ?? null,
 		matchDayLabel: m.matchDay?.label ?? null,
@@ -497,10 +536,11 @@ function ReviewScreen({
 		() => stalePredictionMatchIds || new Set<number>(),
 		[stalePredictionMatchIds],
 	);
-	const effectiveProjectedMatches = useMemo(
-		() => projectedMatches || matches,
-		[projectedMatches, matches],
-	);
+	const effectiveProjectedMatches = useMemo(() => {
+		const source = projectedMatches?.length ? projectedMatches : matches;
+		const allowedMatchIds = new Set(matches.map((m: any) => Number(m.id)));
+		return source.filter((m: any) => allowedMatchIds.has(Number(m.id)));
+	}, [projectedMatches, matches]);
 	const effectiveEditableIds = useMemo(
 		() => editableRecoveryMatchIds || new Set<number>(),
 		[editableRecoveryMatchIds],
@@ -636,7 +676,7 @@ function ReviewScreen({
 			perfectPicks,
 			underdogPicks,
 		};
-	}, [matchesToDisplay, userBets]);
+	}, [matchesToDisplay, filteredUserBets]);
 
 	return (
 		<>
@@ -862,19 +902,76 @@ function ReviewScreen({
 									Number(effectivePrediction.winnerId) ===
 										Number(match.teamB.id);
 
-								const isActualWinnerA =
-									showResult &&
-									Number(match.winnerId) === Number(match.teamA?.id);
-								const isActualWinnerB =
-									showResult &&
-									Number(match.winnerId) === Number(match.teamB?.id);
+								const isWalkoverResult =
+									showResult && match.resultType === "wo";
+								const walkoverDisplay = (() => {
+									if (!isWalkoverResult) {
+										return { a: "FF", b: "FF" };
+									}
+
+									if (match.winnerId && match.teamA?.id && match.teamB?.id) {
+										return {
+											a:
+												Number(match.winnerId) === Number(match.teamA.id)
+													? "W"
+													: "FF",
+											b:
+												Number(match.winnerId) === Number(match.teamB.id)
+													? "W"
+													: "FF",
+										};
+									}
+
+									if ((match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
+										return {
+											a: (match.scoreA ?? 0) > (match.scoreB ?? 0) ? "W" : "FF",
+											b: (match.scoreB ?? 0) > (match.scoreA ?? 0) ? "W" : "FF",
+										};
+									}
+
+									if (
+										match.teamAPreviousMatchId &&
+										!match.teamBPreviousMatchId
+									) {
+										return { a: "W", b: "FF" };
+									}
+
+									if (
+										!match.teamAPreviousMatchId &&
+										match.teamBPreviousMatchId
+									) {
+										return { a: "FF", b: "W" };
+									}
+
+									if (!match.teamA?.id && match.teamB?.id) {
+										return { a: "W", b: "FF" };
+									}
+
+									if (match.teamA?.id && !match.teamB?.id) {
+										return { a: "FF", b: "W" };
+									}
+
+									return { a: "FF", b: "FF" };
+								})();
+								const isActualWinnerA = showResult
+									? isWalkoverResult
+										? walkoverDisplay.a === "W"
+										: Number(match.winnerId) === Number(match.teamA?.id)
+									: false;
+								const isActualWinnerB = showResult
+									? isWalkoverResult
+										? walkoverDisplay.b === "W"
+										: Number(match.winnerId) === Number(match.teamB?.id)
+									: false;
 
 								const matchActiveColor =
 									isActualWinnerA || (!showResult && isWinnerA)
 										? "brawl-blue"
 										: "brawl-red";
 								const displayScore = showResult
-									? `${match.scoreA} - ${match.scoreB}`
+									? isWalkoverResult
+										? `${walkoverDisplay.a} - ${walkoverDisplay.b}`
+										: `${match.scoreA} - ${match.scoreB}`
 									: effectivePrediction?.score
 										? effectivePrediction.score
 										: betData
@@ -951,6 +1048,7 @@ function ReviewScreen({
 												{/* Show "APOSTA ENVIADA" for recovery bets that are locked */}
 												{!isRecoveryMatch &&
 													currentMatchDayStatus === "locked" &&
+													!isWalkoverResult &&
 													betData?.isRecovery && (
 														<span className="flex items-center gap-1 border-2 border-black bg-green-500 px-2 py-0.5 font-black text-[8px] text-white">
 															✅ APOSTA ENVIADA
@@ -1119,7 +1217,7 @@ function ReviewScreen({
 														)}
 													>
 														<img
-															src={match.teamA.logoUrl || ""}
+															src={match.teamA?.logoUrl ?? undefined}
 															className="h-full w-full object-contain drop-shadow-md filter"
 															alt=""
 														/>
@@ -1136,7 +1234,7 @@ function ReviewScreen({
 																		: "text-zinc-400",
 														)}
 													>
-														{match.teamA.name}
+														{match.teamA?.name ?? match.labelTeamA ?? "TBD"}
 													</span>
 												</div>
 											</div>
@@ -1198,7 +1296,7 @@ function ReviewScreen({
 														)}
 													>
 														<img
-															src={match.teamB.logoUrl || ""}
+															src={match.teamB?.logoUrl ?? undefined}
 															className="h-full w-full object-contain drop-shadow-md filter"
 															alt=""
 														/>
@@ -1215,7 +1313,7 @@ function ReviewScreen({
 																		: "text-zinc-400",
 														)}
 													>
-														{match.teamB.name}
+														{match.teamB?.name ?? match.labelTeamB ?? "TBD"}
 													</span>
 												</div>
 											</div>
@@ -1324,6 +1422,11 @@ function ReviewScreen({
 														<span className="font-black font-display text-sm text-white italic">
 															{displayScore}
 														</span>
+														{isWalkoverResult && (
+															<span className="ml-2 border-2 border-white bg-black px-1.5 py-0.5 font-black text-[8px] text-white uppercase">
+																WO
+															</span>
+														)}
 													</button>
 												)}
 											</div>
@@ -1378,6 +1481,26 @@ function ReviewScreen({
 																	}
 
 																	if (!isCorrect) {
+																		if (isWalkoverResult) {
+																			return (
+																				<>
+																					<div className="font-bold text-red-300">
+																						❌ W.O. Incorreto
+																					</div>
+																					<div className="text-[9px] text-gray-300">
+																						No W.O., apenas o vencedor conta.
+																					</div>
+																					<div className="text-[9px] text-gray-300">
+																						Seu palpite de vencedor não bateu
+																						com o W.O.
+																					</div>
+																					<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
+																						Total: 0 pontos
+																					</div>
+																				</>
+																			);
+																		}
+
 																		return (
 																			<>
 																				<div className="font-bold text-red-300">
@@ -1405,13 +1528,20 @@ function ReviewScreen({
 
 																	return (
 																		<>
+																			{isWalkoverResult && (
+																				<div className="font-bold text-yellow-300">
+																					🚫 W.O. Confirmado
+																				</div>
+																			)}
 																			{betData.isPerfectPick ? (
 																				<div className="flex items-center gap-1 font-bold text-[#ccff00]">
 																					⭐ PLACAR PERFEITO!
 																				</div>
 																			) : (
 																				<div className="font-bold text-green-300">
-																					✅ Breakdown de Pontos:
+																					{isWalkoverResult
+																						? "✅ Breakdown W.O.:"
+																						: "✅ Breakdown de Pontos:"}
 																				</div>
 																			)}
 
@@ -1423,13 +1553,17 @@ function ReviewScreen({
 																					exact: 3,
 																					underdog_25: 2,
 																					underdog_50: 1,
+																					underdog_tier1_max_pct: 0.25,
+																					underdog_tier2_max_pct: 0.5,
 																				};
 
 																				let winnerPoints = 0;
 																				let exactPoints = 0;
 																				let underdogPoints = 0;
 
-																				if (betData.isPerfectPick) {
+																				if (isWalkoverResult) {
+																					winnerPoints = rules.winner;
+																				} else if (betData.isPerfectPick) {
 																					// Perfect pick: exact score overwrites
 																					exactPoints = rules.exact;
 																				} else {
@@ -1446,7 +1580,14 @@ function ReviewScreen({
 
 																				return (
 																					<div className="space-y-0.5 text-[9px]">
-																						{betData.isPerfectPick ? (
+																						{isWalkoverResult ? (
+																							<div className="flex justify-between text-gray-300">
+																								<span>
+																									✓ Vencedor correto (W.O.)
+																								</span>
+																								<span>+{winnerPoints} pt</span>
+																							</div>
+																						) : betData.isPerfectPick ? (
 																							<div className="flex justify-between font-bold text-[#ccff00]">
 																								<span>
 																									⭐ Placar exato (
@@ -1461,7 +1602,8 @@ function ReviewScreen({
 																								<span>+{winnerPoints} pt</span>
 																							</div>
 																						)}
-																						{betData.isUnderdogPick &&
+																						{!isWalkoverResult &&
+																							betData.isUnderdogPick &&
 																							underdogPoints > 0 && (
 																								<div className="flex justify-between font-bold text-purple-300">
 																									<span>🔥 Bônus Underdog</span>
@@ -2101,6 +2243,7 @@ function Home() {
 	// Load tournament data on selection
 	const handleSelectTournament = async (tournamentId: number) => {
 		setSelectedTournamentId(tournamentId);
+		setSelectedMatchDayId(null);
 		setIsLoadingTournament(true);
 		setTournamentData(null);
 		setPredictions({});
@@ -2124,34 +2267,9 @@ function Home() {
 				activeMatchDayId: data.activeMatchDayId,
 			});
 
-			// Auto-select match day with priority:
-			// 1. Server-defined active day
-			// 2. Day where user already has bets
-			// 3. Last day as fallback
-			let dayToSelect = data.activeMatchDayId;
-
-			if (
-				!dayToSelect &&
-				data.userBets.length > 0 &&
-				data.matchDays.length > 0
-			) {
-				const betMatchIds = new Set(data.userBets.map((b) => b.matchId));
-				const dayWithBets = data.matchDays.find((md) =>
-					data.matches.some(
-						(m) => m.matchDayId === md.id && betMatchIds.has(m.id),
-					),
-				);
-				if (dayWithBets) {
-					dayToSelect = dayWithBets.id;
-				}
-			}
-
-			if (dayToSelect) {
-				setSelectedMatchDayId(dayToSelect);
-			} else if (data.matchDays.length > 0) {
-				// Prefer the last match day (most recent) if no active one
-				setSelectedMatchDayId(data.matchDays[data.matchDays.length - 1].id);
-			}
+			// Keep match day unselected so user always goes through Match Day selector.
+			// This avoids jumping directly to carousel on refresh when only one tournament is available.
+			setSelectedMatchDayId(null);
 		} catch (err) {
 			console.error("Failed to load tournament data", err);
 		} finally {
@@ -2165,15 +2283,27 @@ function Home() {
 	const userBets = tournamentData?.userBets ?? [];
 	const matchDays = tournamentData?.matchDays ?? [];
 	const activeMatchDayId = tournamentData?.activeMatchDayId;
+	const selectedTournamentName =
+		tournaments.find((t: any) => t.id === selectedTournamentId)?.name ||
+		undefined;
+
+	const targetTournamentFromSearch = searchParams.tournament
+		? tournaments.find((t: any) => t.slug === searchParams.tournament)
+		: null;
+	const isBootstrappingTournamentSelection =
+		!selectedTournamentId &&
+		((searchParams.tournament && !!targetTournamentFromSearch) ||
+			tournaments.length === 1);
 
 	// Filter matches by selected match day
 	const carouselMatches = useMemo(() => {
 		if (!selectedMatchDayId) return allCarouselMatches;
 
+		const isFromSelectedMatchDay = (m: any) =>
+			Number(m.matchDayId) === Number(selectedMatchDayId);
+
 		// Filter by matchDayId, but also include matches without matchDayId if no matches found
-		const filtered = allCarouselMatches.filter(
-			(m: any) => m.matchDayId === selectedMatchDayId,
-		);
+		const filtered = allCarouselMatches.filter(isFromSelectedMatchDay);
 
 		// If no matches found for this matchDayId, show matches without matchDayId as fallback
 		if (filtered.length === 0) {
@@ -2192,7 +2322,7 @@ function Home() {
 
 		// Get matches for the selected match day
 		const matchDayMatches = allBracketMatches.filter(
-			(m: any) => m.matchDayId === selectedMatchDayId,
+			(m: any) => Number(m.matchDayId) === Number(selectedMatchDayId),
 		);
 
 		// If no matches for this match day, show all
@@ -2231,7 +2361,9 @@ function Home() {
 
 	// Get selected match day info
 	const selectedMatchDay = useMemo(() => {
-		return matchDays.find((md: any) => md.id === selectedMatchDayId);
+		return matchDays.find(
+			(md: any) => Number(md.id) === Number(selectedMatchDayId),
+		);
 	}, [matchDays, selectedMatchDayId]);
 
 	// Determine if we are in read-only mode (already submitted for THIS match day OR match day is closed)
@@ -2240,7 +2372,7 @@ function Home() {
 
 		// Get selected match day
 		const selectedMatchDay = matchDays.find(
-			(md: any) => md.id === selectedMatchDayId,
+			(md: any) => Number(md.id) === Number(selectedMatchDayId),
 		);
 
 		// Draft or finished = always read only
@@ -2254,7 +2386,7 @@ function Home() {
 		// Open status: Read only if user HAS bets (strict lock)
 		if (selectedMatchDay?.status === "open") {
 			const matchIdsInSelectedDay = allCarouselMatches
-				.filter((m: any) => m.matchDayId === selectedMatchDayId)
+				.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
 				.map((m: any) => m.id);
 
 			return userBets.some((bet: any) =>
@@ -2301,6 +2433,8 @@ function Home() {
 		// Find matches where real result differs from user's prediction
 		const wrongPredictions = uniqueMatches.filter((match) => {
 			if (match.status !== "finished" || !match.winnerId) return false;
+			// Walkovers should not invalidate downstream user predictions.
+			if (match.resultType === "wo") return false;
 			const userPrediction = predictions[match.id];
 			if (!userPrediction) return false;
 			return userPrediction.winnerId !== match.winnerId;
@@ -2438,6 +2572,8 @@ function Home() {
 		projectedMatches.forEach((match) => {
 			// Logic: A match is "wrong" if it's finished and (user has no bet OR user has wrong prediction)
 			if (match.status !== "finished" || !match.winnerId) return;
+			// Do not treat walkovers as wrong predictions for recovery purposes.
+			if (match.resultType === "wo") return;
 
 			const mId = Number(match.id);
 			const serverBet = userBets.find((b: any) => Number(b.matchId) === mId);
@@ -2485,6 +2621,7 @@ function Home() {
 		projectedMatches.forEach((match: any) => {
 			const matchId = Number(match.id);
 			if (match.status !== "scheduled") return;
+			if (match.resultType === "wo") return;
 
 			const serverBet = userBets.find(
 				(b: any) => Number(b.matchId) === matchId,
@@ -2599,6 +2736,22 @@ function Home() {
 		lockedRecoveryMatchIds,
 	]);
 
+	const editableRecoveryMatchIdsForSelectedDay = useMemo(() => {
+		if (!selectedMatchDayId) return editableRecoveryMatchIds;
+
+		const allowedIds = new Set(
+			allBracketMatches
+				.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
+				.map((m: any) => Number(m.id)),
+		);
+
+		return new Set(
+			Array.from(editableRecoveryMatchIds).filter((id) =>
+				allowedIds.has(Number(id)),
+			),
+		);
+	}, [allBracketMatches, selectedMatchDayId, editableRecoveryMatchIds]);
+
 	// Safety: hide recovery toast if, after loading the tournament, there are no
 	// actually editable recovery matches (server count can be stale/inaccurate).
 	// Uses { show: false } (not null) to avoid re-triggering the show effect.
@@ -2607,7 +2760,7 @@ function Home() {
 			recoveryToast?.show &&
 			selectedMatchDayId &&
 			selectedMatchDay?.status === "locked" &&
-			editableRecoveryMatchIds.size === 0 &&
+			editableRecoveryMatchIdsForSelectedDay.size === 0 &&
 			!isLoadingTournament
 		) {
 			setRecoveryToast((prev) => (prev ? { ...prev, show: false } : prev));
@@ -2616,8 +2769,82 @@ function Home() {
 		recoveryToast?.show,
 		selectedMatchDayId,
 		selectedMatchDay?.status,
-		editableRecoveryMatchIds.size,
+		editableRecoveryMatchIdsForSelectedDay.size,
 		isLoadingTournament,
+	]);
+
+	// Quick debug for recovery flow.
+	// Enable with: /?debugRecovery=1
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const isDebugEnabled =
+			new URLSearchParams(window.location.search).get("debugRecovery") === "1";
+		if (!isDebugEnabled) return;
+
+		const selectedDayMatches = allBracketMatches.filter((m: any) =>
+			selectedMatchDayId
+				? Number(m.matchDayId) === Number(selectedMatchDayId)
+				: true,
+		);
+
+		const rows = selectedDayMatches.map((m: any) => {
+			const id = Number(m.id);
+			const serverBet = userBets.find((b: any) => Number(b.matchId) === id);
+			return {
+				id,
+				status: m.status,
+				resultType: m.resultType ?? null,
+				winnerId: m.winnerId ?? null,
+				matchDayStatus: m.matchDay?.status ?? selectedMatchDay?.status ?? null,
+				teamAId: m.teamA?.id ?? m.teamAId ?? null,
+				teamBId: m.teamB?.id ?? m.teamBId ?? null,
+				inEditableRecovery: editableRecoveryMatchIdsForSelectedDay.has(id),
+				inStalePredictions: stalePredictionMatchIds.has(id),
+				hasLocalPrediction: Boolean(predictions[id]),
+				hasServerBet: Boolean(serverBet),
+				serverBetIsRecovery: Boolean(serverBet?.isRecovery),
+			};
+		});
+
+		const suspiciousWalkovers = rows.filter(
+			(r) =>
+				r.resultType === "wo" && (r.inEditableRecovery || r.inStalePredictions),
+		);
+
+		const tournamentRecoveryCount = tournaments.reduce(
+			(acc: number, t: any) => acc + (t.recoveryMatchCount || 0),
+			0,
+		);
+
+		console.groupCollapsed(
+			`[RecoveryDebug] tournament=${selectedTournamentId ?? "none"} matchDay=${selectedMatchDayId ?? "none"}`,
+		);
+		console.log("tournamentRecoveryCount", tournamentRecoveryCount);
+		console.log(
+			"editableRecoveryCount(selectedDay)",
+			editableRecoveryMatchIdsForSelectedDay.size,
+		);
+		console.log("editableRecoveryCount(all)", editableRecoveryMatchIds.size);
+		console.log("stalePredictionsCount", stalePredictionMatchIds.size);
+		console.table(rows);
+		if (suspiciousWalkovers.length > 0) {
+			console.warn(
+				"[RecoveryDebug] WO matches still flagged as recovery/stale:",
+				suspiciousWalkovers,
+			);
+		}
+		console.groupEnd();
+	}, [
+		selectedTournamentId,
+		selectedMatchDayId,
+		selectedMatchDay?.status,
+		allBracketMatches,
+		userBets,
+		predictions,
+		tournaments,
+		editableRecoveryMatchIdsForSelectedDay,
+		editableRecoveryMatchIds,
+		stalePredictionMatchIds,
 	]);
 
 	// Auto-redirect to review if user has bets but no matches available to bet on FOR THE SELECTED MATCH DAY
@@ -2625,11 +2852,11 @@ function Home() {
 		if (!tournamentData || !selectedMatchDayId) return;
 
 		const selectedMatchDay = matchDays.find(
-			(md: any) => md.id === selectedMatchDayId,
+			(md: any) => Number(md.id) === Number(selectedMatchDayId),
 		);
 
 		const matchIdsInSelectedDay = allCarouselMatches
-			.filter((m: any) => m.matchDayId === selectedMatchDayId)
+			.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
 			.map((m: any) => m.id);
 
 		const hasBetsInSelectedDay = userBets.some((bet: any) =>
@@ -2642,7 +2869,7 @@ function Home() {
 			selectedMatchDay?.status === "finished" ||
 			hasBetsInSelectedDay ||
 			(selectedMatchDay?.status === "locked" &&
-				editableRecoveryMatchIds.size > 0)
+				editableRecoveryMatchIdsForSelectedDay.size > 0)
 		) {
 			if (!showReview) {
 				setShowReview(true);
@@ -2664,7 +2891,7 @@ function Home() {
 		allCarouselMatches,
 		predictions,
 		showReview,
-		editableRecoveryMatchIds.size, // Added dependency
+		editableRecoveryMatchIdsForSelectedDay.size,
 	]);
 
 	// Persistence: Load from localStorage on mount (ONLY if not read-only)
@@ -2841,13 +3068,13 @@ function Home() {
 	}
 
 	// Loading state
-	if (isLoadingTournament) {
+	if (isLoadingTournament || isBootstrappingTournamentSelection) {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-paper bg-paper-texture">
 				<div className="space-y-4 text-center">
 					<div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-black border-t-[#ccff00]" />
 					<h2 className="animate-pulse font-black font-display text-2xl text-black uppercase italic">
-						Loading Tournament...
+						Carregando torneio...
 					</h2>
 				</div>
 			</div>
@@ -2880,11 +3107,12 @@ function Home() {
 					matchDays={matchDays.map((md: any) => ({
 						...md,
 						matchCount: allBracketMatches.filter(
-							(m: any) => m.matchDayId === md.id,
+							(m: any) => Number(m.matchDayId) === Number(md.id),
 						).length,
 					}))}
 					activeMatchDayId={activeMatchDayId ?? null}
 					onSelect={(matchDayId) => setSelectedMatchDayId(matchDayId)}
+					tournamentName={selectedTournamentName}
 				/>
 			</div>
 		);
@@ -3040,7 +3268,8 @@ function Home() {
 						matches={
 							selectedMatchDayId
 								? bracketMatches.filter(
-										(m: any) => m.matchDayId === selectedMatchDayId,
+										(m: any) =>
+											Number(m.matchDayId) === Number(selectedMatchDayId),
 									)
 								: bracketMatches
 						}
@@ -3053,7 +3282,10 @@ function Home() {
 						userBets={userBets.filter((bet: any) =>
 							selectedMatchDayId
 								? bracketMatches
-										.filter((m: any) => m.matchDayId === selectedMatchDayId)
+										.filter(
+											(m: any) =>
+												Number(m.matchDayId) === Number(selectedMatchDayId),
+										)
 										.map((m: any) => m.id)
 										.includes(bet.matchId)
 								: true,
@@ -3068,7 +3300,7 @@ function Home() {
 						}
 						stalePredictionMatchIds={stalePredictionMatchIds}
 						projectedMatches={projectedMatches}
-						editableRecoveryMatchIds={editableRecoveryMatchIds}
+						editableRecoveryMatchIds={editableRecoveryMatchIdsForSelectedDay}
 					/>
 				) : viewMode === "list" ? (
 					<BettingCarousel
@@ -3082,13 +3314,16 @@ function Home() {
 							!!selectedMatchDayId &&
 							userBets.some((bet: any) =>
 								allCarouselMatches
-									.filter((m: any) => m.matchDayId === selectedMatchDayId)
+									.filter(
+										(m: any) =>
+											Number(m.matchDayId) === Number(selectedMatchDayId),
+									)
 									.map((m: any) => m.id)
 									.includes(bet.matchId),
 							)
 						}
 						isReadOnly={isReadOnly}
-						editableMatchIds={editableRecoveryMatchIds}
+						editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
 						matchDayStatus={selectedMatchDay?.status}
 					/>
 				) : (
@@ -3100,7 +3335,7 @@ function Home() {
 							onRemovePrediction={removePrediction}
 							onReview={() => setShowReview(true)}
 							isReadOnly={isReadOnly}
-							editableMatchIds={editableRecoveryMatchIds}
+							editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
 							matchDayStatus={selectedMatchDay?.status}
 						/>
 					</div>

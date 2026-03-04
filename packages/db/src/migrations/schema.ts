@@ -26,6 +26,7 @@ export const matchStatus = pgEnum("match_status", [
 	"live",
 	"finished",
 ]);
+export const matchResultType = pgEnum("match_result_type", ["normal", "wo"]);
 export const tournamentStatus = pgEnum("tournament_status", [
 	"upcoming",
 	"active",
@@ -185,6 +186,7 @@ export const matches = pgTable(
 		labelTeamB: text("label_team_b"),
 		startTime: timestamp("start_time", { mode: "string" }).notNull(),
 		status: matchStatus().default("scheduled"),
+		resultType: matchResultType("result_type").default("normal").notNull(),
 		winnerId: integer("winner_id"),
 		scoreA: integer("score_a"),
 		scoreB: integer("score_b"),

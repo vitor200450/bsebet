@@ -1,8 +1,95 @@
-import { bets, matchDays, matches } from "@bsebet/db/schema";
+import { bets, matchDays, matches, pointAdjustments } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq, ilike, inArray, not } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
+
+function validateWalkoverData(updateData: {
+	status?: "scheduled" | "live" | "finished";
+	resultType?: "normal" | "wo";
+	winnerId?: number | null;
+	teamAId?: number | null;
+	teamBId?: number | null;
+}): void {
+	if (updateData.resultType !== "wo") {
+		return;
+	}
+
+	if (updateData.status !== "finished") {
+		throw new Error("W.O. requires match status to be finished");
+	}
+
+	if (!updateData.winnerId) {
+		const hasTeamA = !!updateData.teamAId;
+		const hasTeamB = !!updateData.teamBId;
+
+		if (hasTeamA !== hasTeamB) {
+			return;
+		}
+
+		throw new Error("W.O. requires winnerId");
+	}
+}
+
+function applyWalkoverDefaults(updateData: {
+	status?: "scheduled" | "live" | "finished";
+	resultType?: "normal" | "wo";
+	winnerId?: number | null;
+	teamAId?: number | null;
+	teamBId?: number | null;
+	scoreA?: number | null;
+	scoreB?: number | null;
+}): void {
+	if (updateData.resultType !== "wo" || updateData.status !== "finished") {
+		return;
+	}
+
+	if (updateData.winnerId) {
+		if (updateData.teamAId || updateData.teamBId) {
+			updateData.scoreA = updateData.winnerId === updateData.teamAId ? 3 : 0;
+			updateData.scoreB = updateData.winnerId === updateData.teamBId ? 3 : 0;
+		}
+		return;
+	}
+
+	const hasTeamA = !!updateData.teamAId;
+	const hasTeamB = !!updateData.teamBId;
+
+	// Auto-resolve one-sided walkover (only one team defined).
+	if (hasTeamA !== hasTeamB) {
+		updateData.winnerId = hasTeamA
+			? (updateData.teamAId ?? null)
+			: (updateData.teamBId ?? null);
+		updateData.scoreA = hasTeamA ? 3 : 0;
+		updateData.scoreB = hasTeamB ? 3 : 0;
+	}
+}
+
+function validateLiveStatusByStartTime(input: {
+	status?: "scheduled" | "live" | "finished" | null;
+	startTime?: Date | string | null;
+}): void {
+	if (input.status !== "live") {
+		return;
+	}
+
+	if (!input.startTime) {
+		return;
+	}
+
+	const start =
+		input.startTime instanceof Date
+			? input.startTime
+			: new Date(input.startTime);
+
+	if (isNaN(start.getTime())) {
+		return;
+	}
+
+	if (start.getTime() > Date.now()) {
+		throw new Error("Cannot set match to live before start time");
+	}
+}
 
 function getBracketMatchName(
 	matchesCount: number,
@@ -71,6 +158,53 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 		// Only update if there are changes
 		if (Object.keys(updates).length > 0) {
 			await db.update(matches).set(updates).where(eq(matches.id, depMatch.id));
+
+			const nextTeamAId = updates.teamAId ?? depMatch.teamAId;
+			const nextTeamBId = updates.teamBId ?? depMatch.teamBId;
+
+			const isPendingWalkoverResolution =
+				depMatch.resultType === "wo" &&
+				depMatch.status === "finished" &&
+				!depMatch.winnerId &&
+				nextTeamAId &&
+				nextTeamBId;
+
+			if (isPendingWalkoverResolution) {
+				let autoWinnerId: number | null = null;
+
+				if (!depMatch.teamAId && updates.teamAId) {
+					autoWinnerId = updates.teamAId;
+				} else if (!depMatch.teamBId && updates.teamBId) {
+					autoWinnerId = updates.teamBId;
+				}
+
+				if (autoWinnerId) {
+					await db
+						.update(matches)
+						.set({
+							winnerId: autoWinnerId,
+							scoreA: autoWinnerId === nextTeamAId ? 3 : 0,
+							scoreB: autoWinnerId === nextTeamBId ? 3 : 0,
+						})
+						.where(eq(matches.id, depMatch.id));
+
+					try {
+						await settleBets({ data: { matchId: depMatch.id } });
+					} catch (e) {
+						console.error("Failed to settle bets for auto-resolved W.O.", e);
+					}
+
+					await updateBracketProgression(db, {
+						...depMatch,
+						...updates,
+						teamAId: nextTeamAId,
+						teamBId: nextTeamBId,
+						winnerId: autoWinnerId,
+						scoreA: autoWinnerId === nextTeamAId ? 3 : 0,
+						scoreB: autoWinnerId === nextTeamBId ? 3 : 0,
+					});
+				}
+			}
 		}
 	}
 }
@@ -88,7 +222,7 @@ const getMatchesFn = createServerFn({ method: "GET" }).handler(
 		// Seleciona apenas colunas necessárias (não *)
 		const matchesData = await db.query.matches.findMany({
 			where: eq(matches.tournamentId, data.tournamentId),
-			orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
+			orderBy: [asc(matches.displayOrder), asc(matches.startTime)],
 			columns: {
 				id: true,
 				tournamentId: true,
@@ -102,6 +236,7 @@ const getMatchesFn = createServerFn({ method: "GET" }).handler(
 				labelTeamB: true,
 				startTime: true,
 				status: true,
+				resultType: true,
 				winnerId: true,
 				scoreA: true,
 				scoreB: true,
@@ -200,14 +335,77 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			updateData.startTime = new Date(updateData.startTime);
 		}
 
+		const normalizedWalkoverState = {
+			status: updateData.status ?? currentMatch.status,
+			resultType: updateData.resultType ?? currentMatch.resultType,
+			winnerId: updateData.winnerId ?? currentMatch.winnerId,
+			teamAId: updateData.teamAId ?? currentMatch.teamAId,
+			teamBId: updateData.teamBId ?? currentMatch.teamBId,
+			scoreA: updateData.scoreA ?? currentMatch.scoreA,
+			scoreB: updateData.scoreB ?? currentMatch.scoreB,
+		};
+
+		applyWalkoverDefaults(normalizedWalkoverState);
+
+		if (
+			normalizedWalkoverState.resultType === "wo" &&
+			normalizedWalkoverState.status === "finished"
+		) {
+			if (
+				normalizedWalkoverState.winnerId !== undefined &&
+				normalizedWalkoverState.winnerId !== null
+			) {
+				updateData.winnerId = normalizedWalkoverState.winnerId;
+			}
+
+			if (normalizedWalkoverState.scoreA !== undefined) {
+				updateData.scoreA = normalizedWalkoverState.scoreA;
+			}
+
+			if (normalizedWalkoverState.scoreB !== undefined) {
+				updateData.scoreB = normalizedWalkoverState.scoreB;
+			}
+		}
+
+		if (
+			updateData.resultType === "wo" ||
+			(currentMatch.resultType === "wo" && updateData.status === "finished")
+		) {
+			if (updateData.winnerId) {
+				updateData.scoreA =
+					updateData.winnerId === (updateData.teamAId ?? currentMatch.teamAId)
+						? 3
+						: 0;
+				updateData.scoreB =
+					updateData.winnerId === (updateData.teamBId ?? currentMatch.teamBId)
+						? 3
+						: 0;
+			}
+		}
+
+		validateWalkoverData({
+			status: updateData.status ?? currentMatch.status,
+			resultType: updateData.resultType ?? currentMatch.resultType,
+			winnerId: updateData.winnerId ?? currentMatch.winnerId,
+			teamAId: updateData.teamAId ?? currentMatch.teamAId,
+			teamBId: updateData.teamBId ?? currentMatch.teamBId,
+		});
+
+		validateLiveStatusByStartTime({
+			status: updateData.status ?? currentMatch.status,
+			startTime: updateData.startTime ?? currentMatch.startTime,
+		});
+
 		const [updated] = await db
 			.update(matches)
 			.set(updateData)
 			.where(eq(matches.id, matchId))
 			.returning();
 
-		// Trigger bet settlement if status IS now finished (or was already finished and we updated it)
-		if (updateData.status === "finished") {
+		const nextStatus = updateData.status ?? currentMatch.status;
+
+		// Trigger bet settlement when match remains/turns finished
+		if (nextStatus === "finished") {
 			try {
 				await settleBets({ data: { matchId } });
 			} catch (e) {
@@ -233,6 +431,17 @@ const createMatchFn = createServerFn({ method: "POST" }).handler(
 		if (insertData.startTime && typeof insertData.startTime === "string") {
 			insertData.startTime = new Date(insertData.startTime);
 		}
+
+		applyWalkoverDefaults(insertData);
+
+		validateWalkoverData({
+			status: insertData.status ?? "scheduled",
+			resultType: insertData.resultType ?? "normal",
+			winnerId: insertData.winnerId ?? null,
+			teamAId: insertData.teamAId ?? null,
+			teamBId: insertData.teamBId ?? null,
+		});
+
 		const [created] = await db.insert(matches).values(insertData).returning();
 		return created;
 	},
@@ -271,6 +480,11 @@ const incrementScoreFn = createServerFn({ method: "POST" }).handler(
 
 		if (!match) throw new Error("Match not found");
 
+		validateLiveStatusByStartTime({
+			status: "live",
+			startTime: match.startTime,
+		});
+
 		const update: any = { status: "live" };
 		if (team === "A") update.scoreA = (match.scoreA || 0) + 1;
 		else update.scoreB = (match.scoreB || 0) + 1;
@@ -304,6 +518,7 @@ const finalizeMatchFn = createServerFn({ method: "POST" }).handler(
 			.set({
 				winnerId,
 				status: "finished",
+				resultType: "normal",
 			})
 			.where(eq(matches.id, matchId))
 			.returning();
@@ -331,12 +546,24 @@ const resetScoresFn = createServerFn({ method: "POST" }).handler(
 			})
 			.parse(ctx.data);
 
+		const match = await db.query.matches.findFirst({
+			where: eq(matches.id, matchId),
+		});
+
+		if (!match) throw new Error("Match not found");
+
+		validateLiveStatusByStartTime({
+			status: (status || "live") as "scheduled" | "live" | "finished",
+			startTime: match.startTime,
+		});
+
 		const [updated] = await db
 			.update(matches)
 			.set({
 				scoreA: 0,
 				scoreB: 0,
 				status: status || "live",
+				resultType: "normal",
 				winnerId: null,
 			})
 			.where(eq(matches.id, matchId))
@@ -989,6 +1216,7 @@ const getMatchDaysFn = createServerFn({ method: "GET" }).handler(
 				labelTeamB: true,
 				startTime: true,
 				status: true,
+				resultType: true,
 				winnerId: true,
 				scoreA: true,
 				scoreB: true,
@@ -1068,6 +1296,7 @@ const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
 				scoreA: null,
 				scoreB: null,
 				status: "scheduled",
+				resultType: "normal",
 				underdogTeamId: null,
 			};
 
@@ -1093,3 +1322,152 @@ export const resetTournamentResults =
 	resetTournamentResultsFn as unknown as (opts: {
 		data: { tournamentId: number };
 	}) => Promise<{ success: boolean; resetCount: number }>;
+
+const recalculateTournamentPointsFn = createServerFn({
+	method: "POST",
+}).handler(async (ctx: any) => {
+	const { db } = await import("@bsebet/db");
+	const { tournamentId } = z
+		.object({ tournamentId: z.number() })
+		.parse(ctx.data);
+
+	const tournamentMatches = await db.query.matches.findMany({
+		where: eq(matches.tournamentId, tournamentId),
+		columns: {
+			id: true,
+			status: true,
+			resultType: true,
+		},
+	});
+
+	if (tournamentMatches.length === 0) {
+		return {
+			success: true,
+			totalMatches: 0,
+			settledMatches: 0,
+			walkoverMatches: 0,
+			betsReset: 0,
+			affectedUsers: 0,
+			adjustmentsFound: 0,
+			reappliedAdjustments: 0,
+			adjustmentsSkippedNoMatch: 0,
+			adjustmentsSkippedOutOfTournament: 0,
+		};
+	}
+
+	const matchIds = tournamentMatches.map((m) => m.id);
+	const finishedMatches = tournamentMatches.filter(
+		(m) => m.status === "finished",
+	);
+	const walkoverMatches = finishedMatches.filter((m) => m.resultType === "wo");
+
+	const [betsAndUsersCount] = await db
+		.select({
+			betsReset: sql<number>`count(${bets.id})`,
+			affectedUsers: sql<number>`count(distinct ${bets.userId})`,
+		})
+		.from(bets)
+		.where(inArray(bets.matchId, matchIds));
+
+	await db
+		.update(bets)
+		.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
+		.where(inArray(bets.matchId, matchIds));
+
+	for (const match of finishedMatches) {
+		await settleBets({
+			data: { matchId: match.id, includeAdjustments: false },
+		});
+	}
+
+	const adjustments = await db.query.pointAdjustments.findMany({
+		where: eq(pointAdjustments.tournamentId, tournamentId),
+		columns: {
+			id: true,
+			userId: true,
+			matchId: true,
+			points: true,
+			isRecoveryCompensation: true,
+		},
+		orderBy: (pointAdjustments, { asc }) => [asc(pointAdjustments.createdAt)],
+	});
+
+	let reappliedAdjustments = 0;
+	let adjustmentsSkippedNoMatch = 0;
+	let adjustmentsSkippedOutOfTournament = 0;
+
+	for (const adjustment of adjustments) {
+		if (!adjustment.matchId) {
+			adjustmentsSkippedNoMatch += 1;
+			continue;
+		}
+
+		if (!matchIds.includes(adjustment.matchId)) {
+			adjustmentsSkippedOutOfTournament += 1;
+			continue;
+		}
+
+		const existingBet = await db.query.bets.findFirst({
+			where: and(
+				eq(bets.userId, adjustment.userId),
+				eq(bets.matchId, adjustment.matchId),
+			),
+			columns: {
+				id: true,
+				pointsEarned: true,
+				isRecovery: true,
+			},
+		});
+
+		if (existingBet) {
+			await db
+				.update(bets)
+				.set({
+					pointsEarned: (existingBet.pointsEarned || 0) + adjustment.points,
+					isRecovery:
+						existingBet.isRecovery || !!adjustment.isRecoveryCompensation,
+				})
+				.where(eq(bets.id, existingBet.id));
+		} else {
+			await db.insert(bets).values({
+				userId: adjustment.userId,
+				matchId: adjustment.matchId,
+				predictedScoreA: 0,
+				predictedScoreB: 0,
+				pointsEarned: adjustment.points,
+				isRecovery: !!adjustment.isRecoveryCompensation,
+			});
+		}
+
+		reappliedAdjustments += 1;
+	}
+
+	return {
+		success: true,
+		totalMatches: tournamentMatches.length,
+		settledMatches: finishedMatches.length,
+		walkoverMatches: walkoverMatches.length,
+		betsReset: Number(betsAndUsersCount?.betsReset || 0),
+		affectedUsers: Number(betsAndUsersCount?.affectedUsers || 0),
+		adjustmentsFound: adjustments.length,
+		reappliedAdjustments,
+		adjustmentsSkippedNoMatch,
+		adjustmentsSkippedOutOfTournament,
+	};
+});
+
+export const recalculateTournamentPoints =
+	recalculateTournamentPointsFn as unknown as (opts: {
+		data: { tournamentId: number };
+	}) => Promise<{
+		success: boolean;
+		totalMatches: number;
+		settledMatches: number;
+		walkoverMatches: number;
+		betsReset: number;
+		affectedUsers: number;
+		adjustmentsFound: number;
+		reappliedAdjustments: number;
+		adjustmentsSkippedNoMatch: number;
+		adjustmentsSkippedOutOfTournament: number;
+	}>;

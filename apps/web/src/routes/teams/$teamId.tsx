@@ -554,8 +554,19 @@ function TeamDetailsPage() {
 								const isTeamA = match.teamAId === team.id;
 								const opponent = isTeamA ? match.teamB : match.teamA;
 								const isWin = match.winnerId === team.id;
+								const isWalkover = match.resultType === "wo";
 								const teamScore = isTeamA ? match.scoreA : match.scoreB;
 								const opponentScore = isTeamA ? match.scoreB : match.scoreA;
+								const teamScoreDisplay = isWalkover
+									? isWin
+										? "W"
+										: "FF"
+									: teamScore;
+								const opponentScoreDisplay = isWalkover
+									? isWin
+										? "FF"
+										: "W"
+									: opponentScore;
 
 								return (
 									<div
@@ -594,7 +605,7 @@ function TeamDetailsPage() {
 																isWin ? "text-brawl-blue" : "text-black",
 															)}
 														>
-															{teamScore}
+															{teamScoreDisplay}
 														</span>
 														<span className="font-black text-black">:</span>
 														<span
@@ -603,8 +614,13 @@ function TeamDetailsPage() {
 																!isWin ? "text-brawl-red" : "text-black",
 															)}
 														>
-															{opponentScore}
+															{opponentScoreDisplay}
 														</span>
+														{isWalkover && (
+															<span className="ml-1 border-[2px] border-black bg-black px-1 py-0.5 font-black text-[9px] text-white uppercase">
+																WO
+															</span>
+														)}
 													</div>
 												</div>
 
@@ -640,7 +656,7 @@ function TeamDetailsPage() {
 														{team.name}
 													</span>
 													<span className="font-black font-body text-xl">
-														{teamScore}
+														{teamScoreDisplay}
 													</span>
 												</div>
 
@@ -662,7 +678,7 @@ function TeamDetailsPage() {
 															{opponent.name}
 														</span>
 														<span className="font-black font-body text-xl">
-															{opponentScore}
+															{opponentScoreDisplay}
 														</span>
 													</Link>
 												) : (
@@ -678,8 +694,13 @@ function TeamDetailsPage() {
 															{opponent?.name || "TBD"}
 														</span>
 														<span className="font-black font-body text-xl">
-															{opponentScore}
+															{opponentScoreDisplay}
 														</span>
+														{isWalkover && (
+															<span className="ml-1 border-[2px] border-black bg-black px-1 py-0.5 font-black text-[9px] text-white uppercase">
+																WO
+															</span>
+														)}
 													</div>
 												)}
 											</div>
@@ -866,7 +887,7 @@ function TeamDetailsPage() {
 															isWin ? "text-brawl-blue" : "text-black",
 														)}
 													>
-														{teamScore}
+														{teamScoreDisplay}
 													</span>
 													<span className="font-black text-black text-xl">
 														:
@@ -877,7 +898,7 @@ function TeamDetailsPage() {
 															!isWin ? "text-brawl-red" : "text-black",
 														)}
 													>
-														{opponentScore}
+														{opponentScoreDisplay}
 													</span>
 												</div>
 											</div>

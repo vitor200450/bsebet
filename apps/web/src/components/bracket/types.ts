@@ -37,6 +37,7 @@ export type Match = {
 	roundIndex?: number | null;
 	bracketSide?: string | null;
 	status?: "scheduled" | "live" | "finished";
+	resultType?: "normal" | "wo";
 	scoreA?: number | null;
 	scoreB?: number | null;
 	startTime: string | Date;
@@ -47,6 +48,8 @@ export type Match = {
 		exact: number;
 		underdog_25: number;
 		underdog_50: number;
+		underdog_tier1_max_pct?: number;
+		underdog_tier2_max_pct?: number;
 	};
 	matchDayId?: number | null;
 	matchDayLabel?: string | null;

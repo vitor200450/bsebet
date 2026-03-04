@@ -23,6 +23,8 @@ export interface Stage {
 		exact: number;
 		underdog_25: number;
 		underdog_50: number;
+		underdog_tier1_max_pct?: number;
+		underdog_tier2_max_pct?: number;
 	};
 }
 

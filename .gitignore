@@ -10,8 +10,10 @@ build
 
 # Environment variables
 .env
+.env.*
 .env*.local
 .env.production
+!.env.example
 
 # IDEs and editors
 .vscode/*
@@ -58,7 +60,34 @@ db_backup/
 dump.sql
 heroku_dump.sql
 
-.vercel
-.env*.local
+# Sensitive auth / credentials
+credentials.json
+*credential*.json
+service-account*.json
+firebase-adminsdk*.json
+oauth-token.json
+token.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
 
-.dev/
+# Private docs / exports
+docs/private/
+docs/internal/
+*.pdf
+*.docx
+*.xlsx
+
+# Local design scratch docs
+WALKOVER_DESIGN.md
+*_DESIGN.md
+!DESIGN.md
+
+# Local dev workspace (keep shared scripts versioned)
+.dev/*
+!.dev/scripts/
+!.dev/scripts/*.ts
+.dev/**/*.local
+.dev/**/.env*

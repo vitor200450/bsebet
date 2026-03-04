@@ -39,7 +39,14 @@ async function main() {
 		.values({
 			name: "Supremacy League (Playoffs)",
 			slug: "supremacy-league-2026",
-			scoringRules: { winner: 1, exact: 3, underdog_25: 1 },
+			scoringRules: {
+				winner: 1,
+				exact: 3,
+				underdog_25: 2,
+				underdog_50: 1,
+				underdog_tier1_max_pct: 0.25,
+				underdog_tier2_max_pct: 0.5,
+			},
 			isActive: true,
 		})
 		.onConflictDoNothing();

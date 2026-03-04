@@ -73,6 +73,8 @@ function AdminTournamentsPage() {
 			exact: number;
 			underdog_25: number;
 			underdog_50: number;
+			underdog_tier1_max_pct: number;
+			underdog_tier2_max_pct: number;
 		};
 	}>({
 		name: "",
@@ -90,6 +92,8 @@ function AdminTournamentsPage() {
 			exact: 3,
 			underdog_25: 2,
 			underdog_50: 1,
+			underdog_tier1_max_pct: 0.25,
+			underdog_tier2_max_pct: 0.5,
 		},
 	});
 
@@ -135,6 +139,8 @@ function AdminTournamentsPage() {
 								exact: 3,
 								underdog_25: 2,
 								underdog_50: 1,
+								underdog_tier1_max_pct: 0.25,
+								underdog_tier2_max_pct: 0.5,
 							},
 						});
 						setIsModalOpen(true);
@@ -183,6 +189,10 @@ function AdminTournamentsPage() {
 				exact: (item.scoringRules as any)?.exact ?? 3,
 				underdog_25: (item.scoringRules as any)?.underdog_25 ?? 2,
 				underdog_50: (item.scoringRules as any)?.underdog_50 ?? 1,
+				underdog_tier1_max_pct:
+					(item.scoringRules as any)?.underdog_tier1_max_pct ?? 0.25,
+				underdog_tier2_max_pct:
+					(item.scoringRules as any)?.underdog_tier2_max_pct ?? 0.5,
 			},
 		});
 		setIsModalOpen(true);
@@ -192,6 +202,17 @@ function AdminTournamentsPage() {
 		e.preventDefault();
 		setIsSubmitting(true);
 		try {
+			const tier1 = formData.scoringRules.underdog_tier1_max_pct;
+			const tier2 = formData.scoringRules.underdog_tier2_max_pct;
+
+			if (tier1 <= 0 || tier1 > 1 || tier2 <= 0 || tier2 > 1 || tier1 > tier2) {
+				toast.error(
+					"Limites de underdog inválidos. Use valores entre 0% e 100% e mantenha Tier 1 <= Tier 2.",
+				);
+				setIsSubmitting(false);
+				return;
+			}
+
 			await saveTournament({
 				data: {
 					...formData,
@@ -646,9 +667,9 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Bonus when picking winner with ≤25% of votes"
+												title="Bônus do tier 1 de underdog"
 											>
-												Underdog Tier 1 (≤25%)
+												Underdog Tier 1 (Pts)
 											</label>
 											<input
 												type="number"
@@ -668,9 +689,9 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Bonus when picking winner with 26-50% of votes"
+												title="Bônus do tier 2 de underdog"
 											>
-												Underdog Tier 2 (26-50%)
+												Underdog Tier 2 (Pts)
 											</label>
 											<input
 												type="number"
@@ -688,6 +709,76 @@ function AdminTournamentsPage() {
 											/>
 										</div>
 									</div>
+									<div className="grid grid-cols-2 gap-3">
+										<div>
+											<label
+												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												title="Limite máximo de votos para Tier 1"
+											>
+												Tier 1 até (%)
+											</label>
+											<input
+												type="number"
+												min={1}
+												max={100}
+												step={1}
+												value={Math.round(
+													(formData.scoringRules.underdog_tier1_max_pct ??
+														0.25) * 100,
+												)}
+												onChange={(e) => {
+													const parsed = Number(e.target.value);
+													setFormData({
+														...formData,
+														scoringRules: {
+															...formData.scoringRules,
+															underdog_tier1_max_pct:
+																Number.isFinite(parsed) && parsed > 0
+																	? parsed / 100
+																	: 0.25,
+														},
+													});
+												}}
+												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
+											/>
+										</div>
+										<div>
+											<label
+												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												title="Limite máximo de votos para Tier 2"
+											>
+												Tier 2 até (%)
+											</label>
+											<input
+												type="number"
+												min={1}
+												max={100}
+												step={1}
+												value={Math.round(
+													(formData.scoringRules.underdog_tier2_max_pct ??
+														0.5) * 100,
+												)}
+												onChange={(e) => {
+													const parsed = Number(e.target.value);
+													setFormData({
+														...formData,
+														scoringRules: {
+															...formData.scoringRules,
+															underdog_tier2_max_pct:
+																Number.isFinite(parsed) && parsed > 0
+																	? parsed / 100
+																	: 0.5,
+														},
+													});
+												}}
+												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
+											/>
+										</div>
+									</div>
+									<p className="font-bold text-[10px] text-gray-500 uppercase">
+										Fallback automático: Tier 1 = 25%, Tier 2 = 50% quando não
+										configurado.
+									</p>
 								</div>
 							</div>
 

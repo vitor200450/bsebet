@@ -365,6 +365,43 @@ function EditorMatchCard({
 	match: Match;
 	onClick?: () => void;
 }) {
+	const isWalkover = match.status === "finished" && match.resultType === "wo";
+	const walkoverScore = (() => {
+		if (!isWalkover) return { a: null, b: null };
+
+		if (match.winnerId && match.teamA?.id && match.teamB?.id) {
+			return {
+				a: match.winnerId === match.teamA.id ? "W" : "FF",
+				b: match.winnerId === match.teamB.id ? "W" : "FF",
+			};
+		}
+
+		if ((match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
+			return {
+				a: (match.scoreA ?? 0) > (match.scoreB ?? 0) ? "W" : "FF",
+				b: (match.scoreB ?? 0) > (match.scoreA ?? 0) ? "W" : "FF",
+			};
+		}
+
+		if (match.teamAPreviousMatchId && !match.teamBPreviousMatchId) {
+			return { a: "W", b: "FF" };
+		}
+
+		if (!match.teamAPreviousMatchId && match.teamBPreviousMatchId) {
+			return { a: "FF", b: "W" };
+		}
+
+		if (!match.teamA?.id && match.teamB?.id) {
+			return { a: "W", b: "FF" };
+		}
+
+		if (match.teamA?.id && !match.teamB?.id) {
+			return { a: "FF", b: "W" };
+		}
+
+		return { a: "FF", b: "FF" };
+	})();
+
 	return (
 		<div
 			onClick={onClick}
@@ -382,6 +419,11 @@ function EditorMatchCard({
 			{match.status === "finished" && (
 				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					FINAL
+				</div>
+			)}
+			{isWalkover && (
+				<div className="absolute top-6 -right-1 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+					W.O.
 				</div>
 			)}
 
@@ -435,7 +477,7 @@ function EditorMatchCard({
 						</span>
 					</div>
 					<div className="flex h-full items-center justify-center border-black border-l-2 bg-black font-black text-[#ccff00] text-[11px] italic">
-						{(match as any).scoreA ?? match.stats?.pointsA ?? "0"}
+						{walkoverScore.a ?? match.scoreA ?? match.stats?.pointsA ?? "0"}
 					</div>
 				</div>
 
@@ -458,7 +500,7 @@ function EditorMatchCard({
 						</span>
 					</div>
 					<div className="flex h-full items-center justify-center border-black border-l-2 bg-black font-black text-[#ccff00] text-[11px] italic">
-						{(match as any).scoreB ?? match.stats?.pointsB ?? "0"}
+						{walkoverScore.b ?? match.scoreB ?? match.stats?.pointsB ?? "0"}
 					</div>
 				</div>
 			</div>

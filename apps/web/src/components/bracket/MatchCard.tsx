@@ -151,6 +151,42 @@ export const MatchCard = ({
 	// Can interact if betting is enabled AND match is not finished/live AND not readOnly AND not locked
 	// AND if matchday is locked, the match must be in editableMatchIds
 	const isMatchStarted = match.status === "live" || match.status === "finished";
+	const isWalkover = match.resultType === "wo";
+	const walkoverDisplayScore = (() => {
+		if (!isWalkover) return { a: "FF", b: "FF" };
+
+		if (match.winnerId && match.teamA && match.teamB) {
+			return {
+				a: match.winnerId === match.teamA.id ? "W" : "FF",
+				b: match.winnerId === match.teamB.id ? "W" : "FF",
+			};
+		}
+
+		if ((match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
+			return {
+				a: (match.scoreA ?? 0) > (match.scoreB ?? 0) ? "W" : "FF",
+				b: (match.scoreB ?? 0) > (match.scoreA ?? 0) ? "W" : "FF",
+			};
+		}
+
+		if (match.teamAPreviousMatchId && !match.teamBPreviousMatchId) {
+			return { a: "W", b: "FF" };
+		}
+
+		if (!match.teamAPreviousMatchId && match.teamBPreviousMatchId) {
+			return { a: "FF", b: "W" };
+		}
+
+		if (!match.teamA && match.teamB) {
+			return { a: "FF", b: "W" };
+		}
+
+		if (match.teamA && !match.teamB) {
+			return { a: "W", b: "FF" };
+		}
+
+		return { a: "FF", b: "FF" };
+	})();
 	const isMatchEditable =
 		matchDayStatus !== "locked" || (editableMatchIds?.has(match.id) ?? false);
 	const canInteract =
@@ -159,6 +195,15 @@ export const MatchCard = ({
 		!isMatchStarted &&
 		!isReadOnly &&
 		isMatchEditable;
+	const blockedReason = (() => {
+		if (isGhost) return "Aguardando definicao dos times";
+		if (match.isLockedDependency) return "Aposte nos jogos anteriores primeiro";
+		if (!isBettingEnabled) return "Partida fora do match day selecionado";
+		if (!isMatchEditable && matchDayStatus === "locked") {
+			return "Partida indisponivel para recovery";
+		}
+		return "Apostas indisponiveis";
+	})();
 
 	if (isLocked && !isReadOnly) {
 		return (
@@ -228,6 +273,11 @@ export const MatchCard = ({
 					FINAL
 				</div>
 			)}
+			{match.status === "finished" && isWalkover && (
+				<div className="absolute -top-2 right-14 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
+					W.O.
+				</div>
+			)}
 
 			{/* Bet Result Badge - Show points earned for finished matches */}
 			{match.status === "finished" &&
@@ -236,7 +286,7 @@ export const MatchCard = ({
 					<div
 						className={clsx(
 							"group/badge absolute -right-2 -bottom-2 z-20 flex cursor-help items-center gap-1 border-2 border-black px-1.5 py-0.5 font-black text-[7px] uppercase",
-							prediction.isCorrect
+							isWalkover || prediction.isCorrect
 								? prediction.isUnderdogPick
 									? "animate-pulse bg-gradient-to-r from-purple-600 to-pink-600 text-white" // Special underdog style
 									: "bg-green-500 text-white"
@@ -247,6 +297,23 @@ export const MatchCard = ({
 						<div className="pointer-events-none absolute right-0 bottom-full z-[100] mb-2 hidden w-48 rounded border-2 border-white bg-black p-2 text-[10px] text-white shadow-lg group-hover/badge:block">
 							<div className="space-y-1">
 								{(() => {
+									if (isWalkover) {
+										return (
+											<>
+												<div className="font-bold text-yellow-300">⚠️ W.O.</div>
+												<div className="text-[9px] text-gray-300">
+													Partida encerrada por walkover.
+												</div>
+												<div className="text-[9px] text-gray-300">
+													Todos os apostadores recebem pontos de vencedor.
+												</div>
+												<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-yellow-300">
+													Total: +{prediction.pointsEarned} pts
+												</div>
+											</>
+										);
+									}
+
 									if (!prediction.isCorrect) {
 										return (
 											<>
@@ -302,9 +369,11 @@ export const MatchCard = ({
 						</div>
 
 						{/* Badge Content */}
-						{prediction.isCorrect ? (
+						{isWalkover || prediction.isCorrect ? (
 							prediction.isUnderdogPick ? (
 								<span>🔥</span>
+							) : isWalkover ? (
+								"⚠"
 							) : (
 								"✓"
 							)
@@ -317,9 +386,10 @@ export const MatchCard = ({
 								: prediction.pointsEarned}{" "}
 							PTS
 						</span>
-						{prediction.isUnderdogPick && prediction.isCorrect && (
-							<span className="ml-0.5 text-[6px]">🐕</span>
-						)}
+						{prediction.isUnderdogPick &&
+							(isWalkover || prediction.isCorrect) && (
+								<span className="ml-0.5 text-[6px]">🐕</span>
+							)}
 					</div>
 				)}
 
@@ -350,7 +420,7 @@ export const MatchCard = ({
 			<div className="relative">
 				{/* Helper for "Select Winner" state if nothing selected */}
 				{!prediction && canInteract && !showResult && (
-					<div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/5 opacity-0 transition-opacity group-hover:opacity-100">
+					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/5 opacity-0 transition-opacity group-hover:opacity-100">
 						<span className="rounded bg-white/80 px-2 py-1 font-bold text-[10px] text-black/50 uppercase tracking-widest">
 							Select Winner
 						</span>
@@ -359,13 +429,11 @@ export const MatchCard = ({
 
 				{/* Helper for LOCKED matches */}
 				{!canInteract && !showResult && !isReadOnly && (
-					<div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover:opacity-100">
+					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover:opacity-100">
 						<div className="flex -rotate-1 transform flex-col items-center gap-1 border-2 border-[#ccff00] bg-black px-3 py-2 text-white">
 							<span className="material-symbols-outlined text-sm">lock</span>
 							<span className="text-center font-black text-[8px] uppercase leading-tight tracking-widest">
-								Aposte nos jogos
-								<br />
-								anteriores primeiro
+								{blockedReason}
 							</span>
 						</div>
 					</div>
@@ -432,7 +500,7 @@ export const MatchCard = ({
 										: "text-gray-400",
 								)}
 							>
-								{displayScoreA}
+								{isWalkover ? walkoverDisplayScore.a : displayScoreA}
 							</span>
 						) : (
 							isWinnerA && (
@@ -522,7 +590,7 @@ export const MatchCard = ({
 										: "text-gray-400",
 								)}
 							>
-								{displayScoreB}
+								{isWalkover ? walkoverDisplayScore.b : displayScoreB}
 							</span>
 						) : (
 							isWinnerB && (

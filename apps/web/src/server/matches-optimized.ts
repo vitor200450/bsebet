@@ -26,7 +26,7 @@ const getMatchesOptimizedFn = createServerFn({ method: "GET" }).handler(
 		// Seleciona apenas colunas necessárias (não *)
 		const matchesData = await db.query.matches.findMany({
 			where: eq(matches.tournamentId, data.tournamentId),
-			orderBy: [asc(matches.startTime), asc(matches.displayOrder)],
+			orderBy: [asc(matches.displayOrder), asc(matches.startTime)],
 			columns: {
 				id: true,
 				tournamentId: true,

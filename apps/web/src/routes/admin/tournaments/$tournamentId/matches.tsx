@@ -18,6 +18,7 @@ import { getMatchDays } from "@/server/match-days";
 import {
 	deleteMatch,
 	getMatches,
+	recalculateTournamentPoints,
 	resetTournamentResults,
 } from "@/server/matches";
 import { getTeams } from "@/server/teams"; // Global teams
@@ -155,6 +156,9 @@ function TournamentMatchesPage() {
 	const [isResetTournamentModalOpen, setIsResetTournamentModalOpen] =
 		useState(false);
 	const [isResettingTournament, setIsResettingTournament] = useState(false);
+	const [isRecalculateModalOpen, setIsRecalculateModalOpen] = useState(false);
+	const [isRecalculatingTournament, setIsRecalculatingTournament] =
+		useState(false);
 
 	const handleResetMatch = async () => {
 		if (!matchToReset) return;
@@ -192,6 +196,33 @@ function TournamentMatchesPage() {
 			toast.error("Erro ao resetar resultados do torneio");
 		} finally {
 			setIsResettingTournament(false);
+		}
+	};
+
+	const handleRecalculateTournamentPoints = async () => {
+		setIsRecalculatingTournament(true);
+		try {
+			const result = await recalculateTournamentPoints({
+				data: { tournamentId: tournament.id },
+			});
+			toast.success(
+				`Recalculo concluído: ${result.totalMatches} partidas (${result.settledMatches} finalizadas, ${result.walkoverMatches} W.O.), ${result.betsReset} apostas reprocessadas, ${result.affectedUsers} usuários afetados, ${result.reappliedAdjustments}/${result.adjustmentsFound} ajustes reaplicados.`,
+			);
+			if (
+				result.adjustmentsSkippedNoMatch > 0 ||
+				result.adjustmentsSkippedOutOfTournament > 0
+			) {
+				toast.warning(
+					`Ajustes ignorados: ${result.adjustmentsSkippedNoMatch} sem matchId e ${result.adjustmentsSkippedOutOfTournament} fora do torneio.`,
+				);
+			}
+			setIsRecalculateModalOpen(false);
+			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
+			router.invalidate();
+		} catch (e) {
+			toast.error("Erro ao recalcular pontuação do torneio");
+		} finally {
+			setIsRecalculatingTournament(false);
 		}
 	};
 
@@ -378,6 +409,14 @@ function TournamentMatchesPage() {
 							Order
 						</button>
 					</div>
+
+					<button
+						onClick={() => setIsRecalculateModalOpen(true)}
+						className="flex items-center gap-2 border-[2px] border-black bg-black px-4 py-1.5 font-black text-[#ccff00] text-[10px] uppercase transition-all hover:bg-[#ccff00] hover:text-black"
+					>
+						<CheckCircle2 size={12} strokeWidth={3} />
+						Recalcular Pontos
+					</button>
 
 					<button
 						onClick={() => setIsResetTournamentModalOpen(true)}
@@ -744,6 +783,12 @@ function TournamentMatchesPage() {
 																		</div>
 																	)}
 																	<div className="mt-1">
+																		{match.resultType === "wo" &&
+																			match.status === "finished" && (
+																				<span className="mr-1 border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[9px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
+																					W.O.
+																				</span>
+																			)}
 																		{match.isBettingEnabled ? (
 																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0px_0px_#000]">
 																				BETS OPEN
@@ -803,13 +848,35 @@ function TournamentMatchesPage() {
 																match.status === "finished" ? (
 																	<div className="flex -skew-x-12 items-center gap-2 border-[2px] border-white bg-black px-3 py-1 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
 																		<span className="skew-x-12 font-black text-2xl text-brawl-blue">
-																			{match.scoreA ?? 0}
+																			{match.resultType === "wo"
+																				? (match.teamA?.id ?? match.teamAId) ===
+																					match.winnerId
+																					? "W"
+																					: !match.winnerId &&
+																							!(
+																								match.teamA?.id ?? match.teamAId
+																							) &&
+																							(match.teamB?.id ?? match.teamBId)
+																						? "W"
+																						: "FF"
+																				: (match.scoreA ?? 0)}
 																		</span>
 																		<span className="skew-x-12 font-bold text-gray-500 text-sm">
 																			-
 																		</span>
 																		<span className="skew-x-12 font-black text-2xl text-brawl-red">
-																			{match.scoreB ?? 0}
+																			{match.resultType === "wo"
+																				? (match.teamB?.id ?? match.teamBId) ===
+																					match.winnerId
+																					? "W"
+																					: !match.winnerId &&
+																							!(
+																								match.teamB?.id ?? match.teamBId
+																							) &&
+																							(match.teamA?.id ?? match.teamAId)
+																						? "W"
+																						: "FF"
+																				: (match.scoreB ?? 0)}
 																		</span>
 																	</div>
 																) : (
@@ -908,7 +975,9 @@ function TournamentMatchesPage() {
 				matches={matches}
 				matchToEdit={editingMatch}
 				matchDays={(matchDays || []) as any[]}
-				onSuccess={() => router.invalidate()}
+				onSuccess={async () => {
+					await router.invalidate();
+				}}
 				groupsCount={
 					stages.find((s) => s.type === "Groups")?.settings?.groupsCount || 4
 				}
@@ -962,6 +1031,18 @@ function TournamentMatchesPage() {
 				confirmLabel="Sim, Regenerar"
 				cancelLabel="Cancelar"
 				variant="danger"
+			/>
+
+			<ConfirmationModal
+				isOpen={isRecalculateModalOpen}
+				onClose={() => setIsRecalculateModalOpen(false)}
+				onConfirm={handleRecalculateTournamentPoints}
+				isLoading={isRecalculatingTournament}
+				title="Recalcular Pontuação do Torneio"
+				description="Isso vai zerar e recalcular os pontos de TODAS as apostas do torneio com base nos resultados atuais das partidas finalizadas (incluindo W.O.), e reaplicar ajustes manuais registrados. Esta ação é segura e idempotente."
+				confirmLabel="Sim, Recalcular"
+				cancelLabel="Cancelar"
+				variant="warning"
 			/>
 
 			<ConfirmationModal
