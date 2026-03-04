@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { AlertCircle, Check, Loader2, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { createMatch, updateMatch } from "@/server/matches";
 import {
@@ -196,6 +196,22 @@ export function MatchModal({
 		}
 	}, [formData.stageId, stages]);
 
+	const resolvedTeamAId = useMemo(() => {
+		if (matchToEdit?.teamAId) return Number(matchToEdit.teamAId);
+		if (formData.teamAType === "team" && formData.teamA) {
+			return Number(formData.teamA);
+		}
+		return null;
+	}, [matchToEdit?.teamAId, formData.teamAType, formData.teamA]);
+
+	const resolvedTeamBId = useMemo(() => {
+		if (matchToEdit?.teamBId) return Number(matchToEdit.teamBId);
+		if (formData.teamBType === "team" && formData.teamB) {
+			return Number(formData.teamB);
+		}
+		return null;
+	}, [matchToEdit?.teamBId, formData.teamBType, formData.teamB]);
+
 	// Auto-determine winner based on score and validate max score
 	useEffect(() => {
 		if (formData.resultType === "wo") return;
@@ -209,17 +225,6 @@ export function MatchModal({
 
 		const winsNeeded = Math.ceil(bestOf / 2);
 		const { scoreA, scoreB } = formData;
-		const resolvedTeamAId =
-			matchToEdit?.teamAId ??
-			(formData.teamAType === "team" && formData.teamA
-				? Number(formData.teamA)
-				: null);
-		const resolvedTeamBId =
-			matchToEdit?.teamBId ??
-			(formData.teamBType === "team" && formData.teamB
-				? Number(formData.teamB)
-				: null);
-
 		// Validate scores don't exceed max wins
 		let updatedScoreA = scoreA;
 		let updatedScoreB = scoreB;
@@ -423,8 +428,8 @@ export function MatchModal({
 		}
 
 		if (formData.resultType === "wo" && !formData.winnerId) {
-			const hasTeamA = !!(formData.teamA || matchToEdit?.teamAId);
-			const hasTeamB = !!(formData.teamB || matchToEdit?.teamBId);
+			const hasTeamA = !!resolvedTeamAId;
+			const hasTeamB = !!resolvedTeamBId;
 
 			if (hasTeamA !== hasTeamB) {
 				return null;
@@ -434,6 +439,15 @@ export function MatchModal({
 		}
 
 		if (formData.status === "finished" && !formData.winnerId) {
+			if (formData.resultType === "wo") {
+				const hasTeamA = !!resolvedTeamAId;
+				const hasTeamB = !!resolvedTeamBId;
+
+				if (hasTeamA !== hasTeamB) {
+					return null;
+				}
+			}
+
 			return "Cannot finish match without a winner!";
 		}
 
@@ -707,7 +721,7 @@ export function MatchModal({
 										<label className="font-black text-[10px] text-black uppercase">
 											{matchToEdit?.teamA?.name || "Team A"}
 										</label>
-										{formData.winnerId === matchToEdit?.teamAId && (
+										{formData.winnerId === resolvedTeamAId && (
 											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
 												✓ WINNER
 											</span>
@@ -751,7 +765,7 @@ export function MatchModal({
 										<label className="font-black text-[10px] text-black uppercase">
 											{matchToEdit?.teamB?.name || "Team B"}
 										</label>
-										{formData.winnerId === matchToEdit?.teamBId && (
+										{formData.winnerId === resolvedTeamBId && (
 											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
 												✓ WINNER
 											</span>
@@ -800,17 +814,18 @@ export function MatchModal({
 											onClick={() =>
 												setFormData({
 													...formData,
-													winnerId: matchToEdit?.teamAId || null,
+													winnerId: resolvedTeamAId,
 												})
 											}
 											className={clsx(
 												"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
-												formData.winnerId === matchToEdit?.teamAId
+												formData.winnerId === resolvedTeamAId
 													? "-translate-y-1 bg-brawl-blue text-white shadow-[4px_4px_0px_0px_#000]"
 													: "bg-white text-black hover:bg-gray-50",
 											)}
+											disabled={!resolvedTeamAId}
 										>
-											{formData.winnerId === matchToEdit?.teamAId && (
+											{formData.winnerId === resolvedTeamAId && (
 												<Check className="h-4 w-4" />
 											)}
 											{matchToEdit?.teamA?.name || "Team A"}
@@ -820,22 +835,32 @@ export function MatchModal({
 											onClick={() =>
 												setFormData({
 													...formData,
-													winnerId: matchToEdit?.teamBId || null,
+													winnerId: resolvedTeamBId,
 												})
 											}
 											className={clsx(
 												"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
-												formData.winnerId === matchToEdit?.teamBId
+												formData.winnerId === resolvedTeamBId
 													? "-translate-y-1 bg-brawl-red text-white shadow-[4px_4px_0px_0px_#000]"
 													: "bg-white text-black hover:bg-gray-50",
 											)}
+											disabled={!resolvedTeamBId}
 										>
-											{formData.winnerId === matchToEdit?.teamBId && (
+											{formData.winnerId === resolvedTeamBId && (
 												<Check className="h-4 w-4" />
 											)}
 											{matchToEdit?.teamB?.name || "Team B"}
 										</button>
 									</div>
+									{formData.resultType === "wo" &&
+										((!!resolvedTeamAId && !resolvedTeamBId) ||
+											(!resolvedTeamAId && !!resolvedTeamBId)) && (
+											<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-blue-700 uppercase">
+												<AlertCircle className="h-3 w-3" />
+												W.O. com um único time definido será resolvido
+												automaticamente.
+											</p>
+										)}
 									{!formData.winnerId ? (
 										<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
 											<p className="flex items-center gap-2 font-black text-[10px] text-red-600 uppercase">
