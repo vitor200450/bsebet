@@ -3,6 +3,10 @@ import { bets, matches } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import {
+	buildRecoveryDependencySet,
+	isRecoverySubmissionAllowed,
+} from "../utils/recovery";
 
 // Schema for Bet Submission
 const betSubmissionSchema = z.object({
@@ -223,6 +227,52 @@ const submitMultipleBetsFn = createServerFn({
 	const errors: string[] = [];
 	// Track which matchIds are being submitted as first-time recovery bets
 	const recoveryMatchIds = new Set<number>();
+	const recoveryDependenciesByTournament = new Map<number, Set<number>>();
+
+	const getRecoveryDependencySetForTournament = async (
+		tournamentId: number,
+	) => {
+		if (recoveryDependenciesByTournament.has(tournamentId)) {
+			const cached = recoveryDependenciesByTournament.get(tournamentId);
+			if (cached) return cached;
+		}
+
+		const tournamentMatches = await db.query.matches.findMany({
+			where: eq(matches.tournamentId, tournamentId),
+			columns: {
+				id: true,
+				status: true,
+				resultType: true,
+				winnerId: true,
+				teamAId: true,
+				teamBId: true,
+				teamAPreviousMatchId: true,
+				teamBPreviousMatchId: true,
+				roundIndex: true,
+				bracketSide: true,
+				label: true,
+			},
+		});
+
+		const userBetsForTournament = await db
+			.select({
+				matchId: bets.matchId,
+				predictedWinnerId: bets.predictedWinnerId,
+			})
+			.from(bets)
+			.innerJoin(matches, eq(bets.matchId, matches.id))
+			.where(
+				and(eq(bets.userId, userId), eq(matches.tournamentId, tournamentId)),
+			);
+
+		const dependencySet = buildRecoveryDependencySet(
+			tournamentMatches,
+			userBetsForTournament,
+		);
+
+		recoveryDependenciesByTournament.set(tournamentId, dependencySet);
+		return dependencySet;
+	};
 
 	// Validate each bet
 	for (const betData of validData.bets) {
@@ -236,34 +286,65 @@ const submitMultipleBetsFn = createServerFn({
 		// Allow recovery bets if user already has a bet for this match
 		let existingBet = null;
 		if (!match.isBettingEnabled) {
+			if (!match.tournamentId) {
+				errors.push(
+					`Partida ${betData.matchId} sem torneio vinculado para validação de recovery`,
+				);
+				continue;
+			}
+
+			const recoveryDependencySet = await getRecoveryDependencySetForTournament(
+				match.tournamentId,
+			);
+			const dependencyEligible = recoveryDependencySet.has(Number(match.id));
+
 			// Check if user has an existing bet (recovery mode)
 			existingBet = await db.query.bets.findFirst({
 				where: and(eq(bets.userId, userId), eq(bets.matchId, betData.matchId)),
 			});
 
-			// If no existing bet, reject
-			if (!existingBet) {
-				errors.push(`Apostas desabilitadas para partida ${betData.matchId}`);
+			const recoveryAllowed = isRecoverySubmissionAllowed({
+				match: {
+					id: Number(match.id),
+					status: match.status,
+					resultType: match.resultType,
+					winnerId: match.winnerId,
+					teamAId: match.teamAId,
+					teamBId: match.teamBId,
+					teamAPreviousMatchId: match.teamAPreviousMatchId,
+					teamBPreviousMatchId: match.teamBPreviousMatchId,
+					roundIndex: match.roundIndex,
+					bracketSide: match.bracketSide,
+					label: match.label,
+				},
+				hasExistingBet: Boolean(existingBet),
+				dependencyEligible,
+			});
+
+			if (!recoveryAllowed) {
+				errors.push(
+					`Partida ${betData.matchId} indisponível para recovery no estado atual`,
+				);
 				continue;
 			}
 
 			// Block re-submission if user already has a recovery bet AND the matchup hasn't changed
-			if (existingBet.isRecovery) {
-				const matchupChanged =
-					(match.teamAId &&
-						existingBet.predictedWinnerId !== match.teamAId &&
-						existingBet.predictedWinnerId !== match.teamBId) ||
-					!match.teamAId ||
-					!match.teamBId;
+			if (existingBet?.isRecovery) {
+				const predictedWinnerId = existingBet.predictedWinnerId
+					? Number(existingBet.predictedWinnerId)
+					: null;
+				const predictedStillInCurrentMatch =
+					predictedWinnerId !== null &&
+					(predictedWinnerId === Number(match.teamAId) ||
+						predictedWinnerId === Number(match.teamBId));
 
-				if (!matchupChanged) {
+				if (predictedStillInCurrentMatch && !dependencyEligible) {
 					// Matchup is the same - block re-submission
 					errors.push(
 						`Aposta de recuperação para partida ${betData.matchId} já foi realizada e não pode ser alterada.`,
 					);
 					continue;
 				}
-				// Matchup changed - allow re-submission
 			}
 
 			// Mark as recovery bet (for new recovery submissions or re-submissions when matchup changed)

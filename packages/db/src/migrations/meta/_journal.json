@@ -1,48 +1,48 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1771105551116,
-      "tag": "0000_long_zuras",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1771718942500,
-      "tag": "0001_add_is_recovery_to_bets",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1771819717373,
-      "tag": "0002_marvelous_leader",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1771827585865,
-      "tag": "0003_short_lizard",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1772600000000,
-      "tag": "0004_match_result_type",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772654260695,
-      "tag": "0005_good_hiroim",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1771105551116,
+			"tag": "0000_long_zuras",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1771718942500,
+			"tag": "0001_add_is_recovery_to_bets",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1771819717373,
+			"tag": "0002_marvelous_leader",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1771827585865,
+			"tag": "0003_short_lizard",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1772600000000,
+			"tag": "0004_match_result_type",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1772654260695,
+			"tag": "0005_good_hiroim",
+			"breakpoints": true
+		}
+	]
 }

@@ -14,6 +14,7 @@ import {
 } from "../components/TournamentBracket";
 import { TournamentSelector } from "../components/TournamentSelector";
 import { queryClient } from "../router";
+import { isBracketMatchLike } from "../utils/recovery";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -2616,6 +2617,14 @@ function Home() {
 		};
 
 		const dependentMatchIds = findAllDependents(wrongMatchIds);
+		const userBetsByMatchId = new Map<number, any>();
+		userBets.forEach((bet: any) => {
+			userBetsByMatchId.set(Number(bet.matchId), bet);
+		});
+		const bracketMatchById = new Map<number, any>();
+		allBracketMatches.forEach((m: any) => {
+			bracketMatchById.set(Number(m.id), m);
+		});
 
 		// Core Logic: Decide which scheduled matches are actually editable for recovery.
 		projectedMatches.forEach((match: any) => {
@@ -2623,18 +2632,16 @@ function Home() {
 			if (match.status !== "scheduled") return;
 			if (match.resultType === "wo") return;
 
-			const serverBet = userBets.find(
-				(b: any) => Number(b.matchId) === matchId,
-			);
+			const serverBet = userBetsByMatchId.get(matchId);
 
 			// Check if this is a bracket match
-			const isBracketMatch =
-				!!match.teamAPreviousMatchId ||
-				!!match.teamBPreviousMatchId ||
-				match.roundIndex >= 100 ||
-				match.bracketSide !== null ||
-				(match.label &&
-					(match.label.includes("SF") || match.label.includes("Final")));
+			const isBracketMatch = isBracketMatchLike({
+				teamAPreviousMatchId: match.teamAPreviousMatchId,
+				teamBPreviousMatchId: match.teamBPreviousMatchId,
+				roundIndex: match.roundIndex,
+				bracketSide: match.bracketSide,
+				label: match.label,
+			});
 
 			// CASE 1: Match depends on a wrong prediction (parent match was wrong)
 			// Check if user already has a recovery bet for this match with the SAME matchup
@@ -2677,6 +2684,40 @@ function Home() {
 
 			// CASE 2: Bracket match without a server bet (missed bet entirely)
 			if (isBracketMatch && !serverBet) {
+				editableIds.add(matchId);
+				return;
+			}
+
+			// CASE 2.5: User already has a pre-lock bracket bet, and at least one
+			// immediate parent match was finalized against the user's prediction.
+			// This unlocks scenarios like X vs Y becoming X vs Z, but avoids opening
+			// unrelated matches/finals.
+			const parentIds = [
+				match.teamAPreviousMatchId ? Number(match.teamAPreviousMatchId) : null,
+				match.teamBPreviousMatchId ? Number(match.teamBPreviousMatchId) : null,
+			].filter((id): id is number => Boolean(id));
+
+			const hasImmediateParentMismatch = parentIds.some((parentId) => {
+				const parentMatch = bracketMatchById.get(parentId);
+				if (!parentMatch) return false;
+				if (parentMatch.status !== "finished") return false;
+				if (parentMatch.resultType === "wo") return false;
+				if (!parentMatch.winnerId) return false;
+
+				const parentBet = userBetsByMatchId.get(parentId);
+				if (!parentBet) return true;
+
+				return (
+					Number(parentBet.predictedWinnerId) !== Number(parentMatch.winnerId)
+				);
+			});
+
+			if (
+				isBracketMatch &&
+				serverBet &&
+				!serverBet.isRecovery &&
+				hasImmediateParentMismatch
+			) {
 				editableIds.add(matchId);
 				return;
 			}
