@@ -190,7 +190,9 @@ function AdminTeamsPage() {
 			setTeamToDelete(null);
 			router.invalidate();
 		} catch (error: any) {
-			toast.error("Erro ao excluir time");
+			toast.error("Erro ao excluir time", {
+				description: error?.message || "Tente novamente em instantes.",
+			});
 		} finally {
 			setIsSubmitting(false);
 		}

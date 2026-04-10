@@ -274,37 +274,49 @@ const deleteTournamentFn = createServerFn({
 	}
 
 	try {
-		const { matches, bets, matchDays, tournamentTeams } = await import(
-			"@bsebet/db/schema"
-		);
+		const { matches, bets, matchDays, tournamentTeams, pointAdjustments } =
+			await import("@bsebet/db/schema");
 		const { inArray } = await import("drizzle-orm");
 
-		// 1. Find all matches to get their IDs for bet deletion
-		const tournamentMatches = await db
-			.select({ id: matches.id })
-			.from(matches)
-			.where(eq(matches.tournamentId, id));
+		await db.transaction(async (tx) => {
+			// 1. Find all matches to get their IDs for dependent deletions
+			const tournamentMatches = await tx
+				.select({ id: matches.id })
+				.from(matches)
+				.where(eq(matches.tournamentId, id));
 
-		const matchIds = tournamentMatches.map((m) => m.id);
+			const matchIds = tournamentMatches.map((m) => m.id);
 
-		// 2. Delete bets (FK → matches.id)
-		if (matchIds.length > 0) {
-			await db.delete(bets).where(inArray(bets.matchId, matchIds));
-		}
+			// 2. Delete point adjustments tied to this tournament's matches first
+			if (matchIds.length > 0) {
+				await tx
+					.delete(pointAdjustments)
+					.where(inArray(pointAdjustments.matchId, matchIds));
 
-		// 3. Delete matches (FK → tournaments.id)
-		await db.delete(matches).where(eq(matches.tournamentId, id));
+				// 3. Delete bets (FK → matches.id)
+				await tx.delete(bets).where(inArray(bets.matchId, matchIds));
+			}
 
-		// 4. Delete match days (FK → tournaments.id)
-		await db.delete(matchDays).where(eq(matchDays.tournamentId, id));
+			// 4. Delete tournament-level point adjustments
+			await tx
+				.delete(pointAdjustments)
+				.where(eq(pointAdjustments.tournamentId, id));
 
-		// 5. Delete tournament teams (FK → tournaments.id)
-		await db
-			.delete(tournamentTeams)
-			.where(eq(tournamentTeams.tournamentId, id));
+			// 5. Delete matches (FK → tournaments.id)
+			await tx.delete(matches).where(eq(matches.tournamentId, id));
 
-		// 6. Delete the tournament
-		await db.delete(tournaments).where(eq(tournaments.id, id));
+			// 6. Delete match days (FK → tournaments.id)
+			await tx.delete(matchDays).where(eq(matchDays.tournamentId, id));
+
+			// 7. Delete tournament teams (FK → tournaments.id)
+			await tx
+				.delete(tournamentTeams)
+				.where(eq(tournamentTeams.tournamentId, id));
+
+			// 8. Delete the tournament
+			await tx.delete(tournaments).where(eq(tournaments.id, id));
+		});
+
 		return { success: true };
 	} catch (error) {
 		console.error("Error deleting tournament:", error);

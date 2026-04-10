@@ -1,6 +1,13 @@
-import { matches, teams, tournamentTeams } from "@bsebet/db/schema";
+import {
+	bets,
+	matches,
+	pointAdjustments,
+	teams,
+	tournamentTeams,
+	tournaments,
+} from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { desc, eq, or } from "drizzle-orm";
+import { desc, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import {
 	base64ToBuffer,
@@ -156,9 +163,93 @@ const deleteTeamFn = createServerFn({
 }).handler(async (ctx: any) => {
 	const { db } = await import("@bsebet/db");
 	const data = ctx.data;
-	if (typeof data !== "number") throw new Error("Invalid ID");
-	await db.delete(teams).where(eq(teams.id, data));
-	return { success: true };
+
+	// Ensure data is the ID directly
+	const id = typeof data === "object" && data?.data ? data.data : data;
+
+	if (!id || typeof id !== "number") {
+		console.error("Invalid ID for team deletion:", id);
+		throw new Error("Invalid ID");
+	}
+
+	try {
+		await db.transaction(async (tx) => {
+			// 1) Prevent deletion if team is still linked to tournament participants
+			const linkedTournamentEntries = await tx
+				.select({
+					tournamentId: tournamentTeams.tournamentId,
+					tournamentName: tournaments.name,
+				})
+				.from(tournamentTeams)
+				.innerJoin(
+					tournaments,
+					eq(tournamentTeams.tournamentId, tournaments.id),
+				)
+				.where(eq(tournamentTeams.teamId, id));
+
+			if (linkedTournamentEntries.length > 0) {
+				const tournamentNames = [
+					...new Set(linkedTournamentEntries.map((entry) => entry.tournamentName)),
+				];
+
+				throw new Error(
+					`Não é possível excluir este time porque ele está vinculado aos torneios: ${tournamentNames.join(", ")}.`,
+				);
+			}
+
+			// 2) Find matches where this team appears in any role
+			const relatedMatches = await tx
+				.select({ id: matches.id })
+				.from(matches)
+				.where(
+					or(
+						eq(matches.teamAId, id),
+						eq(matches.teamBId, id),
+						eq(matches.winnerId, id),
+						eq(matches.underdogTeamId, id),
+					),
+				);
+
+			const matchIds = relatedMatches.map((m) => m.id);
+
+			// 3) Remove dependencies that can block match updates
+			if (matchIds.length > 0) {
+				await tx
+					.delete(pointAdjustments)
+					.where(inArray(pointAdjustments.matchId, matchIds));
+
+				await tx.delete(bets).where(inArray(bets.matchId, matchIds));
+			}
+
+			// 4) Nullify team references in matches before deleting the team
+			await tx
+				.update(matches)
+				.set({
+					teamAId: null,
+					teamBId: null,
+					winnerId: null,
+					underdogTeamId: null,
+				})
+				.where(
+					or(
+						eq(matches.teamAId, id),
+						eq(matches.teamBId, id),
+						eq(matches.winnerId, id),
+						eq(matches.underdogTeamId, id),
+					),
+				);
+
+			// 5) Delete the team
+			await tx.delete(teams).where(eq(teams.id, id));
+		});
+
+		return { success: true };
+	} catch (error) {
+		console.error("Error deleting team:", error);
+		throw error instanceof Error
+			? error
+			: new Error("Failed to delete team in DB");
+	}
 });
 
 export const deleteTeam = deleteTeamFn as unknown as (opts: {
