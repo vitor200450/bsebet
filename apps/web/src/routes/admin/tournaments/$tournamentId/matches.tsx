@@ -274,17 +274,26 @@ function TournamentMatchesPage() {
 	// Sequential Groups by date (Preserves displayOrder)
 	const matchesBySequentialDate = useMemo(
 		() =>
-			matches.reduce((acc: MatchSegment[], match: any) => {
-				const date = new Date(match.startTime).toLocaleDateString();
-				const lastSegment = acc[acc.length - 1];
+			[...matches]
+				.sort(
+					(a: any, b: any) =>
+						new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+				)
+				.reduce((acc: MatchSegment[], match: any) => {
+					const date = new Date(match.startTime).toLocaleDateString("pt-BR", {
+						day: "2-digit",
+						month: "2-digit",
+						year: "numeric",
+					});
+					const lastSegment = acc[acc.length - 1];
 
-				if (lastSegment && lastSegment.date === date) {
-					lastSegment.items.push(match);
-				} else {
-					acc.push({ date, items: [match] });
-				}
-				return acc;
-			}, []),
+					if (lastSegment && lastSegment.date === date) {
+						lastSegment.items.push(match);
+					} else {
+						acc.push({ date, items: [match] });
+					}
+					return acc;
+				}, []),
 		[matches],
 	);
 
@@ -773,9 +782,20 @@ function TournamentMatchesPage() {
 																	{match.startTime ? (
 																		<div className="mt-1 font-bold text-[9px] text-gray-600">
 																			📅{" "}
-																			{String(match.startTime)
-																				.substring(0, 16)
-																				.replace("T", " ")}
+																			{new Date(
+																				match.startTime,
+																			).toLocaleDateString("pt-BR", {
+																				day: "2-digit",
+																				month: "2-digit",
+																				year: "numeric",
+																			})}{" "}
+																			•{" "}
+																			{new Date(
+																				match.startTime,
+																			).toLocaleTimeString("pt-BR", {
+																				hour: "2-digit",
+																				minute: "2-digit",
+																			})}
 																		</div>
 																	) : (
 																		<div className="mt-1 font-bold text-[9px] text-red-500">

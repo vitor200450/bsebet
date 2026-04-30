@@ -867,7 +867,9 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 
 			if (stage.type === "Groups") {
 				const groupsCount = stage.settings?.groupsCount || 4;
-				const format = stage.settings?.format || "GSL";
+				// Support both new groupFormat and legacy format field for backward compatibility
+				const format =
+					stage.settings?.groupFormat || stage.settings?.format || "GSL";
 
 				const seededTeams = await db.query.tournamentTeams.findMany({
 					where: (tt, { eq, isNotNull }) =>
@@ -902,7 +904,30 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 
 					if (groupTeams.length === 0) continue;
 
-					if (format === "GSL") {
+					if (format === "Round Robin") {
+						// Generate all unique pair combinations for round robin
+						// For N teams, generate N*(N-1)/2 matches
+						let matchIndex = 0;
+						for (let a = 0; a < groupTeams.length; a++) {
+							for (let b = a + 1; b < groupTeams.length; b++) {
+								matchIndex++;
+								await db.insert(matches).values({
+									tournamentId,
+									stageId: stage.id,
+									bracketSide: "groups",
+									label: `Group ${groupChar}`,
+									name: `Group ${groupChar} - Match ${matchIndex}`,
+									teamAId: groupTeams[a]?.teamId,
+									teamBId: groupTeams[b]?.teamId,
+									displayOrder: i * 100 + matchIndex,
+									startTime: matchStartTime,
+									matchDayId: matchDay.id,
+									isBettingEnabled: true,
+									status: "scheduled",
+								});
+							}
+						}
+					} else if (format === "GSL") {
 						const [m1] = await db
 							.insert(matches)
 							.values({
@@ -999,7 +1024,11 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 			} else {
 				// Playoff Generation
 				const groupsStage = stages.find((s) => s.type === "Groups");
-				const advancingPerGroup = stage.settings?.advancingPerGroup || 2;
+				// Use advancingCount from Groups stage, fallback to advancingPerGroup from playoff stage, then default to 2
+				const advancingPerGroup =
+					groupsStage?.settings?.advancingCount ||
+					stage.settings?.advancingPerGroup ||
+					2;
 				const groupsCount = groupsStage?.settings?.groupsCount || 4;
 				const totalTeams = advancingPerGroup * groupsCount;
 				const firstRoundMatchesCount = totalTeams / 2;

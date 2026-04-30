@@ -4,6 +4,8 @@ export type Team = {
 	logoUrl?: string;
 	slug?: string;
 	color: "blue" | "red";
+	seed?: number | null;
+	group?: string | null;
 };
 
 export type Match = {
@@ -21,6 +23,14 @@ export type Match = {
 		pointsB: number;
 		winRateA: string;
 		winRateB: string;
+		seedA: number | null;
+		seedB: number | null;
+		groupA: string | null;
+		groupB: string | null;
+		betCountA: number;
+		betCountB: number;
+		streakA: number;
+		streakB: number;
 	};
 	nextMatchWinnerId?: number | null;
 	nextMatchWinnerSlot?: string | null;

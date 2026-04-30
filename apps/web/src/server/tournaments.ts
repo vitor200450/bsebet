@@ -80,6 +80,7 @@ const tournamentSchema = z.object({
 					teamsPerGroup: z.number().optional(),
 					advancingCount: z.number().optional(),
 					matchType: z.enum(["Bo1", "Bo3", "Bo5"]).optional(),
+					groupFormat: z.enum(["GSL", "Round Robin"]).optional(),
 				}),
 				startDate: z.string().optional(),
 				endDate: z.string().optional(),

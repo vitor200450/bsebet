@@ -189,16 +189,23 @@ export const MatchCard = ({
 	})();
 	const isMatchEditable =
 		matchDayStatus !== "locked" || (editableMatchIds?.has(match.id) ?? false);
+	// In recovery mode (locked matchday), isBettingEnabled is false for all matches
+	// because match-days.ts syncs it on status change. Bypass it when the match is
+	// explicitly marked as editable for recovery.
+	const effectiveBettingEnabled =
+		isBettingEnabled ||
+		(matchDayStatus === "locked" && (editableMatchIds?.has(match.id) ?? false));
 	const canInteract =
 		!isLocked &&
-		isBettingEnabled &&
+		effectiveBettingEnabled &&
 		!isMatchStarted &&
 		!isReadOnly &&
 		isMatchEditable;
 	const blockedReason = (() => {
 		if (isGhost) return "Aguardando definicao dos times";
 		if (match.isLockedDependency) return "Aposte nos jogos anteriores primeiro";
-		if (!isBettingEnabled) return "Partida fora do match day selecionado";
+		if (!effectiveBettingEnabled)
+			return "Partida fora do match day selecionado";
 		if (!isMatchEditable && matchDayStatus === "locked") {
 			return "Partida indisponivel para recovery";
 		}

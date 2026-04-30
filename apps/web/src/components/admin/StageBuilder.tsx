@@ -195,6 +195,25 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 												placeholder="e.g. 4"
 											/>
 										</div>
+										<div>
+											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+												Top N Advance
+											</label>
+											<input
+												type="number"
+												min={1}
+												value={stage.settings.advancingCount || ""}
+												onChange={(e) =>
+													updateSettings(
+														index,
+														"advancingCount",
+														Number.parseInt(e.target.value) || 0,
+													)
+												}
+												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+												placeholder="e.g. 2"
+											/>
+										</div>
 									</>
 								)}
 							</div>

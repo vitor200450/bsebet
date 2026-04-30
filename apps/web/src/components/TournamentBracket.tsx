@@ -240,13 +240,16 @@ export function TournamentBracket({
 		return ["LB R1", "LB R2", "LB Semi", "LB Final"][idx] || `LB R${idx + 1}`;
 	};
 
-	// Count matches that need betting (only those with isBettingEnabled and still scheduled)
+	// Count matches that need betting (isBettingEnabled OR recovery-editable, still scheduled)
 	const bettableMatches = useMemo(() => {
 		return matches.filter(
 			(m) =>
-				m.isBettingEnabled !== false && m.status === "scheduled" && !m.isGhost,
+				(m.isBettingEnabled !== false ||
+					(matchDayStatus === "locked" && editableMatchIds?.has(m.id))) &&
+				m.status === "scheduled" &&
+				!m.isGhost,
 		);
-	}, [matches]);
+	}, [matches, matchDayStatus, editableMatchIds]);
 
 	// Check if all bettable matches have BOTH winner AND score
 	const allBetsComplete = bettableMatches.every(

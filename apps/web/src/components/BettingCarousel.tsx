@@ -297,7 +297,7 @@ export function BettingCarousel({
 	if (!currentMatch)
 		return (
 			<div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-paper bg-paper-texture p-6">
-				{/* Decorative Background Elements */}
+				{/* Paint Splatters */}
 				<div className="pointer-events-none absolute top-1/4 left-1/4 z-0 h-96 w-96 -rotate-12 transform opacity-50">
 					<PaintSplatterBlue className="h-full w-full" />
 				</div>
@@ -305,38 +305,36 @@ export function BettingCarousel({
 					<PaintSplatterRed className="h-full w-full" />
 				</div>
 
-				<div className="relative z-10 w-full max-w-md">
-					<div className="flex rotate-1 transform flex-col items-center border-[4px] border-black bg-white p-8 text-center shadow-comic">
-						{/* Icon/Decoration */}
-						<div className="group relative mb-6 flex h-20 w-20 items-center justify-center rounded-full border-[3px] border-black bg-gray-100 shadow-sm">
-							<span className="material-symbols-outlined text-4xl text-gray-400 transition-colors group-hover:text-brawl-red">
+				<div className="relative z-10 w-full max-w-sm">
+					<div className="flex flex-col items-center rounded-xl border-2 border-black bg-white p-8 text-center shadow-[4px_4px_0_0_#000]">
+						{/* Icon */}
+						<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-black bg-gray-100">
+							<span className="material-symbols-outlined text-3xl text-gray-500">
 								calendar_clock
 							</span>
-							<div className="absolute -top-1 -right-1 h-6 w-6 animate-pulse rounded-full border-[2px] border-black bg-brawl-red" />
 						</div>
 
-						<h2 className="mb-3 -skew-x-2 transform font-black font-display text-3xl text-black text-shadow-sm uppercase italic">
-							Nenhum Jogo <span className="text-brawl-red">Agora</span>
+						<h2 className="mb-2 font-black font-display text-2xl text-black uppercase">
+							Nenhum Jogo <span className="text-[#ff2e2e]">Agora</span>
 						</h2>
 
-						<p className="mb-8 font-body font-bold text-gray-600 text-sm uppercase leading-relaxed tracking-wide">
-							Os jogos de hoje já começaram ou ainda não foram agendados. Volte
-							mais tarde para apostar!
+						<p className="mb-6 font-bold text-gray-600 text-sm">
+							Os jogos de hoje já começaram ou ainda não foram agendados.
 						</p>
 
 						{(Object.keys(predictions).length > 0 || hasUserBets) &&
 						onShowReview ? (
 							<button
 								onClick={onShowReview}
-								className="group flex w-full items-center justify-center gap-2 border-[3px] border-black bg-brawl-red py-4 font-black text-white uppercase italic shadow-comic transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+								className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-[#ff2e2e] py-3 font-black text-white uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000] active:translate-y-0.5 active:shadow-none"
 							>
-								<span className="material-symbols-outlined transition-transform group-hover:rotate-12">
+								<span className="material-symbols-outlined text-lg">
 									rate_review
 								</span>
 								Revisar Apostas
 							</button>
 						) : (
-							<div className="flex w-full cursor-default items-center justify-center gap-2 border-[2px] border-gray-300 bg-gray-100 py-3 font-bold text-gray-400 text-xs uppercase tracking-widest">
+							<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-bold text-gray-400 text-sm">
 								<span className="material-symbols-outlined text-sm">
 									hourglass_empty
 								</span>
@@ -344,9 +342,6 @@ export function BettingCarousel({
 							</div>
 						)}
 					</div>
-
-					{/* Tape Decoration */}
-					<div className="absolute -top-3 left-1/2 z-20 h-8 w-32 -translate-x-1/2 -rotate-1 transform border border-gray-300 bg-[#e6e6e6]/90 shadow-sm backdrop-blur-sm" />
 				</div>
 			</div>
 		);
@@ -354,126 +349,46 @@ export function BettingCarousel({
 	return (
 		<>
 			<div className="pencil-texture relative flex w-full flex-col items-center overflow-x-hidden bg-paper bg-paper-texture pt-24 pb-24 font-body text-ink md:pb-12">
-				{/* Header / Navbar */}
-
-				{/* Decorations */}
-				<div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-					<div className="absolute top-48 left-8 -rotate-6 transform opacity-90 mix-blend-multiply">
-						<img
-							alt="skull sketch"
-							className="h-40 w-40 opacity-90 contrast-125 grayscale"
-							src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcyPuj6Sq4tDwxCCuui5iMyMZPU7euASmUS2kkIJ5s-P98YXwo-_VV0HN13d3UBaGL3x0o7QiRhF6qX7IyZ3-O84FCK8xgm9KwHL0y7P0TrgvU2XFkDFr-8LpB7LkEcz02C1CHG60aQSW4eyjYCM9nhVRkMwPrHk3thVE_-99YJ4bJSZfON4BqUFp7speoaYX0rfN93B7B5ifBVwkNFb1wPqLWft2x4hptTJRG9H5Ev2YEtWdt2LU50e8kBRjQL_qd9XMechENCl4"
-							style={{ filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.1))" }}
-						/>
-					</div>
-					<div className="absolute top-80 left-12 z-[-1] -rotate-6 transform font-marker text-5xl text-gray-300 opacity-50">
-						<span className="block">SKINS</span>
-						<span className="ml-4 block">FOR COLT</span>
-						<span className="ml-8 block">AGAIN?</span>
-					</div>
-					<div className="absolute top-[600px] right-[-50px] rotate-12 transform opacity-30">
-						<svg
-							className="h-80 w-80 text-gray-400"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							viewBox="0 0 100 100"
-						>
-							<path
-								d="M20,20 L80,80 M80,20 L20,80"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-							<circle cx="50" cy="50" r="15" strokeDasharray="5,5" />
-						</svg>
-					</div>
-					<div className="absolute top-32 right-8 hidden w-40 rotate-2 transform border border-gray-300 bg-white p-2 shadow-md lg:block">
-						<div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-200 grayscale">
-							<img
-								className="h-full w-full object-cover opacity-80 mix-blend-multiply contrast-125"
-								src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHEN5FVE_cZy4m4XY2vxXiBMfh1TiHctWZCQM6Xf4Ws-KmxPh7B3MzMfM9Q-0Lb4fEYVMtTznnjtj0LScOI67ofv7QxWvZs358sHwGka-4pCNrF_02xx8IeL0_Ye_NmorEZ14mz-eMWLfqsoUYTPLkzAUz1CLXmbyyTPzmCMBxvO7Ce0BB4vdrJdOzotkHCZ-Jc48R27lQry8YFBHJWuHPeZPLfVBKCWckqb207-_ni847tH0tGcQrqPsCPKr_i7KA5lvTxZ42kGE"
-								alt="Decoration"
-							/>
-						</div>
-						<div className="absolute -top-3 left-1/2 h-4 w-8 -translate-x-1/2 rotate-1 bg-black/20 backdrop-blur-sm" />
-					</div>
-				</div>
-
 				<main className="relative z-10 mx-auto flex w-full max-w-[500px] flex-col items-center px-4">
-					{/* Match Title Header */}
-					<header className="mb-8 flex w-full flex-col items-center space-y-2 text-center">
-						<h1
-							className="relative z-10 px-4 py-1 font-black font-display text-3xl text-black uppercase tracking-tight md:text-4xl"
-							style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.1)" }}
-						>
-							Predict The Winner
-						</h1>
-						{/* Double Post-it Header */}
-						<div className="relative z-30 flex flex-col items-center gap-0">
-							{/* Logo Post-it (Top) */}
+					{/* Clean Tournament Header */}
+					<header className="mb-6 flex w-full flex-col items-center text-center">
+						{/* Tournament Badge */}
+						<div className="mb-4 flex items-center gap-3 rounded-lg border-2 border-black bg-white px-4 py-2 shadow-[3px_3px_0_0_#000]">
 							{currentMatch.tournamentLogoUrl && (
-								<div className="relative z-10 flex h-32 w-32 -rotate-2 transform items-center justify-center border border-gray-200 bg-white p-3 shadow-sm md:h-46 md:w-46">
-									<div className="absolute -top-3 left-1/2 h-4 w-12 -translate-x-1/2 transform bg-[#e8e8e0] opacity-80 shadow-sm md:h-5 md:w-16" />
-									<img
-										src={currentMatch.tournamentLogoUrl}
-										alt=""
-										className="h-full w-full object-contain drop-shadow-sm filter"
-									/>
-								</div>
+								<img
+									src={currentMatch.tournamentLogoUrl}
+									alt=""
+									className="h-8 w-8 object-contain"
+								/>
 							)}
-
-							{/* Name Post-it (Bottom) - Overlapping the logo (z-20) */}
-							<div
-								className={clsx(
-									"relative z-20 max-w-[280px] rotate-1 skew-x-[-2deg] transform border border-gray-200 bg-white px-6 py-2 text-center shadow-sm md:max-w-sm md:px-8 md:py-3",
-									currentMatch.tournamentLogoUrl ? "-mt-2" : "mt-0",
-								)}
-							>
-								<div className="absolute -top-2 left-1/2 h-3 w-12 -translate-x-1/2 transform bg-[#e8e8e0] opacity-80 shadow-sm md:h-4 md:w-16" />
-								<p className="skew-x-[2deg] transform font-black font-display text-[10px] text-black uppercase tracking-widest md:text-sm">
-									{currentMatch.tournamentName || "Brawl Stars Championship"}
-								</p>
-							</div>
+							<span className="font-black text-black text-xs uppercase tracking-wider">
+								{currentMatch.tournamentName || "Brawl Stars Championship"}
+							</span>
 						</div>
 
-						<div
-							className={clsx(
-								"mt-6 inline-flex -skew-x-12 transform items-center gap-1.5 rounded-full px-3 py-1 font-black text-[10px] text-white tracking-[0.2em] shadow-sm",
-								isEffectiveReadOnly ? "bg-gray-500" : "bg-black",
-							)}
-						>
-							{isEffectiveReadOnly ? (
-								<>
-									<span className="material-symbols-outlined text-[10px]">
-										lock
-									</span>
-									{matchDayStatus === "locked" && !isReadOnly
-										? "BET SUBMITTED"
-										: "BETS LOCKED"}
-								</>
-							) : (
-								<>
-									<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brawl-yellow" />
-									LIVE BRACKET
-								</>
-							)}
-						</div>
-						<div className="mt-4 flex items-center justify-center gap-2 font-body font-bold text-[10px] text-gray-800 uppercase tracking-widest">
-							<span>{currentMatch.label}</span>
-							<span className="h-1 w-1 rounded-full bg-gray-300" />
-							<span
-								className="flex items-center gap-1 text-gray-400"
-								suppressHydrationWarning
-							>
-								<span className="material-symbols-outlined text-xs">
-									schedule
-								</span>
+						{/* Match Info */}
+						<div className="mb-2 flex items-center gap-2">
+							<span className="rounded-md bg-black px-3 py-1 font-black text-white text-xs uppercase">
+								{currentMatch.label}
+							</span>
+							<span className="text-gray-600 text-xs">
 								{new Date(currentMatch.startTime).toLocaleTimeString("pt-BR", {
 									hour: "2-digit",
 									minute: "2-digit",
-									timeZone: "America/Sao_Paulo",
 								})}
 							</span>
+						</div>
+
+						{/* Status Badge */}
+						<div
+							className={clsx(
+								"rounded-full px-3 py-1 font-black text-[10px] uppercase",
+								isEffectiveReadOnly
+									? "bg-gray-200 text-gray-600"
+									: "bg-[#ccff00] text-black",
+							)}
+						>
+							{isEffectiveReadOnly ? "APOSTAS FECHADAS" : "APOSTAS ABERTAS"}
 						</div>
 					</header>
 
@@ -496,19 +411,21 @@ export function BettingCarousel({
 										<PaintSplatterRed className="h-full w-full" />
 									</div>
 
-									<div className="relative z-10 bg-transparent shadow-comic">
-										{/* Match Header Label */}
-										<div className="relative z-20 border border-black bg-ink py-2 text-center text-white">
-											<span className="font-body font-bold text-[10px] uppercase tracking-widest">
-												Match {currentIndex + 1} of {matches.length}
+									{/* Match Card Container */}
+									<div className="relative z-10 overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000]">
+										{/* Match Counter */}
+										<div className="border-black border-b-2 bg-[#f0f0f0] py-1.5 text-center">
+											<span className="font-black text-[10px] text-black uppercase tracking-wider">
+												Partida {currentIndex + 1} de {matches.length}
 											</span>
 										</div>
 
 										{/* TEAMS DISPLAY */}
-										<div className="relative grid h-36 grid-cols-2 border-black border-x bg-white md:h-48">
-											<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2 transform">
-												<div className="flex h-6 w-6 items-center justify-center rounded-full border-[2px] border-black bg-white shadow-comic md:h-8 md:w-8">
-													<span className="pt-0.5 font-black font-display text-xs md:text-sm">
+										<div className="relative grid h-36 grid-cols-2 md:h-44">
+											{/* VS Badge - Centered */}
+											<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
+												<div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-white shadow-[2px_2px_0_0_#000] md:h-10 md:w-10">
+													<span className="font-black font-display text-black text-xs md:text-sm">
 														VS
 													</span>
 												</div>
@@ -522,50 +439,41 @@ export function BettingCarousel({
 													setSelectedWinnerId(currentMatch.teamA.id)
 												}
 												className={clsx(
-													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden border-black border-r p-0 transition-all duration-200",
-													currentMatch.teamA &&
-														currentMatch.teamA &&
-														isSelected(currentMatch.teamA.id)
-														? "bg-brawl-blue"
-														: currentMatch.teamA &&
-																isOtherTeamSelected(currentMatch.teamA.id)
+													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden border-black border-r-2 p-0 transition-all duration-200",
+													isSelected(currentMatch.teamA?.id || 0)
+														? "bg-[#2e5cff]"
+														: isOtherTeamSelected(currentMatch.teamA?.id || 0)
 															? "bg-gray-200 grayscale"
 															: isEffectiveReadOnly
-																? "cursor-not-allowed bg-brawl-blue/60 grayscale-[0.5]"
-																: "bg-brawl-blue hover:brightness-110",
+																? "cursor-not-allowed bg-[#2e5cff]/60"
+																: "bg-[#2e5cff] hover:brightness-110",
 												)}
 											>
-												{!isReadOnly &&
-													currentMatch.teamA &&
-													isSelected(currentMatch.teamA.id) && (
-														<div className="pointer-events-none absolute inset-0 z-20 animate-pulse border-[#ccff00] border-[4px]" />
-													)}
+												{/* Selection border indicator */}
+												{isSelected(currentMatch.teamA?.id || 0) && (
+													<div className="pointer-events-none absolute inset-0 z-20 border-[#ccff00] border-[4px]" />
+												)}
 
 												<div className="relative z-10 flex h-full w-full flex-col">
-													<div className="w-full px-2 pt-3 pb-1 text-left">
-														<span
-															className={clsx(
-																"block truncate font-body font-bold text-[9px] text-shadow-sm uppercase tracking-wider md:text-[10px]",
-																isSelected(currentMatch.teamA?.id || 0) ||
-																	!selectedWinnerId
-																	? "text-white"
-																	: "text-gray-600",
-															)}
-														>
+													{/* Team Name */}
+													<div className="w-full bg-black/20 px-2 py-2 text-center">
+														<span className="block truncate font-black text-[10px] text-white uppercase tracking-wider md:text-xs">
 															{currentMatch.teamA?.name || "TBD"}
 														</span>
 													</div>
-													<div className="flex flex-grow items-center justify-center p-2">
+													{/* Team Logo */}
+													<div className="flex flex-grow items-center justify-center p-3">
 														<TeamLogo
 															teamName={currentMatch.teamA?.name || "TBD"}
 															logoUrl={currentMatch.teamA?.logoUrl}
 															size="lg"
-															className="!w-16 !h-16 md:!w-28 md:!h-28 drop-shadow-md"
+															className="h-14 w-14 md:h-20 md:w-20"
 														/>
 													</div>
-													<div className="w-full border-white/20 border-t bg-black/10 py-1 text-center">
-														<span className="font-body font-bold text-[8px] text-white uppercase tracking-wider md:text-[9px]">
-															Win Rate: {currentMatch.stats.winRateA}
+													{/* Win Rate */}
+													<div className="w-full bg-black/10 py-1.5 text-center">
+														<span className="font-bold text-[9px] text-white uppercase tracking-wider">
+															WR: {currentMatch.stats.winRateA}
 														</span>
 													</div>
 												</div>
@@ -579,141 +487,242 @@ export function BettingCarousel({
 													setSelectedWinnerId(currentMatch.teamB.id)
 												}
 												className={clsx(
-													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden bg-brawl-red p-0 transition-all duration-200",
-													currentMatch.teamB &&
-														currentMatch.teamB &&
-														isSelected(currentMatch.teamB.id)
-														? "bg-brawl-red"
-														: currentMatch.teamB &&
-																isOtherTeamSelected(currentMatch.teamB.id)
+													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden p-0 transition-all duration-200",
+													isSelected(currentMatch.teamB?.id || 0)
+														? "bg-[#ff2e2e]"
+														: isOtherTeamSelected(currentMatch.teamB?.id || 0)
 															? "bg-gray-200 grayscale"
 															: isEffectiveReadOnly
-																? "cursor-not-allowed bg-brawl-red/60 grayscale-[0.5]"
-																: "bg-brawl-red hover:brightness-110",
+																? "cursor-not-allowed bg-[#ff2e2e]/60"
+																: "bg-[#ff2e2e] hover:brightness-110",
 												)}
 											>
-												{!isReadOnly &&
-													currentMatch.teamB &&
-													isSelected(currentMatch.teamB.id) && (
-														<div className="pointer-events-none absolute inset-0 z-20 animate-pulse border-[#ccff00] border-[4px]" />
-													)}
+												{/* Selection border indicator */}
+												{isSelected(currentMatch.teamB?.id || 0) && (
+													<div className="pointer-events-none absolute inset-0 z-20 border-[#ccff00] border-[4px]" />
+												)}
+
 												<div className="relative z-10 flex h-full w-full flex-col">
-													<div className="w-full px-2 pt-3 pb-1 text-right">
-														<span
-															className={clsx(
-																"block truncate font-body font-bold text-[9px] text-shadow-sm uppercase tracking-wider md:text-[10px]",
-																isSelected(currentMatch.teamB?.id || 0) ||
-																	!selectedWinnerId
-																	? "text-white"
-																	: "text-gray-600",
-															)}
-														>
+													{/* Team Name */}
+													<div className="w-full bg-black/20 px-2 py-2 text-center">
+														<span className="block truncate font-black text-[10px] text-white uppercase tracking-wider md:text-xs">
 															{currentMatch.teamB?.name || "TBD"}
 														</span>
 													</div>
-													<div className="flex flex-grow items-center justify-center p-2">
+													{/* Team Logo */}
+													<div className="flex flex-grow items-center justify-center p-3">
 														<TeamLogo
 															teamName={currentMatch.teamB?.name || "TBD"}
 															logoUrl={currentMatch.teamB?.logoUrl}
 															size="lg"
-															className="!w-16 !h-16 md:!w-28 md:!h-28 drop-shadow-md"
+															className="h-14 w-14 md:h-20 md:w-20"
 														/>
 													</div>
-													<div className="w-full border-white/20 border-t bg-black/10 py-1 text-center">
-														<span className="font-body font-bold text-[8px] text-white uppercase tracking-wider md:text-[9px]">
-															Win Rate: {currentMatch.stats.winRateB}
+													{/* Win Rate */}
+													<div className="w-full bg-black/10 py-1.5 text-center">
+														<span className="font-bold text-[9px] text-white uppercase tracking-wider">
+															WR: {currentMatch.stats.winRateB}
 														</span>
 													</div>
 												</div>
 											</div>
 										</div>
 
-										{/* STATS TABLE */}
-										<div className="border-black border-black border-x border-b bg-gray-100 font-body">
-											<div className="border-black border-y bg-gray-200 py-1 text-center">
-												<span className="font-bold text-[9px] text-gray-900 uppercase tracking-[0.1em]">
-													2025 Stats
-												</span>
-											</div>
-											{/* Compact stats rows */}
-											<div className="flex flex-col font-bold text-[10px] text-gray-900 md:text-xs">
-												<StatsRow
-													left={currentMatch.stats.regionA}
-													label="Region"
-													right={currentMatch.stats.regionB}
-												/>
-												<StatsRow
-													left={currentMatch.stats.pointsA.toString()}
-													label="Points"
-													right={currentMatch.stats.pointsB.toString()}
-												/>
-												<StatsRow
-													left={currentMatch.stats.winRateA}
-													label="Win Rate"
-													right={currentMatch.stats.winRateB}
-												/>
+										{/* Stats Section */}
+										<div className="border-black border-t-2 bg-white">
+											{/* Two columns: Team A stats | Team B stats */}
+											<div className="grid grid-cols-2 gap-0">
+												{/* Team A Column */}
+												<div className="border-gray-200 border-r px-3 py-3">
+													<div className="mb-2 flex items-center gap-1.5">
+														{currentMatch.teamA?.seed && (
+															<span className="rounded bg-[#2e5cff]/10 px-1.5 py-0.5 font-black text-[#2e5cff] text-[10px]">
+																Seed #{currentMatch.teamA.seed}
+															</span>
+														)}
+														{currentMatch.teamA?.group && (
+															<span className="rounded bg-gray-100 px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
+																Grp {currentMatch.teamA.group}
+															</span>
+														)}
+													</div>
+
+													<div className="space-y-1.5">
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Região
+															</span>
+															<span className="font-bold text-[10px] text-black">
+																{currentMatch.stats.regionA}
+															</span>
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																WR
+															</span>
+															<span className="font-bold text-[#2e5cff] text-[10px]">
+																{currentMatch.stats.winRateA}
+															</span>
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Série
+															</span>
+															{currentMatch.stats.streakA > 0 && (
+																<span className="font-bold text-[10px] text-green-600">
+																	+{currentMatch.stats.streakA}
+																</span>
+															)}
+															{currentMatch.stats.streakA < 0 && (
+																<span className="font-bold text-[10px] text-red-500">
+																	{currentMatch.stats.streakA}
+																</span>
+															)}
+															{currentMatch.stats.streakA === 0 && (
+																<span className="font-bold text-[10px] text-gray-400">
+																	-
+																</span>
+															)}
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Apostas
+															</span>
+															<span className="font-bold text-[#2e5cff] text-[10px]">
+																{currentMatch.stats.betCountA}
+															</span>
+														</div>
+													</div>
+												</div>
+
+												{/* Team B Column */}
+												<div className="px-3 py-3">
+													<div className="mb-2 flex items-center justify-end gap-1.5">
+														{currentMatch.teamB?.group && (
+															<span className="rounded bg-gray-100 px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
+																Grp {currentMatch.teamB.group}
+															</span>
+														)}
+														{currentMatch.teamB?.seed && (
+															<span className="rounded bg-[#ff2e2e]/10 px-1.5 py-0.5 font-black text-[#ff2e2e] text-[10px]">
+																Seed #{currentMatch.teamB.seed}
+															</span>
+														)}
+													</div>
+
+													<div className="space-y-1.5">
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Região
+															</span>
+															<span className="font-bold text-[10px] text-black">
+																{currentMatch.stats.regionB}
+															</span>
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																WR
+															</span>
+															<span className="font-bold text-[#ff2e2e] text-[10px]">
+																{currentMatch.stats.winRateB}
+															</span>
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Série
+															</span>
+															{currentMatch.stats.streakB > 0 && (
+																<span className="font-bold text-[10px] text-green-600">
+																	+{currentMatch.stats.streakB}
+																</span>
+															)}
+															{currentMatch.stats.streakB < 0 && (
+																<span className="font-bold text-[10px] text-red-500">
+																	{currentMatch.stats.streakB}
+																</span>
+															)}
+															{currentMatch.stats.streakB === 0 && (
+																<span className="font-bold text-[10px] text-gray-400">
+																	-
+																</span>
+															)}
+														</div>
+														<div className="flex items-center justify-between">
+															<span className="font-black text-[9px] text-gray-400 uppercase">
+																Apostas
+															</span>
+															<span className="font-bold text-[#ff2e2e] text-[10px]">
+																{currentMatch.stats.betCountB}
+															</span>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
 
-										{/* Buttons - Team Pages */}
-										<div className="grid grid-cols-2 gap-3 border-black border-x border-b bg-ink p-3">
+										{/* Team Links */}
+										<div className="grid grid-cols-2 gap-0 border-black border-t-2">
 											{currentMatch.teamA?.slug ? (
 												<Link
 													to="/teams/$teamId"
 													params={{ teamId: currentMatch.teamA?.slug || "" }}
-													className="group flex items-center justify-center gap-2 rounded-sm border border-gray-600 bg-ink px-3 py-2 text-white shadow-none transition-all hover:border-white hover:bg-gray-800"
+													className="flex items-center justify-center gap-2 border-black border-r-2 bg-[#121212] py-3 text-white transition-all hover:bg-black"
 												>
 													<span className="material-symbols-outlined text-sm">
 														visibility
 													</span>
-													<span className="font-bold font-display text-xs tracking-wider">
+													<span className="truncate font-bold text-xs">
 														{currentMatch.teamA?.name || "TBD"}
 													</span>
 												</Link>
 											) : (
-												<div className="flex cursor-not-allowed items-center justify-center gap-2 rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-gray-400 shadow-none">
+												<div className="flex items-center justify-center gap-2 border-black border-r-2 bg-gray-600 py-3 text-gray-300">
 													<span className="material-symbols-outlined text-sm">
 														visibility_off
 													</span>
-													<span className="font-bold font-display text-xs tracking-wider">
-														TBD
-													</span>
+													<span className="font-bold text-xs">TBD</span>
 												</div>
 											)}
 											{currentMatch.teamB?.slug ? (
 												<Link
 													to="/teams/$teamId"
 													params={{ teamId: currentMatch.teamB?.slug || "" }}
-													className="group flex items-center justify-center gap-2 rounded-sm border border-gray-600 bg-ink px-3 py-2 text-white shadow-none transition-all hover:border-white hover:bg-gray-800"
+													className="flex items-center justify-center gap-2 bg-[#121212] py-3 text-white transition-all hover:bg-black"
 												>
 													<span className="material-symbols-outlined text-sm">
-														shield
+														visibility
 													</span>
-													<span className="font-bold font-display text-xs tracking-wider">
+													<span className="truncate font-bold text-xs">
 														{currentMatch.teamB?.name || "TBD"}
 													</span>
 												</Link>
 											) : (
-												<div className="flex cursor-not-allowed items-center justify-center gap-2 rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-gray-400 shadow-none">
+												<div className="flex items-center justify-center gap-2 bg-gray-600 py-3 text-gray-300">
 													<span className="material-symbols-outlined text-sm">
 														visibility_off
 													</span>
-													<span className="font-bold font-display text-xs tracking-wider">
-														TBD
-													</span>
+													<span className="font-bold text-xs">TBD</span>
 												</div>
 											)}
 										</div>
 									</div>
 								</div>
 
-								{/* PREDICTION OPTIONS */}
-								<div className="mt-8 w-full md:mt-10">
-									<div className="grid grid-cols-2 gap-3 px-0 md:grid-cols-3 md:gap-4">
+								{/* SCORE SELECTOR */}
+								<div className="mt-6 w-full">
+									<div className="mb-2 text-center">
+										<span className="font-black text-black text-xs uppercase tracking-wider">
+											Escolha o Placar
+										</span>
+									</div>
+									<div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
 										{scoreOptions.map((option) => {
 											const isOptionSelected = selectedScore === option.label;
-											// Only allow selecting score if a winner is selected
 											const isDisabled = !selectedWinnerId || isReadOnly;
+											const accentColor =
+												activeAccentColor === "brawl-blue"
+													? "#2e5cff"
+													: "#ff2e2e";
 
 											return (
 												<button
@@ -723,49 +732,45 @@ export function BettingCarousel({
 													}
 													disabled={isDisabled}
 													className={clsx(
-														"group btn-press relative flex h-20 flex-col items-center justify-center rounded-sm border-[3px] p-3 shadow-comic transition-all duration-100 md:h-24 md:p-4",
+														"relative flex h-16 flex-col items-center justify-center rounded-lg border-2 p-2 transition-all duration-150 md:h-20",
 														isDisabled || isEffectiveReadOnly
 															? "cursor-not-allowed border-gray-300 bg-gray-100 opacity-50"
 															: isOptionSelected
-																? activeAccentColor === "brawl-blue"
-																	? "z-10 border-brawl-blue bg-white ring-2 ring-brawl-blue/20 ring-offset-2 hover:shadow-comic-hover"
-																	: "z-10 border-brawl-red bg-white ring-2 ring-brawl-red/20 ring-offset-2 hover:shadow-comic-hover"
-																: "border-black bg-white hover:shadow-comic-hover",
+																? "border-black bg-white shadow-[3px_3px_0_0_#000]"
+																: "border-gray-300 bg-white hover:border-gray-400 hover:shadow-[2px_2px_0_0_#ccc]",
 													)}
 												>
-													{/* Selected Indicator Badge */}
+													{/* Checkmark for selected */}
 													{isOptionSelected && (
-														<div
-															className={clsx(
-																"absolute -top-3 left-1/2 z-20 -translate-x-1/2 transform border border-black px-2 py-0.5 font-body font-bold text-[9px] text-white uppercase shadow-sm",
-																activeAccentColor === "brawl-blue"
-																	? "bg-brawl-blue"
-																	: "bg-brawl-red",
-															)}
-														>
-															Selected
+														<div className="absolute top-1 right-1">
+															<span
+																className="material-symbols-outlined text-sm"
+																style={{ color: accentColor }}
+															>
+																check_circle
+															</span>
 														</div>
 													)}
 
-													<div
-														className={clsx(
-															"flex items-center gap-2 font-black font-display text-2xl md:text-4xl",
-															isOptionSelected
-																? activeAccentColor === "brawl-blue"
-																	? "text-brawl-blue"
-																	: "text-brawl-red"
-																: "text-gray-400 transition-colors group-hover:text-black",
-														)}
+													<span
+														className="font-black font-display text-2xl md:text-3xl"
+														style={{
+															color: isOptionSelected
+																? accentColor
+																: isDisabled
+																	? "#9ca3af"
+																	: "#374151",
+														}}
 													>
 														{option.label}
-													</div>
+													</span>
 
 													<span
 														className={clsx(
-															"mt-1 px-1 font-body font-bold text-[8px] uppercase tracking-wider md:text-[9px]",
+															"mt-0.5 rounded px-1.5 py-0.5 font-bold text-[9px] uppercase",
 															isOptionSelected
-																? "-rotate-1 transform rounded-sm border border-black bg-brawl-yellow text-black shadow-sm"
-																: "font-bold text-gray-500",
+																? "bg-[#ccff00] text-black"
+																: "text-gray-500",
 														)}
 													>
 														{option.description}
@@ -779,18 +784,18 @@ export function BettingCarousel({
 						</AnimatePresence>
 					</div>
 
-					{/* Lock In Button */}
-					<div className="group relative mx-auto mt-8 w-full max-w-xs">
+					{/* Action Button */}
+					<div className="mx-auto mt-8 w-full max-w-xs">
 						<button
 							onClick={handleNext}
 							disabled={!selectedWinnerId || !selectedScore}
 							className={clsx(
-								"relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-sm border-[3px] border-black py-3 font-black font-display text-lg text-white uppercase shadow-comic transition-all active:translate-y-1 active:shadow-none",
+								"flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black py-3.5 font-black font-display text-base text-white uppercase shadow-[3px_3px_0_0_#000] transition-all active:translate-y-0.5 active:shadow-none md:text-lg",
 								!selectedWinnerId || !selectedScore
-									? "cursor-not-allowed border-gray-500 bg-gray-400 opacity-80 shadow-none"
+									? "cursor-not-allowed border-gray-400 bg-gray-400"
 									: activeAccentColor === "brawl-blue"
-										? "cursor-pointer bg-brawl-blue hover:shadow-comic-hover"
-										: "cursor-pointer bg-brawl-red hover:shadow-comic-hover",
+										? "bg-[#2e5cff] hover:shadow-[4px_4px_0_0_#000]"
+										: "bg-[#ff2e2e] hover:shadow-[4px_4px_0_0_#000]",
 							)}
 						>
 							<span className="material-symbols-outlined text-lg">
@@ -800,8 +805,8 @@ export function BettingCarousel({
 						</button>
 					</div>
 
-					{/* Pagination Dots */}
-					<div className="mt-6 mb-12 flex items-center justify-center gap-3">
+					{/* Pagination Indicators */}
+					<div className="mt-6 mb-12 flex items-center justify-center gap-2">
 						{matches.map((match, i) => {
 							const prediction = predictions[match.id];
 							const hasPrediction =
@@ -812,51 +817,22 @@ export function BettingCarousel({
 							return (
 								<button
 									key={i}
-									onClick={() => {
-										setCurrentIndex(i);
-									}}
+									onClick={() => setCurrentIndex(i)}
 									className={clsx(
-										"relative h-4 w-4 rounded-full border-[2px] border-black outline-none transition-all duration-200",
+										"h-2.5 rounded-full border-2 border-black transition-all duration-200",
 										i === currentIndex
-											? "scale-125 bg-brawl-yellow shadow-sm"
+											? "w-8 bg-[#ccff00]"
 											: hasPrediction
-												? "bg-green-500 hover:bg-green-600"
-												: "bg-white hover:bg-gray-100",
+												? "w-2.5 bg-green-500 hover:bg-green-600"
+												: "w-2.5 bg-white hover:bg-gray-200",
 									)}
 									aria-label={`Go to match ${i + 1}`}
-								>
-									{hasPrediction && i !== currentIndex && (
-										<span className="absolute inset-0 flex items-center justify-center text-[8px] text-white">
-											✓
-										</span>
-									)}
-								</button>
+								/>
 							);
 						})}
 					</div>
 				</main>
 			</div>
 		</>
-	);
-}
-
-// Subcomponent used in Stats Table
-function StatsRow({
-	left,
-	label,
-	right,
-}: {
-	left: string;
-	label: string;
-	right: string;
-}) {
-	return (
-		<div className="grid grid-cols-[1fr_1.5fr_1fr] divide-x divide-gray-400 border-gray-400 border-b">
-			<div className="bg-transparent py-2 text-center">{left}</div>
-			<div className="flex items-center justify-center bg-gray-200/50 py-2 text-center font-medium text-[9px] text-gray-600 uppercase tracking-wide">
-				{label}
-			</div>
-			<div className="bg-transparent py-2 text-center">{right}</div>
-		</div>
 	);
 }

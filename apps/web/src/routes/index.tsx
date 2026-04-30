@@ -249,8 +249,9 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 	async (ctx: any) => {
 		const { tournamentId } = ctx.data;
 
-		const { db, matches, matchDays, tournaments } = await import("@bsebet/db");
-		const { eq, asc } = await import("drizzle-orm");
+		const { db, matches, matchDays, tournaments, tournamentTeams, bets } =
+			await import("@bsebet/db");
+		const { eq, asc, inArray, sql, and, or, not } = await import("drizzle-orm");
 
 		// Import auth locally or verify it's imported
 		const { auth } = await import("@bsebet/auth");
@@ -281,12 +282,130 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 			},
 		});
 
-		const formattedMatches = formatMatches(allMatches, tournament);
+		// Get tournament teams data (seeds and groups)
+		const tournamentTeamsData = await db.query.tournamentTeams.findMany({
+			where: eq(tournamentTeams.tournamentId, tournamentId),
+			columns: {
+				teamId: true,
+				seed: true,
+				group: true,
+			},
+		});
+
+		// Create a map of teamId -> { seed, group }
+		const teamStatsMap = new Map();
+		for (const tt of tournamentTeamsData) {
+			teamStatsMap.set(tt.teamId, { seed: tt.seed, group: tt.group });
+		}
+
+		// Get bet counts for each match (popularity stats)
+		const matchIds = allMatches.map((m: any) => m.id);
+		const betCountsByMatch: Map<number, { teamA: number; teamB: number }> =
+			new Map();
+
+		if (matchIds.length > 0) {
+			const betCounts = await db
+				.select({
+					matchId: bets.matchId,
+					predictedWinnerId: bets.predictedWinnerId,
+					count: sql<number>`count(*)::int`,
+				})
+				.from(bets)
+				.where(inArray(bets.matchId, matchIds))
+				.groupBy(bets.matchId, bets.predictedWinnerId);
+
+			// Organize counts by match
+			for (const bc of betCounts) {
+				if (!bc.predictedWinnerId) continue;
+
+				const match = allMatches.find((m: any) => m.id === bc.matchId);
+				if (!match) continue;
+
+				if (!betCountsByMatch.has(bc.matchId)) {
+					betCountsByMatch.set(bc.matchId, { teamA: 0, teamB: 0 });
+				}
+
+				const counts = betCountsByMatch.get(bc.matchId)!;
+				if (match.teamAId === bc.predictedWinnerId) {
+					counts.teamA = bc.count;
+				} else if (match.teamBId === bc.predictedWinnerId) {
+					counts.teamB = bc.count;
+				}
+			}
+		}
+
+		// Get recent match history for teams (last 5 matches for each team in this tournament)
+		const teamIds = new Set<number>();
+		allMatches.forEach((m: any) => {
+			if (m.teamAId) teamIds.add(m.teamAId);
+			if (m.teamBId) teamIds.add(m.teamBId);
+		});
+
+		const teamIdArray = Array.from(teamIds);
+		const recentMatches =
+			teamIds.size > 0
+				? await db.query.matches.findMany({
+						where: and(
+							eq(matches.tournamentId, tournamentId),
+							or(
+								inArray(matches.teamAId, teamIdArray),
+								inArray(matches.teamBId, teamIdArray),
+							),
+							eq(matches.status, "finished"),
+							not(eq(matches.resultType, "wo")),
+						),
+						orderBy: [asc(matches.startTime)],
+						columns: {
+							id: true,
+							teamAId: true,
+							teamBId: true,
+							winnerId: true,
+							scoreA: true,
+							scoreB: true,
+						},
+					})
+				: [];
+
+		// Calculate win streaks and recent form
+		const teamFormMap = new Map<
+			number,
+			{ wins: number; losses: number; streak: number }
+		>();
+		for (const teamId of teamIds) {
+			const teamMatches = recentMatches
+				.filter((m: any) => m.teamAId === teamId || m.teamBId === teamId)
+				.slice(-5); // Last 5 matches
+
+			let wins = 0;
+			let losses = 0;
+			let currentStreak = 0;
+
+			for (const match of teamMatches) {
+				const isWinner = match.winnerId === teamId;
+				if (isWinner) {
+					wins++;
+					if (currentStreak >= 0) currentStreak++;
+					else currentStreak = 1;
+				} else {
+					losses++;
+					if (currentStreak <= 0) currentStreak--;
+					else currentStreak = -1;
+				}
+			}
+
+			teamFormMap.set(teamId, { wins, losses, streak: currentStreak });
+		}
+
+		const formattedMatches = formatMatches(
+			allMatches,
+			tournament,
+			teamStatsMap,
+			betCountsByMatch,
+			teamFormMap,
+		);
 
 		let userBetsData: any[] = [];
 		if (user && allMatches.length > 0) {
-			const matchIds = allMatches.map((m: any) => m.id);
-
 			userBetsData = await db.query.bets.findMany({
 				where: (betsTable, { eq, and, inArray }) =>
 					and(
@@ -294,7 +413,6 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 						inArray(betsTable.matchId, matchIds),
 					),
 			});
-		} else {
 		}
 
 		return {
@@ -316,78 +434,116 @@ const getHomeTournamentData = getHomeTournamentDataFn as unknown as (opts: {
 }>;
 
 // Helper function to format matches for the frontend
-function formatMatches(data: any[], tournament?: any): Match[] {
-	const formattedMatches = data.map((m) => ({
-		id: m.id,
-		label:
-			m.name ||
-			m.label ||
-			(m.labelTeamA && m.labelTeamB
-				? `${m.labelTeamA} vs ${m.labelTeamB}`
-				: "Group Stage"),
-		name: m.name,
-		displayOrder: m.displayOrder,
-		// Base values from DB
-		nextMatchWinnerId: m.nextMatchWinnerId,
-		nextMatchWinnerSlot: m.nextMatchWinnerSlot,
-		nextMatchLoserId: m.nextMatchLoserId,
-		nextMatchLoserSlot: m.nextMatchLoserSlot,
-		teamAPreviousMatchId: m.teamAPreviousMatchId,
-		teamBPreviousMatchId: m.teamBPreviousMatchId,
-		winnerId: m.winnerId,
-		labelTeamA: m.labelTeamA,
-		labelTeamB: m.labelTeamB,
-		// Bracket-specific fields
-		roundIndex: m.roundIndex,
-		bracketSide: m.bracketSide,
-		isBettingEnabled: m.isBettingEnabled ?? false,
-		// REAL DATA
-		status: m.status,
-		resultType: m.resultType,
-		scoreA: m.scoreA,
-		scoreB: m.scoreB,
-		startTime: m.startTime,
-		teamA: m.teamA
-			? {
-					id: m.teamA.id,
-					name: m.teamA.name,
-					logoUrl: m.teamA.logoUrl ?? undefined,
-					slug: m.teamA.slug ?? undefined,
-					color: "blue" as const,
-				}
-			: null,
-		teamB: m.teamB
-			? {
-					id: m.teamB.id,
-					name: m.teamB.name,
-					logoUrl: m.teamB.logoUrl ?? undefined,
-					slug: m.teamB.slug ?? undefined,
-					color: "red" as const,
-				}
-			: null,
-		tournamentName: tournament?.name ?? null,
-		tournamentLogoUrl: tournament?.logoUrl ?? null,
-		scoringRules: tournament?.scoringRules ?? {
-			winner: 1,
-			exact: 3,
-			underdog_25: 2,
-			underdog_50: 1,
-			underdog_tier1_max_pct: 0.25,
-			underdog_tier2_max_pct: 0.5,
-		},
-		matchDayId: m.matchDayId ?? null,
-		matchDayLabel: m.matchDay?.label ?? null,
-		matchDayStatus: m.matchDay?.status ?? null,
-		format: "bo5" as const,
-		stats: {
-			regionA: m.teamA?.region || "SA",
-			regionB: m.teamB?.region || "SA",
-			pointsA: 0,
-			pointsB: 0,
-			winRateA: "50%",
-			winRateB: "50%",
-		},
-	}));
+function formatMatches(
+	data: any[],
+	tournament?: any,
+	teamStatsMap?: Map<number, { seed: number | null; group: string | null }>,
+	betCountsByMatch?: Map<number, { teamA: number; teamB: number }>,
+	teamFormMap?: Map<number, { wins: number; losses: number; streak: number }>,
+): Match[] {
+	const formattedMatches = data.map((m) => {
+		const teamAStats = m.teamA?.id ? teamStatsMap?.get(m.teamA.id) : null;
+		const teamBStats = m.teamB?.id ? teamStatsMap?.get(m.teamB.id) : null;
+		const betCounts = betCountsByMatch?.get(m.id) || { teamA: 0, teamB: 0 };
+		const teamAForm = m.teamA?.id ? teamFormMap?.get(m.teamA.id) : null;
+		const teamBForm = m.teamB?.id ? teamFormMap?.get(m.teamB.id) : null;
+
+		// Calculate win rate from recent form
+		const totalMatchesA = (teamAForm?.wins || 0) + (teamAForm?.losses || 0);
+		const winRateA =
+			totalMatchesA > 0
+				? Math.round(((teamAForm?.wins || 0) / totalMatchesA) * 100)
+				: 50;
+		const totalMatchesB = (teamBForm?.wins || 0) + (teamBForm?.losses || 0);
+		const winRateB =
+			totalMatchesB > 0
+				? Math.round(((teamBForm?.wins || 0) / totalMatchesB) * 100)
+				: 50;
+
+		return {
+			id: m.id,
+			label:
+				m.name ||
+				m.label ||
+				(m.labelTeamA && m.labelTeamB
+					? `${m.labelTeamA} vs ${m.labelTeamB}`
+					: "Group Stage"),
+			name: m.name,
+			displayOrder: m.displayOrder,
+			// Base values from DB
+			nextMatchWinnerId: m.nextMatchWinnerId,
+			nextMatchWinnerSlot: m.nextMatchWinnerSlot,
+			nextMatchLoserId: m.nextMatchLoserId,
+			nextMatchLoserSlot: m.nextMatchLoserSlot,
+			teamAPreviousMatchId: m.teamAPreviousMatchId,
+			teamBPreviousMatchId: m.teamBPreviousMatchId,
+			winnerId: m.winnerId,
+			labelTeamA: m.labelTeamA,
+			labelTeamB: m.labelTeamB,
+			// Bracket-specific fields
+			roundIndex: m.roundIndex,
+			bracketSide: m.bracketSide,
+			isBettingEnabled: m.isBettingEnabled ?? false,
+			// REAL DATA
+			status: m.status,
+			resultType: m.resultType,
+			scoreA: m.scoreA,
+			scoreB: m.scoreB,
+			startTime: m.startTime,
+			teamA: m.teamA
+				? {
+						id: m.teamA.id,
+						name: m.teamA.name,
+						logoUrl: m.teamA.logoUrl ?? undefined,
+						slug: m.teamA.slug ?? undefined,
+						color: "blue" as const,
+						seed: teamAStats?.seed ?? null,
+						group: teamAStats?.group ?? null,
+					}
+				: null,
+			teamB: m.teamB
+				? {
+						id: m.teamB.id,
+						name: m.teamB.name,
+						logoUrl: m.teamB.logoUrl ?? undefined,
+						slug: m.teamB.slug ?? undefined,
+						color: "red" as const,
+						seed: teamBStats?.seed ?? null,
+						group: teamBStats?.group ?? null,
+					}
+				: null,
+			tournamentName: tournament?.name ?? null,
+			tournamentLogoUrl: tournament?.logoUrl ?? null,
+			scoringRules: tournament?.scoringRules ?? {
+				winner: 1,
+				exact: 3,
+				underdog_25: 2,
+				underdog_50: 1,
+				underdog_tier1_max_pct: 0.25,
+				underdog_tier2_max_pct: 0.5,
+			},
+			matchDayId: m.matchDay?.id ?? m.matchDayId ?? null,
+			matchDayLabel: m.matchDay?.label ?? null,
+			matchDayStatus: m.matchDay?.status ?? null,
+			format: "bo5" as const,
+			stats: {
+				regionA: m.teamA?.region || "SA",
+				regionB: m.teamB?.region || "SA",
+				pointsA: (teamAForm?.wins || 0) * 3, // 3 points per win
+				pointsB: (teamBForm?.wins || 0) * 3,
+				winRateA: `${winRateA}%`,
+				winRateB: `${winRateB}%`,
+				seedA: teamAStats?.seed ?? null,
+				seedB: teamBStats?.seed ?? null,
+				groupA: teamAStats?.group ?? null,
+				groupB: teamBStats?.group ?? null,
+				betCountA: betCounts.teamA,
+				betCountB: betCounts.teamB,
+				streakA: teamAForm?.streak || 0,
+				streakB: teamBForm?.streak || 0,
+			},
+		};
+	});
 
 	// Lógica de Sincronização Dinâmica:
 	// Se uma partida B diz que depende da partida A (backward),
@@ -2314,50 +2470,24 @@ function Home() {
 		return filtered;
 	}, [allCarouselMatches, selectedMatchDayId]);
 
-	// Bracket view shows ALL matches by default, but if the selected match day
-	// is playoffs-only (no group stage matches), filter to show only playoff bracket
+	// Bracket view shows matches for the selected match day only
 	const bracketMatches = useMemo(() => {
 		if (!selectedMatchDayId || !matchDays.length) {
 			return allBracketMatches;
 		}
 
-		// Get matches for the selected match day
+		// Get matches for the selected match day only
 		const matchDayMatches = allBracketMatches.filter(
 			(m: any) => Number(m.matchDayId) === Number(selectedMatchDayId),
 		);
 
-		// If no matches for this match day, show all
+		// If no matches for this match day, show all (fallback for tournaments without match days)
 		if (matchDayMatches.length === 0) {
 			return allBracketMatches;
 		}
 
-		// Helper to check if a match is a playoff match (single/double elimination)
-		// Single elimination: bracketSide "main" or "upper"
-		// Double elimination: bracketSide "upper", "lower", "grand_final"
-		const isPlayoffMatch = (m: any) => {
-			if (m.bracketSide === "groups") return false;
-			if (
-				m.bracketSide === "main" ||
-				m.bracketSide === "upper" ||
-				m.bracketSide === "lower" ||
-				m.bracketSide === "grand_final"
-			)
-				return true;
-			// Single elimination may have bracketSide: null but have nextMatchWinnerId
-			if (m.bracketSide === null && m.nextMatchWinnerId) return true;
-			return false;
-		};
-
-		// Check if ALL matches in this match day are playoff matches
-		const allPlayoffMatches = matchDayMatches.every(isPlayoffMatch);
-
-		// If it's a playoffs-only match day, filter to show only playoff bracket matches
-		if (allPlayoffMatches) {
-			return allBracketMatches.filter(isPlayoffMatch);
-		}
-
-		// Otherwise show all matches (includes group stage)
-		return allBracketMatches;
+		// Return only matches from the selected match day
+		return matchDayMatches;
 	}, [allBracketMatches, selectedMatchDayId, matchDays]);
 
 	// Get selected match day info
@@ -3108,8 +3238,12 @@ function Home() {
 		);
 	}
 
-	// Loading state
-	if (isLoadingTournament || isBootstrappingTournamentSelection) {
+	// Loading state: tournament selection in progress OR tournament selected but data not yet loaded
+	if (
+		isLoadingTournament ||
+		isBootstrappingTournamentSelection ||
+		(selectedTournamentId && matchDays.length === 0)
+	) {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-paper bg-paper-texture">
 				<div className="space-y-4 text-center">
@@ -3123,6 +3257,7 @@ function Home() {
 	}
 
 	// Show Match Day Selector if tournament is selected but no match day chosen
+	// Only show when matchDays has data to avoid empty state flicker
 	if (selectedTournamentId && !selectedMatchDayId && matchDays.length > 0) {
 		return (
 			<div className="relative">

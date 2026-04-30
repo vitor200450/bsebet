@@ -1,6 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { clsx } from "clsx";
+import {
+	Calendar,
+	CheckCircle2,
+	ChevronDown,
+	ChevronRight,
+	Clock,
+	Filter,
+	History,
+	Layers,
+	Trophy,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TeamLogo } from "@/components/TeamLogo";
@@ -111,10 +122,10 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="relative min-h-screen bg-[#e6e6e6] pb-12">
+		<div className="relative min-h-screen bg-[#f0f0f0] pb-12">
 			{/* Paper texture overlay */}
 			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.15] mix-blend-multiply"
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
 				style={{
 					backgroundImage:
 						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
@@ -122,132 +133,133 @@ function RouteComponent() {
 				}}
 			/>
 
-			<div className="relative z-10 mx-auto max-w-[1600px] px-4 py-6 md:px-6 md:py-10">
-				{/* Page Header - Visual diferente do Dashboard */}
-				<div className="mb-8 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end">
-					<div className="flex items-center gap-4">
-						{/* Ícone grande de histórico - diferencia do dashboard */}
-						<div className="hidden h-16 w-16 -rotate-6 transform items-center justify-center border-[4px] border-black bg-gradient-to-br from-[#ff6b00] to-[#ff9d00] shadow-[4px_4px_0_0_#000] md:flex lg:h-20 lg:w-20">
-							<span className="material-symbols-outlined text-3xl text-white lg:text-4xl">
-								history
-							</span>
-						</div>
-						<div className="inline-block w-fit -skew-x-12 transform border-[3px] border-black bg-[#ff6b00] px-6 py-3 text-black shadow-[4px_4px_0_0_#000] md:px-8 md:py-4">
-							<h1 className="skew-x-12 transform font-black text-3xl uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
-								MINHAS APOSTAS
+			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
+				{/* Clean Header */}
+				<div className="mb-8 md:mb-10">
+					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+						<div>
+							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+								Minhas Apostas
 							</h1>
+							<p className="mt-2 font-bold text-gray-600 text-lg">
+								Histórico completo dos seus palpites
+							</p>
 						</div>
-					</div>
-					<div className="flex items-center gap-2 md:mb-2">
-						<span className="material-symbols-outlined text-[#ff6b00] text-xl">
-							inventory_2
-						</span>
-						<span className="font-bold text-gray-600 text-sm md:text-base">
-							Histórico completo de palpites
-						</span>
+						<Link
+							to="/dashboard"
+							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
+						>
+							Voltar ao dashboard
+							<ChevronRight
+								className="h-4 w-4 transition-transform group-hover:translate-x-1"
+								strokeWidth={3}
+							/>
+						</Link>
 					</div>
 				</div>
 
-				{/* Filter Tabs - Visual diferente com ícones */}
+				{/* Filter Tabs - Clean horizontal design */}
 				<section className="mb-8">
 					<div className="flex flex-wrap items-center gap-3">
-						{[
-							{ key: "all" as FilterType, label: "TODOS", icon: "apps" },
-							{
-								key: "pending" as FilterType,
-								label: "PENDENTES",
-								icon: "pending",
-							},
-							{
-								key: "finished" as FilterType,
-								label: "FINALIZADOS",
-								icon: "check_circle",
-							},
-						].map((tab) => (
-							<button
-								key={tab.key}
-								type="button"
-								onClick={() => setFilter(tab.key)}
-								className={clsx(
-									"flex -skew-x-6 transform items-center gap-2 border-[3px] border-black px-5 py-2.5 font-black text-sm uppercase italic tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_#000]",
-									filter === tab.key
-										? "border-black bg-[#ff6b00] text-black"
-										: "bg-white text-black",
-								)}
-							>
-								<span className="material-symbols-outlined skew-x-6 transform text-base">
-									{tab.icon}
-								</span>
-								<span className="inline-block skew-x-6 transform">
-									{tab.label}
-								</span>
-							</button>
-						))}
+						<div className="flex items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
+							{[
+								{ key: "all" as FilterType, label: "Todos", icon: Layers },
+								{
+									key: "pending" as FilterType,
+									label: "Pendentes",
+									icon: Clock,
+								},
+								{
+									key: "finished" as FilterType,
+									label: "Finalizados",
+									icon: CheckCircle2,
+								},
+							].map((tab) => {
+								const Icon = tab.icon;
+								return (
+									<button
+										key={tab.key}
+										type="button"
+										onClick={() => setFilter(tab.key)}
+										className={clsx(
+											"flex items-center gap-2 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+											filter === tab.key
+												? "bg-[#121212] text-white"
+												: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
+										)}
+									>
+										<Icon className="h-4 w-4" strokeWidth={2.5} />
+										{tab.label}
+									</button>
+								);
+							})}
+						</div>
 
 						{!isLoading && (
-							<div className="ml-auto -skew-x-6 transform border-[3px] border-black bg-black px-4 py-2 font-black text-white text-xs">
-								<span className="inline-flex skew-x-6 transform items-center gap-2">
-									<span className="material-symbols-outlined text-sm">
-										receipt
-									</span>
+							<div className="ml-auto flex items-center gap-2 rounded-lg border-2 border-black bg-[#121212] px-3 py-2 shadow-[3px_3px_0_0_#000]">
+								<History className="h-4 w-4 text-white" strokeWidth={2} />
+								<span className="font-black text-sm text-white">
 									{totalFilteredBets} palpite
 									{totalFilteredBets !== 1 ? "s" : ""}
 								</span>
 							</div>
 						)}
+					</div>
 
+					<div className="mt-4 flex flex-wrap items-center gap-3">
+						<div className="flex items-center gap-2 text-gray-600">
+							<Filter className="h-4 w-4" strokeWidth={2.5} />
+							<span className="font-bold text-sm uppercase tracking-wider">
+								Filtrar:
+							</span>
+						</div>
+						<div className="max-w-[280px]">
+							<CustomSelect
+								label=""
+								value={tournamentFilter}
+								onChange={setTournamentFilter}
+								options={[
+									{ value: "all", label: "Todos os torneios" },
+									...tournamentOptions.map((t) => ({
+										value: t.id,
+										label: t.name,
+									})),
+								]}
+								placeholder="Selecionar torneio"
+							/>
+						</div>
 						{!isLoading && filteredGroups.length > 1 && (
 							<div className="ml-auto flex items-center gap-2">
 								<button
 									type="button"
 									onClick={expandAllTournaments}
-									className="-skew-x-6 transform border-[2px] border-black bg-white px-3 py-2 font-black text-[10px] text-black uppercase shadow-[2px_2px_0_0_#000] transition-all hover:bg-[#ccff00] hover:text-black"
+									className="rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold text-[10px] text-black uppercase tracking-wider shadow-[2px_2px_0_0_#000] transition-all hover:bg-[#ccff00] hover:shadow-[1px_1px_0_0_#000]"
 								>
-									<span className="inline-block skew-x-6 transform">
-										Expandir todos
-									</span>
+									Expandir todos
 								</button>
 								<button
 									type="button"
 									onClick={collapseAllTournaments}
-									className="-skew-x-6 transform border-[2px] border-black bg-white px-3 py-2 font-black text-[10px] text-black uppercase shadow-[2px_2px_0_0_#000] transition-all hover:bg-[#f0f0f0] hover:text-black"
+									className="rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold text-[10px] text-black uppercase tracking-wider shadow-[2px_2px_0_0_#000] transition-all hover:bg-gray-100 hover:shadow-[1px_1px_0_0_#000]"
 								>
-									<span className="inline-block skew-x-6 transform">
-										Recolher todos
-									</span>
+									Recolher todos
 								</button>
 							</div>
 						)}
-					</div>
-
-					<div className="mt-3 max-w-[360px]">
-						<CustomSelect
-							label="Torneio"
-							value={tournamentFilter}
-							onChange={setTournamentFilter}
-							options={[
-								{ value: "all", label: "Todos os torneios" },
-								...tournamentOptions.map((t) => ({
-									value: t.id,
-									label: t.name,
-								})),
-							]}
-							placeholder="Filtrar torneio"
-						/>
 					</div>
 				</section>
 
 				{/* Bets Grouped by Tournament */}
 				{isLoading ? (
-					<div className="space-y-10">
+					<div className="space-y-8">
 						{[1, 2].map((i) => (
 							<div key={i}>
-								<div className="mb-5 h-10 w-64 animate-pulse border-[3px] border-black bg-white shadow-[3px_3px_0_0_#000]" />
-								<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+								<div className="mb-4 h-8 w-56 animate-pulse rounded-lg border-2 border-black/10 bg-white" />
+								<div className="space-y-3">
 									{[1, 2, 3].map((j) => (
 										<div
 											key={j}
-											className="h-56 animate-pulse border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000]"
+											className="h-32 animate-pulse rounded-lg border-2 border-black/10 bg-white"
 										/>
 									))}
 								</div>
@@ -255,7 +267,7 @@ function RouteComponent() {
 						))}
 					</div>
 				) : filteredGroups.length > 0 ? (
-					<div className="space-y-12">
+					<div className="space-y-10">
 						{filteredGroups.map((group) => (
 							<section key={group.tournament.id}>
 								{(() => {
@@ -265,19 +277,20 @@ function RouteComponent() {
 
 									return (
 										<>
-											{/* Tournament Header */}
-											<div className="mb-5 flex items-center gap-3">
-												<div className="shrink-0 rotate-2 transform border-2 border-black bg-[#ffc700] p-2 shadow-[2px_2px_0_0_#000]">
+											{/* Tournament Header - Clean */}
+											<div className="mb-4 flex items-center gap-3">
+												<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#ffc700]">
 													{group.tournament.logoUrl ? (
 														<img
 															src={group.tournament.logoUrl}
 															alt={group.tournament.name}
-															className="h-5 w-5 object-contain md:h-6 md:w-6"
+															className="h-5 w-5 object-contain"
 														/>
 													) : (
-														<span className="material-symbols-outlined text-black text-xl md:text-2xl">
-															emoji_events
-														</span>
+														<Trophy
+															className="h-5 w-5 text-black"
+															strokeWidth={2}
+														/>
 													)}
 												</div>
 												<button
@@ -285,32 +298,36 @@ function RouteComponent() {
 													onClick={() => toggleTournament(group.tournament.id)}
 													className="group flex min-w-0 flex-1 items-center gap-2 text-left"
 												>
-													<h2 className="break-words pr-1 font-black text-2xl text-black uppercase italic tracking-tighter transition-colors group-hover:text-[#2e5cff] md:text-3xl">
+													<h2 className="break-words pr-1 font-black text-[#121212] text-xl uppercase tracking-tight transition-colors group-hover:text-[#2e5cff] md:text-2xl">
 														{group.tournament.name}
 													</h2>
-													<span className="material-symbols-outlined border-2 border-black bg-white px-1 text-black text-sm">
-														{isExpanded ? "expand_less" : "expand_more"}
-													</span>
+													<ChevronDown
+														className={clsx(
+															"h-5 w-5 shrink-0 text-gray-400 transition-transform",
+															isExpanded && "rotate-180",
+														)}
+														strokeWidth={2.5}
+													/>
 												</button>
 												<Link
 													to="/tournaments/$slug"
 													params={{ slug: group.tournament.slug }}
-													className="hidden border-2 border-black bg-white px-2 py-1 font-black text-[10px] text-black uppercase transition-colors hover:bg-[#2e5cff] hover:text-white md:inline-flex"
+													className="hidden rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold text-[10px] text-black uppercase tracking-wider transition-colors hover:bg-[#2e5cff] hover:text-white md:inline-flex"
 												>
 													Ver torneio
 												</Link>
-												<div className="shrink-0 border-2 border-black bg-[#ccff00] px-2 py-1 font-black text-black text-xs">
+												<div className="shrink-0 rounded-md bg-[#ccff00] px-2.5 py-1 font-black text-black text-sm">
 													{group.bets.length}
 												</div>
 											</div>
 
-											{/* Bet Cards Grid */}
+											{/* Bet Cards - Clean horizontal list */}
 											{isExpanded ? (
-												<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+												<div className="space-y-3">
 													{group.bets.map((bet) => {
 														const isFinished = bet.match.status === "finished";
 														const isLive = bet.match.status === "live";
-														const isProjected = bet.id < 0; // Synthetic bet (projected future match)
+														const isProjected = bet.id < 0;
 														const isWalkover = bet.match.resultType === "wo";
 														const walkoverScoreA =
 															bet.match.teamA?.id &&
@@ -332,370 +349,285 @@ function RouteComponent() {
 															const side = bet.match.bracketSide;
 															const round = bet.match.roundIndex;
 
-															if (side === "groups") return "GROUP STAGE";
+															if (side === "groups") return "Group Stage";
 															if (side === "upper")
-																return `UPPER BRACKET R${(round ?? 0) + 1}`;
+																return `Upper R${(round ?? 0) + 1}`;
 															if (side === "lower")
-																return `LOWER BRACKET R${(round ?? 0) + 1}`;
-															if (side === "grand_final") return "GRAND FINAL";
-															return `PARTIDA #${bet.match.id}`;
+																return `Lower R${(round ?? 0) + 1}`;
+															if (side === "grand_final") return "Grand Final";
+															return `Partida #${bet.match.id}`;
 														})();
+
+														// Status config
+														const statusConfig = isProjected
+															? {
+																	label: "Projeção",
+																	color: "bg-[#ff6b00] text-black",
+																}
+															: isLive
+																? {
+																		label: "Ao Vivo",
+																		color:
+																			"animate-pulse bg-[#ff2e2e] text-white",
+																	}
+																: isWalkover
+																	? {
+																			label: "W.O.",
+																			color: "bg-black text-white",
+																		}
+																	: won
+																		? {
+																				label: "Acertou",
+																				color: "bg-[#ccff00] text-black",
+																			}
+																		: lost
+																			? {
+																					label: "Errou",
+																					color: "bg-[#ff2e2e] text-white",
+																				}
+																			: {
+																					label: "Agendado",
+																					color: "bg-[#f0f0f0] text-black",
+																				};
 
 														return (
 															<div
 																key={bet.id}
 																className={clsx(
-																	"relative border-[3px] p-5 transition-all",
+																	"group relative overflow-hidden border-[3px] transition-all",
 																	isProjected
-																		? "border-gray-400 border-dashed bg-[#f8f8f8] shadow-[4px_4px_0_0_#ccc]"
-																		: "border-black bg-white shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000]",
+																			? "border-gray-300 border-dashed bg-[#f8f8f8]"
+																			: won
+																					? "border-[#ccff00] bg-white shadow-[4px_4px_0_0_#ccff00] hover:shadow-[6px_6px_0_0_#ccff00]"
+																					: lost
+																							? "border-[#ff2e2e] bg-white shadow-[4px_4px_0_0_#ff2e2e] hover:shadow-[6px_6px_0_0_#ff2e2e]"
+																							: "border-black bg-white shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000]",
 																)}
 															>
-																{/* Status Badge */}
-																<div
-																	className={clsx(
-																		"absolute -top-3 -right-3 rotate-6 transform border-[3px] border-black px-3 py-1 font-black text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_#000]",
-																		isProjected
-																			? "bg-[#ff6b00] text-black"
-																			: isLive
-																				? "animate-pulse bg-[#ff2e2e] text-white"
-																				: isWalkover
-																					? "bg-black text-white"
-																					: won
-																						? "bg-[#ccff00] text-black"
-																						: lost
-																							? "bg-[#ff2e2e] text-white"
-																							: "bg-[#f0f0f0] text-black",
-																	)}
-																>
-																	{isProjected
-																		? "🔮 PROJEÇÃO"
-																		: isLive
-																			? "🔴 AO VIVO"
-																			: isWalkover
-																				? "🚫 W.O."
-																				: won
-																					? "✅ ACERTOU"
-																					: lost
-																						? "❌ ERROU"
-																						: "⏰ AGENDADO"}
-																</div>
-
-																{/* Match label (stage) */}
-																{stageLabel && (
-																	<div className="-mx-5 -mt-5 mb-4 border-black border-b-[3px] bg-[#f0f0f0] px-5 py-2">
-																		<div className="truncate font-black text-[10px] text-gray-500 uppercase tracking-wider">
-																			{stageLabel}
-																		</div>
-																	</div>
+																{/* Top accent bar */}
+																{isProjected ? (
+																	<div className="h-1.5 w-full bg-gray-400" />
+																) : won ? (
+																	<div className="h-1.5 w-full bg-[#ccff00]" />
+																) : lost ? (
+																	<div className="h-1.5 w-full bg-[#ff2e2e]" />
+																) : isWalkover ? (
+																	<div className="h-1.5 w-full bg-black" />
+																) : isLive ? (
+																	<div className="h-1.5 w-full animate-pulse bg-[#ff2e2e]" />
+																) : (
+																	<div className="h-1.5 w-full bg-[#ffc700]" />
 																)}
 
-																{/* Teams Matchup */}
-																<div className="mt-2 mb-5 flex items-stretch gap-3">
-																	{/* Team A */}
+																{/* Header: Stage + Status */}
+																<div className="flex items-center justify-between border-b-2 border-black bg-[#fafafa] px-4 py-2">
+																	<span className="truncate font-black text-[10px] text-gray-500 uppercase tracking-widest">
+																		{stageLabel}
+																	</span>
 																	<div
 																		className={clsx(
-																			"flex min-h-[120px] flex-1 flex-col items-center justify-between gap-2 rounded-sm border-[3px] p-3 transition-all",
-																			!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamA?.id
-																				? "border-[#ccff00] bg-[#ccff00]/40 shadow-[3px_3px_0_0_#ccff00]"
-																				: isProjected
-																					? "border-gray-300 bg-white"
-																					: "border-black bg-white",
+																			"rounded-sm border-2 border-black px-2 py-0.5 font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0_0_#000]",
+																			statusConfig.color,
 																		)}
 																	>
-																		{bet.match.teamA?.slug ? (
-																			<Link
-																				to="/teams/$teamId"
-																				params={{
-																					teamId: bet.match.teamA.slug,
-																				}}
-																				className="flex flex-col items-center gap-2 transition-transform hover:scale-105"
-																			>
-																				<TeamLogo
-																					teamName={bet.match.teamA.name}
-																					logoUrl={bet.match.teamA.logoUrl}
-																					size="md"
-																				/>
-																				<span className="line-clamp-2 w-full text-center font-black text-[11px] text-black uppercase tracking-tight hover:text-[#2e5cff] hover:underline">
-																					{bet.match.teamA.name}
-																				</span>
-																			</Link>
-																		) : (
-																			<>
-																				<TeamLogo
-																					teamName={
-																						bet.match.teamA?.name || "TBD"
-																					}
-																					logoUrl={bet.match.teamA?.logoUrl}
-																					size="md"
-																				/>
-																				<span className="line-clamp-2 w-full text-center font-black text-[11px] text-black uppercase tracking-tight">
-																					{bet.match.teamA?.name || "TBD"}
-																				</span>
-																			</>
-																		)}
-
-																		<div className="flex w-full flex-col items-center gap-1">
-																			{!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamA?.id && (
-																					<div className="bg-black px-2 py-0.5 font-black text-[#ccff00] text-[8px] uppercase">
-																						PALPITE
-																					</div>
-																				)}
-																			{isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamA?.id && (
-																					<div className="border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[8px] text-black uppercase">
-																						VENCEU
-																					</div>
-																				)}
-																		</div>
-																	</div>
-
-																	{/* VS */}
-																	<div className="shrink-0 self-center rounded-full border-[3px] border-black bg-black px-2 py-1.5 text-white">
-																		<span className="font-black text-[11px] italic">
-																			VS
-																		</span>
-																	</div>
-
-																	{/* Team B */}
-																	<div
-																		className={clsx(
-																			"flex min-h-[120px] flex-1 flex-col items-center justify-between gap-2 rounded-sm border-[3px] p-3 transition-all",
-																			!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamB?.id
-																				? "border-[#ccff00] bg-[#ccff00]/40 shadow-[3px_3px_0_0_#ccff00]"
-																				: isProjected
-																					? "border-gray-300 bg-white"
-																					: "border-black bg-white",
-																		)}
-																	>
-																		{bet.match.teamB?.slug ? (
-																			<Link
-																				to="/teams/$teamId"
-																				params={{
-																					teamId: bet.match.teamB.slug,
-																				}}
-																				className="flex flex-col items-center gap-2 transition-transform hover:scale-105"
-																			>
-																				<TeamLogo
-																					teamName={bet.match.teamB.name}
-																					logoUrl={bet.match.teamB.logoUrl}
-																					size="md"
-																				/>
-																				<span className="line-clamp-2 w-full text-center font-black text-[11px] text-black uppercase tracking-tight hover:text-[#ff2e2e] hover:underline">
-																					{bet.match.teamB.name}
-																				</span>
-																			</Link>
-																		) : (
-																			<>
-																				<TeamLogo
-																					teamName={
-																						bet.match.teamB?.name || "TBD"
-																					}
-																					logoUrl={bet.match.teamB?.logoUrl}
-																					size="md"
-																				/>
-																				<span className="line-clamp-2 w-full text-center font-black text-[11px] text-black uppercase tracking-tight">
-																					{bet.match.teamB?.name || "TBD"}
-																				</span>
-																			</>
-																		)}
-
-																		<div className="flex w-full flex-col items-center gap-1">
-																			{!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamB?.id && (
-																					<div className="bg-black px-2 py-0.5 font-black text-[#ccff00] text-[8px] uppercase">
-																						PALPITE
-																					</div>
-																				)}
-																			{isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamB?.id && (
-																					<div className="border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[8px] text-black uppercase">
-																						VENCEU
-																					</div>
-																				)}
-																		</div>
+																		{statusConfig.label}
 																	</div>
 																</div>
 
-																{/* Footer */}
-																<div className="-mx-5 -mb-5 space-y-2 border-black border-t-[3px] bg-[#f0f0f0] px-5 py-3">
-																	{/* Scores */}
-																	{isProjected ? (
-																		isWalkover ? (
-																			<div className="flex items-center justify-center gap-2 text-black">
-																				<span className="material-symbols-outlined text-base">
-																					do_not_disturb_on
-																				</span>
-																				<span className="font-black text-xs uppercase tracking-wide">
-																					W.O. previsto
-																				</span>
-																			</div>
-																		) : (
-																			<div className="flex items-center justify-center gap-2 text-gray-500">
+																{/* Teams - Broadcast panel style */}
+																<div className="flex items-stretch">
+																	{/* Team A Panel */}
+																	<div
+																		className={clsx(
+																			"flex flex-1 items-center gap-3 border-r-2 border-black px-4 py-4 transition-all",
+																			!isProjected &&
+																				bet.predictedWinnerId === bet.match.teamA?.id
+																					? "bg-[#ccff00]/15"
+																					: isProjected
+																							? "bg-white"
+																							: "bg-[#f8f8f8]",
+																			isFinished &&
+																				bet.match.winner?.id === bet.match.teamA?.id &&
+																					"ring-inset ring-2 ring-[#ffc700]",
+																		)}
+																	>
+																		<TeamLogo
+																			teamName={bet.match.teamA?.name || "TBD"}
+																			logoUrl={bet.match.teamA?.logoUrl}
+																			size="md"
+																		/>
+																		<div className="min-w-0 flex-1">
+																			<p className="truncate font-black text-[#121212] text-sm">
+																				{bet.match.teamA?.name || "TBD"}
+																			</p>
+																			{!isProjected &&
+																				bet.predictedWinnerId === bet.match.teamA?.id && (
+																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
+																						<span className="material-symbols-outlined text-[10px]">
+																							check_circle
+																						</span>
+																						Seu palpite
+																					</div>
+																				)}
+																			{isFinished &&
+																				bet.match.winner?.id === bet.match.teamA?.id && (
+																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
+																						<span className="material-symbols-outlined text-[10px]">
+																							crown
+																						</span>
+																						Vencedor
+																					</span>
+																				)}
+																		</div>
+																	</div>
+
+																	{/* VS Badge */}
+																	<div className="flex shrink-0 items-center justify-center">
+																		<div className="flex h-10 w-10 -rotate-6 items-center justify-center border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
+																			<span className="font-black text-white text-xs italic">
+																				VS
+																			</span>
+																		</div>
+																	</div>
+
+																	{/* Team B Panel */}
+																	<div
+																		className={clsx(
+																			"flex flex-1 items-center gap-3 border-l-2 border-black px-4 py-4 transition-all",
+																			!isProjected &&
+																				bet.predictedWinnerId === bet.match.teamB?.id
+																					? "bg-[#ccff00]/15"
+																					: isProjected
+																							? "bg-white"
+																							: "bg-[#f8f8f8]",
+																			isFinished &&
+																				bet.match.winner?.id === bet.match.teamB?.id &&
+																					"ring-inset ring-2 ring-[#ffc700]",
+																		)}
+																	>
+																		<div className="min-w-0 flex-1 text-right">
+																			<p className="truncate font-black text-[#121212] text-sm">
+																				{bet.match.teamB?.name || "TBD"}
+																			</p>
+																			{!isProjected &&
+																				bet.predictedWinnerId === bet.match.teamB?.id && (
+																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
+																						<span className="material-symbols-outlined text-[10px]">
+																							check_circle
+																						</span>
+																						Seu palpite
+																					</div>
+																				)}
+																			{isFinished &&
+																				bet.match.winner?.id === bet.match.teamB?.id && (
+																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
+																						<span className="material-symbols-outlined text-[10px]">
+																							crown
+																						</span>
+																						Vencedor
+																					</span>
+																				)}
+																		</div>
+																		<TeamLogo
+																			teamName={bet.match.teamB?.name || "TBD"}
+																			logoUrl={bet.match.teamB?.logoUrl}
+																			size="md"
+																		/>
+																	</div>
+																</div>
+
+																{/* Footer - Scores & Points */}
+																<div className="flex items-center justify-between border-t-2 border-black bg-white px-4 py-3">
+																	<div className="flex items-center gap-3">
+																		{/* Date or Score info */}
+																		{isProjected ? (
+																			<span className="flex items-center gap-1 text-gray-500 text-xs">
 																				<span className="material-symbols-outlined text-base">
 																					auto_awesome
 																				</span>
-																				<span className="font-black text-xs uppercase tracking-wide">
-																					Baseado nas suas previsões
-																				</span>
-																			</div>
-																		)
-																	) : isFinished && isWalkover ? (
-																		<div className="flex items-center justify-between gap-3">
-																			<div className="flex flex-col items-center gap-1">
-																				<span className="font-black text-[9px] text-gray-500 uppercase tracking-wider">
-																					W.O.
-																				</span>
-																				<div className="flex items-center gap-1">
-																					<div className="min-w-[24px] border-2 border-black bg-black px-2 py-0.5 text-center font-black text-sm text-white">
-																						{walkoverScoreA}
-																					</div>
-																					<span className="font-black text-black text-xs">
-																						×
-																					</span>
-																					<div className="min-w-[24px] border-2 border-black bg-black px-2 py-0.5 text-center font-black text-sm text-white">
-																						{walkoverScoreB}
-																					</div>
-																				</div>
-																			</div>
-
-																			{bet.pointsEarned !== null &&
-																				bet.pointsEarned > 0 && (
-																					<div className="border-[2px] border-black bg-[#ccff00] px-2 py-1 text-center">
-																						<div className="font-black text-black text-xs">
-																							+{bet.pointsEarned}
-																						</div>
-																						<div className="font-black text-[8px] text-black uppercase">
-																							PTS
-																						</div>
-																					</div>
-																				)}
-																		</div>
-																	) : isFinished ? (
-																		<div className="flex items-center justify-between gap-3">
-																			{/* Real score */}
-																			<div className="flex flex-col items-center gap-1">
-																				<span className="font-black text-[9px] text-gray-500 uppercase tracking-wider">
-																					REAL
-																				</span>
-																				<div className="flex items-center gap-1">
-																					<div className="min-w-[24px] border-2 border-black bg-black px-2 py-0.5 text-center font-black text-sm text-white">
-																						{bet.match.scoreA ?? "—"}
-																					</div>
-																					<span className="font-black text-black text-xs">
-																						×
-																					</span>
-																					<div className="min-w-[24px] border-2 border-black bg-black px-2 py-0.5 text-center font-black text-sm text-white">
-																						{bet.match.scoreB ?? "—"}
-																					</div>
-																				</div>
-																			</div>
-
-																			{/* Predicted score */}
-																			<div className="flex flex-col items-center gap-1">
-																				<span className="font-black text-[9px] text-gray-500 uppercase tracking-wider">
-																					PALPITE
-																				</span>
-																				<div className="flex items-center gap-1">
-																					<div className="min-w-[24px] border-2 border-black bg-gray-200 px-2 py-0.5 text-center font-black text-black text-sm">
-																						{bet.predictedScoreA}
-																					</div>
-																					<span className="font-black text-black text-xs">
-																						×
-																					</span>
-																					<div className="min-w-[24px] border-2 border-black bg-gray-200 px-2 py-0.5 text-center font-black text-black text-sm">
-																						{bet.predictedScoreB}
-																					</div>
-																				</div>
-																			</div>
-
-																			{/* Points earned */}
-																			{bet.pointsEarned !== null &&
-																				bet.pointsEarned > 0 && (
-																					<div className="border-[2px] border-black bg-[#ccff00] px-2 py-1 text-center">
-																						<div className="font-black text-black text-xs">
-																							+{bet.pointsEarned}
-																						</div>
-																						<div className="font-black text-[8px] text-black uppercase">
-																							PTS
-																						</div>
-																					</div>
-																				)}
-																		</div>
-																	) : (
-																		<div className="flex items-center justify-between">
+																				Projeção futura
+																			</span>
+																		) : !isFinished ? (
+																			<span className="flex items-center gap-1 text-gray-600 text-xs">
+																				<Calendar
+																					className="h-3.5 w-3.5"
+																					strokeWidth={2}
+																				/>
+																				{new Date(
+																					bet.match.startTime,
+																				).toLocaleString("pt-BR", {
+																					day: "2-digit",
+																					month: "short",
+																					hour: "2-digit",
+																					minute: "2-digit",
+																				})}
+																			</span>
+																		) : (
 																			<div className="flex items-center gap-2">
-																				<span className="material-symbols-outlined text-base text-black">
-																					casino
-																				</span>
-																				<span className="font-black text-black text-xs uppercase tracking-wide">
+																				<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
 																					Placar:
 																				</span>
-																			</div>
-																			<div className="flex items-center gap-2">
-																				<div className="min-w-[24px] border-2 border-black bg-black px-2 py-1 text-center font-black text-sm text-white">
-																					{bet.predictedScoreA}
-																				</div>
-																				<span className="font-black text-black text-xs">
-																					×
-																				</span>
-																				<div className="min-w-[24px] border-2 border-black bg-black px-2 py-1 text-center font-black text-sm text-white">
-																					{bet.predictedScoreB}
-																				</div>
-																			</div>
-																		</div>
-																	)}
-
-																	{/* Badges for finished matches */}
-																	{isFinished &&
-																		(bet.isPerfectPick ||
-																			bet.isUnderdogPick) && (
-																			<div className="flex flex-wrap items-center gap-2 pt-1">
-																				{bet.isPerfectPick && (
-																					<span className="inline-block -skew-x-6 transform border-2 border-black bg-[#ffc700] px-2 py-0.5 font-black text-[9px] text-black uppercase">
-																						PLACAR EXATO
+																				<div className="flex items-center gap-1">
+																					<span className="rounded bg-black px-2 py-0.5 font-black text-sm text-white">
+																						{isWalkover
+																							? walkoverScoreA
+																							: (bet.match.scoreA ?? "—")}
 																					</span>
-																				)}
-																				{bet.isUnderdogPick && won && (
-																					<span className="inline-block skew-x-6 transform border-2 border-black bg-gradient-to-r from-purple-600 to-pink-600 px-2 py-0.5 font-black text-[9px] text-white uppercase">
-																						AZARÃO
+																					<span className="font-bold text-gray-400">
+																						-
 																					</span>
-																				)}
+																					<span className="rounded bg-black px-2 py-0.5 font-black text-sm text-white">
+																						{isWalkover
+																							? walkoverScoreB
+																							: (bet.match.scoreB ?? "—")}
+																					</span>
+																				</div>
 																			</div>
 																		)}
-																</div>
-
-																{/* Date stamp (for scheduled/live) */}
-																{!isFinished && (
-																	<div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap border-[2px] border-black bg-white px-3 py-1 font-black text-[9px] text-black uppercase tracking-wide shadow-[2px_2px_0_0_#000]">
-																		{new Date(
-																			bet.match.startTime,
-																		).toLocaleString("pt-BR", {
-																			day: "2-digit",
-																			month: "short",
-																			hour: "2-digit",
-																			minute: "2-digit",
-																		})}
 																	</div>
-																)}
+
+																	<div className="flex items-center gap-2">
+																		{/* Prediction */}
+																		{!isProjected && (
+																			<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
+																				Palpite: {bet.predictedScoreA}-
+																				{bet.predictedScoreB}
+																			</span>
+																		)}
+
+																		{/* Points badge */}
+																		{isFinished &&
+																			bet.pointsEarned !== null &&
+																			bet.pointsEarned > 0 && (
+																				<div className="flex items-center gap-1.5">
+																					{bet.isPerfectPick && (
+																						<span className="rounded-md border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[9px] text-black uppercase">
+																							Placar Exato
+																						</span>
+																					)}
+																					<span className="rounded-md bg-[#ccff00] px-2 py-0.5 font-black text-black text-sm">
+																						+{bet.pointsEarned}
+																					</span>
+																				</div>
+																			)}
+
+																		{isFinished &&
+																			bet.isUnderdogPick &&
+																			won && (
+																				<span className="rounded-md border border-black bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 font-black text-[9px] text-white uppercase">
+																					Azarão
+																				</span>
+																			)}
+																	</div>
+																</div>
 															</div>
 														);
 													})}
 												</div>
 											) : (
-												<div className="border-[3px] border-black bg-white px-4 py-3 shadow-[3px_3px_0_0_#000]">
-													<p className="font-black text-[11px] text-gray-600 uppercase tracking-wide">
-														Seção recolhida - clique no nome do torneio para
-														expandir.
+												<div className="rounded-lg border-2 border-black bg-white p-4 text-center shadow-[3px_3px_0_0_#000]">
+													<p className="font-bold text-gray-600 text-sm">
+														Clique no nome do torneio para expandir
 													</p>
 												</div>
 											)}
@@ -706,20 +638,20 @@ function RouteComponent() {
 						))}
 					</div>
 				) : (
-					<div className="border-[3px] border-black bg-white p-12 text-center shadow-[4px_4px_0_0_#000]">
-						<div className="mx-auto mb-5 flex h-20 w-20 -rotate-6 transform items-center justify-center border-[3px] border-black bg-[#f0f0f0]">
-							<span className="material-symbols-outlined rotate-6 transform text-4xl text-gray-600">
+					<div className="rounded-lg border-2 border-black bg-white p-10 text-center shadow-[3px_3px_0_0_#000]">
+						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
+							<span className="material-symbols-outlined text-3xl text-gray-400">
 								inbox
 							</span>
 						</div>
-						<p className="mb-2 font-black text-black text-xl uppercase italic">
+						<p className="mb-1 font-black text-[#121212] text-lg uppercase">
 							{filter === "all"
 								? "Nenhum palpite encontrado"
 								: filter === "pending"
 									? "Nenhum palpite pendente"
 									: "Nenhum palpite finalizado"}
 						</p>
-						<p className="mb-6 font-bold text-gray-700 text-sm">
+						<p className="mb-5 text-gray-600 text-sm">
 							{filter === "all"
 								? "Faça suas apostas nos torneios ativos!"
 								: "Tente outro filtro ou faça mais apostas."}
@@ -727,24 +659,19 @@ function RouteComponent() {
 						<Link to="/">
 							<button
 								type="button"
-								className="group -skew-x-12 transform border-[3px] border-black bg-[#ffc700] px-8 py-4 font-black text-base text-black uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+								className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
 							>
-								<span className="flex skew-x-12 transform items-center gap-2">
-									<span className="material-symbols-outlined text-xl">
-										sports
-									</span>
-									VER PARTIDAS
-								</span>
+								Ver Partidas
 							</button>
 						</Link>
 					</div>
 				)}
 
-				{/* Bottom decorative */}
-				<div className="mt-16 flex items-center justify-center gap-3 opacity-40">
-					<div className="h-1 w-12 -skew-x-12 transform bg-black" />
-					<div className="h-3 w-3 rotate-45 border-2 border-black bg-[#ccff00]" />
-					<div className="h-1 w-12 skew-x-12 transform bg-black" />
+				{/* Bottom decoration - subtle */}
+				<div className="mt-12 flex items-center justify-center gap-2 opacity-30">
+					<div className="h-px w-16 bg-black" />
+					<div className="h-2 w-2 rounded-sm bg-[#ccff00]" />
+					<div className="h-px w-16 bg-black" />
 				</div>
 			</div>
 		</div>

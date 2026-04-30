@@ -85,6 +85,7 @@ export const tournaments = pgTable("tournaments", {
 					teamsPerGroup?: number;
 					advancingCount?: number;
 					matchType?: "Bo1" | "Bo3" | "Bo5";
+					groupFormat?: "GSL" | "Round Robin";
 				};
 				startDate?: string;
 				endDate?: string;

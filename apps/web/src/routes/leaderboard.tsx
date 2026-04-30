@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { ChevronDown, Crown, Star, Trophy } from "lucide-react";
+import {
+	Calendar,
+	ChevronDown,
+	Crown,
+	Globe,
+	Star,
+	Target,
+	Trophy,
+	Zap,
+} from "lucide-react";
 import { useEffect } from "react";
 import { z } from "zod";
 import {
@@ -70,110 +79,110 @@ function LeaderboardPage() {
 	const rest = leaderboard.slice(3);
 
 	return (
-		<div className="min-h-screen bg-paper bg-paper-texture">
-			<div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-8">
-				{/* Header */}
-				<header className="relative mb-8 text-center">
-					{/* Decorative background splatter */}
-					<div className="absolute top-1/2 left-1/2 -z-10 h-32 w-64 -translate-x-1/2 -translate-y-1/2 rotate-[-5deg] bg-brawl-yellow/20 blur-2xl" />
+		<div className="relative min-h-screen bg-[#f0f0f0]">
+			{/* Paper texture overlay */}
+			<div
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
+				style={{
+					backgroundImage:
+						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+					backgroundRepeat: "repeat",
+				}}
+			/>
 
+			<div className="relative z-10 mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-8 md:py-12">
+				{/* Clean Header */}
+				<header className="mb-8 text-center">
 					<div className="mb-4 flex justify-center">
-						<div className="flex h-20 w-20 rotate-3 transform items-center justify-center border-[4px] border-black bg-brawl-yellow shadow-[4px_4px_0px_0px_#000] transition-transform hover:rotate-6">
-							<Trophy
-								className="h-10 w-10 text-black drop-shadow-sm"
-								strokeWidth={3}
-							/>
+						<div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-black bg-[#ffc700] shadow-[3px_3px_0_0_#000]">
+							<Trophy className="h-8 w-8 text-black" strokeWidth={2.5} />
 						</div>
 					</div>
-					<h1 className="-skew-x-6 transform font-black font-display text-5xl text-black uppercase italic leading-[0.85] tracking-tighter drop-shadow-sm md:text-6xl">
-						RANKING{" "}
-						<span className="block text-6xl text-brawl-red md:text-7xl">
-							SUPREMO
-						</span>
+					<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+						Ranking
 					</h1>
-					<p className="mt-4 inline-block border-black/10 border-y-2 py-1 font-body font-bold text-black/60 text-xs uppercase tracking-[0.4em] md:text-sm">
-						Who dominates the arena?
+					<p className="mt-2 font-bold text-gray-600 text-lg">
+						Os melhores prognosticadores da BSEBET
 					</p>
 				</header>
 
-				{/* Tab Switcher */}
-				<div className="mb-10 inline-flex -skew-x-6 transform overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+				{/* Tab Switcher - Clean */}
+				<div className="mb-8 flex items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
 					<button
+						type="button"
 						onClick={() =>
 							navigate({
 								search: { tab: "season", tournamentId: tournaments[0]?.id },
 							})
 						}
 						className={clsx(
-							"relative px-8 py-3 font-black font-display text-sm uppercase transition-all",
+							"flex items-center gap-2 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
 							tab === "season"
-								? "bg-black text-white"
-								: "bg-white text-black hover:bg-gray-100",
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						{tab === "season" && (
-							<div className="pointer-events-none absolute inset-0 border-[#ccff00] border-[3px]" />
-						)}
-						<span className="inline-block skew-x-6 transform">TEMPORADA</span>
+						<Calendar className="h-4 w-4" strokeWidth={2.5} />
+						Temporada
 					</button>
 					<button
+						type="button"
 						onClick={() => navigate({ search: { tab: "global" } })}
 						className={clsx(
-							"relative border-black border-l-[3px] px-8 py-3 font-black font-display text-sm uppercase transition-all",
+							"flex items-center gap-2 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
 							tab === "global"
-								? "bg-black text-white"
-								: "bg-white text-black hover:bg-gray-100",
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						{tab === "global" && (
-							<div className="pointer-events-none absolute inset-0 border-[#ccff00] border-[3px]" />
-						)}
-						<span className="inline-block skew-x-6 transform">MUNDIAL</span>
+						<Globe className="h-4 w-4" strokeWidth={2.5} />
+						Mundial
 					</button>
 				</div>
 
-				{/* Tournament Hero & Selector */}
+				{/* Tournament Selector - Clean */}
 				{tab === "season" && activeTournament && (
-					<div className="relative z-30 mb-8 flex w-full max-w-xs flex-col items-center">
-						{/* Selected Tournament Hero */}
-						<div className="group relative mb-6">
-							<div className="absolute inset-0 animate-pulse rounded-full bg-[#ccff00] opacity-20 blur-xl" />
-							<div className="relative z-10 flex h-32 w-32 rotate-3 items-center justify-center border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000] transition-transform hover:rotate-0 md:h-40 md:w-40">
-								{activeTournament.logoUrl ? (
-									<img
-										src={activeTournament.logoUrl}
-										alt="Tournament Logo"
-										className="h-full w-full object-contain"
-									/>
-								) : (
-									<Trophy className="h-16 w-16 text-black" />
-								)}
-							</div>
-							{/* Badge Name */}
-							<div className="absolute -bottom-4 left-1/2 z-20 -translate-x-1/2 transform whitespace-nowrap border-2 border-white bg-black px-3 py-1 font-black font-display text-white text-xs uppercase shadow-lg">
+					<div className="mb-8 flex w-full max-w-sm flex-col items-center">
+						{/* Tournament Logo */}
+						<div className="relative mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border-2 border-black bg-white shadow-[3px_3px_0_0_#000]">
+							{activeTournament.logoUrl ? (
+								<img
+									src={activeTournament.logoUrl}
+									alt="Tournament Logo"
+									className="h-full w-full object-contain p-3"
+								/>
+							) : (
+								<Trophy className="h-10 w-10 text-gray-300" strokeWidth={2} />
+							)}
+						</div>
+
+						{/* Tournament Name Badge */}
+						<div className="mb-4 rounded-lg border-2 border-black bg-[#121212] px-4 py-2 shadow-[3px_3px_0_0_#000]">
+							<span className="font-black text-sm text-white uppercase">
 								{activeTournament.name}
-							</div>
+							</span>
 						</div>
 
 						{/* Selector (Only if more than 1 tournament) */}
 						{tournaments.length > 1 && (
-							<div className="relative w-full">
-								<div className="absolute inset-0 translate-x-1 translate-y-1 bg-black" />
+							<div className="w-full">
 								<DropdownMenu>
-									<DropdownMenuTrigger className="group relative flex h-12 w-full cursor-pointer items-center justify-between border-[3px] border-black bg-white px-4 py-3 font-black font-display text-black text-sm uppercase outline-none hover:bg-gray-50">
-										<span className="mr-2 max-w-[200px] truncate sm:max-w-[280px]">
+									<DropdownMenuTrigger className="group flex h-11 w-full cursor-pointer items-center justify-between rounded-lg border-2 border-black bg-white px-4 font-bold text-[#121212] text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] outline-none transition-all hover:shadow-[2px_2px_0_0_#000]">
+										<span className="mr-2 truncate">
 											{activeTournament.name}
 										</span>
-										<ChevronDown className="h-5 w-5 transition-transform group-data-[state=open]:rotate-180" />
+										<ChevronDown
+											className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180"
+											strokeWidth={2.5}
+										/>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent
-										className="mt-2 min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[90vw] rounded-none border-[3px] border-black bg-white p-0 text-black shadow-[4px_4px_0px_0px_#000]"
+										className="mt-1 min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[90vw] rounded-lg border-2 border-black bg-white p-0 text-black shadow-[4px_4px_0_0_#000]"
 										align="start"
 									>
 										<DropdownMenuRadioGroup
 											value={String(activeTournament.id)}
 											onValueChange={(val) => {
-												// Save current scroll position
 												const scrollY = window.scrollY;
 												navigate({
 													search: {
@@ -183,7 +192,6 @@ function LeaderboardPage() {
 													replace: true,
 													resetScroll: false,
 												});
-												// Restore scroll position after navigation
 												requestAnimationFrame(() => {
 													window.scrollTo(0, scrollY);
 												});
@@ -193,7 +201,7 @@ function LeaderboardPage() {
 												<DropdownMenuRadioItem
 													key={t.id}
 													value={String(t.id)}
-													className="cursor-pointer whitespace-normal border-black/5 border-b-2 px-4 py-3 font-bold font-display text-black text-sm uppercase leading-tight outline-none last:border-0 hover:bg-gray-100 focus:bg-gray-100 focus:text-black data-[state=checked]:bg-brawl-yellow data-[state=checked]:text-black"
+													className="cursor-pointer whitespace-normal border-black/5 border-b px-4 py-3 font-bold text-sm uppercase leading-tight outline-none last:border-0 hover:bg-gray-50 focus:bg-gray-100 data-[state=checked]:bg-[#ffc700]"
 												>
 													{t.name}
 												</DropdownMenuRadioItem>
@@ -206,213 +214,146 @@ function LeaderboardPage() {
 					</div>
 				)}
 
-				{/* Tiebreaker Rules */}
-				<div className="mb-4 w-full border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
-					<div className="flex items-center gap-3 border-black border-b-[3px] bg-black px-4 py-2">
-						<span className="font-black font-display text-[10px] text-white uppercase tracking-[0.2em]">
+				{/* Tiebreaker Rules - Clean */}
+				<div className="mb-6 w-full rounded-xl border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000]">
+					<div className="mb-4 flex items-center gap-2 border-black/10 border-b pb-3">
+						<Target className="h-4 w-4 text-[#121212]" strokeWidth={2} />
+						<span className="font-bold text-[#121212] text-sm uppercase tracking-wider">
 							Critérios de Classificação
 						</span>
-						<span className="ml-auto font-bold text-[10px] text-white/60 uppercase">
+						<span className="ml-auto rounded bg-[#f0f0f0] px-2 py-1 font-bold text-[10px] text-gray-600 uppercase">
 							{tab === "global" ? "Ranking Mundial" : "Camp Específico"}
 						</span>
 					</div>
-					<div
-						className={clsx(
-							"grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3",
-							tab === "global" &&
-								"lg:[&>*:nth-child(5)]:col-span-2 lg:[&>*:nth-child(5)]:justify-center",
-						)}
-					>
-						{/* 1° - Pontos Totais (comum a ambos) */}
-						<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-							<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-brawl-yellow font-black font-display text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-								1
-							</div>
-							<div>
-								<p className="font-black text-black text-xs uppercase leading-none">
-									Pontos Totais
-								</p>
-								<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-									Critério principal
-								</p>
-							</div>
-						</div>
-						{/* 2° - Quantidade de Acertos (comum a ambos) */}
-						<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-							<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-gray-200 font-black font-display text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-								2
-							</div>
-							<div>
-								<p className="font-black text-black text-xs uppercase leading-none">
-									Quantidade de Acertos
-								</p>
-								<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-									1° desempate
-								</p>
-							</div>
-						</div>
-						{/* 3° - Quantidade de Perfect (comum a ambos) */}
-						<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-							<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-gray-300 font-black font-display text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-								3
-							</div>
-							<div>
-								<p className="font-black text-black text-xs uppercase leading-none">
-									Quantidade de Perfect
-								</p>
-								<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-									2° desempate
-								</p>
-							</div>
-						</div>
-						{/* 4° - Quantidade de Azarões (comum a ambos) */}
-						<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-							<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-purple-400 font-black font-display text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-								4
-							</div>
-							<div>
-								<p className="font-black text-black text-xs uppercase leading-none">
-									Quantidade de Azarões
-								</p>
-								<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-									3° desempate
-								</p>
-							</div>
-						</div>
-						{/* 5° - Camp específico: Partida mais importante / Global: Medalhas */}
-						<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-							<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-[#FFD700] font-black font-display text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-								5
-							</div>
-							<div>
-								<p className="font-black text-black text-xs uppercase leading-none">
-									{tab === "global"
-										? "Medalhas"
-										: "Acertou partida mais importante"}
-								</p>
-								<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-									{tab === "global" ? "4° desempate" : "Final ou decisiva"}
-								</p>
-							</div>
-						</div>
-						{/* 6° - Apenas Camp específico: Melhor resultado mês anterior */}
-						{tab === "season" && (
-							<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2">
-								<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-brawl-blue font-black font-display text-sm text-white shadow-[2px_2px_0px_0px_#000]">
-									6
+					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						{/* Criteria */}
+						{[
+							{
+								num: 1,
+								label: "Pontos Totais",
+								desc: "Critério principal",
+								color: "bg-[#ffc700]",
+							},
+							{
+								num: 2,
+								label: "Quantidade de Acertos",
+								desc: "1° desempate",
+								color: "bg-gray-200",
+							},
+							{
+								num: 3,
+								label: "Perfect Picks",
+								desc: "2° desempate",
+								color: "bg-gray-300",
+							},
+							{
+								num: 4,
+								label: "Azarões",
+								desc: "3° desempate",
+								color: "bg-purple-300",
+							},
+							{
+								num: 5,
+								label: tab === "global" ? "Medalhas" : "Partida decisiva",
+								desc: tab === "global" ? "4° desempate" : "Final",
+								color: "bg-yellow-300",
+							},
+							...(tab === "season"
+								? [
+										{
+											num: 6,
+											label: "Resultado mês anterior",
+											desc: "Torneios anteriores",
+											color: "bg-[#2e5cff] text-white",
+										},
+										{
+											num: 7,
+											label: "Ranking Mundial",
+											desc: "Posição geral",
+											color: "bg-[#ff2e2e] text-white",
+										},
+									]
+								: []),
+						].map((c) => (
+							<div
+								key={c.num}
+								className="flex items-center gap-3 rounded-lg bg-[#f8f8f8] px-3 py-2"
+							>
+								<div
+									className={clsx(
+										"flex h-6 w-6 shrink-0 items-center justify-center rounded font-black text-xs",
+										c.color,
+									)}
+								>
+									{c.num}
 								</div>
 								<div>
-									<p className="font-black text-black text-xs uppercase leading-none">
-										Melhor resultado mês anterior
+									<p className="font-bold text-[#121212] text-xs uppercase">
+										{c.label}
 									</p>
-									<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-										Torneios anteriores
-									</p>
-								</div>
-							</div>
-						)}
-						{/* 7° - Apenas Camp específico: Ranking Geral */}
-						{tab === "season" && (
-							<div className="flex items-center gap-3 rounded border-2 border-black/10 bg-gray-50/50 px-3 py-2 sm:col-span-2 lg:col-span-1">
-								<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center border-[2px] border-black bg-brawl-red font-black font-display text-sm text-white shadow-[2px_2px_0px_0px_#000]">
-									7
-								</div>
-								<div>
-									<p className="font-black text-black text-xs uppercase leading-none">
-										Ranking Mundial
-									</p>
-									<p className="mt-0.5 font-bold text-[10px] text-black/40 uppercase tracking-wide">
-										Posição geral
+									<p className="font-medium text-[10px] text-gray-500">
+										{c.desc}
 									</p>
 								</div>
 							</div>
-						)}
+						))}
 					</div>
 				</div>
 
-				{/* Legend */}
-				<div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-lg border-2 border-black/10 bg-white/50 px-3 py-2">
-					<span className="font-bold text-[10px] text-black/60 uppercase tracking-wide">
+				{/* Legend - Clean */}
+				<div className="mb-6 flex flex-wrap items-center justify-center gap-3 rounded-lg border border-black/10 bg-white/80 px-4 py-3">
+					<span className="font-bold text-[10px] text-gray-500 uppercase">
 						Legenda:
 					</span>
-					{/* Perfect Picks */}
-					<div className="flex items-center gap-1">
-						<div className="flex items-center gap-0.5 border-2 border-black bg-brawl-yellow px-1 py-0.5">
+					<div className="flex items-center gap-1.5">
+						<div className="flex items-center gap-1 rounded bg-[#ffc700] px-1.5 py-0.5">
 							<Star
 								className="h-3 w-3 text-black"
 								fill="black"
-								strokeWidth={2}
+								strokeWidth={0}
 							/>
-							<span className="font-black font-display text-[10px] text-black">
-								0
-							</span>
+							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-black/60">Perfect Picks</span>
+						<span className="text-[10px] text-gray-600">Perfect</span>
 					</div>
-					<span className="text-black/20">·</span>
-					{/* Correct */}
-					<div className="flex items-center gap-1">
-						<div className="flex items-center gap-0.5 border-2 border-black bg-white px-1 py-0.5">
-							<span className="font-black font-display text-[10px] text-green-600">
-								✓
-							</span>
-							<span className="font-black font-display text-[10px] text-black">
-								0
-							</span>
+					<div className="flex items-center gap-1.5">
+						<div className="flex items-center gap-1 rounded border border-black/20 bg-white px-1.5 py-0.5">
+							<span className="font-black text-[10px] text-green-600">✓</span>
+							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-black/60">Acertos</span>
+						<span className="text-[10px] text-gray-600">Acertos</span>
 					</div>
-					<span className="text-black/20">·</span>
-					{/* Accuracy */}
-					<div className="flex items-center gap-1">
-						<div className="flex items-center gap-0.5 border-2 border-black bg-green-500 px-1 py-0.5">
-							<span className="font-black font-display text-[10px] text-white">
-								70%
-							</span>
+					<div className="flex items-center gap-1.5">
+						<div className="flex items-center gap-1 rounded bg-green-500 px-1.5 py-0.5">
+							<span className="font-black text-[10px] text-white">70%</span>
 						</div>
-						<span className="text-[10px] text-black/60">Taxa de acerto</span>
+						<span className="text-[10px] text-gray-600">Taxa</span>
 					</div>
-					<span className="text-black/20">·</span>
-					{/* Underdog Picks */}
-					<div className="flex items-center gap-1">
-						<div className="flex items-center gap-0.5 border-2 border-black bg-purple-400 px-1 py-0.5">
-							<span className="font-black font-display text-[10px] text-black">
-								⚡
-							</span>
-							<span className="font-black font-display text-[10px] text-black">
-								0
-							</span>
+					<div className="flex items-center gap-1.5">
+						<div className="flex items-center gap-1 rounded bg-purple-400 px-1.5 py-0.5">
+							<Zap className="h-3 w-3 text-black" strokeWidth={2} />
+							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-black/60">Azarões</span>
+						<span className="text-[10px] text-gray-600">Azarões</span>
 					</div>
-					<span className="text-black/20">·</span>
-					{/* Medal Icons explanation */}
 					<div className="flex items-center gap-1">
 						<MiniMedalBadge tier="1st" size="sm" />
 						<MiniMedalBadge tier="2nd" size="sm" />
 						<MiniMedalBadge tier="3rd" size="sm" />
-						<span className="text-[10px] text-black/60">Medalhas</span>
+						<span className="text-[10px] text-gray-600">Medalhas</span>
 					</div>
 				</div>
 
 				{leaderboard.length === 0 ? (
-					/* Empty State */
-					<div className="flex w-full flex-col items-center justify-center rounded-sm border-[3px] border-black border-dashed bg-white/50 py-16 text-center">
-						<div className="mb-6 flex h-20 w-20 rotate-3 items-center justify-center border-[3px] border-black bg-gray-200 opacity-40 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-							<Trophy className="h-10 w-10 text-gray-500" strokeWidth={2} />
+					/* Empty State - Clean */
+					<div className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-black/30 border-dashed bg-white/50 py-16 text-center">
+						<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
+							<Trophy className="h-8 w-8 text-gray-400" strokeWidth={2} />
 						</div>
-						<h2 className="mb-2 font-black font-display text-3xl text-black uppercase italic tracking-tighter">
-							NENHUM{" "}
-							<span
-								className="bg-gradient-to-br from-brawl-blue to-blue-600 bg-clip-text text-brawl-blue text-stroke-1 text-transparent"
-								style={{ WebkitTextStroke: "1px black" }}
-							>
-								DADO
-							</span>
+						<h2 className="mb-2 font-black text-[#121212] text-xl uppercase">
+							Nenhum dado disponível
 						</h2>
-						<p className="font-bold text-black/60 text-sm uppercase tracking-wide">
-							Seja o primeiro a pontuar!
-						</p>
+						<p className="text-gray-600 text-sm">Seja o primeiro a pontuar!</p>
 					</div>
 				) : (
 					<>
@@ -499,65 +440,54 @@ function PodiumSection({
 	const third = entries[2];
 
 	const podiumColors = {
-		1: {
-			bg: "bg-gradient-to-b from-[#FFD700] via-[#FFC125] to-[#DAA520]",
-			border: "border-[#B8860B]",
-			label: "1ST",
-		},
-		2: {
-			bg: "bg-gradient-to-b from-[#D3D3D3] via-[#A8A8A8] to-[#696969]",
-			border: "border-[#808080]",
-			label: "2ND",
-		},
-		3: {
-			bg: "bg-gradient-to-b from-[#CD7F32] via-[#B87333] to-[#804A00]",
-			border: "border-[#8B4513]",
-			label: "3RD",
-		},
+		1: { bg: "bg-gradient-to-b from-[#FFD700] to-[#DAA520]", height: "h-28" },
+		2: { bg: "bg-gradient-to-b from-[#C0C0C0] to-[#808080]", height: "h-20" },
+		3: { bg: "bg-gradient-to-b from-[#CD7F32] to-[#8B4513]", height: "h-16" },
 	};
 
 	const PodiumBlock = ({
 		entry,
 		rank,
-		height,
 		tiebreakerReason,
 	}: {
 		entry?: LeaderboardEntry;
 		rank: 1 | 2 | 3;
-		height: string;
 		tiebreakerReason?: string | null;
 	}) => {
 		if (!entry) return <div />;
 		const colors = podiumColors[rank];
 		const isMe = entry.userId === currentUserId;
+		const accuracyRate =
+			entry.totalBets > 0
+				? Math.round((entry.correctPredictions / entry.totalBets) * 100)
+				: 0;
 
 		return (
-			<div className="z-10 mx-[-4px] flex flex-col items-center">
+			<div className="flex flex-col items-center">
 				{/* Crown for 1st */}
 				{rank === 1 && (
-					<div className="relative mb-2">
+					<div className="mb-2">
 						<Crown
-							className="h-10 w-10 animate-bounce text-brawl-yellow drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+							className="h-8 w-8 text-[#ffc700]"
 							fill="#ffc700"
-							strokeWidth={2.5}
-							style={{ animationDuration: "2s" }}
+							strokeWidth={2}
 						/>
 					</div>
 				)}
 
-				{/* Avatar Container */}
+				{/* Avatar */}
 				<Link
 					to="/users/$userId"
 					params={{ userId: entry.userId }}
-					className="group relative cursor-pointer"
+					className="group relative"
 				>
 					<div
 						className={clsx(
-							"mb-3 overflow-hidden border-[3px] border-black bg-white transition-transform duration-300 group-hover:scale-105",
+							"mb-2 overflow-hidden rounded-lg border-2 border-black bg-white transition-transform group-hover:scale-105",
 							rank === 1
-								? "h-20 w-20 shadow-[4px_4px_0px_0px_#000]"
-								: "h-14 w-14 shadow-[3px_3px_0px_0px_#000]",
-							isMe && "ring-[#ccff00] ring-[4px] ring-offset-0",
+								? "h-16 w-16 shadow-[3px_3px_0_0_#000]"
+								: "h-12 w-12 shadow-[2px_2px_0_0_#000]",
+							isMe && "ring-2 ring-[#ccff00]",
 						)}
 					>
 						{entry.image ? (
@@ -567,17 +497,15 @@ function PodiumSection({
 								className="h-full w-full object-cover"
 							/>
 						) : (
-							<div className="flex h-full w-full items-center justify-center bg-tape font-black font-display text-2xl text-black/30">
+							<div className="flex h-full w-full items-center justify-center bg-[#f0f0f0] font-black text-gray-400 text-xl">
 								{entry.name.charAt(0).toUpperCase()}
 							</div>
 						)}
 					</div>
-
-					{/* Rank Badge overlapping avatar */}
+					{/* Rank badge */}
 					<div
 						className={clsx(
-							"absolute -right-2 -bottom-2 flex rotate-3 transform items-center justify-center border-[2px] border-white bg-black font-black font-display text-white",
-							rank === 1 ? "h-8 w-8 text-lg" : "h-6 w-6 text-xs",
+							"absolute -right-1.5 -bottom-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-black font-black text-white text-xs shadow-sm",
 						)}
 					>
 						{rank}
@@ -588,21 +516,21 @@ function PodiumSection({
 				<Link
 					to="/users/$userId"
 					params={{ userId: entry.userId }}
-					className="relative mt-4 mb-3 -rotate-1 border border-black bg-white px-3 py-1 shadow-[2px_2px_0px_0px_#000] transition-colors hover:bg-gray-50"
+					className="mb-2"
 				>
 					<span
 						className={clsx(
-							"block text-center font-black font-display text-xs uppercase leading-none tracking-tight",
-							isMe ? "text-brawl-blue" : "text-black",
+							"block text-center font-bold text-xs uppercase",
+							isMe ? "text-[#2e5cff]" : "text-[#121212]",
 						)}
 					>
 						{entry.name}
 					</span>
 				</Link>
 
-				{/* Medal Badges for Podium */}
+				{/* Medals */}
 				{entry.medals.total > 0 && (
-					<div className="mb-3 flex items-center justify-center gap-1">
+					<div className="mb-2">
 						<MedalCountSummary
 							gold={entry.medals.gold}
 							silver={entry.medals.silver}
@@ -613,130 +541,75 @@ function PodiumSection({
 				)}
 
 				{/* Points */}
-				<div className="text-center leading-none">
-					<span className="block font-black font-display text-black text-xl drop-shadow-sm">
+				<div className="mb-2 text-center">
+					<span className="block font-black text-[#121212] text-lg">
 						{entry.totalPoints}
 					</span>
-					<span className="font-bold text-[9px] text-black/60 uppercase tracking-widest">
+					<span className="font-bold text-[9px] text-gray-500 uppercase tracking-wider">
 						PTS
 					</span>
 				</div>
 
-				{/* Tiebreaker Badge - show if this position was decided by tiebreaker */}
+				{/* Tiebreaker */}
 				{tiebreakerReason && (
-					<div
-						className="mt-2 inline-flex rotate-1 transform items-center gap-1 border-2 border-black bg-[#ccff00] px-1.5 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:mt-3 sm:px-2"
-						title={`Desempatado por: ${tiebreakerReason}`}
-					>
-						<span className="hidden font-black font-display text-[8px] text-black uppercase sm:inline">
-							Desempate:
-						</span>
-						<span className="font-black font-display text-[9px] text-black sm:text-[10px]">
+					<div className="mb-2 rounded-md bg-[#ccff00] px-2 py-0.5 text-center">
+						<span className="font-black text-[9px] text-black uppercase">
 							{tiebreakerReason}
 						</span>
 					</div>
 				)}
 
-				{/* Stats - Perfect Picks, Correct, Accuracy */}
-				<div className="mt-2 flex flex-col items-center gap-2 sm:mt-3">
-					{/* Stats Badges Row */}
-					<div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
-						{/* Perfect Picks Badge */}
-						<div
-							className="flex items-center gap-1 border-2 border-black bg-brawl-yellow px-1.5 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:px-2 sm:py-1"
-							title="Perfect Picks"
-						>
-							<Star
-								className="h-3 w-3 text-black sm:h-3.5 sm:w-3.5"
-								fill="black"
-								strokeWidth={2}
-							/>
-							<span className="font-black font-display text-black text-xs sm:text-sm">
-								{entry.perfectPicks}
+				{/* Stats */}
+				<div className="mb-3 flex flex-wrap items-center justify-center gap-1">
+					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
+						<Star className="h-2.5 w-2.5 text-black" fill="black" />
+						<span className="font-black text-[10px] text-black">
+							{entry.perfectPicks}
+						</span>
+					</div>
+					<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1.5 py-0.5">
+						<span className="font-black text-[10px] text-green-600">✓</span>
+						<span className="font-black text-[10px] text-black">
+							{entry.correctPredictions}
+						</span>
+					</div>
+					{entry.underdogPicks > 0 && (
+						<div className="flex items-center gap-0.5 rounded bg-purple-400 px-1.5 py-0.5">
+							<span className="font-black text-[10px] text-black">
+								⚡{entry.underdogPicks}
 							</span>
 						</div>
-
-						{/* Correct Predictions Badge */}
-						<div
-							className="flex items-center gap-1 border-2 border-black bg-white px-1.5 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:px-2 sm:py-1"
-							title="Acertos"
-						>
-							<span className="font-black font-display text-green-600 text-xs sm:text-sm">
-								✓
-							</span>
-							<span className="font-black font-display text-black text-xs sm:text-sm">
-								{entry.correctPredictions}
-							</span>
-						</div>
-
-						{/* Underdog Picks Badge */}
-						{entry.underdogPicks > 0 && (
-							<div
-								className="flex items-center gap-1 border-2 border-black bg-purple-400 px-1.5 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:px-2 sm:py-1"
-								title="Azarões acertados"
-							>
-								<span className="font-black font-display text-black text-xs sm:text-sm">
-									⚡
-								</span>
-								<span className="font-black font-display text-black text-xs sm:text-sm">
-									{entry.underdogPicks}
-								</span>
-							</div>
+					)}
+					<div
+						className={clsx(
+							"rounded px-1.5 py-0.5",
+							accuracyRate >= 70
+								? "bg-green-500"
+								: accuracyRate >= 40
+									? "bg-yellow-400"
+									: "bg-red-500",
 						)}
-
-						{/* Accuracy Rate Badge */}
-						{(() => {
-							const accuracyRate =
-								entry.totalBets > 0
-									? Math.round(
-											(entry.correctPredictions / entry.totalBets) * 100,
-										)
-									: 0;
-							return (
-								<div
-									className={clsx(
-										"flex items-center gap-1 border-2 border-black px-1.5 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:px-2",
-										accuracyRate >= 70
-											? "bg-green-500 text-white"
-											: accuracyRate >= 40
-												? "bg-yellow-400 text-black"
-												: "bg-red-500 text-white",
-									)}
-									title="Taxa de acerto"
-								>
-									<span className="font-black font-display text-[10px] uppercase sm:text-xs">
-										Acerto
-									</span>
-									<span className="font-black font-display text-xs sm:text-sm">
-										{accuracyRate}%
-									</span>
-								</div>
-							);
-						})()}
+					>
+						<span
+							className={clsx(
+								"font-black text-[10px]",
+								accuracyRate >= 40 ? "text-black" : "text-white",
+							)}
+						>
+							{accuracyRate}%
+						</span>
 					</div>
 				</div>
 
-				{/* Platform base */}
+				{/* Platform */}
 				<div
 					className={clsx(
-						"relative mt-2 flex w-full items-center justify-center border-black border-x-[3px] border-t-[3px]",
+						"relative w-full rounded-t-lg border-black border-x-2 border-t-2",
 						colors.bg,
-						height,
-						rank === 1 ? "z-20 w-[110%]" : "z-10 w-full",
+						colors.height,
 					)}
 				>
-					{/* Metallic shine effect */}
-					<div
-						className="pointer-events-none absolute inset-0 opacity-25"
-						style={{
-							background:
-								"linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.3) 100%)",
-						}}
-					/>
-					{/* Side highlight */}
-					<div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-white/20 to-transparent" />
-					<div className="pointer-events-none absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-black/30 to-transparent" />
-					<span className="absolute bottom-1 font-black font-display text-5xl text-black/20 italic">
+					<span className="absolute bottom-2 left-1/2 -translate-x-1/2 font-black text-4xl text-black/10 italic">
 						{rank}
 					</span>
 				</div>
@@ -755,24 +628,18 @@ function PodiumSection({
 	return (
 		<div className="relative grid w-full grid-cols-3 items-end px-2 pt-8">
 			{/* Floor Line */}
-			<div className="absolute right-0 bottom-0 left-0 h-[3px] translate-y-[1px] bg-black" />
+			<div className="absolute right-0 bottom-0 left-0 h-0.5 bg-black" />
 
 			{/* 2nd Place (left) */}
 			<PodiumBlock
 				entry={second}
 				rank={2}
-				height="h-24"
 				tiebreakerReason={secondTiebreaker}
 			/>
 			{/* 1st Place (center) */}
-			<PodiumBlock entry={first} rank={1} height="h-32" />
+			<PodiumBlock entry={first} rank={1} />
 			{/* 3rd Place (right) */}
-			<PodiumBlock
-				entry={third}
-				rank={3}
-				height="h-16"
-				tiebreakerReason={thirdTiebreaker}
-			/>
+			<PodiumBlock entry={third} rank={3} tiebreakerReason={thirdTiebreaker} />
 		</div>
 	);
 }
@@ -792,19 +659,13 @@ function LeaderboardCard({
 	return (
 		<div
 			className={clsx(
-				"group relative flex w-full items-center gap-4 overflow-hidden border-[3px] border-black bg-white px-4 py-3 shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#000]",
-				isCurrentUser &&
-					"ring-2 ring-[#ccff00] ring-offset-2 ring-offset-paper",
+				"group relative flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]",
+				isCurrentUser && "ring-2 ring-[#ccff00]",
 			)}
 		>
-			{/* Current User Decorator */}
-			{isCurrentUser && (
-				<div className="absolute top-0 right-0 z-0 h-16 w-16 translate-x-8 -translate-y-8 rotate-45 border-black border-l-[3px] bg-[#ccff00]" />
-			)}
-
 			{/* Rank Badge */}
-			<div className="z-10 flex h-10 w-10 shrink-0 -rotate-3 transform items-center justify-center border-[2px] border-white/20 bg-black shadow-[2px_2px_0px_0px_#888]">
-				<span className="font-black font-display text-lg text-white italic">
+			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#121212]">
+				<span className="font-black text-lg text-white italic">
 					{entry.rank}
 				</span>
 			</div>
@@ -813,96 +674,76 @@ function LeaderboardCard({
 			<Link
 				to="/users/$userId"
 				params={{ userId: entry.userId }}
-				className="z-10 h-12 w-12 shrink-0 overflow-hidden border-[3px] border-black bg-gray-100"
+				className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#f0f0f0]"
 			>
 				{entry.image ? (
 					<img
 						src={entry.image}
 						alt={entry.name}
-						className="h-full w-full object-cover transition-transform group-hover:scale-110"
+						className="h-full w-full object-cover transition-transform group-hover:scale-105"
 					/>
 				) : (
-					<div className="flex h-full w-full items-center justify-center font-black font-display text-gray-300 text-xl">
+					<div className="flex h-full w-full items-center justify-center font-black text-gray-400 text-xl">
 						{entry.name.charAt(0).toUpperCase()}
 					</div>
 				)}
 			</Link>
 
-			{/* Name + tiebreaker stats */}
-			<div className="z-10 min-w-0 flex-1 text-black">
+			{/* Name + Stats */}
+			<div className="min-w-0 flex-1">
 				<Link
 					to="/users/$userId"
 					params={{ userId: entry.userId }}
 					className={clsx(
-						"block truncate font-black font-display text-base uppercase tracking-tight hover:underline",
-						isCurrentUser
-							? "text-brawl-blue"
-							: "text-black hover:text-brawl-blue",
+						"block truncate font-bold text-sm uppercase tracking-tight hover:underline",
+						isCurrentUser ? "text-[#2e5cff]" : "text-[#121212]",
 					)}
 				>
 					{entry.name}
 				</Link>
-				<div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-					{/* Perfect Picks Badge */}
-					<div
-						className="flex items-center gap-1 border-2 border-black bg-brawl-yellow px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
-						title="Perfect Picks"
-					>
-						<Star className="h-3 w-3 text-black" fill="black" strokeWidth={2} />
-						<span className="font-black font-display text-black text-xs">
+				<div className="mt-1.5 flex flex-wrap items-center gap-1">
+					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
+						<Star
+							className="h-2.5 w-2.5 text-black"
+							fill="black"
+							strokeWidth={0}
+						/>
+						<span className="font-black text-[10px] text-black">
 							{entry.perfectPicks}
 						</span>
 					</div>
-
-					{/* Correct Predictions Badge */}
-					<div
-						className="flex items-center gap-1 border-2 border-black bg-white px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
-						title="Acertos"
-					>
-						<span className="font-black font-display text-green-600 text-xs">
-							✓
-						</span>
-						<span className="font-black font-display text-black text-xs">
+					<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1.5 py-0.5">
+						<span className="font-black text-[10px] text-green-600">✓</span>
+						<span className="font-black text-[10px] text-black">
 							{entry.correctPredictions}
 						</span>
 					</div>
-
-					{/* Underdog Picks Badge - only show if > 0 */}
 					{entry.underdogPicks > 0 && (
-						<div
-							className="flex items-center gap-1 border-2 border-black bg-purple-400 px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
-							title="Azarões acertados"
-						>
-							<span className="font-black font-display text-black text-xs">
-								⚡
-							</span>
-							<span className="font-black font-display text-black text-xs">
-								{entry.underdogPicks}
+						<div className="flex items-center gap-0.5 rounded bg-purple-400 px-1.5 py-0.5">
+							<span className="font-black text-[10px] text-black">
+								⚡{entry.underdogPicks}
 							</span>
 						</div>
 					)}
-
-					{/* Accuracy Rate Badge */}
 					<div
 						className={clsx(
-							"flex items-center gap-1 border-2 border-black px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]",
+							"rounded px-1.5 py-0.5",
 							accuracyRate >= 70
-								? "bg-green-500 text-white"
+								? "bg-green-500"
 								: accuracyRate >= 40
-									? "bg-yellow-400 text-black"
-									: "bg-red-500 text-white",
+									? "bg-yellow-400"
+									: "bg-red-500",
 						)}
-						title="Taxa de acerto"
 					>
-						<span className="font-black font-display text-[10px] uppercase">
-							Acerto
-						</span>
-						<span className="font-black font-display text-xs">
+						<span
+							className={clsx(
+								"font-black text-[10px]",
+								accuracyRate >= 40 ? "text-black" : "text-white",
+							)}
+						>
 							{accuracyRate}%
 						</span>
 					</div>
-
-					{/* Medal Badges - only show if user has medals */}
 					{entry.medals.total > 0 && (
 						<MedalCountSummary
 							gold={entry.medals.gold}
@@ -915,11 +756,11 @@ function LeaderboardCard({
 			</div>
 
 			{/* Points */}
-			<div className="z-10 shrink-0 rotate-1 border border-black bg-white px-2 py-1 text-right shadow-[2px_2px_0px_0px_#ccc]">
-				<span className="block font-body font-bold text-black text-xl leading-none">
+			<div className="shrink-0 rounded-md border border-black bg-white px-2 py-1 text-right shadow-[2px_2px_0_0_#ccc]">
+				<span className="block font-black text-[#121212] text-lg leading-none">
 					{entry.totalPoints}
 				</span>
-				<span className="block font-black text-[9px] text-black/40 uppercase leading-none tracking-widest">
+				<span className="block font-bold text-[9px] text-gray-500 uppercase tracking-wider">
 					PTS
 				</span>
 			</div>

@@ -3,8 +3,8 @@ import {
 	matches,
 	pointAdjustments,
 	teams,
-	tournamentTeams,
 	tournaments,
+	tournamentTeams,
 } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { desc, eq, inArray, or } from "drizzle-orm";
@@ -189,7 +189,9 @@ const deleteTeamFn = createServerFn({
 
 			if (linkedTournamentEntries.length > 0) {
 				const tournamentNames = [
-					...new Set(linkedTournamentEntries.map((entry) => entry.tournamentName)),
+					...new Set(
+						linkedTournamentEntries.map((entry) => entry.tournamentName),
+					),
 				];
 
 				throw new Error(

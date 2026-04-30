@@ -70,7 +70,9 @@ function TournamentDetailsPage() {
 			// 1. Clone matches to avoid mutating the original data
 			const matchMap = new Map<string, any>();
 			const cloned = JSON.parse(JSON.stringify(matches));
-			cloned.forEach((m: any) => matchMap.set(String(m.id), m));
+			cloned.forEach((m: any) => {
+				matchMap.set(String(m.id), m);
+			});
 
 			// 2. Sort by order to ensure we process early rounds first
 			const sortedIds = Array.from(matchMap.keys()).sort((a, b) => {
@@ -382,37 +384,34 @@ function TournamentDetailsPage() {
 	}, [filteredMatches]);
 
 	return (
-		<div className="min-h-screen bg-paper bg-paper-texture pb-20 font-sans text-ink">
-			{/* Header Banner - Tournament Colors (Dynamic) */}
+		<div className="min-h-screen bg-[#f0f0f0] pb-20 font-sans">
+			{/* Paper texture overlay */}
 			<div
-				className="relative overflow-hidden border-black border-b-4 text-white transition-all duration-500"
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
 				style={{
-					background: `linear-gradient(90deg,
-            ${tournamentColors.primary} 0%,
-            ${tournamentColors.primary} 15%,
-            ${tournamentColors.intermediate} 50%,
-            ${tournamentColors.secondary} 85%,
-            ${tournamentColors.secondary} 100%)`,
+					backgroundImage:
+						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+					backgroundRepeat: "repeat",
+				}}
+			/>
+
+			{/* Clean Header Banner */}
+			<div
+				className="relative border-black border-b-2 transition-all duration-500"
+				style={{
+					background: `linear-gradient(135deg, ${tournamentColors.primary} 0%, ${tournamentColors.intermediate} 50%, ${tournamentColors.secondary} 100%)`,
 				}}
 			>
-				{/* Pattern Overlay */}
-				<div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-
-				{/* Shine Effect */}
-				<div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-				{/* Soft Darkening Overlays for depth */}
-				<div className="absolute top-0 left-0 h-full w-full bg-gradient-to-b from-black/20 via-transparent to-black/20" />
-
-				<div className="relative z-10 mx-auto max-w-7xl px-4 py-8">
-					<div className="mb-6 flex items-start justify-between">
+				<div className="relative z-10 mx-auto max-w-7xl px-4 py-6 md:py-8">
+					{/* Top Bar */}
+					<div className="mb-6 flex items-center justify-between">
 						<Link
 							to="/tournaments"
 							search={{ filter: "active" }}
-							className="inline-flex items-center gap-2 font-bold text-sm text-white/80 uppercase tracking-wider transition-colors hover:text-white"
+							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
-							<ArrowLeft className="h-4 w-4" />
-							Voltar para Torneios
+							<ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+							<span className="hidden sm:inline">Voltar</span>
 						</Link>
 
 						{matches.some(
@@ -420,103 +419,82 @@ function TournamentDetailsPage() {
 						) && (
 							<Link
 								to="/"
-								className="fade-in slide-in-from-right inline-flex -rotate-1 transform animate-in items-center gap-2 border-2 border-black bg-[#ccff00] px-4 py-2 font-black text-[10px] text-black uppercase tracking-wider shadow-[4px_4px_0_0_#000] transition-all duration-500 hover:rotate-1 hover:scale-105 hover:bg-[#b8e600] active:translate-y-0.5 active:shadow-none md:text-sm"
+								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
 							>
-								<Sparkles className="h-4 w-4" />🔥 Mais Apostas
+								<Sparkles className="h-4 w-4" strokeWidth={2.5} />
+								Apostar
 							</Link>
 						)}
 					</div>
 
-					<div className="flex flex-col items-center gap-8 md:flex-row md:items-end">
-						{/* Logo - Platinum 3D Style */}
-						<div className="relative">
-							{/* Glow effect */}
-							<div className="absolute inset-0 scale-110 rounded-full bg-white/40 blur-3xl" />
-
-							<div className="relative flex h-40 w-40 items-center justify-center overflow-hidden rounded-2xl border-[6px] border-black bg-gradient-to-br from-gray-300 via-gray-100 to-gray-300 p-6 shadow-[8px_8px_0_0_#000,12px_12px_0_0_rgba(0,0,0,0.3)] md:h-48 md:w-48">
-								{/* Metallic shine bars */}
-								<div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent" />
-								<div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent" />
-								<div className="absolute top-0 right-0 left-0 h-1/3 bg-gradient-to-b from-white/50 to-transparent" />
-								<div className="absolute right-0 bottom-0 left-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
-
-								{/* Reflective highlights */}
-								<div className="absolute top-4 left-4 h-12 w-12 rounded-full bg-white/70 blur-xl" />
-								<div className="absolute right-6 bottom-6 h-8 w-8 rounded-full bg-black/10 blur-lg" />
-
+					{/* Tournament Info */}
+					<div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
+						{/* Logo */}
+						<div className="relative shrink-0">
+							<div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-xl border-3 border-black bg-white p-4 shadow-[4px_4px_0_0_#000] md:h-40 md:w-40">
 								{tournament.logoUrl ? (
 									<img
 										src={tournament.logoUrl}
 										alt={tournament.name}
-										className="relative z-10 h-full w-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
+										className="h-full w-full object-contain"
 									/>
 								) : (
-									<Trophy className="relative z-10 h-16 w-16 text-gray-400" />
+									<Trophy className="h-12 w-12 text-gray-300" strokeWidth={2} />
 								)}
-
-								{/* Inner border highlight - platinum edge */}
-								<div className="pointer-events-none absolute inset-3 rounded-xl border-2 border-white/60" />
-								<div className="pointer-events-none absolute inset-2 rounded-xl border border-black/10" />
 							</div>
-
 							{isActive && (
-								<div className="absolute -right-4 -bottom-4 rotate-3 transform animate-pulse rounded border-2 border-black bg-[#ccff00] px-3 py-1 font-black text-black text-xs shadow-[2px_2px_0_0_rgba(0,0,0,0.5)]">
+								<div className="absolute -right-2 -bottom-2 rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
 									AO VIVO
 								</div>
 							)}
 						</div>
 
-						{/* Title & Info */}
+						{/* Title & Meta */}
 						<div className="flex-1 text-center md:text-left">
-							<div className="mb-3 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+							<div className="mb-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
 								{tournament.region && (
-									<span className="flex items-center gap-1.5 border-2 border-black bg-black px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_rgba(0,0,0,0.5)]">
-										<MapPin className="h-3 w-3" />
+									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+										<MapPin className="h-3 w-3" strokeWidth={2.5} />
 										{tournament.region}
 									</span>
 								)}
-								<span className="flex items-center gap-1.5 border-2 border-black bg-black px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_rgba(0,0,0,0.5)]">
-									<Calendar className="h-3 w-3" />
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+									<Calendar className="h-3 w-3" strokeWidth={2.5} />
 									{formatDate(tournament.startDate)} -{" "}
 									{formatDate(tournament.endDate)}
 								</span>
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+									<Users className="h-3 w-3" strokeWidth={2.5} />
+									{tournament.participantsCount || 0} times
+								</span>
 							</div>
 
-							<h1 className="mb-3 font-black text-5xl text-white uppercase italic leading-none tracking-tighter drop-shadow-[4px_4px_8px_rgba(0,0,0,0.4)] md:text-7xl">
+							<h1 className="mb-2 font-black text-3xl text-white uppercase italic tracking-tighter md:text-5xl">
 								{tournament.name}
 							</h1>
 
-							<div className="flex flex-wrap items-center justify-center gap-4 font-bold font-mono text-sm text-white/90 uppercase md:justify-start">
-								<span className="flex items-center gap-1.5">
-									<Users className="h-4 w-4" />
-									{tournament.participantsCount || 0} Times
-								</span>
-								<span>•</span>
-								<span>
-									{tournament.format ||
-										(() => {
-											const stages = (tournament.stages as any[]) || [];
-											if (stages.length === 0) return "Formato Desconhecido";
-
-											const types = Array.from(
-												new Set(stages.map((s) => s.type)),
-											);
-											const typeMap: Record<string, string> = {
-												Groups: "Fase de Grupos",
-												"Single Elimination": "Playoffs",
-												"Double Elimination": "Playoffs (Double)",
-											};
-
-											return types.map((t) => typeMap[t] || t).join(" + ");
-										})()}
-								</span>
-							</div>
+							<p className="font-bold text-sm text-white/80 uppercase tracking-wide">
+								{tournament.format ||
+									(() => {
+										const stages = (tournament.stages as any[]) || [];
+										if (stages.length === 0) return "Formato a definir";
+										const types = Array.from(
+											new Set(stages.map((s) => s.type)),
+										);
+										const typeMap: Record<string, string> = {
+											Groups: "Fase de Grupos",
+											"Single Elimination": "Playoffs",
+											"Double Elimination": "Playoffs (Double)",
+										};
+										return types.map((t) => typeMap[t] || t).join(" + ");
+									})()}
+							</p>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div className="mx-auto max-w-7xl px-4 py-8">
+			<div className="relative z-10 mx-auto max-w-7xl px-4 py-8">
 				{/* Tournament Podium - Only for finished tournaments */}
 				{tournament.status === "finished" && (
 					<div className="mb-10">
@@ -528,30 +506,61 @@ function TournamentDetailsPage() {
 					</div>
 				)}
 
-				{/* Filters */}
-				<div className="mb-8 flex flex-wrap items-center gap-4">
-					<FilterButton
-						active={filter === "all"}
+				{/* Filters - Clean Segmented Control */}
+				<div className="mb-8 flex flex-wrap items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
+					<button
+						type="button"
 						onClick={() => setFilter("all")}
-						label="Todos os Jogos"
-					/>
-					<FilterButton
-						active={filter === "my-bets"}
+						className={clsx(
+							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							filter === "all"
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
+						)}
+					>
+						Todos os Jogos
+					</button>
+					<button
+						type="button"
 						onClick={() => setFilter("my-bets")}
-						label="Meus Palpites"
-						badge={userBets.length}
-					/>
-					<div className="mx-2 hidden h-8 w-px bg-black/10 md:block" />
-					<FilterButton
-						active={filter === "upcoming"}
+						className={clsx(
+							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							filter === "my-bets"
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
+						)}
+					>
+						Meus Palpites
+						{userBets.length > 0 && (
+							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-bold text-[10px] text-white">
+								{userBets.length}
+							</span>
+						)}
+					</button>
+					<button
+						type="button"
 						onClick={() => setFilter("upcoming")}
-						label="Em Breve"
-					/>
-					<FilterButton
-						active={filter === "finished"}
+						className={clsx(
+							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							filter === "upcoming"
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
+						)}
+					>
+						Em Breve
+					</button>
+					<button
+						type="button"
 						onClick={() => setFilter("finished")}
-						label="Finalizados"
-					/>
+						className={clsx(
+							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							filter === "finished"
+								? "bg-[#121212] text-white"
+								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
+						)}
+					>
+						Finalizados
+					</button>
 				</div>
 
 				{/* Matches Grid */}
@@ -588,7 +597,7 @@ function TournamentDetailsPage() {
 
 										return (
 											<div key={groupName} className="space-y-4">
-												<h3 className="inline-block -skew-x-12 transform bg-black px-4 py-2 font-black text-2xl text-white uppercase italic">
+												<h3 className="inline-flex items-center gap-2 rounded-lg border-2 border-black bg-[#121212] px-4 py-2 font-black text-lg text-white uppercase shadow-[3px_3px_0_0_#000]">
 													{groupName}
 												</h3>
 												{groupMatches.map((match) => (
@@ -625,16 +634,19 @@ function TournamentDetailsPage() {
 
 									{/* Render Others (Playoffs, etc.) as a Bracket */}
 									{groupedMatches.otherMatchesByRound.length > 0 && (
-										<div className="mt-12 flex flex-col items-center gap-8 rounded-3xl border-4 border-black/5 bg-white/40 p-8 shadow-inner backdrop-blur-sm">
-											<div className="mb-8 flex w-full items-center gap-4">
-												<Workflow className="h-8 w-8 text-black" />
-												<h3 className="font-black text-4xl text-black uppercase italic">
+										<div className="mt-12 rounded-xl border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
+											<div className="mb-6 flex w-full items-center gap-3">
+												<Workflow
+													className="h-6 w-6 text-[#121212]"
+													strokeWidth={2.5}
+												/>
+												<h3 className="font-black text-2xl text-[#121212] uppercase italic">
 													Playoff Bracket
 												</h3>
-												<div className="h-1 flex-grow rounded-full bg-black/10" />
+												<div className="h-0.5 flex-1 bg-black/10" />
 											</div>
 
-											<div className="w-full overflow-x-auto pb-6">
+											<div className="w-full overflow-x-auto pb-4">
 												<TournamentBracket
 													className="flex w-full min-w-max flex-col items-center"
 													hideHeader={true}
@@ -647,7 +659,6 @@ function TournamentDetailsPage() {
 														filter === "my-bets"
 															? userBets.reduce(
 																	(acc: any, bet: any) => {
-																		// Find the match from the matches array to get the real winner
 																		const match = matches.find(
 																			(m: any) => m.id === bet.matchId,
 																		);
@@ -713,12 +724,14 @@ function TournamentDetailsPage() {
 							)}
 						</div>
 					) : (
-						<div className="rounded-xl border-4 border-black/10 border-dashed bg-white py-20 text-center">
-							<Filter className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-							<h3 className="font-black text-gray-400 text-xl uppercase italic">
+						<div className="rounded-xl border-2 border-black/20 border-dashed bg-white py-16 text-center">
+							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
+								<Filter className="h-8 w-8 text-gray-400" strokeWidth={2} />
+							</div>
+							<h3 className="font-black text-[#121212] text-xl uppercase">
 								Nenhuma partida encontrada
 							</h3>
-							<p className="mt-1 font-bold text-gray-400 text-sm uppercase">
+							<p className="mt-2 text-gray-600 text-sm">
 								Tente mudar os filtros
 							</p>
 						</div>
@@ -726,39 +739,6 @@ function TournamentDetailsPage() {
 				</div>
 			</div>
 		</div>
-	);
-}
-
-function FilterButton({
-	active,
-	onClick,
-	label,
-	badge,
-}: {
-	active: boolean;
-	onClick: () => void;
-	label: string;
-	badge?: number;
-}) {
-	return (
-		<button
-			onClick={onClick}
-			className={clsx(
-				"relative skew-x-[-6deg] transform border-2 px-4 py-2 font-black text-sm uppercase italic tracking-wider transition-all",
-				active
-					? "-translate-y-1 border-black bg-brawl-yellow text-black shadow-comic"
-					: "border-black/10 bg-white text-gray-400 hover:border-black hover:text-black",
-			)}
-		>
-			<span className="block flex skew-x-[6deg] items-center gap-2">
-				{label}
-				{badge !== undefined && badge > 0 && (
-					<span className="rounded-full bg-brawl-red px-1.5 py-0.5 text-[10px] text-white not-italic">
-						{badge}
-					</span>
-				)}
-			</span>
-		</button>
 	);
 }
 
