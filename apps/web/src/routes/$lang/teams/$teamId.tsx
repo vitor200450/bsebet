@@ -6,7 +6,7 @@ import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTeamBySlug } from "@/server/teams";
 
-export const Route = createFileRoute("/teams/$teamId")({
+export const Route = createFileRoute("/$lang/teams/$teamId")({
 	loader: async ({ params }) => {
 		const data = await getTeamBySlug({ data: params.teamId });
 

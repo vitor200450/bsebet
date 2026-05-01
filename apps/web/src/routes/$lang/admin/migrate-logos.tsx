@@ -4,9 +4,9 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { migrateLogosToR2 } from "../../server/migrate-logos";
+import { migrateLogosToR2 } from "../../../server/migrate-logos";
 
-export const Route = createFileRoute("/admin/migrate-logos")({
+export const Route = createFileRoute("/$lang/admin/migrate-logos")({
 	component: MigrateLogosPage,
 });
 

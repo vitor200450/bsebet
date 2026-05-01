@@ -4,15 +4,15 @@ import { clsx } from "clsx";
 import { ChevronRight, RotateCcw, X } from "lucide-react";
 import * as React from "react";
 import { useRef, useState } from "react";
-import { useSetHeader } from "../../../components/HeaderContext";
+import { useSetHeader } from "../../../../components/HeaderContext";
 import {
 	finalizeMatch,
 	getLiveMatch,
 	incrementScore,
 	resetScores,
-} from "../../../server/matches";
+} from "../../../../server/matches";
 
-export const Route = createFileRoute("/admin/live/$matchId")({
+export const Route = createFileRoute("/$lang/admin/live/$matchId")({
 	loader: async ({ params }) => {
 		const matchId = Number.parseInt(params.matchId);
 		const match = await getLiveMatch({ data: { matchId } });

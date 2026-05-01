@@ -17,7 +17,7 @@ const searchSchema = z.object({
 	filter: z.enum(["active", "upcoming", "finished"]).catch("active"),
 });
 
-export const Route = createFileRoute("/tournaments/")({
+export const Route = createFileRoute("/$lang/tournaments/")({
 	validateSearch: searchSchema,
 	loader: () => getTournaments(),
 	component: TournamentsPage,

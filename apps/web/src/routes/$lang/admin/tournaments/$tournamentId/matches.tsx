@@ -28,16 +28,16 @@ import {
 	removeTeamFromTournament,
 } from "@/server/tournament-teams";
 import { getTournament } from "@/server/tournaments";
-import { BracketEditor } from "../../../../components/admin/BracketEditor";
-import { DeleteModal } from "../../../../components/admin/DeleteModal";
-import { MatchDaysManager } from "../../../../components/admin/MatchDaysManager";
-import { MatchModal } from "../../../../components/admin/MatchModal";
-import { TournamentSeedingManager } from "../../../../components/admin/TournamentSeedingManager";
-import { TournamentTeamsManager } from "../../../../components/admin/TournamentTeamsManager";
-import { useSetHeader } from "../../../../components/HeaderContext";
+import { BracketEditor } from "../../../../../components/admin/BracketEditor";
+import { DeleteModal } from "../../../../../components/admin/DeleteModal";
+import { MatchDaysManager } from "../../../../../components/admin/MatchDaysManager";
+import { MatchModal } from "../../../../../components/admin/MatchModal";
+import { TournamentSeedingManager } from "../../../../../components/admin/TournamentSeedingManager";
+import { TournamentTeamsManager } from "../../../../../components/admin/TournamentTeamsManager";
+import { useSetHeader } from "../../../../../components/HeaderContext";
 
 export const Route = createFileRoute(
-	"/admin/tournaments/$tournamentId/matches",
+	"/$lang/admin/tournaments/$tournamentId/matches",
 )({
 	component: TournamentMatchesPage,
 	loader: async ({ params }) => {

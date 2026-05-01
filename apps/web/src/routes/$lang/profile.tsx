@@ -13,7 +13,7 @@ import {
 	uploadUserAvatar,
 } from "@/server/users";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/$lang/profile")({
 	component: RouteComponent,
 	beforeLoad: async () => {
 		const session = await getUser();

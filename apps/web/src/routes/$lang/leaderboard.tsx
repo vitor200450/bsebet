@@ -15,27 +15,27 @@ import { z } from "zod";
 import {
 	MedalCountSummary,
 	MiniMedalBadge,
-} from "../components/MiniMedalBadge";
+} from "../../components/MiniMedalBadge";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
-import { getUser } from "../functions/get-user";
+} from "../../components/ui/dropdown-menu";
+import { getUser } from "../../functions/get-user";
 import {
 	getLeaderboard,
 	getLeaderboardTournaments,
 	type LeaderboardEntry,
-} from "../server/leaderboard";
+} from "../../server/leaderboard";
 
 const searchSchema = z.object({
 	tab: z.enum(["season", "global"]).catch("global"),
 	tournamentId: z.number().optional(),
 });
 
-export const Route = createFileRoute("/leaderboard")({
+export const Route = createFileRoute("/$lang/leaderboard")({
 	validateSearch: searchSchema,
 	loaderDeps: ({ search }) => ({
 		tab: search.tab,

@@ -24,14 +24,14 @@ import {
 import {
 	CustomDatePicker,
 	CustomSelect,
-} from "../../../components/admin/CustomInputs";
+} from "../../../../components/admin/CustomInputs";
 import {
 	type Stage,
 	StageBuilder,
-} from "../../../components/admin/StageBuilder";
-import { useSetHeader } from "../../../components/HeaderContext";
+} from "../../../../components/admin/StageBuilder";
+import { useSetHeader } from "../../../../components/HeaderContext";
 
-export const Route = createFileRoute("/admin/tournaments/")({
+export const Route = createFileRoute("/$lang/admin/tournaments/")({
 	component: AdminTournamentsPage,
 	loader: () => getTournaments(),
 });

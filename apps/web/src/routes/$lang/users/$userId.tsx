@@ -13,7 +13,7 @@ import {
 	getUserTournamentHistory,
 } from "@/server/user-profile";
 
-export const Route = createFileRoute("/users/$userId")({
+export const Route = createFileRoute("/$lang/users/$userId")({
 	loader: async ({ params }) => {
 		const [profile, stats, medals, recentBets, tournamentHistory] =
 			await Promise.all([

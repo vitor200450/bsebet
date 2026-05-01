@@ -23,7 +23,7 @@ import {
 import { calculatePoints } from "@/server/scoring";
 import { getTournament, getTournaments } from "@/server/tournaments";
 
-export const Route = createFileRoute("/admin/compensations")({
+export const Route = createFileRoute("/$lang/admin/compensations")({
 	component: CompensationsPage,
 	loader: async () => {
 		const [tournaments, adjustments] = await Promise.all([

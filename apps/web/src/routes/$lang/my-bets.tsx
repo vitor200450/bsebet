@@ -18,7 +18,7 @@ import { TeamLogo } from "@/components/TeamLogo";
 import { getMyBets } from "@/functions/get-my-bets";
 import { getUser } from "@/functions/get-user";
 
-export const Route = createFileRoute("/my-bets")({
+export const Route = createFileRoute("/$lang/my-bets")({
 	component: RouteComponent,
 	beforeLoad: async () => {
 		const session = await getUser();

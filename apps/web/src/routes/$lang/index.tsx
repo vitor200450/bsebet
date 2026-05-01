@@ -4,17 +4,17 @@ import { clsx } from "clsx";
 import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { BettingCarousel } from "../components/BettingCarousel";
-import { LandingPage } from "../components/LandingPage";
-import { MatchDaySelector } from "../components/MatchDaySelector";
+import { BettingCarousel } from "../../components/BettingCarousel";
+import { LandingPage } from "../../components/LandingPage";
+import { MatchDaySelector } from "../../components/MatchDaySelector";
 import {
 	type Match,
 	type Prediction,
 	TournamentBracket,
-} from "../components/TournamentBracket";
-import { TournamentSelector } from "../components/TournamentSelector";
-import { queryClient } from "../router";
-import { isBracketMatchLike } from "../utils/recovery";
+} from "../../components/TournamentBracket";
+import { TournamentSelector } from "../../components/TournamentSelector";
+import { queryClient } from "../../router";
+import { isBracketMatchLike } from "../../utils/recovery";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -226,7 +226,7 @@ const getActiveTournaments = createServerFn({ method: "GET" }).handler(
 				if (t.logoUrl) {
 					try {
 						const { extractColorsFromImage } = await import(
-							"../server/color-extractor"
+							"../../server/color-extractor"
 						);
 						colors = await extractColorsFromImage(t.logoUrl);
 					} catch (e) {
@@ -618,7 +618,7 @@ function formatMatches(
 }
 
 // 4. A ROTA: Define o loader e renderiza a página
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/$lang/")({
 	validateSearch: (
 		search: Record<string, unknown>,
 	): { tournament?: string } => {

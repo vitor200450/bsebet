@@ -19,7 +19,7 @@ import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTournamentBySlug } from "@/server/tournaments";
 
-export const Route = createFileRoute("/tournaments/$slug")({
+export const Route = createFileRoute("/$lang/tournaments/$slug")({
 	loader: ({ params }) => getTournamentBySlug({ data: params.slug }),
 	component: TournamentDetailsPage,
 });

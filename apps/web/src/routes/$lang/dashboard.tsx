@@ -19,7 +19,7 @@ import { getUser } from "@/functions/get-user";
 import { getUserMedalCounts, getUserMedals } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/$lang/dashboard")({
 	component: RouteComponent,
 	beforeLoad: async () => {
 		const session = await getUser();

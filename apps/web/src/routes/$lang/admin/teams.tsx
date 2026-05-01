@@ -13,10 +13,10 @@ import {
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { deleteTeam, getTeams, saveTeam } from "@/server/teams";
-import { useSetHeader } from "../../components/HeaderContext";
-import { TeamLogo } from "../../components/TeamLogo";
+import { useSetHeader } from "../../../components/HeaderContext";
+import { TeamLogo } from "../../../components/TeamLogo";
 
-export const Route = createFileRoute("/admin/teams")({
+export const Route = createFileRoute("/$lang/admin/teams")({
 	component: AdminTeamsPage,
 	loader: () => getTeams(),
 });

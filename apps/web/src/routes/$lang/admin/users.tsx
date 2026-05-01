@@ -21,9 +21,9 @@ import {
 	toggleRole,
 	updateUserDetails,
 } from "@/server/users";
-import { useSetHeader } from "../../components/HeaderContext";
+import { useSetHeader } from "../../../components/HeaderContext";
 
-export const Route = createFileRoute("/admin/users")({
+export const Route = createFileRoute("/$lang/admin/users")({
 	loader: async () => await getUsers(),
 	component: AdminUsersPage,
 });

@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/$lang/login")({
 	component: RouteComponent,
 });
 

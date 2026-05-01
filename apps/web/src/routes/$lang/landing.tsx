@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LandingPage } from "../components/LandingPage";
-import { getUser } from "../functions/get-user";
+import { LandingPage } from "../../components/LandingPage";
+import { getUser } from "../../functions/get-user";
 
-export const Route = createFileRoute("/landing")({
+export const Route = createFileRoute("/$lang/landing")({
 	loader: async () => {
 		const session = await getUser().catch(() => null);
 		return { isAuthenticated: !!session };
