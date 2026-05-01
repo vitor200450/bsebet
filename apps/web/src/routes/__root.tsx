@@ -47,8 +47,9 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
 	const location = useLocation();
+	const lang = location.pathname.split("/")[1] === "en" ? "en" : "pt";
 	return (
-		<html lang="en" className="dark" suppressHydrationWarning>
+		<html lang={lang} className="dark" suppressHydrationWarning>
 			<head suppressHydrationWarning>
 				<HeadContent />
 			</head>
