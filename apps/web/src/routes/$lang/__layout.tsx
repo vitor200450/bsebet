@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { i18next, initI18n } from "@/i18n";
+import { i18next, changeLanguage } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
 import { SUPPORTED_LANGS } from "@/i18n/config";
 
@@ -21,7 +21,7 @@ function LangLayout() {
 	const [ready, setReady] = useState(false);
 
 	useEffect(() => {
-		initI18n(lang).then(() => setReady(true));
+		changeLanguage(lang).then(() => setReady(true));
 	}, [lang]);
 
 	if (!ready) return null;
