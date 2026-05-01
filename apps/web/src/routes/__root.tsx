@@ -12,6 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { HeaderProvider } from "@/components/HeaderContext";
 import { Toaster } from "@/components/ui/sonner";
+import { I18nRootProvider } from "@/i18n/I18nRootProvider";
 
 import "../index.css";
 
@@ -54,15 +55,17 @@ function RootDocument() {
 				<HeadContent />
 			</head>
 			<body suppressHydrationWarning>
-				<HeaderProvider>
-					<div className="min-h-screen w-full overflow-x-hidden font-sans">
-						<GlobalHeader />
-						<Outlet />
-					</div>
-					<Toaster richColors />
-					<Scripts />
-					<SpeedInsights route={location.pathname} />
-				</HeaderProvider>
+				<I18nRootProvider>
+					<HeaderProvider>
+						<div className="min-h-screen w-full overflow-x-hidden font-sans">
+							<GlobalHeader />
+							<Outlet />
+						</div>
+						<Toaster richColors />
+						<Scripts />
+						<SpeedInsights route={location.pathname} />
+					</HeaderProvider>
+				</I18nRootProvider>
 			</body>
 		</html>
 	);
