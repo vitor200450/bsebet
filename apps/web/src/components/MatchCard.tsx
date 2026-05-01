@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { TeamLogo } from "./TeamLogo";
 
 export type Team = {
@@ -53,6 +54,7 @@ export function MatchCard({
 	showPredictionScore = false,
 }: MatchCardProps) {
 	const { t } = useTranslation("betting");
+	const { linkTo } = useLangLink();
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
 	const isWalkover = match.resultType === "wo";
@@ -165,7 +167,7 @@ export function MatchCard({
 						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-end leading-tight">
 							{teamA?.slug ? (
 								<Link
-									to="/teams/$teamId"
+									to={linkTo("/teams/$teamId")}
 									params={{ teamId: teamA.slug }}
 									className={clsx(
 										"block w-full break-normal text-right font-black uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline",
@@ -281,7 +283,7 @@ export function MatchCard({
 						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-start leading-tight">
 							{teamB?.slug ? (
 								<Link
-									to="/teams/$teamId"
+									to={linkTo("/teams/$teamId")}
 									params={{ teamId: teamB.slug }}
 									className={clsx(
 										"block w-full break-normal text-left font-black uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline",

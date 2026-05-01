@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import type { Match, Prediction } from "./bracket/types";
 import { TeamLogo } from "./TeamLogo";
 
@@ -105,6 +106,7 @@ export function BettingCarousel({
 	matchDayStatus?: string | null;
 }) {
 	const { t } = useTranslation("betting");
+	const { linkTo } = useLangLink();
 	const [currentIndex, setCurrentIndex] = useState(0);
 
 	// Safety: If the match list shrinks (e.g. a game starts and leaves the carousel),
@@ -670,7 +672,7 @@ export function BettingCarousel({
 										<div className="grid grid-cols-2 gap-0 border-black border-t-2">
 											{currentMatch.teamA?.slug ? (
 												<Link
-													to="/teams/$teamId"
+													to={linkTo("/teams/$teamId")}
 													params={{ teamId: currentMatch.teamA?.slug || "" }}
 													className="flex items-center justify-center gap-2 border-black border-r-2 bg-[#121212] py-3 text-white transition-all hover:bg-black"
 												>
@@ -691,7 +693,7 @@ export function BettingCarousel({
 											)}
 											{currentMatch.teamB?.slug ? (
 												<Link
-													to="/teams/$teamId"
+													to={linkTo("/teams/$teamId")}
 													params={{ teamId: currentMatch.teamB?.slug || "" }}
 													className="flex items-center justify-center gap-2 bg-[#121212] py-3 text-white transition-all hover:bg-black"
 												>

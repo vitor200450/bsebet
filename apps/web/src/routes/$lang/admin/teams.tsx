@@ -13,6 +13,7 @@ import {
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useLangLink } from "@/i18n/useLangLink";
 import { deleteTeam, getTeams, saveTeam } from "@/server/teams";
 import { useSetHeader } from "../../../components/HeaderContext";
 import { TeamLogo } from "../../../components/TeamLogo";
@@ -107,6 +108,7 @@ const getRegionHoverBorderColor = (
 
 function AdminTeamsPage() {
 	const { t } = useTranslation("admin");
+	const { linkTo } = useLangLink();
 	const teams = Route.useLoaderData();
 	const router = useRouter();
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -587,7 +589,7 @@ function AdminTeamsPage() {
 										<p className="mt-1 font-bold text-[10px] text-red-500 uppercase italic">
 											{t("teams.base64Warning")}{" "}
 											<Link
-												to="/admin/migrate-logos"
+												to={linkTo("/admin/migrate-logos")}
 												className="underline hover:text-red-700"
 											>
 												{t("common.logoMigrationPage")}

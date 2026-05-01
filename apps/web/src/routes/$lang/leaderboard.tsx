@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { useLangLink } from "@/i18n/useLangLink";
 import {
 	MedalCountSummary,
 	MiniMedalBadge,
@@ -456,6 +457,7 @@ function PodiumSection({
 		rank: 1 | 2 | 3;
 		tiebreakerReason?: string | null;
 	}) => {
+		const { linkTo } = useLangLink();
 		if (!entry) return <div />;
 		const colors = podiumColors[rank];
 		const isMe = entry.userId === currentUserId;
@@ -479,7 +481,7 @@ function PodiumSection({
 
 				{/* Avatar */}
 				<Link
-					to="/users/$userId"
+					to={linkTo("/users/$userId")}
 					params={{ userId: entry.userId }}
 					className="group relative"
 				>
@@ -516,7 +518,7 @@ function PodiumSection({
 
 				{/* Name */}
 				<Link
-					to="/users/$userId"
+					to={linkTo("/users/$userId")}
 					params={{ userId: entry.userId }}
 					className="mb-2"
 				>
@@ -653,6 +655,7 @@ function LeaderboardCard({
 	entry: LeaderboardEntry;
 	isCurrentUser: boolean;
 }) {
+	const { linkTo } = useLangLink();
 	const accuracyRate =
 		entry.totalBets > 0
 			? Math.round((entry.correctPredictions / entry.totalBets) * 100)
@@ -674,7 +677,7 @@ function LeaderboardCard({
 
 			{/* Avatar */}
 			<Link
-				to="/users/$userId"
+				to={linkTo("/users/$userId")}
 				params={{ userId: entry.userId }}
 				className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#f0f0f0]"
 			>
@@ -694,7 +697,7 @@ function LeaderboardCard({
 			{/* Name + Stats */}
 			<div className="min-w-0 flex-1">
 				<Link
-					to="/users/$userId"
+					to={linkTo("/users/$userId")}
 					params={{ userId: entry.userId }}
 					className={clsx(
 						"block truncate font-bold text-sm uppercase tracking-tight hover:underline",
@@ -704,16 +707,6 @@ function LeaderboardCard({
 					{entry.name}
 				</Link>
 				<div className="mt-1.5 flex flex-wrap items-center gap-1">
-					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
-						<Star
-							className="h-2.5 w-2.5 text-black"
-							fill="black"
-							strokeWidth={0}
-						/>
-						<span className="font-black text-[10px] text-black">
-							{entry.perfectPicks}
-						</span>
-					</div>
 					<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1.5 py-0.5">
 						<span className="font-black text-[10px] text-green-600">✓</span>
 						<span className="font-black text-[10px] text-black">

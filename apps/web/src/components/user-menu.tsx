@@ -13,6 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getUserPoints } from "@/functions/get-user-points";
 import { authClient } from "@/lib/auth-client";
 import { getUserMedalCounts } from "@/server/user-profile";
@@ -27,6 +28,7 @@ export default function UserMenu({
 }) {
 	const { t } = useTranslation("profile");
 	const navigate = useNavigate();
+	const { linkTo } = useLangLink();
 	const { data: session, isPending } = authClient.useSession();
 
 	const { data: totalPoints } = useQuery({
@@ -85,7 +87,7 @@ export default function UserMenu({
 
 	if (!session) {
 		return (
-			<Link to="/login">
+			<Link to={linkTo("/login")}>
 				<button
 					className={clsx(
 						"-skew-x-12 transform border-[3px] px-6 py-2 font-black text-sm uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",

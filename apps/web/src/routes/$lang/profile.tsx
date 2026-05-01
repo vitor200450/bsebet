@@ -4,6 +4,7 @@ import { Camera, Lock, Save, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useLangLink } from "@/i18n/useLangLink";
 import { ImageCropper } from "@/components/image-cropper";
 import { getUser } from "@/functions/get-user";
 import { authClient } from "@/lib/auth-client";
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/$lang/profile")({
 
 function RouteComponent() {
 	const { t } = useTranslation("profile");
+	const { linkTo } = useLangLink();
 	const { session } = Route.useRouteContext();
 
 	const { data: profile, refetch } = useQuery({
@@ -365,7 +367,7 @@ function RouteComponent() {
 				{/* Ver Perfil Público */}
 				{user?.id && (
 					<Link
-						to="/users/$userId"
+						to={linkTo("/users/$userId")}
 						params={{ userId: user.id }}
 						className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
 					>

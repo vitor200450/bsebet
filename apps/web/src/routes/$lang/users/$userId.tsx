@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { ArrowLeft, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TrophyCase } from "@/components/RealisticMedal";
 import { TeamLogo } from "@/components/TeamLogo";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/$lang/users/$userId")({
 
 function UserProfilePage() {
 	const { t } = useTranslation("user");
+	const { linkTo } = useLangLink();
 	const data = Route.useLoaderData();
 	const user = data.profile;
 	const stats = data.stats;
@@ -124,7 +126,7 @@ function UserProfilePage() {
 
 					{/* Action Button */}
 					<Link
-						to="/leaderboard"
+						to={linkTo("/leaderboard")}
 						search={{ page: 1, pageSize: 20 } as any}
 						className="group w-fit -skew-x-12 transform border-[3px] border-black bg-white px-6 py-3 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
 					>
@@ -378,7 +380,7 @@ function UserProfilePage() {
 																{/* Team A */}
 																{bet.match.teamA?.slug ? (
 																	<Link
-																		to="/teams/$teamId"
+																		to={linkTo("/teams/$teamId")}
 																		params={{
 																			teamId: bet.match.teamA.slug,
 																		}}
@@ -432,7 +434,7 @@ function UserProfilePage() {
 																{/* Team B */}
 																{bet.match.teamB?.slug ? (
 																	<Link
-																		to="/teams/$teamId"
+																		to={linkTo("/teams/$teamId")}
 																		params={{
 																			teamId: bet.match.teamB.slug,
 																		}}

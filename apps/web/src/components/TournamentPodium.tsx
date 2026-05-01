@@ -4,6 +4,7 @@ import { type ClassValue, clsx } from "clsx";
 import { Award, ChevronRight, Crown, Medal, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getLeaderboard } from "@/server/leaderboard";
 
 function cn(...inputs: ClassValue[]) {
@@ -60,6 +61,7 @@ export function TournamentPodium({
 	className,
 }: TournamentPodiumProps) {
 	const { t } = useTranslation("tournament");
+	const { linkTo } = useLangLink();
 	const { data: leaderboard, isLoading } = useQuery({
 		queryKey: ["tournamentLeaderboard", tournamentId],
 		queryFn: () => getLeaderboard({ data: tournamentId }),
@@ -136,7 +138,7 @@ export function TournamentPodium({
 					</div>
 
 					<Link
-						to="/leaderboard"
+						to={linkTo("/leaderboard")}
 						search={{ tab: "season", tournamentId }}
 						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
 					>
@@ -199,6 +201,7 @@ interface PodiumBlockProps {
 
 function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 	const { t } = useTranslation("tournament");
+	const { linkTo } = useLangLink();
 	const Icon = config.icon;
 
 	return (
@@ -207,7 +210,7 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 		>
 			{/* Avatar */}
 			<Link
-				to="/users/$userId"
+				to={linkTo("/users/$userId")}
 				params={{ userId: entry.userId }}
 				className={cn(
 					"group relative mb-3 border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]",
@@ -250,7 +253,7 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 
 			{/* Name */}
 			<Link
-				to="/users/$userId"
+				to={linkTo("/users/$userId")}
 				params={{ userId: entry.userId }}
 				className={cn(
 					"mb-2 transform border border-black bg-white px-3 py-1 text-center shadow-[2px_2px_0_0_#000] transition-all hover:bg-gray-50",

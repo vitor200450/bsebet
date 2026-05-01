@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useLangLink } from "@/i18n/useLangLink";
 import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { MatchOrdering } from "@/components/admin/MatchOrdering";
@@ -79,6 +80,7 @@ interface MatchSegment {
 
 function TournamentMatchesPage() {
 	const { t } = useTranslation("admin-matches");
+	const { linkTo } = useLangLink();
 	const { tournament, tournamentTeams, allTeams, matches, matchDays } =
 		Route.useLoaderData();
 	const router = useRouter();
@@ -444,7 +446,7 @@ function TournamentMatchesPage() {
 					</button>
 
 					<Link
-						to="/admin/tournaments"
+						to={linkTo("/admin/tournaments")}
 						className="border-[3px] border-black bg-black p-2 text-white transition-colors hover:bg-[#ccff00] hover:text-black"
 					>
 						<ArrowLeft className="h-4 w-4" strokeWidth={3} />
@@ -937,7 +939,7 @@ function TournamentMatchesPage() {
 																match.teamB &&
 																match.status === "live" && (
 																	<Link
-																		to="/admin/live/$matchId"
+																		to={linkTo("/admin/live/$matchId")}
 																		params={{ matchId: String(match.id) }}
 																		className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-brawl-red px-3 py-2 font-black text-white text-xs uppercase shadow-[3px_3px_0px_0px_#000] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 																	>

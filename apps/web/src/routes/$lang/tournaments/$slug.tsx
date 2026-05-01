@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { TournamentBracket } from "@/components/TournamentBracket";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/$lang/tournaments/$slug")({
 
 function TournamentDetailsPage() {
 	const { t } = useTranslation("tournament");
+	const { linkTo } = useLangLink();
 	const { tournament, matches, userBets } = Route.useLoaderData();
 	const [filter, setFilter] = useState<
 		"all" | "my-bets" | "upcoming" | "finished"
@@ -408,7 +410,7 @@ function TournamentDetailsPage() {
 					{/* Top Bar */}
 					<div className="mb-6 flex items-center justify-between">
 						<Link
-							to="/tournaments"
+							to={linkTo("/tournaments")}
 							search={{ filter: "active" }}
 							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
@@ -420,7 +422,7 @@ function TournamentDetailsPage() {
 							(m) => m.isBettingEnabled && m.status === "scheduled",
 						) && (
 							<Link
-								to="/"
+								to={linkTo("/")}
 								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
 							>
 								<Sparkles className="h-4 w-4" strokeWidth={2.5} />

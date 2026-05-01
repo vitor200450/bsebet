@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ArrowLeft, Award, Target, TrendingUp, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/$lang/teams/$teamId")({
 
 function TeamDetailsPage() {
 	const { t } = useTranslation("team");
+	const { linkTo } = useLangLink();
 	const { team, matches, tournaments, colors } = Route.useLoaderData();
 
 	// Calculate intermediate color for gradient (fallback)
@@ -109,7 +111,7 @@ function TeamDetailsPage() {
 					{/* Top Bar */}
 					<div className="mb-6">
 						<Link
-							to="/tournaments"
+							to={linkTo("/tournaments")}
 							search={{ filter: "active" }}
 							className="flex w-fit items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
@@ -285,7 +287,7 @@ function TeamDetailsPage() {
 												<div className="flex flex-1 flex-col items-center gap-2">
 													{opponent?.id ? (
 														<Link
-															to="/teams/$teamId"
+															to={linkTo("/teams/$teamId")}
 															params={{ teamId: opponent.slug }}
 															className="flex flex-col items-center gap-2"
 														>
@@ -318,7 +320,7 @@ function TeamDetailsPage() {
 											</div>
 
 											<Link
-												to="/"
+												to={linkTo("/")}
 												className="block w-full rounded-lg border-2 border-black bg-[#ffc700] py-2.5 text-center font-bold text-black text-sm uppercase shadow-[2px_2px_0_0_#000]"
 											>
 												{isLive ? "Acompanhar" : "Fazer Aposta"}
@@ -343,7 +345,7 @@ function TeamDetailsPage() {
 											<div className="shrink-0">
 												{match.tournament?.slug ? (
 													<Link
-														to="/tournaments/$slug"
+														to={linkTo("/tournaments/$slug")}
 														params={{ slug: match.tournament.slug }}
 														className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border-2 border-black bg-white p-1.5 shadow-[2px_2px_0_0_#000] transition-all hover:shadow-[3px_3px_0_0_#000]"
 													>
@@ -386,7 +388,7 @@ function TeamDetailsPage() {
 												<div className="flex min-w-0 flex-1 items-center gap-2">
 													{opponent?.id ? (
 														<Link
-															to="/teams/$teamId"
+															to={linkTo("/teams/$teamId")}
 															params={{ teamId: opponent.slug }}
 															className="flex items-center gap-2"
 														>
@@ -440,7 +442,7 @@ function TeamDetailsPage() {
 
 											{/* Button */}
 											<Link
-												to="/"
+												to={linkTo("/")}
 												className="shrink-0 rounded-lg border-2 border-black bg-[#ffc700] px-4 py-2 font-bold text-black text-xs uppercase shadow-[2px_2px_0_0_#000] transition-all hover:shadow-[3px_3px_0_0_#000]"
 											>
 												{isLive ? "Acompanhar" : "Apostar"}
@@ -576,9 +578,9 @@ function TeamDetailsPage() {
 
 												{/* Opponent */}
 												{opponent?.id ? (
-													<Link
-														to="/teams/$teamId"
-														params={{ teamId: opponent.slug }}
+														<Link
+															to={linkTo("/teams/$teamId")}
+															params={{ teamId: opponent.slug }}
 														className="flex items-center gap-3 border-[2px] border-black p-2 transition-colors hover:bg-gray-50"
 													>
 														<div className="flex h-12 w-12 items-center justify-center overflow-hidden border-[2px] border-black bg-white p-1 shadow-[2px_2px_0_0_#000]">
@@ -622,10 +624,10 @@ function TeamDetailsPage() {
 											{/* Tournament Badge */}
 											<div className="flex items-center gap-2 text-xs">
 												{match.tournament?.slug ? (
-													<Link
-														to="/tournaments/$slug"
-														params={{ slug: match.tournament.slug }}
-														className="flex items-center gap-2 transition-opacity hover:opacity-80"
+												<Link
+													to={linkTo("/tournaments/$slug")}
+													params={{ slug: match.tournament.slug }}
+													className="flex items-center gap-2 transition-opacity hover:opacity-80"
 													>
 														<div className="flex h-6 w-6 items-center justify-center border-[2px] border-black bg-white p-0.5">
 															{match.tournament.logoUrl ? (
@@ -683,7 +685,7 @@ function TeamDetailsPage() {
 
 													{match.tournament?.slug ? (
 														<Link
-															to="/tournaments/$slug"
+															to={linkTo("/tournaments/$slug")}
 															params={{ slug: match.tournament.slug }}
 															className="relative block flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]"
 														>
@@ -756,7 +758,7 @@ function TeamDetailsPage() {
 
 														{opponent?.id ? (
 															<Link
-																to="/teams/$teamId"
+																to={linkTo("/teams/$teamId")}
 																params={{ teamId: opponent.slug }}
 																className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#000]"
 															>
@@ -778,7 +780,7 @@ function TeamDetailsPage() {
 													</div>
 													{opponent?.id ? (
 														<Link
-															to="/teams/$teamId"
+															to={linkTo("/teams/$teamId")}
 															params={{ teamId: opponent.slug }}
 															className="truncate font-black text-black text-sm uppercase transition-colors hover:text-brawl-red hover:underline"
 														>
@@ -865,7 +867,7 @@ function TeamDetailsPage() {
 							{tournaments.map((tournament) => (
 								<Link
 									key={tournament.id}
-									to="/tournaments/$slug"
+									to={linkTo("/tournaments/$slug")}
 									params={{ slug: tournament.slug }}
 									className="group flex items-center gap-3 rounded-lg border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
 								>

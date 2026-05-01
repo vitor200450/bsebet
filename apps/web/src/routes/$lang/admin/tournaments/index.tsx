@@ -1,35 +1,33 @@
 // Force HMR refresh
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { clsx } from "clsx";
 import {
 	Calendar,
 	Copy,
 	Edit2,
-	Image as ImageIcon,
+	Globe,
+	Image,
 	Loader2,
 	Plus,
 	Search,
 	Trash2,
+	Trophy,
 	Upload,
 	X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useLangLink } from "@/i18n/useLangLink";
+import { uploadImage } from "@/functions/upload-image";
 import {
-	copyTournament,
+	createTournament,
 	deleteTournament,
+	duplicateTournament,
 	getTournaments,
-	saveTournament,
+	updateTournament,
 } from "@/server/tournaments";
-import {
-	CustomDatePicker,
-	CustomSelect,
-} from "../../../../components/admin/CustomInputs";
-import {
-	type Stage,
-	StageBuilder,
-} from "../../../../components/admin/StageBuilder";
 import { useSetHeader } from "../../../../components/HeaderContext";
 
 export const Route = createFileRoute("/$lang/admin/tournaments/")({
@@ -39,6 +37,7 @@ export const Route = createFileRoute("/$lang/admin/tournaments/")({
 
 function AdminTournamentsPage() {
 	const { t } = useTranslation("admin");
+	const { linkTo } = useLangLink();
 	const tournaments = Route.useLoaderData();
 	const router = useRouter();
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -435,7 +434,7 @@ function AdminTournamentsPage() {
 
 											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
 												<Link
-													to="/admin/tournaments/$tournamentId/matches"
+													to={linkTo("/admin/tournaments/$tournamentId/matches")}
 													params={{ tournamentId: String(t.id) }}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
 													title="Match Scheduler"
@@ -471,7 +470,7 @@ function AdminTournamentsPage() {
 													⚠️ Esta logo está em Base64. Salve para converter para
 													R2 ou use a{" "}
 													<Link
-														to="/admin/migrate-logos"
+														to={linkTo("/admin/migrate-logos")}
 														className="underline hover:text-red-700"
 													>
 														{t("common.logoMigrationPage")}

@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
-import { Award, ChevronRight, Medal, Trophy } from "lucide-react";
+import { ChevronRight, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { twMerge } from "tailwind-merge";
 
 function cn(...inputs: ClassValue[]) {
@@ -63,6 +64,7 @@ export function MedalSummary({
 	className,
 }: MedalSummaryProps) {
 	const { t } = useTranslation("user");
+	const { linkTo } = useLangLink();
 	const hasMedals = total > 0;
 
 	return (
@@ -79,7 +81,7 @@ export function MedalSummary({
 				</div>
 				{showLink && userId && (
 					<Link
-						to="/users/$userId"
+						to={linkTo("/users/$userId")}
 						params={{ userId }}
 						className="group flex items-center gap-1 font-black text-[#2e5cff] text-[10px] uppercase tracking-wider transition-colors hover:text-black"
 					>

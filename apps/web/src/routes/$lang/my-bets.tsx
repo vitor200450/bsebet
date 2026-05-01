@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getMyBets } from "@/functions/get-my-bets";
@@ -36,6 +37,7 @@ type FilterType = "all" | "pending" | "finished";
 
 function RouteComponent() {
 	const { t } = useTranslation("my-bets");
+	const { linkTo } = useLangLink();
 	const [filter, setFilter] = useState<FilterType>("all");
 	const [tournamentFilter, setTournamentFilter] = useState<string>("all");
 	const [expandedTournamentIds, setExpandedTournamentIds] = useState<
@@ -148,7 +150,7 @@ function RouteComponent() {
 							</p>
 						</div>
 						<Link
-							to="/dashboard"
+							to={linkTo("/dashboard")}
 							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
 						>
 							Voltar ao dashboard
@@ -316,7 +318,7 @@ function RouteComponent() {
 													/>
 												</button>
 												<Link
-													to="/tournaments/$slug"
+													to={linkTo("/tournaments/$slug")}
 													params={{ slug: group.tournament.slug }}
 													className="hidden rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold text-[10px] text-black uppercase tracking-wider transition-colors hover:bg-[#2e5cff] hover:text-white md:inline-flex"
 												>
@@ -670,7 +672,7 @@ function RouteComponent() {
 								? t("empty.cta")
 								: "Tente outro filtro ou faça mais apostas."}
 						</p>
-						<Link to="/">
+						<Link to={linkTo("/")}>
 							<button
 								type="button"
 								className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"

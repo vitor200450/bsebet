@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useLangLink } from "@/i18n/useLangLink";
 
 import UserMenu from "./user-menu";
 
 export default function Header() {
+	const { linkTo } = useLangLink();
 	const links = [
 		{ to: "/", label: "Home" },
 		{ to: "/dashboard", label: "Dashboard" },
@@ -14,7 +16,7 @@ export default function Header() {
 				<nav className="flex gap-4 text-lg">
 					{links.map(({ to, label }) => {
 						return (
-							<Link key={to} to={to}>
+							<Link key={to} to={linkTo(to)}>
 								{label}
 							</Link>
 						);

@@ -11,6 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getTournaments } from "@/server/tournaments";
 
 // Schema for URL search params (filter state)
@@ -148,6 +149,7 @@ function TournamentCard({
 		status: "upcoming" | "active" | "finished";
 	};
 }) {
+	const { linkTo } = useLangLink();
 	const isActive = tournament.status === "active";
 	const isFinished = tournament.status === "finished";
 
@@ -250,7 +252,7 @@ function TournamentCard({
 
 					{/* Action */}
 					<Link
-						to="/tournaments/$slug"
+						to={linkTo("/tournaments/$slug")}
 						params={{ slug: tournament.slug }}
 						className={clsx(
 							"flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black py-3 font-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none",

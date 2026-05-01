@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useLangLink } from "@/i18n/useLangLink";
 import {
 	deleteUser,
 	getUsers,
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/$lang/admin/users")({
 });
 
 function AdminUsersPage() {
+	const { linkTo } = useLangLink();
 	const users = Route.useLoaderData();
 	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState("");
@@ -247,7 +249,7 @@ function AdminUsersPage() {
 											{/* User Info */}
 											<div className="flex w-full items-center gap-4 md:col-span-4">
 												<Link
-													to="/users/$userId"
+													to={linkTo("/users/$userId")}
 													params={{ userId: u.id }}
 													className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-transform hover:scale-105"
 												>
@@ -265,7 +267,7 @@ function AdminUsersPage() {
 												</Link>
 												<div>
 													<Link
-														to="/users/$userId"
+														to={linkTo("/users/$userId")}
 														params={{ userId: u.id }}
 														className="font-black text-[#2e5cff] text-lg uppercase italic leading-none hover:underline"
 													>

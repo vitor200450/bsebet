@@ -13,6 +13,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { MedalSummary } from "@/components/MedalSummary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getDashboardData } from "@/functions/get-dashboard-data";
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/$lang/dashboard")({
 
 function RouteComponent() {
 	const { t } = useTranslation("dashboard");
+	const { linkTo } = useLangLink();
 	const { session } = Route.useRouteContext();
 
 	const { data, isLoading } = useQuery({
@@ -104,7 +106,7 @@ function RouteComponent() {
 							</p>
 						</div>
 						<Link
-							to="/my-bets"
+							to={linkTo("/my-bets")}
 							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
 						>
 							{t("viewHistory")}
@@ -310,7 +312,7 @@ function RouteComponent() {
 										<div className="flex items-center justify-between border-black border-b-2 bg-[#fafafa] px-4 py-2">
 											{bet.match.tournament?.slug ? (
 												<Link
-													to="/tournaments/$slug"
+													to={linkTo("/tournaments/$slug")}
 													params={{ slug: bet.match.tournament.slug }}
 													className="truncate font-bold text-[10px] text-gray-500 uppercase tracking-widest hover:text-[#2e5cff]"
 												>
@@ -457,7 +459,7 @@ function RouteComponent() {
 								<p className="mb-5 text-gray-600 text-sm">
 									{t("empty.noBets")}
 								</p>
-								<Link to="/">
+								<Link to={linkTo("/")}>
 									<button
 										type="button"
 										className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
@@ -494,7 +496,7 @@ function RouteComponent() {
 								{activeTournaments.map((tournament) => (
 									<Link
 										key={tournament.id}
-										to="/"
+										to={linkTo("/")}
 										search={{ tournament: tournament.slug }}
 										className="group flex items-center gap-3 rounded-lg border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#000] transition-all hover:bg-[#ffc700]/10 hover:shadow-[4px_4px_0_0_#000]"
 									>
