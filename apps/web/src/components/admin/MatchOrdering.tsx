@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "@tanstack/react-router";
 import { GripVertical, Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { Match } from "@/components/TournamentBracket";
 import { updateMatchOrder } from "@/server/matches";
@@ -174,8 +175,9 @@ function SortableMatchItem({ match, index }: { match: Match; index: number }) {
 }
 
 export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
+	const { t } = useTranslation("admin-matches");
 	const [matches, setMatches] = useState(initialMatches);
-	const [activeId, setActiveId] = useState<number | null>(null); // Track active item
+	const [activeId, setActiveId] = useState<number | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const router = useRouter();
 
@@ -224,11 +226,11 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 			}));
 
 			await updateMatchOrder({ data: { updates } });
-			toast.success("Ordem salva com sucesso!");
+			toast.success(t("ordering.saved"));
 			router.invalidate();
 		} catch (e) {
 			console.error("Failed to save order:", e);
-			toast.error("Erro ao salvar ordem");
+			toast.error(t("ordering.saveError"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -254,10 +256,10 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 			<div className="flex items-center justify-between border-[3px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
 				<div>
 					<h3 className="font-black text-black text-lg uppercase italic">
-						Ordenar Partidas
+						{t("ordering.title")}
 					</h3>
 					<p className="font-bold text-gray-600 text-sm">
-						Arraste para reordenar o carrossel
+						{t("ordering.subtitle")}
 					</p>
 				</div>
 				<button
@@ -270,7 +272,7 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 					) : (
 						<Save className="h-4 w-4" />
 					)}
-					Salvar Ordem
+					{t("ordering.saveButton")}
 				</button>
 			</div>
 

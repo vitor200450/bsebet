@@ -11,6 +11,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import {
 	MedalCountSummary,
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/$lang/leaderboard")({
 });
 
 function LeaderboardPage() {
+	const { t } = useTranslation("leaderboard");
 	const { session, leaderboard, tournaments } = Route.useLoaderData();
 	const { tab, tournamentId: urlTournamentId } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
@@ -219,10 +221,10 @@ function LeaderboardPage() {
 					<div className="mb-4 flex items-center gap-2 border-black/10 border-b pb-3">
 						<Target className="h-4 w-4 text-[#121212]" strokeWidth={2} />
 						<span className="font-bold text-[#121212] text-sm uppercase tracking-wider">
-							Critérios de Classificação
+							{t("rankingCriteria")}
 						</span>
 						<span className="ml-auto rounded bg-[#f0f0f0] px-2 py-1 font-bold text-[10px] text-gray-600 uppercase">
-							{tab === "global" ? "Ranking Mundial" : "Camp Específico"}
+							{tab === "global" ? t("tabs.global") : t("tabs.tournament")}
 						</span>
 					</div>
 					<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -231,7 +233,7 @@ function LeaderboardPage() {
 							{
 								num: 1,
 								label: "Pontos Totais",
-								desc: "Critério principal",
+								desc: t("columns.primaryCriteria"),
 								color: "bg-[#ffc700]",
 							},
 							{
@@ -248,7 +250,7 @@ function LeaderboardPage() {
 							},
 							{
 								num: 4,
-								label: "Azarões",
+								label: t("columns.underdogs"),
 								desc: "3° desempate",
 								color: "bg-purple-300",
 							},
@@ -262,14 +264,14 @@ function LeaderboardPage() {
 								? [
 										{
 											num: 6,
-											label: "Resultado mês anterior",
+											label: t("columns.lastMonthResult"),
 											desc: "Torneios anteriores",
 											color: "bg-[#2e5cff] text-white",
 										},
 										{
 											num: 7,
-											label: "Ranking Mundial",
-											desc: "Posição geral",
+											label: t("tabs.global"),
+											desc: t("columns.globalPosition"),
 											color: "bg-[#ff2e2e] text-white",
 										},
 									]
@@ -351,7 +353,7 @@ function LeaderboardPage() {
 							<Trophy className="h-8 w-8 text-gray-400" strokeWidth={2} />
 						</div>
 						<h2 className="mb-2 font-black text-[#121212] text-xl uppercase">
-							Nenhum dado disponível
+							{t("empty")}
 						</h2>
 						<p className="text-gray-600 text-sm">Seja o primeiro a pontuar!</p>
 					</div>

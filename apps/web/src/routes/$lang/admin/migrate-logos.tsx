@@ -4,6 +4,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { migrateLogosToR2 } from "../../../server/migrate-logos";
 
 export const Route = createFileRoute("/$lang/admin/migrate-logos")({
@@ -30,11 +31,12 @@ interface MigrationResult {
 }
 
 function MigrateLogosPage() {
+	const { t } = useTranslation("admin");
 	const [loading, setLoading] = useState(false);
 	const [result, setResult] = useState<MigrationResult | null>(null);
 
 	const runMigration = async () => {
-		if (!confirm("Tem certeza que deseja migrar todas as logos para o R2?")) {
+		if (!confirm(t("migrateLogos.confirmMessage"))) {
 			return;
 		}
 
@@ -66,25 +68,26 @@ function MigrateLogosPage() {
 		<div className="min-h-screen bg-[#e6e6e6] p-8">
 			<div className="mx-auto max-w-4xl">
 				<h1 className="mb-6 border-black border-b-4 pb-2 font-black text-3xl">
-					Migrar Logos para R2
+					{t("migrateLogos.title")}
 				</h1>
 
 				<div className="rounded-lg border-[3px] border-black bg-white p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
 					<div className="mb-6">
-						<h2 className="mb-2 font-bold text-xl">O que será feito?</h2>
+						<h2 className="mb-2 font-bold text-xl">
+							{t("migrateLogos.description")}
+						</h2>
 						<ul className="list-inside list-disc space-y-1 text-gray-700">
-							<li>Buscar todas as logos em Base64 do banco de dados</li>
-							<li>Fazer upload para o Cloudflare R2</li>
-							<li>Atualizar as URLs no banco para apontar para o R2</li>
+							<li>{t("migrateLogos.step1")}</li>
+							<li>{t("migrateLogos.step2")}</li>
+							<li>{t("migrateLogos.step3")}</li>
 						</ul>
 					</div>
 
 					<div className="mb-6 rounded border-[3px] border-yellow-400 bg-yellow-50 p-4">
-						<p className="font-bold text-yellow-800">⚠️ Atenção:</p>
-						<p className="text-yellow-700">
-							Este processo modifica o banco de dados. Faça backup antes de
-							continuar.
+						<p className="font-bold text-yellow-800">
+							{t("migrateLogos.warningTitle")}
 						</p>
+						<p className="text-yellow-700">{t("migrateLogos.warning")}</p>
 					</div>
 
 					<button
@@ -96,13 +99,15 @@ function MigrateLogosPage() {
 								: "bg-[#ccff00] shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:bg-[#b8e600] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
 						}transition-all`}
 					>
-						{loading ? "⏳ Executando..." : "🚀 Iniciar Migração"}
+						{loading
+							? `⏳ ${t("migrateLogos.running")}`
+							: `🚀 ${t("migrateLogos.start")}`}
 					</button>
 
 					{loading && (
 						<div className="mt-6 flex items-center gap-3">
 							<div className="h-6 w-6 animate-spin rounded-full border-4 border-black border-t-transparent" />
-							<span className="font-medium">Migrando logos, aguarde...</span>
+							<span className="font-medium">{t("migrateLogos.migrating")}</span>
 						</div>
 					)}
 
@@ -114,8 +119,8 @@ function MigrateLogosPage() {
 								className={`mb-4 font-bold text-xl ${result.success ? "text-green-800" : "text-red-800"}`}
 							>
 								{result.success
-									? "✅ Migração Concluída"
-									: "❌ Erro na Migração"}
+									? `✅ ${t("migrateLogos.success")}`
+									: `❌ ${t("migrateLogos.error")}`}
 							</h3>
 
 							{result.error && (
@@ -127,7 +132,9 @@ function MigrateLogosPage() {
 							{result.summary && (
 								<div className="space-y-4">
 									<div>
-										<h4 className="mb-2 font-bold text-lg">Times:</h4>
+										<h4 className="mb-2 font-bold text-lg">
+											{t("migrateLogos.teams")}:
+										</h4>
 										<div className="grid grid-cols-3 gap-4">
 											<div className="rounded bg-green-100 p-3 text-center">
 												<span className="block font-black text-2xl text-green-700">
@@ -193,7 +200,9 @@ function MigrateLogosPage() {
 
 							{result.timestamp && (
 								<p className="mt-4 text-gray-500 text-sm">
-									Concluído em: {new Date(result.timestamp).toLocaleString()}
+									{t("migrateLogos.completedAt", {
+										time: new Date(result.timestamp).toLocaleString(),
+									})}
 								</p>
 							)}
 						</div>

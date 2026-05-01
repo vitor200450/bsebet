@@ -3,6 +3,8 @@ import { bets, matches, tournaments } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 import {
 	base64ToBuffer,
 	deleteLogoFromR2,
@@ -50,60 +52,62 @@ const scoringRulesSchema = z
 	});
 
 // Schema for Tournament Input
-const tournamentSchema = z.object({
-	id: z.number().optional(),
-	name: z.string().min(1, "Nome é obrigatório"),
-	slug: z.string().min(1, "Slug é obrigatório"),
-	logoUrl: z
-		.string()
-		.refine(
-			(val) =>
-				val === "" ||
-				val === null ||
-				val === undefined ||
-				z.string().url().safeParse(val).success ||
-				val.startsWith("data:image/"),
-			"Deve ser uma URL válida ou imagem Base64",
-		)
-		.optional(),
-	format: z.string().optional(),
-	region: z.string().optional(),
-	participantsCount: z.coerce.number().optional(),
-	stages: z
-		.array(
-			z.object({
-				id: z.string(),
-				name: z.string(),
-				type: z.enum(["Single Elimination", "Double Elimination", "Groups"]),
-				settings: z.object({
-					groupsCount: z.number().optional(),
-					teamsPerGroup: z.number().optional(),
-					advancingCount: z.number().optional(),
-					matchType: z.enum(["Bo1", "Bo3", "Bo5"]).optional(),
-					groupFormat: z.enum(["GSL", "Round Robin"]).optional(),
+const createTournamentSchema = (t: (key: string) => string) =>
+	z.object({
+		id: z.number().optional(),
+		name: z.string().min(1, t("validation:nameRequired")),
+		slug: z.string().min(1, t("validation:slugRequired")),
+		logoUrl: z
+			.string()
+			.refine(
+				(val) =>
+					val === "" ||
+					val === null ||
+					val === undefined ||
+					z.string().url().safeParse(val).success ||
+					val.startsWith("data:image/"),
+				t("validation:imageUrlRequired"),
+			)
+			.optional(),
+		format: z.string().optional(),
+		region: z.string().optional(),
+		participantsCount: z.coerce.number().optional(),
+		stages: z
+			.array(
+				z.object({
+					id: z.string(),
+					name: z.string(),
+					type: z.enum(["Single Elimination", "Double Elimination", "Groups"]),
+					settings: z.object({
+						groupsCount: z.number().optional(),
+						teamsPerGroup: z.number().optional(),
+						advancingCount: z.number().optional(),
+						matchType: z.enum(["Bo1", "Bo3", "Bo5"]).optional(),
+						groupFormat: z.enum(["GSL", "Round Robin"]).optional(),
+					}),
+					startDate: z.string().optional(),
+					endDate: z.string().optional(),
+					scoringRules: scoringRulesSchema.optional(),
 				}),
-				startDate: z.string().optional(),
-				endDate: z.string().optional(),
-				scoringRules: scoringRulesSchema.optional(),
-			}),
-		)
-		.default([]),
-	startDate: z.coerce.date().optional(),
-	endDate: z.coerce.date().optional(),
-	status: z.enum(["upcoming", "active", "finished"]).default("upcoming"),
-	isActive: z.boolean().default(true),
-	// Default scoring rules if creating new
-	scoringRules: scoringRulesSchema.default({
-		winner: 1,
-		exact: 3,
-		underdog_25: 2,
-		underdog_50: 1,
-		underdog_tier1_max_pct: 0.25,
-		underdog_tier2_max_pct: 0.5,
-	}),
-});
+			)
+			.default([]),
+		startDate: z.coerce.date().optional(),
+		endDate: z.coerce.date().optional(),
+		status: z.enum(["upcoming", "active", "finished"]).default("upcoming"),
+		isActive: z.boolean().default(true),
+		// Default scoring rules if creating new
+		scoringRules: scoringRulesSchema.default({
+			winner: 1,
+			exact: 3,
+			underdog_25: 2,
+			underdog_50: 1,
+			underdog_tier1_max_pct: 0.25,
+			underdog_tier2_max_pct: 0.5,
+		}),
+	});
 
-type TournamentInput = z.input<typeof tournamentSchema>;
+const _dummyT = (key: string) => key;
+type TournamentInput = z.input<ReturnType<typeof createTournamentSchema>>;
 
 /**
  * Fetch all tournaments ordered by created_at desc
@@ -144,7 +148,9 @@ const saveTournamentFn = createServerFn({
 }).handler(async (ctx: any) => {
 	const { db } = await import("@bsebet/db");
 	const data = ctx.data;
-	const validData = tournamentSchema.parse(data);
+	const lang = data?.lang ?? "pt";
+	const t = createServerT(lang as SupportedLang);
+	const validData = createTournamentSchema(t).parse(data);
 
 	let finalLogoUrl = validData.logoUrl || null;
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { Trophy, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -24,6 +25,7 @@ export default function UserMenu({
 }: {
 	variant?: "light" | "dark";
 }) {
+	const { t } = useTranslation("profile");
 	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
 
@@ -164,7 +166,7 @@ export default function UserMenu({
 			>
 				<DropdownMenuGroup>
 					<DropdownMenuLabel className="!text-black pb-1 font-black font-display text-xs uppercase italic tracking-wider">
-						Menu do Jogador
+						{t("userMenu.playerMenu")}
 					</DropdownMenuLabel>
 					<div className="mb-2 truncate border border-black/10 bg-gray-100 px-2 py-1 font-bold text-[10px] text-gray-400">
 						{session.user.email}
@@ -181,7 +183,7 @@ export default function UserMenu({
 											className="h-3.5 w-3.5 text-[#FFD700]"
 											fill="#FFD700"
 										/>
-										Medalhas
+										{t("userMenu.medals")}
 									</span>
 									<MedalCountSummary
 										gold={medalCounts.gold}
@@ -211,7 +213,7 @@ export default function UserMenu({
 						<span className="material-symbols-outlined mr-2 text-sm">
 							person
 						</span>
-						Perfil do Usuário
+						{t("userMenu.label")}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
@@ -225,7 +227,7 @@ export default function UserMenu({
 						<span className="material-symbols-outlined mr-2 text-sm">
 							public
 						</span>
-						Ver Perfil Público
+						{t("userMenu.viewPublic")}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
@@ -234,7 +236,7 @@ export default function UserMenu({
 						<span className="material-symbols-outlined mr-2 text-sm">
 							sports
 						</span>
-						Minhas Apostas
+						{t("userMenu.myBets")}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator className="h-[2px] bg-black/10" />
 					<DropdownMenuItem
@@ -251,7 +253,7 @@ export default function UserMenu({
 							});
 						}}
 					>
-						Sair da Conta
+						{t("userMenu.signOut")}
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>

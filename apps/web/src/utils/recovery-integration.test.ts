@@ -2,20 +2,20 @@
 import { describe, expect, it } from "bun:test";
 
 /**
- * Teste de integração simulando o cenário completo do bug.
+ * Integration test simulating the full bug scenario.
  *
- * Cenário: Torneio com 2 Match Days
- * - Match Day 1 (locked): Quartas de Final
- *   * QF1: A vs B → Resultado: B ganhou (usuário apostou em A)
- *   * QF2: C vs D → Resultado: D ganhou (usuário apostou em C)
+ * Scenario: Tournament with 2 Match Days
+ * - Match Day 1 (locked): Quarterfinals
+ *   * QF1: A vs B → Result: B won (user bet on A)
+ *   * QF2: C vs D → Result: D won (user bet on C)
  *
- * - Match Day 2 (locked): Semi Finais
- *   * SF1: B vs D → Times definidos via bracket progression
+ * - Match Day 2 (locked): Semifinals
+ *   * SF1: B vs D → Teams defined via bracket progression
  *
- * Problema: O usuário deve poder apostar na SF1 como recovery,
- * mas o sistema pode estar bloqueando por causa da filtragem por match day.
+ * Problem: User should be able to bet on SF1 as recovery,
+ * but the system may be blocking it due to match day filtering.
  */
-describe("BUG: Recovery em torneio com múltiplos match days", () => {
+describe("BUG: Recovery in tournament with multiple match days", () => {
 	const teams = {
 		A: { id: 1, name: "Time A" },
 		B: { id: 2, name: "Time B" },
@@ -29,7 +29,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 	];
 
 	const allBracketMatches = [
-		// Match Day 1: Quartas
+		// Match Day 1: Quarterfinals
 		{
 			id: 1,
 			matchDayId: 1,
@@ -62,16 +62,16 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 			roundIndex: 0,
 			label: "Quarter-Final #2",
 		},
-		// Match Day 2: Semi Final
-		// Times já definidos via bracket progression (nextMatchWinnerId)
+		// Match Day 2: Semifinal
+		// Teams already defined via bracket progression (nextMatchWinnerId)
 		{
 			id: 3,
 			matchDayId: 2,
 			status: "scheduled",
 			resultType: "normal",
 			winnerId: null,
-			teamAId: teams.B.id, // Vencedor de QF1
-			teamBId: teams.D.id, // Vencedor de QF2
+			teamAId: teams.B.id, // Winner of QF1
+			teamBId: teams.D.id, // Winner of QF2
 			teamA: teams.B,
 			teamB: teams.D,
 			teamAPreviousMatchId: 1,
@@ -83,8 +83,8 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 	];
 
 	const userBets = [
-		{ matchId: 1, predictedWinnerId: teams.A.id, isRecovery: false }, // Errou!
-		{ matchId: 2, predictedWinnerId: teams.C.id, isRecovery: false }, // Errou!
+		{ matchId: 1, predictedWinnerId: teams.A.id, isRecovery: false }, // Wrong!
+		{ matchId: 2, predictedWinnerId: teams.C.id, isRecovery: false }, // Wrong!
 	];
 
 	function calculateEditableRecoveryMatchIds(
@@ -95,7 +95,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 	) {
 		const editableIds = new Set<number>();
 
-		// Verificar se algum match day está locked
+		// Check if any match day is locked
 		const isTournamentInRecovery = matchDaysList.some(
 			(md: any) => md.status === "locked",
 		);
@@ -103,7 +103,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 			return editableIds;
 		}
 
-		// Encontrar partidas "erradas" (finished com aposta errada ou sem aposta)
+		// Find "wrong" matches (finished with wrong bet or no bet)
 		const wrongMatchIds = new Set<number>();
 		matches.forEach((match) => {
 			if (match.status !== "finished" || !match.winnerId) return;
@@ -122,7 +122,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 
 		console.log("wrongMatchIds:", Array.from(wrongMatchIds));
 
-		// Encontrar todos os descendentes das partidas erradas
+		// Find all descendants of wrong matches
 		const findAllDependents = (sourceIds: Set<number>): Set<number> => {
 			const result = new Set<number>();
 			const toProcess = Array.from(sourceIds);
@@ -155,7 +155,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 		const dependentMatchIds = findAllDependents(wrongMatchIds);
 		console.log("dependentMatchIds:", Array.from(dependentMatchIds));
 
-		// Lógica de decisão para cada match
+		// Decision logic for each match
 		matches.forEach((match: any) => {
 			const matchId = Number(match.id);
 			if (match.status !== "scheduled") return;
@@ -163,14 +163,14 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 
 			const serverBet = bets.find((b: any) => Number(b.matchId) === matchId);
 
-			// CASE 1: Match é descendente de partida errada
+			// CASE 1: Match is descendant of a wrong match
 			if (dependentMatchIds.has(matchId)) {
 				const recoveryBet = bets.find(
 					(b: any) => Number(b.matchId) === matchId && b.isRecovery,
 				);
 
 				if (recoveryBet) {
-					// Verificar se matchup mudou
+					// Check if matchup changed
 					const currentTeamAId = match.teamA?.id
 						? Number(match.teamA.id)
 						: null;
@@ -185,14 +185,14 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 							recoveryBet.predictedWinnerId !== currentTeamBId);
 
 					if (!matchupChanged) {
-						return; // Matchup igual, já apostou
+						return; // Same matchup, already bet
 					}
 				}
 				editableIds.add(matchId);
 				return;
 			}
 
-			// CASE 2: Bracket match sem aposta
+			// CASE 2: Bracket match without bet
 			const isBracketMatch =
 				match.teamAPreviousMatchId ||
 				match.teamBPreviousMatchId ||
@@ -206,7 +206,7 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 				return;
 			}
 
-			// CASE 3: Usuário tem aposta mas times mudaram
+			// CASE 3: User has bet but teams changed
 			if (serverBet && match.teamA?.id && match.teamB?.id) {
 				const predicted = Number(serverBet.predictedWinnerId);
 				const teamAId = Number(match.teamA?.id);
@@ -217,8 +217,8 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 			}
 		});
 
-		// IMPORTANTE: Filtrar por match day selecionado
-		// Este é o possível BUG!
+		// IMPORTANT: Filter by selected match day
+		// This is the possible BUG!
 		if (selectedMatchDayId) {
 			const allowedIds = new Set(
 				matches
@@ -243,48 +243,48 @@ describe("BUG: Recovery em torneio com múltiplos match days", () => {
 		return editableIds;
 	}
 
-	it("usuário deve ver SF como editable quando seleciona MD das semis", () => {
-		// Quando o usuário está no Match Day 2 (Semi Finais)
+	it("user should see SF as editable when selecting semifinal MD", () => {
+		// When user is on Match Day 2 (Semifinals)
 		const editableIds = calculateEditableRecoveryMatchIds(
 			allBracketMatches,
 			userBets,
-			2, // Selecionando Match Day das Semis
+			2, // Selecting Semifinal Match Day
 			matchDays,
 		);
 
-		console.log("Resultado (MD2 selecionado):", Array.from(editableIds));
+		console.log("Result (MD2 selected):", Array.from(editableIds));
 
-		// A SF (id 3) deve estar disponível
+		// SF (id 3) should be available
 		expect(editableIds.has(3)).toBeTrue();
 	});
 
-	it("usuário NÃO vê SF quando está no MD das quartas - ISSO PODE SER O BUG!", () => {
-		// Quando o usuário está no Match Day 1 (Quartas)
+	it("user does NOT see SF when on quarterfinal MD - THIS COULD BE THE BUG!", () => {
+		// When user is on Match Day 1 (Quarterfinals)
 		const editableIds = calculateEditableRecoveryMatchIds(
 			allBracketMatches,
 			userBets,
-			1, // Selecionando Match Day das Quartas
+			1, // Selecting Quarterfinal Match Day
 			matchDays,
 		);
 
-		console.log("Resultado (MD1 selecionado):", Array.from(editableIds));
+		console.log("Result (MD1 selected):", Array.from(editableIds));
 
-		// A SF (id 3) NÃO está no MD1, então não aparece!
-		// Isso pode confundir o usuário
+		// SF (id 3) is NOT in MD1, so it doesn't appear!
+		// This can confuse the user
 		expect(editableIds.has(3)).toBeFalse();
 	});
 
-	it("quando nenhum MD selecionado, todas as partidas recovery devem aparecer", () => {
+	it("when no MD selected, all recovery matches should appear", () => {
 		const editableIds = calculateEditableRecoveryMatchIds(
 			allBracketMatches,
 			userBets,
-			null, // Nenhum match day selecionado
+			null, // No match day selected
 			matchDays,
 		);
 
-		console.log("Resultado (nenhum MD selecionado):", Array.from(editableIds));
+		console.log("Result (no MD selected):", Array.from(editableIds));
 
-		// Todas as partidas recovery devem aparecer
+		// All recovery matches should appear
 		expect(editableIds.has(3)).toBeTrue();
 	});
 });

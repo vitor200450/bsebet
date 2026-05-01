@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Camera, Lock, Save, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ImageCropper } from "@/components/image-cropper";
 import { getUser } from "@/functions/get-user";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/$lang/profile")({
 });
 
 function RouteComponent() {
+	const { t } = useTranslation("profile");
 	const { session } = Route.useRouteContext();
 
 	const { data: profile, refetch } = useQuery({
@@ -83,9 +85,7 @@ function RouteComponent() {
 			toast.success("Avatar do Google restaurado!");
 		} catch (err) {
 			const msg =
-				err instanceof Error
-					? err.message
-					: "Não foi possível restaurar o avatar do Google.";
+				err instanceof Error ? err.message : t("toast.avatarRestoreError");
 			toast.error(msg);
 		} finally {
 			setIsRestoring(false);
@@ -136,10 +136,10 @@ function RouteComponent() {
 
 			setAvatarBase64(null);
 			await Promise.all([refetch(), refetchSession()]);
-			toast.success("Perfil atualizado com sucesso!");
+			toast.success(t("toast.saved"));
 		} catch (err) {
 			console.error(err);
-			toast.error("Erro ao salvar. Tente novamente.");
+			toast.error(t("toast.error"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -172,7 +172,7 @@ function RouteComponent() {
 							manage_accounts
 						</span>
 						<span className="font-bold text-gray-500 text-sm">
-							Edite suas informações
+							{t("editInfo")}
 						</span>
 					</div>
 				</div>
@@ -249,7 +249,7 @@ function RouteComponent() {
 						</button>
 					</div>
 					<p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
-						JPG, PNG — máx. 2MB
+						{t("avatarNote")}
 					</p>
 
 					<input
@@ -307,7 +307,7 @@ function RouteComponent() {
 					</div>
 
 					<p className="mt-4 font-bold text-[9px] text-gray-400 uppercase tracking-wider">
-						Esses dados vêm da sua conta Google e não podem ser alterados.
+						{t("googleAccountNote")}
 					</p>
 				</div>
 
@@ -341,7 +341,7 @@ function RouteComponent() {
 							</span>
 						</div>
 						<p className="font-bold text-[10px] text-gray-500">
-							Seu nome de exibição no leaderboard
+							{t("displayNameHint")}
 						</p>
 					</div>
 				</div>
@@ -358,7 +358,7 @@ function RouteComponent() {
 						className="skew-x-12 transform transition-transform group-hover:scale-110"
 					/>
 					<span className="skew-x-12 transform">
-						{isSaving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
+						{isSaving ? "SALVANDO..." : t("saveChanges")}
 					</span>
 				</button>
 
@@ -370,7 +370,7 @@ function RouteComponent() {
 						className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
 					>
 						<span className="material-symbols-outlined text-sm">public</span>
-						Ver Perfil Público
+						{t("viewPublic")}
 					</Link>
 				)}
 

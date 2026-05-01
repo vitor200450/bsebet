@@ -3,6 +3,8 @@ import { account, user } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 import { authMiddleware } from "@/middleware/auth";
 import {
 	base64ToBuffer,
@@ -133,6 +135,10 @@ export const updateNickname = updateNicknameFn as unknown as (opts: {
  * Strategy 1: Decode idToken JWT payload (no API call needed).
  * Strategy 2: Call Google userinfo API using the stored accessToken (fallback).
  */
+const restoreGoogleAvatarInputSchema = z.object({
+	lang: z.enum(["pt", "en"]).default("pt"),
+});
+
 const restoreGoogleAvatarFn = createServerFn({ method: "POST" }).handler(
 	async (ctx: any) => {
 		const { db } = await import("@bsebet/db");
@@ -141,7 +147,10 @@ const restoreGoogleAvatarFn = createServerFn({ method: "POST" }).handler(
 			headers: ctx.request.headers,
 		});
 
-		if (!session?.user?.id) throw new Error("Não autenticado");
+		const { lang } = restoreGoogleAvatarInputSchema.parse(ctx.data ?? {});
+		const t = createServerT(lang as SupportedLang);
+
+		if (!session?.user?.id) throw new Error(t("errors:unauthenticated"));
 
 		const googleAccount = await db.query.account.findFirst({
 			where: and(
@@ -151,7 +160,7 @@ const restoreGoogleAvatarFn = createServerFn({ method: "POST" }).handler(
 			columns: { idToken: true, accessToken: true },
 		});
 
-		if (!googleAccount) throw new Error("Conta Google não encontrada");
+		if (!googleAccount) throw new Error(t("errors:googleAccountNotFound"));
 
 		let pictureUrl: string | null = null;
 
@@ -183,9 +192,7 @@ const restoreGoogleAvatarFn = createServerFn({ method: "POST" }).handler(
 		}
 
 		if (!pictureUrl) {
-			throw new Error(
-				"Não foi possível obter o avatar do Google. Tente sair e entrar novamente.",
-			);
+			throw new Error(t("errors:googleAvatarError"));
 		}
 
 		await db

@@ -1,4 +1,5 @@
 import { Calendar, Check, Lock, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface MatchDay {
 	id: number;
@@ -21,13 +22,14 @@ export function MatchDaySelector({
 	onSelect,
 	tournamentName,
 }: MatchDaySelectorProps) {
+	const { t } = useTranslation("tournament");
 	const getStatusInfo = (status: string) => {
 		switch (status) {
 			case "open":
 				return {
 					color: "bg-green-500",
 					textColor: "text-white",
-					label: "Apostas Abertas",
+					label: t("matchDay.betsOpen"),
 					icon: Trophy,
 					borderColor: "border-green-500",
 				};
@@ -35,7 +37,7 @@ export function MatchDaySelector({
 				return {
 					color: "bg-yellow-500",
 					textColor: "text-black",
-					label: "Apostas Fechadas",
+					label: t("matchDay.betsClosed"),
 					icon: Lock,
 					borderColor: "border-yellow-500",
 				};
@@ -43,7 +45,7 @@ export function MatchDaySelector({
 				return {
 					color: "bg-blue-500",
 					textColor: "text-white",
-					label: "Concluído",
+					label: t("matchDay.completed"),
 					icon: Check,
 					borderColor: "border-blue-500",
 				};
@@ -51,7 +53,7 @@ export function MatchDaySelector({
 				return {
 					color: "bg-gray-300",
 					textColor: "text-gray-600",
-					label: "Rascunho",
+					label: t("matchDay.draft"),
 					icon: Calendar,
 					borderColor: "border-gray-300",
 				};
@@ -80,7 +82,7 @@ export function MatchDaySelector({
 				<div className="mb-8 text-center">
 					<div className="mb-4 inline-block border-[4px] border-black bg-white px-6 py-3 shadow-[8px_8px_0px_0px_#000]">
 						<h1 className="font-black font-display text-3xl text-black uppercase italic tracking-tighter md:text-4xl">
-							Selecione o Match Day
+							{t("matchDay.selectTitle")}
 						</h1>
 					</div>
 					{tournamentName && (
@@ -88,13 +90,13 @@ export function MatchDaySelector({
 							<div className="inline-flex items-center gap-2 border-[3px] border-black bg-[#ccff00] px-4 py-2 shadow-[4px_4px_0px_0px_#000]">
 								<Trophy className="h-4 w-4 text-black" strokeWidth={3} />
 								<span className="font-black text-black text-xs uppercase md:text-sm">
-									Torneio: {tournamentName}
+									{t("matchDay.tournamentLabel")}: {tournamentName}
 								</span>
 							</div>
 						</div>
 					)}
 					<p className="font-bold text-gray-600 text-sm uppercase md:text-base">
-						Escolha qual dia de partidas você quer visualizar
+						{t("matchDay.selectPrompt")}
 					</p>
 				</div>
 
@@ -125,14 +127,14 @@ export function MatchDaySelector({
 								{isActive && (
 									<div className="absolute -top-3 -right-3 rotate-12 border-[3px] border-black bg-[#ccff00] px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
 										<span className="font-black text-black text-xs uppercase">
-											🔥 Ativo
+											🔥 {t("matchDay.active")}
 										</span>
 									</div>
 								)}
 								{isDraft && (
 									<div className="absolute inset-0 z-10 flex items-center justify-center bg-black/35">
 										<span className="border-[2px] border-white bg-black px-2 py-1 font-black text-[10px] text-white uppercase">
-											Indisponivel
+											{t("matchDay.unavailable")}
 										</span>
 									</div>
 								)}
@@ -179,9 +181,7 @@ export function MatchDaySelector({
 													sports_esports
 												</span>
 												<span className="font-bold text-gray-700">
-													{md.matchCount} partida
-													{md.matchCount !== 1 ? "s" : ""} disponível
-													{md.matchCount !== 1 ? "eis" : ""}
+													{t("matchDay.available", { count: md.matchCount })}
 												</span>
 											</>
 										) : isDraft ? (
@@ -190,12 +190,12 @@ export function MatchDaySelector({
 													warning
 												</span>
 												<span className="font-bold text-red-500">
-													Nenhuma partida atribuída
+													{t("matchDay.noMatches")}
 												</span>
 											</>
 										) : (
 											<span className="font-bold text-gray-400 text-xs uppercase">
-												Aguardando atualização
+												{t("matchDay.pending")}
 											</span>
 										)}
 									</div>
@@ -220,10 +220,10 @@ export function MatchDaySelector({
 								<Calendar className="h-8 w-8 text-gray-400" strokeWidth={3} />
 							</div>
 							<h3 className="mb-2 font-black font-display text-black text-xl uppercase italic">
-								Nenhum Match Day
+								{t("matchDay.noMatchDayTitle")}
 							</h3>
 							<p className="text-gray-600 text-sm">
-								Não há match days disponíveis para este torneio.
+								{t("matchDay.noMatchDay")}
 							</p>
 						</div>
 					</div>

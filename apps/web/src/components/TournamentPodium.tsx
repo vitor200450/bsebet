@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
 import { Award, ChevronRight, Crown, Medal, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { getLeaderboard } from "@/server/leaderboard";
 
@@ -58,6 +59,7 @@ export function TournamentPodium({
 	tournamentLogoUrl,
 	className,
 }: TournamentPodiumProps) {
+	const { t } = useTranslation("tournament");
 	const { data: leaderboard, isLoading } = useQuery({
 		queryKey: ["tournamentLeaderboard", tournamentId],
 		queryFn: () => getLeaderboard({ data: tournamentId }),
@@ -125,7 +127,7 @@ export function TournamentPodium({
 						</div>
 						<div>
 							<p className="font-black text-[10px] text-white/60 uppercase tracking-widest">
-								Pódio Final
+								{t("podium.title")}
 							</p>
 							<h2 className="font-black text-white text-xl uppercase italic tracking-tight md:text-2xl">
 								{tournamentName}
@@ -138,7 +140,7 @@ export function TournamentPodium({
 						search={{ tab: "season", tournamentId }}
 						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
 					>
-						Ver Ranking
+						{t("podium.viewRanking")}
 						<ChevronRight
 							className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
 							strokeWidth={3}
@@ -196,6 +198,7 @@ interface PodiumBlockProps {
 }
 
 function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
+	const { t } = useTranslation("tournament");
 	const Icon = config.icon;
 
 	return (
@@ -272,7 +275,7 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 					config.text,
 				)}
 			>
-				{config.label}
+				{t(`podium.rank${rank}`)}
 			</div>
 
 			{/* Points */}

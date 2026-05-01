@@ -1,40 +1,40 @@
 {
-  "hero": {
-    "title": "Make your picks and climb the rankings",
-    "subtitle": "you know the competitive scene",
-    "description": "Earn points with your winning picks and climb to the top"
-  },
-  "recovery": {
-    "available": "RECOVERY BETS AVAILABLE!",
-    "active": "Recovery Mode Active",
-    "errorPrompt": "You missed some predictions. You qualify for recovery bets!",
-    "qualify": "You qualify for recovery bets!",
-    "points": "recover points",
-    "wrongMatchup": "Different matchup than predicted",
-    "wrongWinner": "Your winner pick didn't match",
-    "matchupLabel": "You bet on a matchup that didn't happen"
-  },
-  "bonus": {
-    "underdog": "Underdog Bonus (+{{percent}}%)",
-    "underdogLabel": "Underdogs"
-  },
-  "toast": {
-    "confirmed": "Your bets are confirmed! Good luck, champion!",
-    "updated": "Bet updated successfully",
-    "saved": "Bet placed successfully"
-  },
-  "empty": {
-    "noTournament": "No Tournament Available",
-    "noMatches": "Today's games have already started or haven't been scheduled yet."
-  },
-  "betLabel": "You bet on:",
-  "totalPoints": "Total: {{count}} point",
-  "totalPoints_other": "Total: {{count}} points",
-  "matchDayComplete": "Complete!",
-  "matchDayNewAvailable": "A new match day is available",
-  "nextMatch": "Next Match",
-  "betCount_one": "{{count}} bet",
-  "betCount_other": "{{count}} bets",
-  "walkoverNote": "All bettors receive winner points",
-  "walkoverTitle": "Match ended by walkover"
+	"hero": {
+		"title": "Make your picks and climb the rankings",
+		"subtitle": "you know the competitive scene",
+		"description": "Earn points with your winning picks and climb to the top"
+	},
+	"recovery": {
+		"available": "RECOVERY BETS AVAILABLE!",
+		"active": "Recovery Mode Active",
+		"errorPrompt": "You missed some predictions. You qualify for recovery bets!",
+		"qualify": "You qualify for recovery bets!",
+		"points": "recover points",
+		"wrongMatchup": "Different matchup than predicted",
+		"wrongWinner": "Your winner pick didn't match",
+		"matchupLabel": "You bet on a matchup that didn't happen"
+	},
+	"bonus": {
+		"underdog": "Underdog Bonus (+{{percent}}%)",
+		"underdogLabel": "Underdogs"
+	},
+	"toast": {
+		"confirmed": "Your bets are confirmed! Good luck, champion!",
+		"updated": "Bet updated successfully",
+		"saved": "Bet placed successfully"
+	},
+	"empty": {
+		"noTournament": "No Tournament Available",
+		"noMatches": "Today's games have already started or haven't been scheduled yet."
+	},
+	"betLabel": "You bet on:",
+	"totalPoints": "Total: {{count}} point",
+	"totalPoints_other": "Total: {{count}} points",
+	"matchDayComplete": "Complete!",
+	"matchDayNewAvailable": "A new match day is available",
+	"nextMatch": "Next Match",
+	"betCount_one": "{{count}} bet",
+	"betCount_other": "{{count}} bets",
+	"walkoverNote": "All bettors receive winner points",
+	"walkoverTitle": "Match ended by walkover"
 }

@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
-import { i18nOptions } from "./config";
 import type { SupportedLang } from "./config";
+import { i18nOptions } from "./config";
 
 let initialized = false;
 

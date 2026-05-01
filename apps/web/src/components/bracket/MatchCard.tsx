@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TeamLogo } from "../TeamLogo";
 import type { Match, Prediction, Team } from "./types";
 
@@ -134,6 +135,7 @@ export const MatchCard = ({
 	editableMatchIds?: Set<number>;
 	matchDayStatus?: string | null;
 }) => {
+	const { t } = useTranslation("betting");
 	const isGhost =
 		match.isGhost ||
 		!match.teamA ||
@@ -202,14 +204,14 @@ export const MatchCard = ({
 		!isReadOnly &&
 		isMatchEditable;
 	const blockedReason = (() => {
-		if (isGhost) return "Aguardando definicao dos times";
-		if (match.isLockedDependency) return "Aposte nos jogos anteriores primeiro";
+		if (isGhost) return t("blocked.waitingDefinition");
+		if (match.isLockedDependency) return t("blocked.betPreviousFirst");
 		if (!effectiveBettingEnabled)
-			return "Partida fora do match day selecionado";
+			return t("blocked.outsideMatchDay");
 		if (!isMatchEditable && matchDayStatus === "locked") {
-			return "Partida indisponivel para recovery";
+			return t("blocked.recoveryUnavailable");
 		}
-		return "Apostas indisponiveis";
+		return t("blocked.betsUnavailable");
 	})();
 
 	if (isLocked && !isReadOnly) {
@@ -232,8 +234,8 @@ export const MatchCard = ({
 				<div className="mt-2 border border-black/10 bg-black/5 px-3 py-1">
 					<span className="font-black text-[8px] text-black/40 uppercase italic tracking-widest">
 						{isReadOnly
-							? "Aguardando Resultados"
-							: "Aguardando Apostas Anteriores"}
+							? t("blocked.waitingResults")
+							: t("blocked.waitingPreviousBets")}
 					</span>
 				</div>
 				{/* Diagonal stripes overlay */}
@@ -307,15 +309,15 @@ export const MatchCard = ({
 									if (isWalkover) {
 										return (
 											<>
-												<div className="font-bold text-yellow-300">⚠️ W.O.</div>
+												<div className="font-bold text-yellow-300">{t("walkoverTitle")}</div>
 												<div className="text-[9px] text-gray-300">
-													Partida encerrada por walkover.
+													{t("walkoverDescription")}
 												</div>
 												<div className="text-[9px] text-gray-300">
-													Todos os apostadores recebem pontos de vencedor.
+													{t("walkoverNote")}
 												</div>
 												<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-yellow-300">
-													Total: +{prediction.pointsEarned} pts
+													{t("totalPoints", { count: prediction.pointsEarned })}
 												</div>
 											</>
 										);
@@ -325,22 +327,22 @@ export const MatchCard = ({
 										return (
 											<>
 												<div className="font-bold text-red-300">
-													❌ Palpite Incorreto
+													{t("prediction.incorrect")}
 												</div>
 												<div className="text-[9px] text-gray-300">
-													Você apostou em:{" "}
+													{t("betLabel")}{" "}
 													{match.teamA && match.teamA.id === prediction.winnerId
 														? match.teamA.name
-														: match.teamB?.name || "Time B"}
+														: match.teamB?.name || t("teamB")}
 												</div>
 												<div className="text-[9px] text-gray-300">
-													Vencedor real:{" "}
+													{t("actualWinner")}{" "}
 													{match.teamA && match.teamA.id === match.winnerId
 														? match.teamA.name
-														: match.teamB?.name || "Time B"}
+														: match.teamB?.name || t("teamB")}
 												</div>
 												<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-													Total: 0 pontos
+													{t("totalPoints", { count: 0 })}
 												</div>
 											</>
 										);
@@ -349,24 +351,24 @@ export const MatchCard = ({
 									return (
 										<>
 											<div className="font-bold text-green-300">
-												✅ Breakdown:
+												{t("prediction.breakdown")}
 											</div>
 											{prediction.isPerfectPick ? (
 												<div className="text-[9px] text-gray-300">
-													✓ Placar exato ({prediction.score})
+													{t("perfectScore")} ({prediction.score})
 												</div>
 											) : (
 												<div className="text-[9px] text-gray-300">
-													✓ Vencedor correto
+													{t("correctWinner")}
 												</div>
 											)}
 											{prediction.isUnderdogPick && (
 												<div className="text-[9px] text-purple-300">
-													🔥 Bônus azarão (+25%)
+													{t("bonus.underdog", { percent: 25 })}
 												</div>
 											)}
 											<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-yellow-300">
-												Total: +{prediction.pointsEarned} pts
+												{t("totalPoints", { count: prediction.pointsEarned })}
 											</div>
 										</>
 									);

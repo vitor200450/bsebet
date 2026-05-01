@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
+import { useTranslation } from "react-i18next";
 import { TeamLogo } from "./TeamLogo";
 
 export type Team = {
@@ -51,6 +52,7 @@ export function MatchCard({
 	initialBet,
 	showPredictionScore = false,
 }: MatchCardProps) {
+	const { t } = useTranslation("betting");
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
 	const isWalkover = match.resultType === "wo";
@@ -130,7 +132,7 @@ export function MatchCard({
 						)}
 						{initialBet && showPredictionScore && (
 							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ccff00] px-2 py-0.5 font-black text-[8px] text-black uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
-								PALPITE SALVO
+								{t("betSaved")}
 							</div>
 						)}
 						{isWalkover && isFinished && (
@@ -196,7 +198,7 @@ export function MatchCard({
 							)}
 							{initialBet && !showPredictionScore && (
 								<span className="mt-0.5 whitespace-nowrap font-black text-[10px] text-black/40 uppercase">
-									Palpite: {initialBet.predictedScoreA}
+									{t("betPredictionPrefix")}: {initialBet.predictedScoreA}
 								</span>
 							)}
 						</div>
@@ -312,7 +314,7 @@ export function MatchCard({
 							)}
 							{initialBet && !showPredictionScore && (
 								<span className="mt-0.5 whitespace-nowrap font-black text-[10px] text-black/40 uppercase">
-									Palpite: {initialBet.predictedScoreB}
+									{t("betPredictionPrefix")}: {initialBet.predictedScoreB}
 								</span>
 							)}
 						</div>
@@ -344,24 +346,24 @@ export function MatchCard({
 									if (!isCorrect) {
 										return (
 											<>
-												<div className="font-bold text-red-300">
-													❌ Palpite Incorreto
-												</div>
-												<div className="text-[9px] text-gray-300">
-													Você apostou em:{" "}
-													{match.teamA?.id === initialBet.predictedWinnerId
-														? match.teamA?.name
-														: match.teamB?.name}
-												</div>
-												<div className="text-[9px] text-gray-300">
-													Vencedor real:{" "}
-													{match.teamA?.id === match.winnerId
-														? match.teamA?.name
-														: match.teamB?.name}
-												</div>
-												<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-													Total: 0 pontos
-												</div>
+							<div className="font-bold text-red-300">
+									{t("prediction.incorrect")}
+								</div>
+								<div className="text-[9px] text-gray-300">
+									{t("betLabel")}{" "}
+									{match.teamA?.id === initialBet.predictedWinnerId
+										? match.teamA?.name
+										: match.teamB?.name}
+								</div>
+								<div className="text-[9px] text-gray-300">
+									{t("actualWinner")}{" "}
+									{match.teamA?.id === match.winnerId
+										? match.teamA?.name
+										: match.teamB?.name}
+								</div>
+								<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
+									{t("totalPoints", { count: 0 })}
+								</div>
 											</>
 										);
 									}
@@ -369,25 +371,25 @@ export function MatchCard({
 									return (
 										<>
 											<div className="font-bold text-green-300">
-												✅ Breakdown:
+												{t("prediction.breakdown")}
 											</div>
 											{initialBet.isPerfectPick ? (
 												<div className="text-[9px] text-gray-300">
-													✓ Placar exato ({initialBet.predictedScoreA}-
+													{t("perfectScore")} ({initialBet.predictedScoreA}-
 													{initialBet.predictedScoreB})
 												</div>
 											) : (
 												<div className="text-[9px] text-gray-300">
-													✓ Vencedor correto
+													{t("correctWinner")}
 												</div>
 											)}
 											{initialBet.isUnderdogPick && (
 												<div className="text-[9px] text-purple-300">
-													🔥 Bônus azarão (+25%)
+													{t("bonus.underdog", { percent: 25 })}
 												</div>
 											)}
 											<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-yellow-300">
-												Total: +{initialBet.pointsEarned} pts
+												{t("totalPoints", { count: initialBet.pointsEarned })}
 											</div>
 										</>
 									);

@@ -1,19 +1,19 @@
 {
-  "title": "Ranking",
-  "rankingCriteria": "Critérios de Classificação",
-  "tabs": {
-    "global": "Ranking Mundial",
-    "tournament": "Camp Específico"
-  },
-  "columns": {
-    "position": "Posição",
-    "player": "Jogador",
-    "score": "Pontuação",
-    "underdogs": "Azarões",
-    "globalPosition": "Posição geral",
-    "lastMonthResult": "Resultado mês anterior",
-    "primaryCriteria": "Critério principal"
-  },
-  "empty": "Nenhum dado disponível",
-  "selectTournament": "Filtrar torneio"
+	"title": "Ranking",
+	"rankingCriteria": "Critérios de Classificação",
+	"tabs": {
+		"global": "Ranking Mundial",
+		"tournament": "Camp Específico"
+	},
+	"columns": {
+		"position": "Posição",
+		"player": "Jogador",
+		"score": "Pontuação",
+		"underdogs": "Azarões",
+		"globalPosition": "Posição geral",
+		"lastMonthResult": "Resultado mês anterior",
+		"primaryCriteria": "Critério principal"
+	},
+	"empty": "Nenhum dado disponível",
+	"selectTournament": "Filtrar torneio"
 }

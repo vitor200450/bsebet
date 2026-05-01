@@ -1,15 +1,15 @@
 {
-  "hero": {
-    "tagline": "FAÇA SEUS",
-    "taglineHighlight": "PALPITES",
-    "subtitle": "e suba no ranking!",
-    "loginCta": "Faça login para começar a apostar"
-  },
-  "features": {
-    "predict": "Preveja resultados",
-    "predictDesc": "você entende do competitivo.",
-    "score": "Acumule pontos",
-    "scoreDesc": "com seus palpites certeiros",
-    "prizes": "PRÊMIOS"
-  }
+	"hero": {
+		"tagline": "FAÇA SEUS",
+		"taglineHighlight": "PALPITES",
+		"subtitle": "e suba no ranking!",
+		"loginCta": "Faça login para começar a apostar"
+	},
+	"features": {
+		"predict": "Preveja resultados",
+		"predictDesc": "você entende do competitivo.",
+		"score": "Acumule pontos",
+		"scoreDesc": "com seus palpites certeiros",
+		"prizes": "PRÊMIOS"
+	}
 }

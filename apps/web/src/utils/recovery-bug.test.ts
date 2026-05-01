@@ -6,27 +6,27 @@ import {
 } from "./recovery";
 
 /**
- * Teste reproduzindo o bug relatado:
+ * Test reproducing the reported bug:
  *
- * Cenário: Final mensal com quartas de final
- * - QF1: Time A vs Time B
- * - QF2: Time C vs Time D
- * - SF1: Vencedor QF1 vs Vencedor QF2
+ * Scenario: Monthly final with quarterfinals
+ * - QF1: Team A vs Team B
+ * - QF2: Team C vs Team D
+ * - SF1: Winner QF1 vs Winner QF2
  *
- * O usuário aposta nas quartas:
- * - QF1: Apostou que A ganha (mas resultado real foi B)
- * - QF2: Apostou que C ganha (mas resultado real foi D)
+ * User bets on quarterfinals:
+ * - QF1: Bet on A (but actual result was B)
+ * - QF2: Bet on C (but actual result was D)
  *
- * Resultado real:
- * - QF1: B ganhou (finished, winnerId = B)
- * - QF2: D ganhou (finished, winnerId = D)
+ * Actual result:
+ * - QF1: B won (finished, winnerId = B)
+ * - QF2: D won (finished, winnerId = D)
  *
- * Agora na SF1: B vs D
- * O usuário DEVE poder apostar na SF1 (recovery), já que errou as previsões anteriores.
+ * Now on SF1: B vs D
+ * User SHOULD be able to bet on SF1 (recovery), since they missed previous predictions.
  *
- * BUG: O usuário NÃO consegue apostar na SF1!
+ * BUG: User CANNOT bet on SF1!
  */
-describe("BUG: Recovery betting quando usuário erra todas as apostas das quartas", () => {
+describe("BUG: Recovery betting when user misses all quarterfinal bets", () => {
 	const teams = {
 		A: { id: 1, name: "Time A" },
 		B: { id: 2, name: "Time B" },
@@ -34,14 +34,14 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 		D: { id: 4, name: "Time D" },
 	};
 
-	it("deve permitir recovery na semifinal quando usuário erra ambas as quartas", () => {
+	it("should allow recovery in semifinal when user misses both quarterfinals", () => {
 		const matches = [
-			// Quartas de Final - Já finalizadas
+			// Quarterfinals - Finished
 			{
 				id: 1, // QF1: A vs B
 				status: "finished",
 				resultType: "normal",
-				winnerId: teams.B.id, // B ganhou (usuário apostou em A)
+				winnerId: teams.B.id, // B won (user bet on A)
 				teamAId: teams.A.id,
 				teamBId: teams.B.id,
 				teamAPreviousMatchId: null,
@@ -54,7 +54,7 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 				id: 2, // QF2: C vs D
 				status: "finished",
 				resultType: "normal",
-				winnerId: teams.D.id, // D ganhou (usuário apostou em C)
+				winnerId: teams.D.id, // D won (user bet on C)
 				teamAId: teams.C.id,
 				teamBId: teams.D.id,
 				teamAPreviousMatchId: null,
@@ -63,16 +63,16 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 				roundIndex: 0,
 				label: "Quarter-Final #2",
 			},
-			// Semi-Final - Ainda scheduled, times já definidos (B vs D)
+			// Semifinal - Still scheduled, teams already defined (B vs D)
 			{
 				id: 3, // SF1: B vs D
 				status: "scheduled",
 				resultType: "normal",
 				winnerId: null,
-				teamAId: teams.B.id, // B veio de QF1
-				teamBId: teams.D.id, // D veio de QF2
-				teamAPreviousMatchId: 1, // Depende de QF1
-				teamBPreviousMatchId: 2, // Depende de QF2
+				teamAId: teams.B.id, // B came from QF1
+				teamBId: teams.D.id, // D came from QF2
+				teamAPreviousMatchId: 1, // Depends on QF1
+				teamBPreviousMatchId: 2, // Depends on QF2
 				bracketSide: "upper",
 				roundIndex: 1,
 				label: "Semi-Final #1",
@@ -80,22 +80,20 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 		];
 
 		const userBets = [
-			{ matchId: 1, predictedWinnerId: teams.A.id }, // Errou! Apostou em A, ganhou B
-			{ matchId: 2, predictedWinnerId: teams.C.id }, // Errou! Apostou em C, ganhou D
+			{ matchId: 1, predictedWinnerId: teams.A.id }, // Wrong! Bet on A, B won
+			{ matchId: 2, predictedWinnerId: teams.C.id }, // Wrong! Bet on C, D won
 		];
 
 		const dependencySet = buildRecoveryDependencySet(matches, userBets);
 
-		// A semifinal (id 3) deve estar no dependencySet
-		// porque depende de partidas onde o usuário errou
+		// Semifinal (id 3) must be in dependencySet
+		// because it depends on matches where user was wrong
 		console.log("dependencySet:", Array.from(dependencySet));
-		console.log(
-			"Esperado: [3] (semi-final deve estar disponível para recovery)",
-		);
+		console.log("Expected: [3] (semifinal should be available for recovery)");
 
 		expect(dependencySet.has(3)).toBeTrue();
 
-		// Verificar se a SF está disponível para recovery submission
+		// Verify SF is available for recovery submission
 		const sfMatch = matches.find((m) => m.id === 3);
 		const isAllowed = isRecoverySubmissionAllowed({
 			match: sfMatch,
@@ -104,14 +102,14 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 		});
 
 		console.log("isRecoverySubmissionAllowed:", isAllowed);
-		console.log("Esperado: true");
+		console.log("Expected: true");
 
 		expect(isAllowed).toBeTrue();
 	});
 
-	it("deve permitir recovery na final quando usuário erra uma das semis", () => {
+	it("should allow recovery in final when user misses one semifinal", () => {
 		const matches = [
-			// Quartas
+			// Quarterfinals
 			{
 				id: 1,
 				status: "finished",
@@ -136,7 +134,7 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 				bracketSide: "upper",
 				roundIndex: 0,
 			},
-			// Semi 1: A vs C - usuário acertou!
+			// Semi 1: A vs C - user was correct!
 			{
 				id: 3,
 				status: "finished",
@@ -149,12 +147,12 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 				bracketSide: "upper",
 				roundIndex: 1,
 			},
-			// Semi 2: B vs D - usuário errou!
+			// Semi 2: B vs D - user was wrong!
 			{
 				id: 4,
 				status: "finished",
 				resultType: "normal",
-				winnerId: teams.D.id, // D ganhou, mas usuário apostou em B
+				winnerId: teams.D.id, // D won, but user bet on B
 				teamAId: teams.B.id,
 				teamBId: teams.D.id,
 				teamAPreviousMatchId: null,
@@ -179,18 +177,18 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 		];
 
 		const userBets = [
-			{ matchId: 1, predictedWinnerId: teams.A.id }, // Acertou
-			{ matchId: 2, predictedWinnerId: teams.C.id }, // Acertou
-			{ matchId: 3, predictedWinnerId: teams.A.id }, // Acertou
-			{ matchId: 4, predictedWinnerId: teams.B.id }, // Errou! Apostou em B, ganhou D
+			{ matchId: 1, predictedWinnerId: teams.A.id }, // Correct
+			{ matchId: 2, predictedWinnerId: teams.C.id }, // Correct
+			{ matchId: 3, predictedWinnerId: teams.A.id }, // Correct
+			{ matchId: 4, predictedWinnerId: teams.B.id }, // Wrong! Bet on B, D won
 		];
 
 		const dependencySet = buildRecoveryDependencySet(matches, userBets);
 
 		console.log("dependencySet (final):", Array.from(dependencySet));
-		console.log("Esperado: [5] (final deve estar disponível para recovery)");
+		console.log("Expected: [5] (final should be available for recovery)");
 
-		// A final deve estar no dependencySet porque depende da Semi 2 onde o usuário errou
+		// Final must be in dependencySet because it depends on Semi 2 where user was wrong
 		expect(dependencySet.has(5)).toBeTrue();
 
 		const finalMatch = matches.find((m) => m.id === 5);
@@ -204,10 +202,10 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 	});
 
 	/**
-	 * Cenário adicional: Usuário não fez NENHUMA aposta nas quartas
-	 * Deve poder apostar na semifinal como recovery?
+	 * Additional scenario: User made NO bets in quarterfinals
+	 * Should they be able to bet on semifinal as recovery?
 	 */
-	it("deve permitir recovery quando usuário não apostou nas quartas", () => {
+	it("should allow recovery when user did not bet on quarterfinals", () => {
 		const matches = [
 			{
 				id: 1,
@@ -248,15 +246,15 @@ describe("BUG: Recovery betting quando usuário erra todas as apostas das quarta
 			},
 		];
 
-		// Usuário NÃO fez apostas nas quartas
+		// User made NO bets in quarterfinals
 		const userBets: { matchId: number; predictedWinnerId: number }[] = [];
 
 		const dependencySet = buildRecoveryDependencySet(matches, userBets);
 
-		console.log("dependencySet (sem apostas):", Array.from(dependencySet));
+		console.log("dependencySet (no bets):", Array.from(dependencySet));
 
-		// Quando não há apostas, considera-se "wrong" (falta de aposta = erro)
-		// Então a semifinal deve estar no dependencySet
+		// When there are no bets, it's considered "wrong" (lack of bet = error)
+		// So the semifinal should be in dependencySet
 		expect(dependencySet.size).toBe(1);
 		expect(dependencySet.has(3)).toBeTrue();
 	});

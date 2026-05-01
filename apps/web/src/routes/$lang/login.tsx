@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/$lang/login")({
@@ -8,6 +9,7 @@ export const Route = createFileRoute("/$lang/login")({
 });
 
 function RouteComponent() {
+	const { t } = useTranslation("landing");
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleGoogleLogin = async () => {
@@ -69,7 +71,7 @@ function RouteComponent() {
 							BEM-VINDO
 						</h2>
 						<p className="font-bold text-gray-500 text-sm uppercase tracking-wider">
-							Faça login para começar a apostar
+							{t("hero.loginCta")}
 						</p>
 					</div>
 

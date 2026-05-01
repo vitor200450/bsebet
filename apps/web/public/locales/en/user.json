@@ -1,11 +1,11 @@
 {
-  "stats": {
-    "general": "GENERAL STATS",
-    "underdogs": "Underdogs",
-    "tournamentHistory": "Tournament History",
-    "filterTournament": "Filter tournament"
-  },
-  "medals": {
-    "latest": "Latest Achievements"
-  }
+	"stats": {
+		"general": "GENERAL STATS",
+		"underdogs": "Underdogs",
+		"tournamentHistory": "Tournament History",
+		"filterTournament": "Filter tournament"
+	},
+	"medals": {
+		"latest": "Latest Achievements"
+	}
 }

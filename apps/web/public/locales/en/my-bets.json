@@ -1,26 +1,26 @@
 {
-  "header": "Your complete bet history",
-  "tabs": {
-    "all": "All",
-    "pending": "Pending",
-    "finished": "Finished",
-    "recovery": "Recovery"
-  },
-  "labels": {
-    "projection": "Projection",
-    "projectionTooltip": "Projection based on your historical performance",
-    "futureProjection": "Future projection",
-    "underdogLabel": "Underdog",
-    "waitingScore": "Awaiting result",
-    "selectTournament": "Select tournament",
-    "clickToExpand": "Click tournament name to expand"
-  },
-  "empty": {
-    "none": "No bets found",
-    "noMatches": "No matches found",
-    "cta": "Place your bets on active tournaments!"
-  },
-  "actions": {
-    "viewTournament": "View tournament"
-  }
+	"header": "Your complete bet history",
+	"tabs": {
+		"all": "All",
+		"pending": "Pending",
+		"finished": "Finished",
+		"recovery": "Recovery"
+	},
+	"labels": {
+		"projection": "Projection",
+		"projectionTooltip": "Projection based on your historical performance",
+		"futureProjection": "Future projection",
+		"underdogLabel": "Underdog",
+		"waitingScore": "Awaiting result",
+		"selectTournament": "Select tournament",
+		"clickToExpand": "Click tournament name to expand"
+	},
+	"empty": {
+		"none": "No bets found",
+		"noMatches": "No matches found",
+		"cta": "Place your bets on active tournaments!"
+	},
+	"actions": {
+		"viewTournament": "View tournament"
+	}
 }

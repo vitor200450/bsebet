@@ -13,6 +13,7 @@ import {
 	Trophy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getMyBets } from "@/functions/get-my-bets";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/$lang/my-bets")({
 type FilterType = "all" | "pending" | "finished";
 
 function RouteComponent() {
+	const { t } = useTranslation("my-bets");
 	const [filter, setFilter] = useState<FilterType>("all");
 	const [tournamentFilter, setTournamentFilter] = useState<string>("all");
 	const [expandedTournamentIds, setExpandedTournamentIds] = useState<
@@ -142,7 +144,7 @@ function RouteComponent() {
 								Minhas Apostas
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
-								Histórico completo dos seus palpites
+								{t("header")}
 							</p>
 						</div>
 						<Link
@@ -163,15 +165,19 @@ function RouteComponent() {
 					<div className="flex flex-wrap items-center gap-3">
 						<div className="flex items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
 							{[
-								{ key: "all" as FilterType, label: "Todos", icon: Layers },
+								{
+									key: "all" as FilterType,
+									label: t("tabs.all"),
+									icon: Layers,
+								},
 								{
 									key: "pending" as FilterType,
-									label: "Pendentes",
+									label: t("tabs.pending"),
 									icon: Clock,
 								},
 								{
 									key: "finished" as FilterType,
-									label: "Finalizados",
+									label: t("tabs.finished"),
 									icon: CheckCircle2,
 								},
 							].map((tab) => {
@@ -225,7 +231,7 @@ function RouteComponent() {
 										label: t.name,
 									})),
 								]}
-								placeholder="Selecionar torneio"
+								placeholder={t("labels.selectTournament")}
 							/>
 						</div>
 						{!isLoading && filteredGroups.length > 1 && (
@@ -314,7 +320,7 @@ function RouteComponent() {
 													params={{ slug: group.tournament.slug }}
 													className="hidden rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold text-[10px] text-black uppercase tracking-wider transition-colors hover:bg-[#2e5cff] hover:text-white md:inline-flex"
 												>
-													Ver torneio
+													{t("actions.viewTournament")}
 												</Link>
 												<div className="shrink-0 rounded-md bg-[#ccff00] px-2.5 py-1 font-black text-black text-sm">
 													{group.bets.length}
@@ -361,7 +367,7 @@ function RouteComponent() {
 														// Status config
 														const statusConfig = isProjected
 															? {
-																	label: "Projeção",
+																	label: t("labels.projection"),
 																	color: "bg-[#ff6b00] text-black",
 																}
 															: isLive
@@ -396,12 +402,12 @@ function RouteComponent() {
 																className={clsx(
 																	"group relative overflow-hidden border-[3px] transition-all",
 																	isProjected
-																			? "border-gray-300 border-dashed bg-[#f8f8f8]"
-																			: won
-																					? "border-[#ccff00] bg-white shadow-[4px_4px_0_0_#ccff00] hover:shadow-[6px_6px_0_0_#ccff00]"
-																					: lost
-																							? "border-[#ff2e2e] bg-white shadow-[4px_4px_0_0_#ff2e2e] hover:shadow-[6px_6px_0_0_#ff2e2e]"
-																							: "border-black bg-white shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000]",
+																		? "border-gray-300 border-dashed bg-[#f8f8f8]"
+																		: won
+																			? "border-[#ccff00] bg-white shadow-[4px_4px_0_0_#ccff00] hover:shadow-[6px_6px_0_0_#ccff00]"
+																			: lost
+																				? "border-[#ff2e2e] bg-white shadow-[4px_4px_0_0_#ff2e2e] hover:shadow-[6px_6px_0_0_#ff2e2e]"
+																				: "border-black bg-white shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000]",
 																)}
 															>
 																{/* Top accent bar */}
@@ -420,7 +426,7 @@ function RouteComponent() {
 																)}
 
 																{/* Header: Stage + Status */}
-																<div className="flex items-center justify-between border-b-2 border-black bg-[#fafafa] px-4 py-2">
+																<div className="flex items-center justify-between border-black border-b-2 bg-[#fafafa] px-4 py-2">
 																	<span className="truncate font-black text-[10px] text-gray-500 uppercase tracking-widest">
 																		{stageLabel}
 																	</span>
@@ -439,16 +445,18 @@ function RouteComponent() {
 																	{/* Team A Panel */}
 																	<div
 																		className={clsx(
-																			"flex flex-1 items-center gap-3 border-r-2 border-black px-4 py-4 transition-all",
+																			"flex flex-1 items-center gap-3 border-black border-r-2 px-4 py-4 transition-all",
 																			!isProjected &&
-																				bet.predictedWinnerId === bet.match.teamA?.id
-																					? "bg-[#ccff00]/15"
-																					: isProjected
-																							? "bg-white"
-																							: "bg-[#f8f8f8]",
+																				bet.predictedWinnerId ===
+																					bet.match.teamA?.id
+																				? "bg-[#ccff00]/15"
+																				: isProjected
+																					? "bg-white"
+																					: "bg-[#f8f8f8]",
 																			isFinished &&
-																				bet.match.winner?.id === bet.match.teamA?.id &&
-																					"ring-inset ring-2 ring-[#ffc700]",
+																				bet.match.winner?.id ===
+																					bet.match.teamA?.id &&
+																				"ring-2 ring-[#ffc700] ring-inset",
 																		)}
 																	>
 																		<TeamLogo
@@ -461,16 +469,18 @@ function RouteComponent() {
 																				{bet.match.teamA?.name || "TBD"}
 																			</p>
 																			{!isProjected &&
-																				bet.predictedWinnerId === bet.match.teamA?.id && (
+																				bet.predictedWinnerId ===
+																					bet.match.teamA?.id && (
 																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
 																						<span className="material-symbols-outlined text-[10px]">
 																							check_circle
 																						</span>
-																						Seu palpite
+																						{t("betLabel")}
 																					</div>
 																				)}
 																			{isFinished &&
-																				bet.match.winner?.id === bet.match.teamA?.id && (
+																				bet.match.winner?.id ===
+																					bet.match.teamA?.id && (
 																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
 																						<span className="material-symbols-outlined text-[10px]">
 																							crown
@@ -493,16 +503,18 @@ function RouteComponent() {
 																	{/* Team B Panel */}
 																	<div
 																		className={clsx(
-																			"flex flex-1 items-center gap-3 border-l-2 border-black px-4 py-4 transition-all",
+																			"flex flex-1 items-center gap-3 border-black border-l-2 px-4 py-4 transition-all",
 																			!isProjected &&
-																				bet.predictedWinnerId === bet.match.teamB?.id
-																					? "bg-[#ccff00]/15"
-																					: isProjected
-																							? "bg-white"
-																							: "bg-[#f8f8f8]",
+																				bet.predictedWinnerId ===
+																					bet.match.teamB?.id
+																				? "bg-[#ccff00]/15"
+																				: isProjected
+																					? "bg-white"
+																					: "bg-[#f8f8f8]",
 																			isFinished &&
-																				bet.match.winner?.id === bet.match.teamB?.id &&
-																					"ring-inset ring-2 ring-[#ffc700]",
+																				bet.match.winner?.id ===
+																					bet.match.teamB?.id &&
+																				"ring-2 ring-[#ffc700] ring-inset",
 																		)}
 																	>
 																		<div className="min-w-0 flex-1 text-right">
@@ -510,16 +522,18 @@ function RouteComponent() {
 																				{bet.match.teamB?.name || "TBD"}
 																			</p>
 																			{!isProjected &&
-																				bet.predictedWinnerId === bet.match.teamB?.id && (
+																				bet.predictedWinnerId ===
+																					bet.match.teamB?.id && (
 																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
 																						<span className="material-symbols-outlined text-[10px]">
 																							check_circle
 																						</span>
-																						Seu palpite
+																						{t("betLabel")}
 																					</div>
 																				)}
 																			{isFinished &&
-																				bet.match.winner?.id === bet.match.teamB?.id && (
+																				bet.match.winner?.id ===
+																					bet.match.teamB?.id && (
 																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
 																						<span className="material-symbols-outlined text-[10px]">
 																							crown
@@ -537,7 +551,7 @@ function RouteComponent() {
 																</div>
 
 																{/* Footer - Scores & Points */}
-																<div className="flex items-center justify-between border-t-2 border-black bg-white px-4 py-3">
+																<div className="flex items-center justify-between border-black border-t-2 bg-white px-4 py-3">
 																	<div className="flex items-center gap-3">
 																		{/* Date or Score info */}
 																		{isProjected ? (
@@ -545,7 +559,7 @@ function RouteComponent() {
 																				<span className="material-symbols-outlined text-base">
 																					auto_awesome
 																				</span>
-																				Projeção futura
+																				{t("labels.futureProjection")}
 																			</span>
 																		) : !isFinished ? (
 																			<span className="flex items-center gap-1 text-gray-600 text-xs">
@@ -615,7 +629,7 @@ function RouteComponent() {
 																			bet.isUnderdogPick &&
 																			won && (
 																				<span className="rounded-md border border-black bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 font-black text-[9px] text-white uppercase">
-																					Azarão
+																					{t("labels.underdogLabel")}
 																				</span>
 																			)}
 																	</div>
@@ -627,7 +641,7 @@ function RouteComponent() {
 											) : (
 												<div className="rounded-lg border-2 border-black bg-white p-4 text-center shadow-[3px_3px_0_0_#000]">
 													<p className="font-bold text-gray-600 text-sm">
-														Clique no nome do torneio para expandir
+														{t("labels.clickToExpand")}
 													</p>
 												</div>
 											)}
@@ -646,14 +660,14 @@ function RouteComponent() {
 						</div>
 						<p className="mb-1 font-black text-[#121212] text-lg uppercase">
 							{filter === "all"
-								? "Nenhum palpite encontrado"
+								? t("empty.none")
 								: filter === "pending"
 									? "Nenhum palpite pendente"
 									: "Nenhum palpite finalizado"}
 						</p>
 						<p className="mb-5 text-gray-600 text-sm">
 							{filter === "all"
-								? "Faça suas apostas nos torneios ativos!"
+								? t("empty.cta")
 								: "Tente outro filtro ou faça mais apostas."}
 						</p>
 						<Link to="/">

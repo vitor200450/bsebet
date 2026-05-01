@@ -1,6 +1,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
 	createMatchDay,
@@ -28,6 +29,7 @@ export function MatchDaysManager({
 	tournamentStartDate?: Date | null;
 	tournamentEndDate?: Date | null;
 }) {
+	const { t } = useTranslation("admin-matches");
 	const router = useRouter();
 	const [isCreating, setIsCreating] = useState(false);
 	const [newDayLabel, setNewDayLabel] = useState("");
@@ -49,26 +51,26 @@ export function MatchDaysManager({
 					status: "draft",
 				},
 			});
-			toast.success("Dia criado com sucesso!");
+			toast.success(t("matchDays.created"));
 			setNewDayLabel("");
 			setNewDayDate("");
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao criar dia.");
+			toast.error(t("matchDays.createError"));
 		} finally {
 			setIsCreating(false);
 		}
 	};
 
 	const handleDelete = async (id: number) => {
-		if (!confirm("Tem certeza? Isso vai desvincular as partidas deste dia."))
+		if (!confirm(t("matchDays.deleteConfirm")))
 			return;
 		try {
 			await deleteMatchDay({ data: id });
-			toast.success("Dia excluído.");
+			toast.success(t("matchDays.deleted"));
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao excluir dia.");
+			toast.error(t("matchDays.deleteError"));
 		}
 	};
 
@@ -97,11 +99,11 @@ export function MatchDaysManager({
 					status: editStatus,
 				},
 			});
-			toast.success("Match day atualizado!");
+			toast.success(t("matchDays.updated"));
 			cancelEditing();
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao atualizar match day.");
+			toast.error(t("matchDays.updateError"));
 		}
 	};
 
@@ -128,22 +130,20 @@ export function MatchDaysManager({
 					<span className="text-2xl">ℹ️</span>
 					<div>
 						<p className="font-bold text-blue-900 text-sm">
-							O <strong>status do Match Day</strong> controla automaticamente as
-							apostas:
+							{t("matchDays.infoTitle")}
 						</p>
 						<ul className="mt-2 ml-4 space-y-1 text-blue-800 text-xs">
 							<li>
-								• <strong>Open</strong> = Apostas abertas para todas as partidas
+								• <strong>Open</strong> = {t("matchDays.infoOpen")}
 							</li>
 							<li>
-								• <strong>Locked</strong> = Apostas fechadas (partidas em
-								andamento)
+								• <strong>Locked</strong> = {t("matchDays.infoLocked")}
 							</li>
 							<li>
-								• <strong>Finished</strong> = Dia finalizado
+								• <strong>Finished</strong> = {t("matchDays.infoFinished")}
 							</li>
 							<li>
-								• <strong>Draft</strong> = Ainda não disponível
+								• <strong>Draft</strong> = {t("matchDays.draft")}
 							</li>
 						</ul>
 					</div>
@@ -153,19 +153,19 @@ export function MatchDaysManager({
 			{/* Create New Day */}
 			<div className="border-[4px] border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
 				<h3 className="mb-4 font-black text-black text-xl uppercase italic">
-					Novo Dia de Jogo
+					{t("matchDays.newDay")}
 				</h3>
 				<div className="flex items-end gap-4">
 					<div className="flex-1">
 						<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-							Nome do Dia (Ex: Dia 1 - Grupos)
+							{t("matchDays.nameLabel")}
 						</label>
 						<input
 							type="text"
 							value={newDayLabel}
 							onChange={(e) => setNewDayLabel(e.target.value)}
 							className="w-full border-[3px] border-black p-2 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-							placeholder="Digite o nome..."
+							placeholder={t("matchDays.namePlaceholder")}
 						/>
 					</div>
 					<div className="w-48">
@@ -195,7 +195,7 @@ export function MatchDaysManager({
 						) : (
 							<Plus className="h-5 w-5" strokeWidth={3} />
 						)}
-						Criar
+						{t("matchDays.create")}
 					</button>
 				</div>
 			</div>
@@ -216,7 +216,7 @@ export function MatchDaysManager({
 									<div className="flex items-end gap-4">
 										<div className="flex-1">
 											<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-												Nome do Dia
+												{t("matchDays.editNameLabel")}
 											</label>
 											<input
 												type="text"
@@ -262,7 +262,7 @@ export function MatchDaysManager({
 													},
 													{ value: "finished", label: "Finished" },
 												]}
-												placeholder="Selecione..."
+												placeholder={t("matchDays.selectPlaceholder")}
 											/>
 										</div>
 									</div>
@@ -272,7 +272,7 @@ export function MatchDaysManager({
 											className="flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-sm uppercase transition-all hover:bg-gray-100"
 										>
 											<X className="h-4 w-4" strokeWidth={3} />
-											Cancelar
+											{t("matchDays.cancel")}
 										</button>
 										<button
 											onClick={() => handleUpdate(day.id)}
@@ -280,7 +280,7 @@ export function MatchDaysManager({
 											className="flex items-center gap-2 border-[3px] border-black bg-black px-4 py-2 font-black text-sm text-white uppercase transition-all hover:bg-[#ccff00] hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
 										>
 											<Check className="h-4 w-4" strokeWidth={3} />
-											Salvar
+											{t("matchDays.save")}
 										</button>
 									</div>
 								</div>
@@ -307,7 +307,7 @@ export function MatchDaysManager({
 													{day.status}
 												</span>
 												<span className="font-bold text-gray-400 text-xs">
-													{day.matches.length} partidas
+													{t("matchDays.matchCount", { count: day.matches.length })}
 												</span>
 											</div>
 										</div>
@@ -318,19 +318,19 @@ export function MatchDaysManager({
 										<div className="mr-2 flex flex-col items-end">
 											{day.status === "open" ? (
 												<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0px_0px_#000]">
-													APOSTAS ABERTAS
+													{t("matchDays.betsOpenBadge")}
 												</span>
 											) : day.status === "locked" ? (
 												<span className="border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[9px] text-white uppercase">
-													APOSTAS FECHADAS
+													{t("matchDays.betsClosedBadge")}
 												</span>
 											) : day.status === "finished" ? (
 												<span className="border border-black bg-black px-1.5 py-0.5 font-black text-[9px] text-white uppercase">
-													FINALIZADO
+													{t("matchDays.finishedBadge")}
 												</span>
 											) : (
 												<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-black text-[9px] text-gray-400 uppercase">
-													RASCUNHO
+													{t("matchDays.draftBadge")}
 												</span>
 											)}
 										</div>
@@ -338,7 +338,7 @@ export function MatchDaysManager({
 										<button
 											onClick={() => startEditing(day)}
 											className="border-2 border-black p-2 text-black transition-colors hover:bg-[#ccff00]"
-											title="Editar Match Day"
+											title={t("matchDays.editTitle")}
 										>
 											<Pencil className="h-5 w-5" />
 										</button>
@@ -357,7 +357,7 @@ export function MatchDaysManager({
 				})}
 				{matchDays.length === 0 && (
 					<div className="py-12 text-center font-bold text-gray-400 uppercase">
-						Nenhum dia criado.
+						{t("matchDays.noDays")}
 					</div>
 				)}
 			</div>

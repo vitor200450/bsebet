@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Match, Prediction } from "./bracket/types";
 import { TeamLogo } from "./TeamLogo";
 
@@ -103,6 +104,7 @@ export function BettingCarousel({
 	editableMatchIds?: Set<number>;
 	matchDayStatus?: string | null;
 }) {
+	const { t } = useTranslation("betting");
 	const [currentIndex, setCurrentIndex] = useState(0);
 
 	// Safety: If the match list shrinks (e.g. a game starts and leaves the carousel),
@@ -217,7 +219,7 @@ export function BettingCarousel({
 	// Determine button text
 	const getButtonText = () => {
 		if (isLastMatch && allBetsComplete) {
-			return "Revisar Todas as Apostas";
+			return t("reviewAll");
 		}
 		if (isLastMatch && !allBetsComplete) {
 			const missingCount = matches.filter(
@@ -227,9 +229,9 @@ export function BettingCarousel({
 					!predictions[m.id].score ||
 					predictions[m.id].score.trim() === "",
 			).length;
-			return `Faltam ${missingCount} Placar${missingCount > 1 ? "es" : ""}`;
+			return t("missingScores", { count: missingCount });
 		}
-		return "Próximo Jogo";
+		return t("nextMatch");
 	};
 
 	const selectedWinnerId = currentPrediction?.winnerId || null;
@@ -315,11 +317,12 @@ export function BettingCarousel({
 						</div>
 
 						<h2 className="mb-2 font-black font-display text-2xl text-black uppercase">
-							Nenhum Jogo <span className="text-[#ff2e2e]">Agora</span>
+							{t("empty.title")}{" "}
+							<span className="text-[#ff2e2e]">{t("empty.now")}</span>
 						</h2>
 
 						<p className="mb-6 font-bold text-gray-600 text-sm">
-							Os jogos de hoje já começaram ou ainda não foram agendados.
+							{t("empty.noMatches")}
 						</p>
 
 						{(Object.keys(predictions).length > 0 || hasUserBets) &&
@@ -331,14 +334,14 @@ export function BettingCarousel({
 								<span className="material-symbols-outlined text-lg">
 									rate_review
 								</span>
-								Revisar Apostas
+								{t("reviewBets")}
 							</button>
 						) : (
 							<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-bold text-gray-400 text-sm">
 								<span className="material-symbols-outlined text-sm">
 									hourglass_empty
 								</span>
-								Aguardando Partidas
+								{t("empty.waiting")}
 							</div>
 						)}
 					</div>
@@ -388,7 +391,7 @@ export function BettingCarousel({
 									: "bg-[#ccff00] text-black",
 							)}
 						>
-							{isEffectiveReadOnly ? "APOSTAS FECHADAS" : "APOSTAS ABERTAS"}
+							{isEffectiveReadOnly ? t("betsClosed") : t("betsOpen")}
 						</div>
 					</header>
 
@@ -416,7 +419,10 @@ export function BettingCarousel({
 										{/* Match Counter */}
 										<div className="border-black border-b-2 bg-[#f0f0f0] py-1.5 text-center">
 											<span className="font-black text-[10px] text-black uppercase tracking-wider">
-												Partida {currentIndex + 1} de {matches.length}
+												{t("matchCounter", {
+													current: currentIndex + 1,
+													total: matches.length,
+												})}
 											</span>
 										</div>
 
@@ -550,7 +556,7 @@ export function BettingCarousel({
 													<div className="space-y-1.5">
 														<div className="flex items-center justify-between">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Região
+																{t("common:region")}
 															</span>
 															<span className="font-bold text-[10px] text-black">
 																{currentMatch.stats.regionA}
@@ -566,7 +572,7 @@ export function BettingCarousel({
 														</div>
 														<div className="flex items-center justify-between">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Série
+																{t("common:series")}
 															</span>
 															{currentMatch.stats.streakA > 0 && (
 																<span className="font-bold text-[10px] text-green-600">
@@ -613,7 +619,7 @@ export function BettingCarousel({
 													<div className="space-y-1.5">
 														<div className="flex items-center justify-between">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Região
+																{t("common:region")}
 															</span>
 															<span className="font-bold text-[10px] text-black">
 																{currentMatch.stats.regionB}
@@ -629,7 +635,7 @@ export function BettingCarousel({
 														</div>
 														<div className="flex items-center justify-between">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Série
+																{t("common:series")}
 															</span>
 															{currentMatch.stats.streakB > 0 && (
 																<span className="font-bold text-[10px] text-green-600">
@@ -712,7 +718,7 @@ export function BettingCarousel({
 								<div className="mt-6 w-full">
 									<div className="mb-2 text-center">
 										<span className="font-black text-black text-xs uppercase tracking-wider">
-											Escolha o Placar
+											{t("pickScore")}
 										</span>
 									</div>
 									<div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">

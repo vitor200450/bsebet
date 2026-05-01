@@ -1,42 +1,42 @@
 {
-  "browse": {
-    "description": "Competições de alto nível de Brawl Stars",
-    "searchPlaceholder": "Buscar torneio...",
-    "empty": "Nada por aqui",
-    "noResults": "Nenhum resultado",
-    "noActive": "Não há torneios ativos no momento.",
-    "noScheduled": "Não há torneios programados no momento.",
-    "noFinished": "Não há torneios finalizados no momento.",
-    "tabs": {
-      "active": "Ativos",
-      "scheduled": "Programados",
-      "finished": "Finalizados"
-    }
-  },
-  "detail": {
-    "overview": "Visão Geral",
-    "bracket": "Chaveamento",
-    "standings": "Classificação",
-    "history": "Histórico",
-    "noMatches": "Nenhuma partida encontrada",
-    "round": "rodada {{number}}",
-    "elimination": "eliminação"
-  },
-  "podium": {
-    "title": "Pódio Final",
-    "champion": "CAMPEÃO"
-  },
-  "selector": {
-    "recovery": "RECUPERAÇÃO",
-    "label": "Selecionar torneio"
-  },
-  "matchDay": {
-    "completed": "Concluído",
-    "available": "disponível",
-    "availablePlural": "disponíveis",
-    "noMatchDay": "Não há match days disponíveis para este torneio.",
-    "selectPrompt": "Escolha qual dia de partidas você quer visualizar",
-    "noMatches": "Nenhuma partida atribuída",
-    "pending": "Aguardando atualização"
-  }
+	"browse": {
+		"description": "Competições de alto nível de Brawl Stars",
+		"searchPlaceholder": "Buscar torneio...",
+		"empty": "Nada por aqui",
+		"noResults": "Nenhum resultado",
+		"noActive": "Não há torneios ativos no momento.",
+		"noScheduled": "Não há torneios programados no momento.",
+		"noFinished": "Não há torneios finalizados no momento.",
+		"tabs": {
+			"active": "Ativos",
+			"scheduled": "Programados",
+			"finished": "Finalizados"
+		}
+	},
+	"detail": {
+		"overview": "Visão Geral",
+		"bracket": "Chaveamento",
+		"standings": "Classificação",
+		"history": "Histórico",
+		"noMatches": "Nenhuma partida encontrada",
+		"round": "rodada {{number}}",
+		"elimination": "eliminação"
+	},
+	"podium": {
+		"title": "Pódio Final",
+		"champion": "CAMPEÃO"
+	},
+	"selector": {
+		"recovery": "RECUPERAÇÃO",
+		"label": "Selecionar torneio"
+	},
+	"matchDay": {
+		"completed": "Concluído",
+		"available": "disponível",
+		"availablePlural": "disponíveis",
+		"noMatchDay": "Não há match days disponíveis para este torneio.",
+		"selectPrompt": "Escolha qual dia de partidas você quer visualizar",
+		"noMatches": "Nenhuma partida atribuída",
+		"pending": "Aguardando atualização"
+	}
 }

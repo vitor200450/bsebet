@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { AlertCircle, Check, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
 	createMatch,
@@ -48,6 +49,7 @@ export function MatchModal({
 	groupsCount = 8,
 	advancingPerGroup = 4,
 }: MatchModalProps) {
+	const { t } = useTranslation("admin-matches");
 	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRefreshingWalkoverWinner, setIsRefreshingWalkoverWinner] =
@@ -530,7 +532,7 @@ export function MatchModal({
 			} catch (error) {
 				console.error("Auto-save failed:", error);
 				setSaveStatus("error");
-				toast.error("Falha ao salvar atualização da partida");
+				toast.error(t("modal.saveError"));
 			}
 		}, 800);
 
@@ -606,11 +608,11 @@ export function MatchModal({
 			setSaveStatus("saved");
 			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
 			await onSuccess();
-			toast.success("Vencedor do W.O. atualizado com sucesso");
+			toast.success(t("modal.woUpdated"));
 			setTimeout(() => setSaveStatus("idle"), 2000);
 		} catch (error) {
 			console.error("Failed to refresh W.O. winner:", error);
-			toast.error("Nao foi possivel atualizar o vencedor do W.O.");
+			toast.error(t("modal.woUpdateError"));
 		}
 		setIsRefreshingWalkoverWinner(false);
 	};
@@ -909,8 +911,7 @@ export function MatchModal({
 									{canAutoResolveOneSidedWalkover && (
 										<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-blue-700 uppercase">
 											<AlertCircle className="h-3 w-3" />
-											W.O. com um único time definido será resolvido
-											automaticamente.
+											{t("modal.woDescription")}
 										</p>
 									)}
 									{canAutoResolveOneSidedWalkover && formData.winnerId && (
@@ -926,7 +927,7 @@ export function MatchModal({
 											}
 											className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-black text-[10px] text-black uppercase hover:bg-yellow-300"
 										>
-											Limpar vencedor (auto-resolver quando time aparecer)
+											{t("modal.clearWinner")}
 										</button>
 									)}
 									{canShowRefreshWalkoverWinner && (
@@ -941,18 +942,17 @@ export function MatchModal({
 											{isRefreshingWalkoverWinner ? (
 												<span className="inline-flex items-center gap-1">
 													<Loader2 className="h-3 w-3 animate-spin" />
-													Atualizando...
+													{t("modal.updating")}
 												</span>
 											) : (
-												"Refresh vencedor W.O."
+												t("modal.refreshWoWinner")
 											)}
 										</button>
 									)}
 									{canShowRefreshWalkoverWinner &&
 										!canRefreshWalkoverWinner && (
 											<p className="mt-1 text-center font-bold text-[9px] text-gray-600 uppercase">
-												Refresh disponivel quando os dois times estiverem
-												definidos.
+												{t("modal.refreshInfo")}
 											</p>
 										)}
 									{!formData.winnerId && !canAutoResolveOneSidedWalkover ? (

@@ -3,37 +3,38 @@ import { bets, matches } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 import {
 	buildRecoveryDependencySet,
 	isRecoverySubmissionAllowed,
 } from "../utils/recovery";
 
 // Schema for Bet Submission
-const betSubmissionSchema = z.object({
-	matchId: z.number().int().positive("Match ID deve ser um número positivo"),
-	predictedWinnerId: z
-		.number()
-		.int()
-		.positive("Winner ID deve ser um número positivo"),
-	predictedScoreA: z
-		.number()
-		.int()
-		.min(0, "Score A deve ser >= 0")
-		.max(10, "Score A deve ser <= 10"),
-	predictedScoreB: z
-		.number()
-		.int()
-		.min(0, "Score B deve ser >= 0")
-		.max(10, "Score B deve ser <= 10"),
-});
+const createBetSubmissionSchema = (t: (key: string) => string) =>
+	z.object({
+		matchId: z.number().int().positive(t("validation:matchIdPositive")),
+		predictedWinnerId: z
+			.number()
+			.int()
+			.positive(t("validation:winnerIdPositive")),
+		predictedScoreA: z.number().int().min(0).max(10),
+		predictedScoreB: z.number().int().min(0).max(10),
+	});
 
 // Schema for Multiple Bets Submission
-const multipleBetsSchema = z.object({
-	bets: z.array(betSubmissionSchema).min(1, "Deve haver pelo menos uma aposta"),
-});
+const createMultipleBetsInputSchema = (t: (key: string) => string) =>
+	z.object({
+		bets: z.array(createBetSubmissionSchema(t)).min(1),
+		lang: z.enum(["pt", "en"]).default("pt"),
+	});
 
-type BetSubmission = z.infer<typeof betSubmissionSchema>;
-type MultipleBetsInput = z.infer<typeof multipleBetsSchema>;
+const _dummyT = (key: string) => key;
+
+type BetSubmission = z.infer<ReturnType<typeof createBetSubmissionSchema>>;
+type MultipleBetsInput = z.infer<
+	ReturnType<typeof createMultipleBetsInputSchema>
+>;
 
 /**
  * Submit a single bet
@@ -57,10 +58,12 @@ const submitBetFn = createServerFn({
 	}
 
 	const userId = session.user.id;
-	const data = ctx.data as BetSubmission;
+	const data = ctx.data as BetSubmission & { lang?: string };
+
+	const t = createServerT((data?.lang ?? "pt") as SupportedLang);
 
 	// 2. Validate input
-	const validData = betSubmissionSchema.parse(data);
+	const validData = createBetSubmissionSchema(t).parse(data);
 
 	// 3. Fetch match and validate
 	const match = await db.query.matches.findFirst({
@@ -71,12 +74,12 @@ const submitBetFn = createServerFn({
 	});
 
 	if (!match) {
-		throw new Error("Partida não encontrada");
+		throw new Error(t("errors:matchNotFound"));
 	}
 
 	// 4. Check if betting is enabled
 	if (!match.isBettingEnabled) {
-		throw new Error("Apostas desabilitadas para esta partida");
+		throw new Error(t("errors:bettingDisabled"));
 	}
 
 	// 5. Check if match hasn't started yet
@@ -85,7 +88,7 @@ const submitBetFn = createServerFn({
 	const isStarted = match.status === "live" || match.status === "finished";
 
 	if (isStarted) {
-		throw new Error("Apostas encerradas - a partida já começou");
+		throw new Error(t("errors:bettingClosed"));
 	}
 
 	// 6. Validate predicted winner is one of the teams
@@ -95,7 +98,7 @@ const submitBetFn = createServerFn({
 			validData.predictedWinnerId !== match.teamAId &&
 			validData.predictedWinnerId !== match.teamBId
 		) {
-			throw new Error("Vencedor previsto deve ser um dos times da partida");
+			throw new Error(t("errors:invalidWinner"));
 		}
 	}
 
@@ -121,7 +124,7 @@ const submitBetFn = createServerFn({
 	}
 
 	if (winnerScore <= loserScore) {
-		throw new Error("O vencedor deve ter mais pontos que o perdedor");
+		throw new Error(t("errors:winnerMustHaveMorePoints"));
 	}
 
 	// Determine Best Of X (default to Bo5)
@@ -210,10 +213,12 @@ const submitMultipleBetsFn = createServerFn({
 	}
 
 	const userId = session.user.id;
-	const data = ctx.data as MultipleBetsInput;
+	const data = ctx.data;
+
+	const t = createServerT((data?.lang ?? "pt") as SupportedLang);
 
 	// 2. Validate input
-	const validData = multipleBetsSchema.parse(data);
+	const validData = createMultipleBetsInputSchema(t).parse(data);
 
 	// 3. Validate all matches exist and are open for betting
 	const matchIds = validData.bets.map((bet) => bet.matchId);
@@ -413,7 +418,7 @@ const submitMultipleBetsFn = createServerFn({
 	// isRecoveryBet was only used to populate recoveryMatchIds (set per-bet above)
 
 	if (errors.length > 0) {
-		throw new Error(`Erros de validação:\n${errors.join("\n")}`);
+		throw new Error(`${t("errors:validationErrors")}:\n${errors.join("\n")}`);
 	}
 
 	// 4. Safe "Upsert" Strategy: Transactional Delete + Insert
@@ -457,7 +462,7 @@ const submitMultipleBetsFn = createServerFn({
 	return {
 		success: true,
 		bets: inserted,
-		message: `${inserted.length} aposta(s) salva(s) com sucesso`,
+		message: `${inserted.length} ${t("errors:betsSaved")}`,
 	};
 });
 

@@ -9,6 +9,7 @@ import {
 	Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { getTournaments } from "@/server/tournaments";
 
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/$lang/tournaments/")({
 });
 
 function TournamentsPage() {
+	const { t } = useTranslation("tournament");
 	const tournaments = Route.useLoaderData();
 	const { filter } = Route.useSearch();
 	const navigate = useNavigate({ from: "/tournaments/" });
@@ -41,9 +43,9 @@ function TournamentsPage() {
 	}, [tournaments, filter, searchQuery]);
 
 	const filterTabs = [
-		{ key: "active" as const, label: "ATIVOS" },
-		{ key: "upcoming" as const, label: "EM BREVE" },
-		{ key: "finished" as const, label: "FINALIZADOS" },
+		{ key: "active" as const, label: t("browse.tabs.active") },
+		{ key: "upcoming" as const, label: t("browse.tabs.scheduled") },
+		{ key: "finished" as const, label: t("browse.tabs.finished") },
 	];
 
 	return (
@@ -67,7 +69,7 @@ function TournamentsPage() {
 								Torneios
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
-								Competições de alto nível de Brawl Stars
+								{t("browse.description")}
 							</p>
 						</div>
 						<div className="flex items-center gap-2 text-gray-500">
@@ -87,7 +89,7 @@ function TournamentsPage() {
 							<Search className="h-5 w-5 text-gray-400" strokeWidth={2.5} />
 							<input
 								type="text"
-								placeholder="Buscar torneio..."
+								placeholder={t("browse.searchPlaceholder")}
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 								className="w-full bg-transparent font-bold text-[#121212] placeholder:text-gray-400 focus:outline-none"
@@ -283,12 +285,16 @@ function EmptyState({
 				<Search className="h-8 w-8 text-gray-400" strokeWidth={2} />
 			</div>
 			<h2 className="mb-2 font-black text-[#121212] text-xl uppercase">
-				{hasSearch ? "Nenhum resultado" : "Nada por aqui"}
+				{hasSearch ? t("browse.noResults") : t("browse.empty")}
 			</h2>
 			<p className="mx-auto max-w-md text-gray-600 text-sm">
 				{hasSearch
 					? "Tente ajustar sua busca ou mudar os filtros."
-					: `Não há torneios ${filter === "active" ? "ativos" : filter === "upcoming" ? "programados" : "finalizados"} no momento.`}
+					: filter === "active"
+						? t("browse.noActive")
+						: filter === "upcoming"
+							? t("browse.noScheduled")
+							: t("browse.noFinished")}
 			</p>
 		</div>
 	);

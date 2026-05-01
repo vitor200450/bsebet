@@ -1,14 +1,14 @@
 {
-  "stats": {
-    "winRate": "Win Rate",
-    "wins": "Wins",
-    "currentStreak": "Current Streak"
-  },
-  "sections": {
-    "upcoming": "Upcoming Matches",
-    "recentHistory": "Recent History"
-  },
-  "empty": {
-    "noFinishedMatches": "No finished matches"
-  }
+	"stats": {
+		"winRate": "Win Rate",
+		"wins": "Wins",
+		"currentStreak": "Current Streak"
+	},
+	"sections": {
+		"upcoming": "Upcoming Matches",
+		"recentHistory": "Recent History"
+	},
+	"empty": {
+		"noFinishedMatches": "No finished matches"
+	}
 }

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
 import { Award, ChevronRight, Medal, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 
 function cn(...inputs: ClassValue[]) {
@@ -61,6 +62,7 @@ export function MedalSummary({
 	showLink = true,
 	className,
 }: MedalSummaryProps) {
+	const { t } = useTranslation("user");
 	const hasMedals = total > 0;
 
 	return (
@@ -72,7 +74,7 @@ export function MedalSummary({
 						<Trophy className="h-4 w-4 text-black" strokeWidth={2.5} />
 					</div>
 					<h3 className="font-black text-black text-sm uppercase italic tracking-tight">
-						Suas Conquistas
+						{t("medals.yourAchievements")}
 					</h3>
 				</div>
 				{showLink && userId && (
@@ -81,7 +83,7 @@ export function MedalSummary({
 						params={{ userId }}
 						className="group flex items-center gap-1 font-black text-[#2e5cff] text-[10px] uppercase tracking-wider transition-colors hover:text-black"
 					>
-						Ver todas
+						{t("medals.viewAll")}
 						<ChevronRight
 							className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
 							strokeWidth={3}
@@ -98,10 +100,10 @@ export function MedalSummary({
 					</div>
 					<div>
 						<p className="font-black text-black/60 text-sm uppercase italic">
-							Nenhuma medalha ainda
+							{t("medals.empty")}
 						</p>
 						<p className="font-bold text-[10px] text-black/40">
-							Participe de torneios para ganhar!
+							{t("medals.emptySubtitle")}
 						</p>
 					</div>
 				</div>
@@ -134,7 +136,7 @@ export function MedalSummary({
 									tierConfig.gold.text,
 								)}
 							>
-								{tierConfig.gold.label}
+								{t("medals.gold")}
 							</span>
 						</div>
 
@@ -165,7 +167,7 @@ export function MedalSummary({
 									tierConfig.silver.text,
 								)}
 							>
-								{tierConfig.silver.label}
+								{t("medals.silver")}
 							</span>
 						</div>
 
@@ -196,7 +198,7 @@ export function MedalSummary({
 									tierConfig.bronze.text,
 								)}
 							>
-								{tierConfig.bronze.label}
+								{t("medals.bronze")}
 							</span>
 						</div>
 					</div>
@@ -206,7 +208,7 @@ export function MedalSummary({
 						<div className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 shadow-[3px_3px_0_0_#000]">
 							<Trophy className="h-4 w-4 text-[#FFD700]" fill="#FFD700" />
 							<span className="font-black text-sm text-white uppercase tracking-wider">
-								Total de Medalhas:
+								{t("medals.total")}
 							</span>
 							<span className="font-black text-[#FFD700] text-xl">{total}</span>
 						</div>
@@ -216,7 +218,7 @@ export function MedalSummary({
 					{recentMedals && recentMedals.length > 0 && (
 						<div className="space-y-2">
 							<h4 className="font-black text-[10px] text-black/60 uppercase tracking-wider">
-								Últimas Conquistas
+								{t("medals.latest")}
 							</h4>
 							<div className="space-y-2">
 								{recentMedals.slice(0, 3).map((medal, index) => (

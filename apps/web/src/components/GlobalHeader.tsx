@@ -3,12 +3,14 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ChevronRight, LogOut, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getLiveStatus } from "@/functions/get-live-status";
 import { authClient } from "@/lib/auth-client";
 import { useHeader } from "./HeaderContext";
 import UserMenu from "./user-menu";
 
 export function GlobalHeader() {
+	const { t } = useTranslation("common");
 	const router = useRouterState();
 	const { config } = useHeader();
 	const [mounted, setMounted] = useState(false);
@@ -279,8 +281,11 @@ export function GlobalHeader() {
 								{[
 									{ label: "Torneios", to: "/admin/tournaments" },
 									{ label: "Times", to: "/admin/teams" },
-									{ label: "Usuários", to: "/admin/users" },
-									{ label: "Compensação", to: "/admin/compensations" },
+									{ label: t("nav.adminUsers"), to: "/admin/users" },
+									{
+										label: t("nav.adminCompensations"),
+										to: "/admin/compensations",
+									},
 								].map((tab) => {
 									const isActive = router.location.pathname.startsWith(tab.to);
 									return (
@@ -319,7 +324,7 @@ export function GlobalHeader() {
 										className="skew-x-12 transform"
 									/>
 									<span className="hidden skew-x-12 transform whitespace-nowrap md:inline">
-										Sair Admin
+										{t("nav.exitAdmin")}
 									</span>
 								</Link>
 							)}

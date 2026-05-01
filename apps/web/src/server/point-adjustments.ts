@@ -9,6 +9,8 @@ import {
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 
 // Schema for creating a point adjustment
 const adjustPointsSchema = z.object({
@@ -20,6 +22,7 @@ const adjustPointsSchema = z.object({
 		.string()
 		.min(10, "A justificativa deve ter pelo menos 10 caracteres"),
 	isRecoveryCompensation: z.boolean().default(false),
+	lang: z.enum(["pt", "en"]).default("pt"),
 });
 
 type AdjustPointsInput = z.infer<typeof adjustPointsSchema>;
@@ -38,16 +41,19 @@ const adjustUserPointsFn = createServerFn({ method: "POST" }).handler(
 			headers: ctx.request.headers,
 		});
 
+		const data = adjustPointsSchema.parse(ctx.data);
+		const t = createServerT(data.lang as SupportedLang);
+
 		if (!session?.user?.id) {
-			throw new Error("Não autenticado");
+			throw new Error(t("errors:unauthenticated"));
 		}
 
 		if (session.user.role !== "admin") {
-			throw new Error("Apenas administradores podem ajustar pontos");
+			throw new Error(t("errors:adminOnly"));
 		}
 
 		// 2. Parse and validate input
-		const data = adjustPointsSchema.parse(ctx.data);
+		// Already parsed above
 
 		// 3. Verify user exists
 		const targetUser = await db.query.user.findFirst({
@@ -56,7 +62,7 @@ const adjustUserPointsFn = createServerFn({ method: "POST" }).handler(
 		});
 
 		if (!targetUser) {
-			throw new Error("Usuário não encontrado");
+			throw new Error(t("errors:userNotFound"));
 		}
 
 		// 4. Verify tournament exists
@@ -66,7 +72,7 @@ const adjustUserPointsFn = createServerFn({ method: "POST" }).handler(
 		});
 
 		if (!tournament) {
-			throw new Error("Torneio não encontrado");
+			throw new Error(t("errors:tournamentNotFound"));
 		}
 
 		// 5. Verify match exists (if provided)
@@ -77,7 +83,7 @@ const adjustUserPointsFn = createServerFn({ method: "POST" }).handler(
 			});
 
 			if (!match) {
-				throw new Error("Partida não encontrada");
+				throw new Error(t("errors:matchNotFound"));
 			}
 		}
 
@@ -168,6 +174,7 @@ const getPointAdjustmentsSchema = z.object({
 	userId: z.string().optional(),
 	limit: z.number().default(50),
 	offset: z.number().default(0),
+	lang: z.enum(["pt", "en"]).default("pt"),
 });
 
 // Prepared statement for listing adjustments - created once and reused
@@ -180,16 +187,17 @@ const getPointAdjustmentsFn = createServerFn({ method: "GET" }).handler(
 		const { db } = await import("@bsebet/db");
 		const { inArray } = await import("drizzle-orm");
 
+		const params = getPointAdjustmentsSchema.parse(ctx.data);
+		const t = createServerT(params.lang as SupportedLang);
+
 		// Check admin authentication
 		const session = await auth.api.getSession({
 			headers: ctx.request.headers,
 		});
 
 		if (!session?.user?.id || session.user.role !== "admin") {
-			throw new Error("Apenas administradores podem ver ajustes de pontos");
+			throw new Error(t("errors:adminOnly"));
 		}
-
-		const params = getPointAdjustmentsSchema.parse(ctx.data);
 
 		// Validate limit and offset for security
 		const limit = Math.min(Math.max(params.limit, 1), 100);
@@ -268,7 +276,10 @@ const getPointAdjustmentsFn = createServerFn({ method: "GET" }).handler(
 
 				return {
 					...adj,
-					userName: user?.nickname || user?.name || "Usuário",
+					userName:
+						user?.nickname ||
+						user?.name ||
+						t("errors:pointAdjustmentFallbackUser"),
 					userImage: user?.image || null,
 					adminName: admin?.name || "Admin",
 					tournamentName: tournament?.name || "Torneio",
@@ -277,7 +288,7 @@ const getPointAdjustmentsFn = createServerFn({ method: "GET" }).handler(
 			});
 		} catch (error) {
 			console.error("Error fetching point adjustments:", error);
-			throw new Error("Erro ao buscar ajustes de pontos");
+			throw new Error(t("errors:pointAdjustmentError"));
 		}
 	},
 );
@@ -288,6 +299,7 @@ export const getPointAdjustments = getPointAdjustmentsFn as unknown as (opts?: {
 		userId?: string;
 		limit?: number;
 		offset?: number;
+		lang?: string;
 	};
 }) => Promise<
 	(typeof pointAdjustments.$inferSelect & {
@@ -306,16 +318,19 @@ const searchUsersForAdjustmentFn = createServerFn({ method: "GET" }).handler(
 	async (ctx: any) => {
 		const { db } = await import("@bsebet/db");
 
-		// Check admin authentication
+		const searchTerm = ctx.data as string;
 		const session = await auth.api.getSession({
 			headers: ctx.request.headers,
 		});
 
-		if (!session?.user?.id || session.user.role !== "admin") {
-			throw new Error("Apenas administradores podem buscar usuários");
-		}
+		const lang =
+			typeof searchTerm === "object" ? (searchTerm as any)?.lang || "pt" : "pt";
+		const t = createServerT(lang as SupportedLang);
 
-		const searchTerm = ctx.data as string;
+		// Check admin authentication
+		if (!session?.user?.id || session.user.role !== "admin") {
+			throw new Error(t("errors:adminOnlySearch"));
+		}
 
 		if (!searchTerm || searchTerm.length < 2) {
 			return [];

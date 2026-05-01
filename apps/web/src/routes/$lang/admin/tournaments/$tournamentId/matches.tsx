@@ -10,6 +10,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { CustomSelect } from "@/components/admin/CustomInputs";
@@ -77,6 +78,7 @@ interface MatchSegment {
 }
 
 function TournamentMatchesPage() {
+	const { t } = useTranslation("admin-matches");
 	const { tournament, tournamentTeams, allTeams, matches, matchDays } =
 		Route.useLoaderData();
 	const router = useRouter();
@@ -168,14 +170,14 @@ function TournamentMatchesPage() {
 			await resetScores({
 				data: { matchId: matchToReset },
 			});
-			toast.success("Placar resetado!");
+			toast.success(t("reset.scoreReset"));
 			setIsResetModalOpen(false);
 			setMatchToReset(null);
 			// Invalidate user points cache when match is reset
 			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao resetar placar");
+			toast.error(t("reset.scoreResetError"));
 		} finally {
 			setIsResetting(false);
 		}
@@ -187,13 +189,13 @@ function TournamentMatchesPage() {
 			const result = await resetTournamentResults({
 				data: { tournamentId: tournament.id },
 			});
-			toast.success(`${result.resetCount} partidas resetadas com sucesso!`);
+			toast.success(t("reset.tournamentReset", { count: result.resetCount }));
 			setIsResetTournamentModalOpen(false);
 			// Invalidate user points cache when tournament results are reset
 			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao resetar resultados do torneio");
+			toast.error(t("reset.tournamentResetError"));
 		} finally {
 			setIsResettingTournament(false);
 		}
@@ -206,21 +208,27 @@ function TournamentMatchesPage() {
 				data: { tournamentId: tournament.id },
 			});
 			toast.success(
-				`Recalculo concluído: ${result.totalMatches} partidas (${result.settledMatches} finalizadas, ${result.walkoverMatches} W.O.), ${result.betsReset} apostas reprocessadas, ${result.affectedUsers} usuários afetados, ${result.reappliedAdjustments}/${result.adjustmentsFound} ajustes reaplicados.`,
+				t("recalc.success", {
+					matchCount: result.totalMatches,
+					betCount: result.betsReset,
+				}),
 			);
 			if (
 				result.adjustmentsSkippedNoMatch > 0 ||
 				result.adjustmentsSkippedOutOfTournament > 0
 			) {
 				toast.warning(
-					`Ajustes ignorados: ${result.adjustmentsSkippedNoMatch} sem matchId e ${result.adjustmentsSkippedOutOfTournament} fora do torneio.`,
+					t("recalc.skippedAdjustments", {
+						noMatch: result.adjustmentsSkippedNoMatch,
+						outOfTournament: result.adjustmentsSkippedOutOfTournament,
+					}),
 				);
 			}
 			setIsRecalculateModalOpen(false);
 			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
 			router.invalidate();
 		} catch (e) {
-			toast.error("Erro ao recalcular pontuação do torneio");
+			toast.error(t("recalc.error"));
 		} finally {
 			setIsRecalculatingTournament(false);
 		}
@@ -424,7 +432,7 @@ function TournamentMatchesPage() {
 						className="flex items-center gap-2 border-[2px] border-black bg-black px-4 py-1.5 font-black text-[#ccff00] text-[10px] uppercase transition-all hover:bg-[#ccff00] hover:text-black"
 					>
 						<CheckCircle2 size={12} strokeWidth={3} />
-						Recalcular Pontos
+						{t("recalc.button")}
 					</button>
 
 					<button
@@ -432,7 +440,7 @@ function TournamentMatchesPage() {
 						className="flex items-center gap-2 border-[2px] border-black bg-white px-4 py-1.5 font-black text-[#ff2e2e] text-[10px] uppercase transition-all hover:bg-[#ff2e2e] hover:text-white"
 					>
 						<RotateCcw size={12} strokeWidth={3} />
-						Reset Resultados
+						{t("reset.button")}
 					</button>
 
 					<Link
@@ -545,7 +553,7 @@ function TournamentMatchesPage() {
 								Group Stage
 							</h2>
 							<p className="font-bold text-gray-500 text-sm">
-								Gerencie as partidas e resultados da fase de grupos.
+								{t("matchBuilder.groupStageDescription")}
 							</p>
 						</div>
 						<BracketEditor
@@ -606,8 +614,7 @@ function TournamentMatchesPage() {
 								Playoffs Bracket
 							</h2>
 							<p className="font-bold text-gray-500 text-sm">
-								Crie e organize as partidas visualmente para ficarem idênticas à
-								Liquipedia.
+								{t("matchBuilder.description")}
 							</p>
 						</div>
 						<BracketEditor
@@ -935,7 +942,7 @@ function TournamentMatchesPage() {
 																		className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-brawl-red px-3 py-2 font-black text-white text-xs uppercase shadow-[3px_3px_0px_0px_#000] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 																	>
 																		<Radio className="h-4 w-4" />
-																		CONTROLAR AO VIVO
+																		{t("live.control")}
 																	</Link>
 																)}
 
@@ -953,7 +960,7 @@ function TournamentMatchesPage() {
 																		className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] px-3 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0px_0px_#000] transition-all hover:bg-black hover:text-[#ccff00] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 																	>
 																		<CheckCircle2 className="h-4 w-4" />
-																		DEFINIR RESULTADO
+																		{t("live.setResult")}
 																	</button>
 																)}
 
@@ -966,7 +973,7 @@ function TournamentMatchesPage() {
 																	className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-gray-600 px-3 py-2 font-black text-white text-xs uppercase shadow-[3px_3px_0px_0px_#000] transition-all hover:bg-gray-500 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 																>
 																	<RotateCcw className="h-4 w-4" />
-																	RESETAR PARTIDA
+																	{t("live.resetMatch")}
 																</button>
 															)}
 														</div>
@@ -1027,10 +1034,10 @@ function TournamentMatchesPage() {
 				}}
 				onConfirm={handleResetMatch}
 				isLoading={isResetting}
-				title="Resetar Partida"
-				description="Tem certeza que deseja resetar esta partida? O placar voltará a 0-0, todas as apostas serão reabertas e o status voltará para 'AO VIVO'."
-				confirmLabel="Sim, Resetar"
-				cancelLabel="Cancelar"
+				title={t("reset.title")}
+				description={t("reset.confirm")}
+				confirmLabel={t("reset.confirmLabel")}
+				cancelLabel={t("reset.cancelLabel")}
 				variant="warning"
 			/>
 
@@ -1042,14 +1049,14 @@ function TournamentMatchesPage() {
 				}}
 				onConfirm={handleConfirmGeneration}
 				isLoading={isGenerating}
-				title="Regenerar Partidas"
+				title={t("matchBuilder.regenerateTitle")}
 				description={
 					pendingGeneration === "groups"
-						? "ATENÇÃO: Já existem partidas de grupo geradas. Gerar novamente irá APAGAR todas as partidas e resultados existentes desta fase. Deseja continuar?"
-						: "ATENÇÃO: Já existem partidas de playoffs geradas. Gerar novamente poderá duplicar ou resetar progresso. Deseja continuar?"
+						? t("matchBuilder.existingMatchesWarning")
+						: t("matchBuilder.playoffWarning")
 				}
-				confirmLabel="Sim, Regenerar"
-				cancelLabel="Cancelar"
+				confirmLabel={t("matchBuilder.regenerateConfirm")}
+				cancelLabel={t("matchBuilder.cancel")}
 				variant="danger"
 			/>
 
@@ -1058,10 +1065,10 @@ function TournamentMatchesPage() {
 				onClose={() => setIsRecalculateModalOpen(false)}
 				onConfirm={handleRecalculateTournamentPoints}
 				isLoading={isRecalculatingTournament}
-				title="Recalcular Pontuação do Torneio"
-				description="Isso vai zerar e recalcular os pontos de TODAS as apostas do torneio com base nos resultados atuais das partidas finalizadas (incluindo W.O.), e reaplicar ajustes manuais registrados. Esta ação é segura e idempotente."
-				confirmLabel="Sim, Recalcular"
-				cancelLabel="Cancelar"
+				title={t("recalc.title")}
+				description={t("recalc.description")}
+				confirmLabel={t("recalc.confirmLabel")}
+				cancelLabel={t("recalc.cancelLabel")}
 				variant="warning"
 			/>
 
@@ -1070,10 +1077,10 @@ function TournamentMatchesPage() {
 				onClose={() => setIsResetTournamentModalOpen(false)}
 				onConfirm={handleResetTournament}
 				isLoading={isResettingTournament}
-				title="Resetar Todos os Resultados"
-				description="ATENÇÃO: Isso irá zerar scores, winners e status de TODAS as partidas do torneio, e limpar as equipes auto-propagadas pelo bracket. As apostas dos usuários NÃO serão afetadas. Esta ação não pode ser desfeita."
-				confirmLabel="Sim, Resetar Tudo"
-				cancelLabel="Cancelar"
+				title={t("reset.tournamentTitle")}
+				description={t("reset.tournamentDescription")}
+				confirmLabel={t("reset.tournamentConfirm")}
+				cancelLabel={t("reset.cancelLabel")}
 				variant="danger"
 			/>
 		</div>

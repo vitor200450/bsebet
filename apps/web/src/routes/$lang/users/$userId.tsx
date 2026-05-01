@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ArrowLeft, Star } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TrophyCase } from "@/components/RealisticMedal";
 import { TeamLogo } from "@/components/TeamLogo";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/$lang/users/$userId")({
 });
 
 function UserProfilePage() {
+	const { t } = useTranslation("user");
 	const data = Route.useLoaderData();
 	const user = data.profile;
 	const stats = data.stats;
@@ -192,7 +194,7 @@ function UserProfilePage() {
 									</span>
 								</div>
 								<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
-									ESTATÍSTICAS GERAIS
+									{t("stats.general")}
 								</h2>
 							</div>
 
@@ -257,7 +259,7 @@ function UserProfilePage() {
 										{stats.underdogWins}
 									</div>
 									<div className="font-black text-[10px] text-white uppercase tracking-wider">
-										Azarões
+										{t("stats.underdogs")}
 									</div>
 								</div>
 
@@ -304,7 +306,7 @@ function UserProfilePage() {
 														label: group.name,
 													})),
 												]}
-												placeholder="Filtrar torneio"
+												placeholder={t("stats.filterTournament")}
 											/>
 										</div>
 									)}
@@ -563,7 +565,7 @@ function UserProfilePage() {
 										</span>
 									</div>
 									<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
-										Histórico de Torneios
+										{t("stats.tournamentHistory")}
 									</h2>
 								</div>
 

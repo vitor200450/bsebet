@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import { ArrowRight, Calendar, Gamepad2, Globe, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface TournamentOption {
 	id: number;
@@ -62,6 +63,7 @@ export function TournamentSelector({
 	tournaments,
 	onSelect,
 }: TournamentSelectorProps) {
+	const { t } = useTranslation("tournament");
 	return (
 		<div className="relative flex min-h-screen flex-col items-center justify-between overflow-x-hidden bg-paper bg-paper-texture">
 			{/* Subtle Noise Texture Overlay */}
@@ -144,7 +146,7 @@ export function TournamentSelector({
 										<span className="material-symbols-outlined text-sm">
 											sync_problem
 										</span>
-										{tournament.recoveryMatchCount} RECUPERAÇÃO
+										{tournament.recoveryMatchCount} {t("selector.recovery")}
 									</div>
 								)}
 
@@ -152,7 +154,7 @@ export function TournamentSelector({
 								{tournament.hasUserBets && !tournament.hasRecoveryBets && (
 									<div className="absolute top-4 left-4 z-20 flex animate-pulse items-center gap-1 rounded-full border-2 border-black bg-gradient-to-r from-purple-600 to-pink-600 px-2 py-1 font-black text-[10px] text-white uppercase shadow-[3px_3px_0px_0px_#000]">
 										<span>📊</span>
-										SUAS APOSTAS
+										{t("selector.yourBets")}
 									</div>
 								)}
 
@@ -206,7 +208,7 @@ export function TournamentSelector({
 									<div className="grid grid-cols-2 gap-3">
 										<div className="flex flex-col gap-1">
 											<span className="font-black text-[10px] text-zinc-400 uppercase tracking-tighter">
-												Start Date
+												{t("selector.startDate")}
 											</span>
 											<div className="flex items-center gap-2 rounded-lg border-2 border-zinc-200 bg-white px-3 py-1.5 font-bold font-display text-sm text-zinc-600">
 												<Calendar className="h-4 w-4 text-black" />
@@ -227,7 +229,7 @@ export function TournamentSelector({
 
 										<div className="flex flex-col gap-1">
 											<span className="font-black text-[10px] text-zinc-400 uppercase tracking-tighter">
-												Current Phase
+												{t("selector.currentPhase")}
 											</span>
 											<div
 												className={clsx(
@@ -239,7 +241,7 @@ export function TournamentSelector({
 											>
 												<Trophy className="h-4 w-4 min-w-[16px] text-black" />
 												<span className="uppercase">
-													{tournament.activeStage || "Fase de Grupos"}
+													{tournament.activeStage || t("selector.groupStage")}
 												</span>
 											</div>
 										</div>
@@ -252,7 +254,7 @@ export function TournamentSelector({
 										)}
 									>
 										<Gamepad2 className="h-4 w-4" />
-										<span>{tournament.matchCount} MATCHES AVAILABLE</span>
+										<span>{t("selector.matchesAvailable", { count: tournament.matchCount })}</span>
 									</div>
 								</div>
 
@@ -268,10 +270,10 @@ export function TournamentSelector({
 										)}
 									>
 										{isDisabled ? (
-											"AGUARDE"
+											t("selector.wait")
 										) : (
 											<>
-												{tournament.hasUserBets ? "Ver Apostas" : "Bet Now"}
+												{tournament.hasUserBets ? t("selector.viewBets") : t("selector.betNow")}
 												<ArrowRight className="h-5 w-5 text-[#ccff00]" />
 											</>
 										)}

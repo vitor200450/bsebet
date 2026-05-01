@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
@@ -681,6 +682,7 @@ function ReviewScreen({
 	projectedMatches?: any[];
 	editableRecoveryMatchIds?: Set<number>;
 }) {
+	const { t } = useTranslation("betting");
 	const [editingScoreMatchId, setEditingScoreMatchId] = useState<number | null>(
 		null,
 	);
@@ -862,15 +864,10 @@ function ReviewScreen({
 								</span>
 								<div className="flex-1">
 									<h4 className="font-black font-display text-black text-lg uppercase italic">
-										APOSTAS DE RECUPERAÇÃO DISPONÍVEIS!
+										{t("recovery.available")}
 									</h4>
 									<p className="mt-1 font-bold text-black/80 text-sm">
-										Você errou algumas previsões e tem{" "}
-										<span className="font-black text-brawl-red">
-											{editableRecoveryMatchIds.size} partida(s)
-										</span>{" "}
-										disponível(eis) para apostar novamente. Aproveite para
-										corrigir suas apostas!
+										{t("recovery.errorPrompt")}
 									</p>
 								</div>
 							</div>
@@ -958,7 +955,7 @@ function ReviewScreen({
 										{stats.underdogPicks}
 									</div>
 									<div className="mt-1 font-black text-[9px] text-white/80 uppercase">
-										Azarões
+										{t("bonus.underdogLabel")}
 									</div>
 								</div>
 							</div>
@@ -1479,7 +1476,7 @@ function ReviewScreen({
 											{predictedTeamNotInMatch && (
 												<div className="pointer-events-none absolute -top-2 left-1/2 z-50 -translate-x-1/2 -rotate-1 transform whitespace-nowrap border-[2px] border-black bg-yellow-500 px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
 													<span className="font-black text-[8px] text-black uppercase">
-														⚠️ Confronto diferente do palpite
+														{t("recovery.wrongMatchup")}
 													</span>
 												</div>
 											)}
@@ -1626,9 +1623,7 @@ function ReviewScreen({
 																					⚠️ Confronto Diferente
 																				</div>
 																				<div className="text-[9px] text-gray-300">
-																					Você apostou num confronto que não
-																					ocorreu nesta partida devido ao
-																					chaveamento.
+																					{t("recovery.matchupLabel")}
 																				</div>
 																				<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-red-400">
 																					Total: 0 pontos
@@ -1648,11 +1643,10 @@ function ReviewScreen({
 																						No W.O., apenas o vencedor conta.
 																					</div>
 																					<div className="text-[9px] text-gray-300">
-																						Seu palpite de vencedor não bateu
-																						com o W.O.
+																						{t("recovery.wrongWinner")}
 																					</div>
 																					<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-																						Total: 0 pontos
+																						{t("totalPoints", { count: 0 })}
 																					</div>
 																				</>
 																			);
@@ -1664,7 +1658,7 @@ function ReviewScreen({
 																					❌ Palpite Incorreto
 																				</div>
 																				<div className="text-[9px] text-gray-300">
-																					Você apostou em:{" "}
+																					{t("betLabel")}{" "}
 																					{match.teamA?.id ===
 																					betData.predictedWinnerId
 																						? match.teamA?.name
@@ -1763,7 +1757,11 @@ function ReviewScreen({
 																							betData.isUnderdogPick &&
 																							underdogPoints > 0 && (
 																								<div className="flex justify-between font-bold text-purple-300">
-																									<span>🔥 Bônus Underdog</span>
+																									<span>
+																										{t("bonus.underdog", {
+																											percent: 25,
+																										})}
+																									</span>
 																									<span>
 																										+{underdogPoints} pts
 																									</span>
@@ -1955,6 +1953,7 @@ function SubmitBetsModal({
 	matchDayStatus?: string;
 	onSuccess?: () => void;
 }) {
+	const { t } = useTranslation("betting");
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<
 		"idle" | "submitting" | "success" | "error"
@@ -2171,7 +2170,7 @@ function SubmitBetsModal({
 					</h3>
 
 					<p className="mb-8 font-body font-bold text-black text-lg leading-snug">
-						Suas apostas foram confirmadas! Boa sorte, campeão!
+						{t("toast.confirmed")}
 					</p>
 
 					<button
@@ -2249,8 +2248,8 @@ function RecoveryBetsToast({
 	onDismiss: () => void;
 	onAction: () => void;
 }) {
+	const { t } = useTranslation("betting");
 	const [isVisible, setIsVisible] = useState(true);
-
 	useEffect(() => {
 		if (!isVisible) {
 			const timer = setTimeout(onDismiss, 300);
@@ -2274,15 +2273,10 @@ function RecoveryBetsToast({
 					</span>
 					<div className="flex-1">
 						<h4 className="font-black font-display text-black text-lg uppercase italic">
-							Apostas de Recuperação!
+							{t("recovery.available")}
 						</h4>
 						<p className="mt-1 font-bold text-black/80 text-sm">
-							Você tem{" "}
-							<span className="font-black text-brawl-red">
-								{matchCount} partida(s)
-							</span>{" "}
-							disponível(eis) para apostar novamente. Aproveite para corrigir
-							suas apostas!
+							{t("recovery.errorPrompt")}
 						</p>
 						<div className="mt-3 flex gap-2">
 							<button
@@ -2316,6 +2310,7 @@ function RecoveryBetsToast({
 }
 
 function Home() {
+	const { t } = useTranslation("betting");
 	const { tournaments, isAuthenticated, userId } = Route.useLoaderData() as any;
 	const searchParams = Route.useSearch();
 
@@ -3227,7 +3222,7 @@ function Home() {
 							<Trophy className="h-10 w-10 text-gray-300" strokeWidth={3} />
 						</div>
 						<h3 className="mb-3 -skew-x-12 transform font-black font-display text-black text-xl uppercase italic tracking-tighter md:text-3xl">
-							Nenhum Torneio Disponível
+							Carregando torneio...
 						</h3>
 						<p className="font-bold text-gray-500 text-sm uppercase leading-relaxed tracking-widest">
 							Volte em breve para acompanhar <br /> novos torneios competitivos!
@@ -3249,7 +3244,7 @@ function Home() {
 				<div className="space-y-4 text-center">
 					<div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-black border-t-[#ccff00]" />
 					<h2 className="animate-pulse font-black font-display text-2xl text-black uppercase italic">
-						Carregando torneio...
+						{t("empty.noTournament")}
 					</h2>
 				</div>
 			</div>
@@ -3404,12 +3399,12 @@ function Home() {
 									</span>
 									<div className="flex-1">
 										<h3 className="font-black text-sm text-white uppercase">
-											{selectedMatchDay.label} Concluído!
+											{selectedMatchDay.label} {t("matchDayComplete")}
 										</h3>
 										<p className="mt-1 text-blue-100 text-xs">
 											Este match day foi finalizado.{" "}
 											{matchDays.find((md: any) => md.status === "open")
-												? "Há um novo match day disponível para apostas!"
+												? t("matchDayNewAvailable")
 												: "Aguarde o próximo match day."}
 										</p>
 									</div>
@@ -3424,12 +3419,10 @@ function Home() {
 									</span>
 									<div className="flex-1">
 										<h3 className="font-black text-sm text-white uppercase">
-											Modo Recuperação Ativo
+											{t("recovery.active")}
 										</h3>
 										<p className="mt-1 text-purple-100 text-xs">
-											O match day está fechado, mas você ainda pode apostar nas
-											partidas que não começaram! Salve seus palpites para
-											recuperar pontos.
+											{t("recovery.errorPrompt")} {t("recovery.points")}
 										</p>
 									</div>
 								</div>

@@ -11,6 +11,7 @@ import {
 	X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { useSetHeader } from "@/components/HeaderContext";
@@ -42,6 +43,7 @@ interface UserSearchResult {
 }
 
 function CompensationsPage() {
+	const { t } = useTranslation("admin");
 	const { tournaments, adjustments: initialAdjustments } =
 		Route.useLoaderData();
 	const router = useRouter();
@@ -92,7 +94,7 @@ function CompensationsPage() {
 	const [adjustments, setAdjustments] = useState(initialAdjustments);
 
 	useSetHeader({
-		title: "COMPENSAÇÃO DE PONTOS",
+		title: t("compensations.title"),
 		actions: (
 			<div className="flex items-center gap-2 text-gray-600 text-sm">
 				<History className="h-4 w-4" />
@@ -363,11 +365,10 @@ function CompensationsPage() {
 						{/* Header */}
 						<div className="border-[4px] border-black bg-[#ccff00] p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
 							<h1 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-								Nova Compensação
+								{t("compensations.new")}
 							</h1>
 							<p className="mt-1 font-bold text-black/70 text-sm">
-								Ajuste manual de pontos para usuários afetados por bugs no
-								recovery bets
+								{t("compensations.description")}
 							</p>
 						</div>
 
@@ -400,9 +401,9 @@ function CompensationsPage() {
 
 							{/* User Search */}
 							<div className="relative">
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+									<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<User className="h-4 w-4" />
-									Usuário
+									{t("compensations.user")}
 								</label>
 
 								{selectedUser ? (
@@ -438,7 +439,7 @@ function CompensationsPage() {
 										<Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
 										<input
 											type="text"
-											placeholder="Buscar usuário por nome ou email..."
+											placeholder={t("compensations.searchUser")}
 											value={userSearchTerm}
 											onChange={(e) => setUserSearchTerm(e.target.value)}
 											className="w-full border-[3px] border-black p-3 pl-10 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
@@ -486,7 +487,7 @@ function CompensationsPage() {
 											!isSearchingUsers && (
 												<div className="absolute top-full right-0 left-0 z-50 mt-2 border-[3px] border-black bg-white p-4 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
 													<p className="font-bold text-gray-500 text-sm">
-														Nenhum usuário encontrado
+														{t("compensations.noUserFound")}
 													</p>
 												</div>
 											)}
@@ -636,7 +637,7 @@ function CompensationsPage() {
 									htmlFor="isRecovery"
 									className="cursor-pointer font-bold text-black text-sm"
 								>
-									Compensação por bug em recovery bet
+									{t("compensations.recoveryLabel")}
 								</label>
 							</div>
 
@@ -652,7 +653,7 @@ function CompensationsPage() {
 								<textarea
 									value={reason}
 									onChange={(e) => setReason(e.target.value)}
-									placeholder="Descreva o motivo da compensação (ex: Bug recovery bet - usuário não conseguiu apostar na final após acertar semifinal)"
+									placeholder={t("compensations.reasonPlaceholder")}
 									rows={4}
 									className="w-full resize-none border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 								/>
@@ -681,12 +682,12 @@ function CompensationsPage() {
 								{isSubmitting ? (
 									<>
 										<Loader2 className="h-5 w-5 animate-spin" />
-										Aplicando...
+										{t("compensations.applying")}
 									</>
 								) : (
 									<>
 										<Check className="h-5 w-5" />
-										Confirmar Compensação
+										{t("compensations.confirm")}
 									</>
 								)}
 							</button>
@@ -698,7 +699,7 @@ function CompensationsPage() {
 						<div className="border-[4px] border-black bg-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)]">
 							<h2 className="flex items-center gap-2 font-black text-white text-xl uppercase italic tracking-tighter">
 								<History className="h-5 w-5" />
-								Histórico de Ajustes
+								{t("compensations.history")}
 							</h2>
 						</div>
 
@@ -829,8 +830,7 @@ function CompensationsPage() {
 							</div>
 
 							<div className="rounded border-2 border-yellow-200 bg-yellow-50 p-3 font-bold text-sm text-yellow-800">
-								Esta ação não pode ser desfeita. O ajuste será registrado no
-								histórico de auditoria.
+									{t("compensations.irreversible")}
 							</div>
 
 							<div className="flex flex-col gap-3 pt-2">
@@ -842,7 +842,7 @@ function CompensationsPage() {
 									{isSubmitting ? (
 										<Loader2 className="h-6 w-6 animate-spin" />
 									) : (
-										"Confirmar Compensação"
+										t("compensations.confirm")
 									)}
 								</button>
 								<button

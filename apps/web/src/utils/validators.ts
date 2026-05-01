@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 
 // Enum para reutilizar no front e no back
 // 'as const' é crucial para o TypeScript entender que são valores fixos
@@ -11,14 +13,17 @@ export const betSchema = z
 		winnerId: z.number().min(1, "Selecione quem vai ganhar!"),
 
 		// Placares
-		scoreA: z.number().min(0, "O placar não pode ser negativo"),
-		scoreB: z.number().min(0, "O placar não pode ser negativo"),
+		scoreA: z.number().min(0),
+		scoreB: z.number().min(0),
 
 		// Campo oculto que diz qual é a regra (bo5, bo3)
 		format: z.enum(MATCH_FORMATS),
+
+		lang: z.enum(["pt", "en"]).default("pt"),
 	})
 	.superRefine((data, ctx) => {
 		const { scoreA, scoreB, format } = data;
+		const t = createServerT(data.lang as SupportedLang);
 
 		// Lógica para descobrir quantos sets precisa pra ganhar
 		// bo5 (Melhor de 5) -> precisa de 3 vitórias
@@ -29,7 +34,7 @@ export const betSchema = z
 		if (scoreA > winsNeeded || scoreB > winsNeeded) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: `Máximo de ${winsNeeded} sets neste formato.`,
+				message: t("validation:maxSets", { n: winsNeeded }),
 				path: scoreA > winsNeeded ? ["scoreA"] : ["scoreB"],
 			});
 		}
@@ -39,7 +44,7 @@ export const betSchema = z
 		if (scoreA < winsNeeded && scoreB < winsNeeded) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: `Alguém precisa vencer ${winsNeeded} sets.`,
+				message: t("validation:someoneMustWin", { n: winsNeeded }),
 				path: ["scoreA"], // Marca o erro genericamente no time A
 			});
 		}

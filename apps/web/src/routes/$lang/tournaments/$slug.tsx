@@ -11,6 +11,7 @@ import {
 	Workflow,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { TournamentBracket } from "@/components/TournamentBracket";
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/$lang/tournaments/$slug")({
 });
 
 function TournamentDetailsPage() {
+	const { t } = useTranslation("tournament");
 	const { tournament, matches, userBets } = Route.useLoaderData();
 	const [filter, setFilter] = useState<
 		"all" | "my-bets" | "upcoming" | "finished"
@@ -729,7 +731,7 @@ function TournamentDetailsPage() {
 								<Filter className="h-8 w-8 text-gray-400" strokeWidth={2} />
 							</div>
 							<h3 className="font-black text-[#121212] text-xl uppercase">
-								Nenhuma partida encontrada
+								{t("detail.noMatches")}
 							</h3>
 							<p className="mt-2 text-gray-600 text-sm">
 								Tente mudar os filtros

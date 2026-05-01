@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ArrowLeft, Award, Target, TrendingUp, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/$lang/teams/$teamId")({
 });
 
 function TeamDetailsPage() {
+	const { t } = useTranslation("team");
 	const { team, matches, tournaments, colors } = Route.useLoaderData();
 
 	// Calculate intermediate color for gradient (fallback)
@@ -167,13 +169,13 @@ function TeamDetailsPage() {
 					/>
 					<StatCard
 						icon={<Target className="h-5 w-5" />}
-						label="Taxa de Vitória"
+						label={t("stats.winRate")}
 						value={`${winRate}%`}
 						color="bg-brawl-yellow"
 					/>
 					<StatCard
 						icon={<TrendingUp className="h-5 w-5 text-green-600" />}
-						label="Vitórias"
+						label={t("stats.wins")}
 						value={wins.toString()}
 						color="bg-white"
 					/>
@@ -185,7 +187,7 @@ function TeamDetailsPage() {
 					/>
 					<StatCard
 						icon={<Award className="h-5 w-5" />}
-						label="Sequência Atual"
+						label={t("stats.currentStreak")}
 						value={currentStreak > 0 ? `${currentStreak}${streakType}` : "—"}
 						color={
 							streakType === "W"
@@ -203,7 +205,7 @@ function TeamDetailsPage() {
 						<div className="mb-6 flex items-center gap-3">
 							<div className="h-8 w-1 rounded-full bg-[#2e5cff]" />
 							<h2 className="font-black text-2xl text-[#121212] uppercase italic">
-								Próximas Partidas
+								{t("sections.upcoming")}
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
 								<span className="rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
@@ -456,7 +458,7 @@ function TeamDetailsPage() {
 					<div className="mb-6 flex items-center gap-3">
 						<div className="h-8 w-1 rounded-full bg-[#121212]" />
 						<h2 className="font-black text-2xl text-[#121212] uppercase italic">
-							Histórico Recente
+							{t("sections.recentHistory")}
 						</h2>
 					</div>
 
@@ -843,7 +845,7 @@ function TeamDetailsPage() {
 								<Trophy className="h-8 w-8 text-gray-700" strokeWidth={2} />
 							</div>
 							<h3 className="font-black text-[#121212] text-xl uppercase">
-								Nenhuma partida finalizada
+								{t("empty.noFinishedMatches")}
 							</h3>
 						</div>
 					)}

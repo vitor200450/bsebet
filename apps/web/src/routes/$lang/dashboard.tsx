@@ -12,6 +12,7 @@ import {
 	Trophy,
 	Zap,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { MedalSummary } from "@/components/MedalSummary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getDashboardData } from "@/functions/get-dashboard-data";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/$lang/dashboard")({
 });
 
 function RouteComponent() {
+	const { t } = useTranslation("dashboard");
 	const { session } = Route.useRouteContext();
 
 	const { data, isLoading } = useQuery({
@@ -97,7 +99,7 @@ function RouteComponent() {
 								Dashboard
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
-								Olá, <span className="text-[#121212]">{displayName}</span>!
+								{t("greeting", { name: displayName })}
 								Acompanhe seu desempenho e palpites.
 							</p>
 						</div>
@@ -105,7 +107,7 @@ function RouteComponent() {
 							to="/my-bets"
 							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
 						>
-							Ver histórico completo
+							{t("viewHistory")}
 							<ChevronRight
 								className="h-4 w-4 transition-transform group-hover:translate-x-1"
 								strokeWidth={3}
@@ -119,7 +121,7 @@ function RouteComponent() {
 					<div className="mb-6 flex items-center gap-3">
 						<BarChart3 className="h-6 w-6 text-[#2e5cff]" strokeWidth={2.5} />
 						<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-							Suas Estatísticas
+							{t("stats.title")}
 						</h2>
 					</div>
 
@@ -215,7 +217,7 @@ function RouteComponent() {
 										{stats.underdogWins}
 									</div>
 									<div className="font-bold text-[10px] text-white/80 uppercase tracking-wider">
-										Azarões Vencedores
+										{t("stats.underdogsWon")}
 									</div>
 								</div>
 							</div>
@@ -305,7 +307,7 @@ function RouteComponent() {
 										<div className="h-1.5 w-full bg-gradient-to-r from-[#2e5cff] via-[#ffc700] to-[#ff2e2e]" />
 
 										{/* Header: Tournament + Status */}
-										<div className="flex items-center justify-between border-b-2 border-black bg-[#fafafa] px-4 py-2">
+										<div className="flex items-center justify-between border-black border-b-2 bg-[#fafafa] px-4 py-2">
 											{bet.match.tournament?.slug ? (
 												<Link
 													to="/tournaments/$slug"
@@ -327,7 +329,9 @@ function RouteComponent() {
 														: "bg-[#ccff00] text-black",
 												)}
 											>
-												{bet.match.status === "live" ? "AO VIVO" : "AGENDADO"}
+												{bet.match.status === "live"
+													? t("status.live")
+													: t("status.scheduled")}
 											</div>
 										</div>
 
@@ -336,7 +340,7 @@ function RouteComponent() {
 											{/* Team A Panel */}
 											<div
 												className={clsx(
-													"flex flex-1 items-center gap-3 border-r-2 border-black px-4 py-4 transition-all",
+													"flex flex-1 items-center gap-3 border-black border-r-2 px-4 py-4 transition-all",
 													bet.predictedWinnerId === bet.match.teamA?.id
 														? "bg-[#ccff00]/15"
 														: "bg-[#f8f8f8]",
@@ -356,7 +360,7 @@ function RouteComponent() {
 															<span className="material-symbols-outlined text-[10px]">
 																check_circle
 															</span>
-															Seu palpite
+															{t("betLabel")}
 														</div>
 													)}
 												</div>
@@ -374,7 +378,7 @@ function RouteComponent() {
 											{/* Team B Panel */}
 											<div
 												className={clsx(
-													"flex flex-1 items-center gap-3 border-l-2 border-black px-4 py-4 transition-all",
+													"flex flex-1 items-center gap-3 border-black border-l-2 px-4 py-4 transition-all",
 													bet.predictedWinnerId === bet.match.teamB?.id
 														? "bg-[#ccff00]/15"
 														: "bg-[#f8f8f8]",
@@ -389,7 +393,7 @@ function RouteComponent() {
 															<span className="material-symbols-outlined text-[10px]">
 																check_circle
 															</span>
-															Seu palpite
+															{t("betLabel")}
 														</div>
 													)}
 												</div>
@@ -402,7 +406,7 @@ function RouteComponent() {
 										</div>
 
 										{/* Footer - Date & Predicted Score */}
-										<div className="flex items-center justify-between border-t-2 border-black bg-white px-4 py-3">
+										<div className="flex items-center justify-between border-black border-t-2 bg-white px-4 py-3">
 											<div className="flex items-center gap-2">
 												<Calendar
 													className="h-4 w-4 text-gray-500"
@@ -448,10 +452,10 @@ function RouteComponent() {
 									</span>
 								</div>
 								<p className="mb-1 font-black text-[#121212] text-lg uppercase">
-									Nenhum palpite ativo
+									{t("empty.noActive")}
 								</p>
 								<p className="mb-5 text-gray-600 text-sm">
-									Faça suas apostas e acompanhe aqui!
+									{t("empty.noBets")}
 								</p>
 								<Link to="/">
 									<button

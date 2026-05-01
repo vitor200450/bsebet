@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { ChevronRight, RotateCcw, X } from "lucide-react";
 import * as React from "react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSetHeader } from "../../../../components/HeaderContext";
 import {
 	finalizeMatch,
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/$lang/admin/live/$matchId")({
 });
 
 function LiveMatchControl() {
+	const { t } = useTranslation("admin-matches");
 	const { match: initialMatch } = Route.useLoaderData();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -121,13 +123,13 @@ function LiveMatchControl() {
 
 	const handleFinalize = async () => {
 		if (scoreA === scoreB) {
-			alert("O placar está empatado. Defina um vencedor.");
+			alert(t("live.tieWarning"));
 			return;
 		}
 
 		const winnerId = scoreA > scoreB ? match.teamAId : match.teamBId;
 		if (!winnerId) {
-			alert("Erro: Times não definidos");
+			alert(t("live.teamsError"));
 			return;
 		}
 
@@ -152,7 +154,7 @@ function LiveMatchControl() {
 
 	const headerConfig = React.useMemo(
 		() => ({
-			title: "AO VIVO",
+			title: t("live.headerTitle"),
 			variant: "dark" as const,
 			actions: (
 				<div className="flex items-center gap-4">
@@ -273,7 +275,7 @@ function LiveMatchControl() {
 				{/* Winner Banner */}
 				{winner && (
 					<div className="slide-in-from-top animate-in bg-[#ccff00] py-2 text-center font-black text-black text-sm uppercase tracking-widest duration-300">
-						VENCEDOR DEFINIDO!
+						{t("live.winnerDeclared")}
 					</div>
 				)}
 
@@ -297,7 +299,7 @@ function LiveMatchControl() {
 								)}
 							>
 								<div className="mb-1 truncate px-2 font-black text-brawl-blue text-sm uppercase">
-									{match.teamA?.name || "Time A"}
+									{match.teamA?.name || t("live.teamA")}
 								</div>
 								{editingScoreTeam === "A" ? (
 									<div className="zoom-in-95 flex animate-in flex-col items-center duration-200">
@@ -352,7 +354,7 @@ function LiveMatchControl() {
 								)}
 							>
 								<div className="mb-1 truncate px-2 font-black text-brawl-red text-xs uppercase md:text-sm">
-									{match.teamB?.name || "Time B"}
+									{match.teamB?.name || t("live.teamB")}
 								</div>
 								{editingScoreTeam === "B" ? (
 									<div className="zoom-in-95 flex animate-in flex-col items-center duration-200">
@@ -485,7 +487,7 @@ function LiveMatchControl() {
 						)}
 					>
 						<RotateCcw className="h-4 w-4" />
-						Resetar Placar
+						{t("live.resetScore")}
 					</button>
 
 					{/* Finalize Slider */}
@@ -529,7 +531,7 @@ function LiveMatchControl() {
 						{/* Label */}
 						<div className="pointer-events-none absolute inset-0 flex items-center justify-center">
 							<span className="pl-8 font-black text-black text-sm uppercase tracking-wider">
-								{!winner ? "DEFINA O VENCEDOR" : "DESLIZE PARA FINALIZAR"}
+								{!winner ? t("live.defineWinner") : t("live.slideToFinalize")}
 							</span>
 						</div>
 					</div>
@@ -541,7 +543,10 @@ function LiveMatchControl() {
 						<div className="zoom-in-95 w-full max-w-md animate-in overflow-hidden border-[4px] border-black bg-[#1a1a1a] p-0 shadow-[8px_8px_0px_0px_#000] duration-200">
 							<div className="border-[#333] border-b-[3px] bg-black p-4 text-center">
 								<h2 className="font-black text-2xl text-white uppercase italic tracking-wider">
-									FINALIZAR <span className="text-brawl-yellow">JOGO?</span>
+									{t("live.finalizeMatch")}{" "}
+									<span className="text-brawl-yellow">
+										{t("live.matchQuestionSuffix")}
+									</span>
 								</h2>
 							</div>
 
@@ -624,7 +629,7 @@ function LiveMatchControl() {
 									{/* Winner Declaration */}
 									<div className="mt-6 border-gray-700 border-t pt-6 text-center">
 										<div className="mb-1 font-bold text-gray-500 text-xs uppercase">
-											VENCEDOR
+											{t("live.winner")}
 										</div>
 										<div
 											className={clsx(
@@ -638,7 +643,7 @@ function LiveMatchControl() {
 								</div>
 
 								<div className="mt-4 text-center font-mono text-[10px] text-gray-500">
-									Esta ação não pode ser desfeita automaticamente.
+									{t("live.irreversibleWarning")}
 								</div>
 							</div>
 
@@ -647,13 +652,13 @@ function LiveMatchControl() {
 									onClick={() => setShowConfirmModal(false)}
 									className="flex-1 bg-[#2a2a2a] py-4 font-bold text-gray-400 text-sm uppercase transition-all hover:bg-[#333] hover:text-white"
 								>
-									Cancelar
+									{t("live.cancel")}
 								</button>
 								<button
 									onClick={handleFinalize}
 									className="flex-1 bg-brawl-yellow py-4 font-black text-black text-sm uppercase tracking-widest transition-all hover:bg-white"
 								>
-									Confirmar
+									{t("live.confirm")}
 								</button>
 							</div>
 						</div>
@@ -669,14 +674,16 @@ function LiveMatchControl() {
 									<X className="h-6 w-6 text-red-500" />
 								</div>
 								<h2 className="font-black text-white text-xl uppercase italic tracking-wider">
-									SAIR DA <span className="text-brawl-red">PARTIDA?</span>
+									{t("live.exitMatch")}{" "}
+									<span className="text-brawl-red">
+										{t("live.matchQuestion")}
+									</span>
 								</h2>
 							</div>
 
 							<div className="p-6 text-center">
 								<p className="mb-6 text-gray-400 text-sm leading-relaxed">
-									Você começou a pontuar esta partida. O que deseja fazer com as
-									alterações?
+									{t("live.scoringStarted")} {t("live.whatToDo")}
 								</p>
 
 								<div className="flex flex-col gap-3">
@@ -685,7 +692,7 @@ function LiveMatchControl() {
 										className="flex w-full items-center justify-center gap-2 border-2 border-gray-600 bg-[#333] py-3 font-bold text-sm text-white uppercase transition-all hover:border-gray-400 hover:bg-[#444]"
 									>
 										<span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-										Manter Partida Ao Vivo
+										{t("live.keepLive")}
 									</button>
 									<div className="font-mono text-[10px] text-gray-600 uppercase tracking-widest">
 										ou
@@ -694,7 +701,7 @@ function LiveMatchControl() {
 										onClick={handleDiscardMatch}
 										className="w-full border-2 border-red-900/50 bg-red-500/10 py-3 font-bold text-red-500 text-sm uppercase transition-all hover:border-red-500 hover:bg-red-500 hover:text-white"
 									>
-										Descartar e Resetar Status
+										{t("live.discardMatch")}
 									</button>
 								</div>
 							</div>
@@ -704,7 +711,7 @@ function LiveMatchControl() {
 									onClick={() => setShowCancelModal(false)}
 									className="w-full py-3 font-bold text-gray-500 text-xs uppercase transition-all hover:text-white"
 								>
-									Cancelar e Voltar
+									{t("live.cancelAndBack")}
 								</button>
 							</div>
 						</div>

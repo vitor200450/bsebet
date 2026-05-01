@@ -9,6 +9,8 @@ import {
 import { createServerFn } from "@tanstack/react-start";
 import { desc, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
+import { createServerT } from "@/i18n";
+import type { SupportedLang } from "@/i18n/config";
 import {
 	base64ToBuffer,
 	deleteLogoFromR2,
@@ -18,26 +20,28 @@ import {
 } from "./r2";
 
 // Schema for Team Input
-const teamSchema = z.object({
-	id: z.number().optional(),
-	name: z.string().min(1, "Nome é obrigatório"),
-	slug: z.string().min(1, "Slug é obrigatório"),
-	logoUrl: z
-		.string()
-		.refine(
-			(val) =>
-				val === "" ||
-				val === null ||
-				val === undefined ||
-				z.string().url().safeParse(val).success ||
-				val.startsWith("data:image/"),
-			"Deve ser uma URL válida ou imagem Base64",
-		)
-		.optional(),
-	region: z.string().optional(),
-});
+const createTeamSchema = (t: (key: string) => string) =>
+	z.object({
+		id: z.number().optional(),
+		name: z.string().min(1, t("validation:nameRequired")),
+		slug: z.string().min(1, t("validation:slugRequired")),
+		logoUrl: z
+			.string()
+			.refine(
+				(val) =>
+					val === "" ||
+					val === null ||
+					val === undefined ||
+					z.string().url().safeParse(val).success ||
+					val.startsWith("data:image/"),
+				t("validation:imageUrlRequired"),
+			)
+			.optional(),
+		region: z.string().optional(),
+	});
 
-type TeamInput = z.infer<typeof teamSchema>;
+const _dummyT = (key: string) => key;
+type TeamInput = z.infer<ReturnType<typeof createTeamSchema>>;
 
 /**
  * Fetch all teams ordered by created_at desc
@@ -59,7 +63,9 @@ const saveTeamFn = createServerFn({
 }).handler(async (ctx: any) => {
 	const { db } = await import("@bsebet/db");
 	const data = ctx.data;
-	const validData = teamSchema.parse(data);
+	const lang = data?.lang ?? "pt";
+	const t = createServerT(lang as SupportedLang);
+	const validData = createTeamSchema(t).parse(data);
 
 	let finalLogoUrl = validData.logoUrl || null;
 
@@ -167,6 +173,9 @@ const deleteTeamFn = createServerFn({
 	// Ensure data is the ID directly
 	const id = typeof data === "object" && data?.data ? data.data : data;
 
+	const lang = data?.lang ?? "pt";
+	const t = createServerT(lang as SupportedLang);
+
 	if (!id || typeof id !== "number") {
 		console.error("Invalid ID for team deletion:", id);
 		throw new Error("Invalid ID");
@@ -195,7 +204,9 @@ const deleteTeamFn = createServerFn({
 				];
 
 				throw new Error(
-					`Não é possível excluir este time porque ele está vinculado aos torneios: ${tournamentNames.join(", ")}.`,
+					t("errors:cannotDeleteTeam", {
+						tournaments: tournamentNames.join(", "),
+					}),
 				);
 			}
 
@@ -266,15 +277,17 @@ const getTeamByIdFn = createServerFn({
 }).handler(async (ctx: any) => {
 	const { db } = await import("@bsebet/db");
 
-	const teamId = z.number().parse(ctx.data);
+	const raw = ctx.data;
+	const teamId = typeof raw === "number" ? raw : raw?.id;
+	const lang = typeof raw === "object" ? raw?.lang || "pt" : "pt";
+	const t = createServerT(lang as SupportedLang);
 
-	// 1. Get Team
 	const team = await db.query.teams.findFirst({
 		where: eq(teams.id, teamId),
 	});
 
 	if (!team) {
-		throw new Error("Time não encontrado");
+		throw new Error(t("errors:teamNotFound"));
 	}
 
 	// 2. Get all matches where team participated
@@ -305,7 +318,7 @@ const getTeamByIdFn = createServerFn({
 });
 
 export const getTeamById = getTeamByIdFn as unknown as (opts: {
-	data: number;
+	data: number | { id: number; lang?: string };
 }) => Promise<{
 	team: typeof teams.$inferSelect;
 	matches: (typeof matches.$inferSelect & {
@@ -325,7 +338,10 @@ const getTeamBySlugFn = createServerFn({
 }).handler(async (ctx: any) => {
 	const { db } = await import("@bsebet/db");
 
-	const teamSlug = z.string().parse(ctx.data);
+	const raw = ctx.data;
+	const teamSlug = typeof raw === "string" ? raw : raw?.slug;
+	const lang = typeof raw === "object" ? raw?.lang || "pt" : "pt";
+	const t = createServerT(lang as SupportedLang);
 
 	// 1. Get Team by slug
 	const team = await db.query.teams.findFirst({
@@ -333,7 +349,7 @@ const getTeamBySlugFn = createServerFn({
 	});
 
 	if (!team) {
-		throw new Error("Time não encontrado");
+		throw new Error(t("errors:teamNotFound"));
 	}
 
 	// 2. Get all matches where team participated
@@ -364,7 +380,7 @@ const getTeamBySlugFn = createServerFn({
 });
 
 export const getTeamBySlug = getTeamBySlugFn as unknown as (opts: {
-	data: string;
+	data: string | { slug: string; lang?: string };
 }) => Promise<{
 	team: typeof teams.$inferSelect;
 	matches: (typeof matches.$inferSelect & {

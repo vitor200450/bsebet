@@ -14,6 +14,7 @@ import {
 	X,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
 	copyTournament,
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/$lang/admin/tournaments/")({
 });
 
 function AdminTournamentsPage() {
+	const { t } = useTranslation("admin");
 	const tournaments = Route.useLoaderData();
 	const router = useRouter();
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -206,9 +208,7 @@ function AdminTournamentsPage() {
 			const tier2 = formData.scoringRules.underdog_tier2_max_pct;
 
 			if (tier1 <= 0 || tier1 > 1 || tier2 <= 0 || tier2 > 1 || tier1 > tier2) {
-				toast.error(
-					"Limites de underdog inválidos. Use valores entre 0% e 100% e mantenha Tier 1 <= Tier 2.",
-				);
+				toast.error(t("tournaments.underdogLimits"));
 				setIsSubmitting(false);
 				return;
 			}
@@ -474,7 +474,7 @@ function AdminTournamentsPage() {
 														to="/admin/migrate-logos"
 														className="underline hover:text-red-700"
 													>
-														Página de Migração
+														{t("common.logoMigrationPage")}
 													</Link>
 												</p>
 											)}
@@ -667,7 +667,7 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Bônus do tier 1 de underdog"
+												title={t("tournaments.tier1Bonus")}
 											>
 												Underdog Tier 1 (Pts)
 											</label>
@@ -689,7 +689,7 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Bônus do tier 2 de underdog"
+												title={t("tournaments.tier2Bonus")}
 											>
 												Underdog Tier 2 (Pts)
 											</label>
@@ -713,9 +713,9 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Limite máximo de votos para Tier 1"
+												title={t("tournaments.maxVotes")}
 											>
-												Tier 1 até (%)
+												{t("tournaments.tier1Threshold")}
 											</label>
 											<input
 												type="number"
@@ -745,9 +745,9 @@ function AdminTournamentsPage() {
 										<div>
 											<label
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-												title="Limite máximo de votos para Tier 2"
+												title={t("tournaments.maxVotes")}
 											>
-												Tier 2 até (%)
+												{t("tournaments.tier2Threshold")}
 											</label>
 											<input
 												type="number"
@@ -776,8 +776,7 @@ function AdminTournamentsPage() {
 										</div>
 									</div>
 									<p className="font-bold text-[10px] text-gray-500 uppercase">
-										Fallback automático: Tier 1 = 25%, Tier 2 = 50% quando não
-										configurado.
+										{t("tournaments.autoFallback")}
 									</p>
 								</div>
 							</div>

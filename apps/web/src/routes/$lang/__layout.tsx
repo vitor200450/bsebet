@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { initI18n, i18next } from "@/i18n";
-import { SUPPORTED_LANGS } from "@/i18n/config";
+import { i18next, initI18n } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
+import { SUPPORTED_LANGS } from "@/i18n/config";
 
 export const Route = createFileRoute("/$lang")({
 	loader: ({ params }) => {

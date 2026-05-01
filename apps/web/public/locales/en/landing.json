@@ -1,15 +1,15 @@
 {
-  "hero": {
-    "tagline": "MAKE YOUR",
-    "taglineHighlight": "PICKS",
-    "subtitle": "and climb the leaderboard!",
-    "loginCta": "Sign in to start betting"
-  },
-  "features": {
-    "predict": "Predict results",
-    "predictDesc": "you know the competitive scene.",
-    "score": "Earn points",
-    "scoreDesc": "with your winning picks",
-    "prizes": "PRIZES"
-  }
+	"hero": {
+		"tagline": "MAKE YOUR",
+		"taglineHighlight": "PICKS",
+		"subtitle": "and climb the leaderboard!",
+		"loginCta": "Sign in to start betting"
+	},
+	"features": {
+		"predict": "Predict results",
+		"predictDesc": "you know the competitive scene.",
+		"score": "Earn points",
+		"scoreDesc": "with your winning picks",
+		"prizes": "PRIZES"
+	}
 }

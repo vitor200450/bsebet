@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useSetHeader } from "./HeaderContext";
 
 interface LandingPageProps {
@@ -7,6 +8,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ isAuthenticated }: LandingPageProps) {
+	const { t } = useTranslation("landing");
 	// Hide header for unauthenticated users (landing page has its own branding)
 	useSetHeader(!isAuthenticated ? { hideHeader: true } : {});
 
@@ -39,9 +41,9 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
               `,
 						}}
 					>
-						A ARENA DOS
+						{t("hero.arenaTitle")}
 						<br />
-						PALPITES
+						{t("hero.picksTitle")}
 					</motion.h1>
 
 					<motion.p
@@ -50,7 +52,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 						transition={{ delay: 0.3, duration: 0.8 }}
 						className="mx-auto mb-4 max-w-2xl font-bold text-lg text-white/90 italic tracking-wide drop-shadow-lg md:text-3xl"
 					>
-						Faça seus palpites e suba no ranking
+						{t("hero.title")}
 					</motion.p>
 
 					<motion.div
@@ -61,7 +63,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 					>
 						<div className="inline-block rotate-2 transform border-[3px] border-black bg-brawl-yellow px-4 py-1 shadow-[4px_4px_0px_0px_#000] md:px-6 md:py-2">
 							<span className="font-black text-black text-sm uppercase italic tracking-tighter md:text-lg">
-								🏆 Competitivo de Brawl Stars
+								{t("hero.badge")}
 							</span>
 						</div>
 					</motion.div>
@@ -76,7 +78,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 								<div className="absolute inset-0 translate-x-2 translate-y-2 -skew-x-12 transform rounded-lg bg-black" />
 								<div className="relative -skew-x-12 transform rounded-lg border-4 border-black bg-[#ccff00] px-8 py-4 shadow-[8px_8px_0px_0px_#000] transition-all duration-200 hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_0px_#000] md:px-12 md:py-6">
 									<span className="block skew-x-12 transform font-black text-black text-xl uppercase italic tracking-tighter md:text-4xl">
-										ENTRAR AGORA
+										{t("hero.cta")}
 									</span>
 								</div>
 							</button>
@@ -104,13 +106,10 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 								</span>
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
-								FAÇA SEUS
-								<br />
-								PALPITES
+								{t("features.predictTitle")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
-								Preveja os resultados das partidas de Brawl Stars e mostre que
-								você entende do competitivo.
+								{t("features.predictDesc")}
 							</p>
 						</motion.div>
 
@@ -128,13 +127,10 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 								</span>
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
-								SUBA NO
-								<br />
-								RANKING
+								{t("features.scoreTitle")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
-								Acumule pontos com seus palpites certeiros e escale até o topo
-								do ranking de apostadores.
+								{t("features.scoreDesc")}
 							</p>
 						</motion.div>
 
@@ -152,13 +148,10 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 								</span>
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
-								GANHE
-								<br />
-								PRÊMIOS
+								{t("features.prizesTitle")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
-								Os melhores apostadores ganham recompensas exclusivas e
-								reconhecimento na comunidade.
+								{t("features.prizesDesc")}
 							</p>
 						</motion.div>
 					</div>
@@ -174,7 +167,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 				<div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
 					<div className="flex flex-col items-center justify-center gap-4 border-zinc-800 border-t-2 pt-8 md:flex-row">
 						<p className="font-bold text-sm text-zinc-500">
-							© 2025 BSEBET. Todos os direitos reservados.
+							{t("footer.copyright")}
 						</p>
 					</div>
 				</div>

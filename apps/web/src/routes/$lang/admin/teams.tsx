@@ -11,6 +11,7 @@ import {
 	X,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { deleteTeam, getTeams, saveTeam } from "@/server/teams";
 import { useSetHeader } from "../../../components/HeaderContext";
@@ -105,6 +106,7 @@ const getRegionHoverBorderColor = (
 };
 
 function AdminTeamsPage() {
+	const { t } = useTranslation("admin");
 	const teams = Route.useLoaderData();
 	const router = useRouter();
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -163,11 +165,11 @@ function AdminTeamsPage() {
 			setIsModalOpen(false);
 			resetForm();
 			router.invalidate();
-			toast.success("Time salvo com sucesso!");
+			toast.success(t("teams.toast.saved"));
 		} catch (error: any) {
 			console.error("Failed to save team:", error);
-			toast.error("Erro ao salvar time", {
-				description: error.message || "Verifique os dados e tente novamente.",
+			toast.error(t("teams.toast.saveError"), {
+				description: error.message || t("teams.toast.checkData"),
 			});
 		} finally {
 			setIsSubmitting(false);
@@ -185,13 +187,13 @@ function AdminTeamsPage() {
 		setIsSubmitting(true);
 		try {
 			await deleteTeam({ data: teamToDelete.id });
-			toast.success(`Time "${teamToDelete.name}" excluído!`);
+			toast.success(t("teams.toast.deleted", { name: teamToDelete.name }));
 			setIsDeleteModalOpen(false);
 			setTeamToDelete(null);
 			router.invalidate();
 		} catch (error: any) {
-			toast.error("Erro ao excluir time", {
-				description: error?.message || "Tente novamente em instantes.",
+			toast.error(t("teams.toast.deleteError"), {
+				description: error?.message || t("teams.toast.tryAgain"),
 			});
 		} finally {
 			setIsSubmitting(false);
@@ -220,7 +222,7 @@ function AdminTeamsPage() {
 
 		if (file.size > 500 * 1024) {
 			// 500KB limit
-			alert("O arquivo é muito grande! Máximo 500KB.");
+			alert(t("teams.logoTooLarge"));
 			return;
 		}
 
@@ -312,7 +314,7 @@ function AdminTeamsPage() {
 					className="flex w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-2 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 				>
 					<Plus className="h-5 w-5" strokeWidth={3} />
-					<span className="inline">NOVO TIME</span>
+					<span className="inline">{t("teams.newButton")}</span>
 				</button>
 			</div>
 		),
@@ -380,7 +382,7 @@ function AdminTeamsPage() {
 									className={`flex flex-1 translate-y-0 items-center justify-center gap-2 rounded-sm border-2 border-black bg-white px-3 py-1.5 font-bold text-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:translate-y-[2px] hover:bg-[#ccff00] hover:shadow-none ${getRegionHoverBorderColor(team.region || undefined, "group")}`}
 								>
 									<Edit2 className="h-4 w-4" />
-									EDITAR
+									{t("teams.editButton")}
 								</button>
 								<button
 									onClick={() => handleDelete(team.id, team.name)}
@@ -402,7 +404,7 @@ function AdminTeamsPage() {
 								<Plus className="h-8 w-8 text-gray-500" />
 							</div>
 							<span className="font-black text-gray-500 uppercase italic">
-								Adicionar Time
+								{t("teams.addTeam")}
 							</span>
 						</button>
 					)}
@@ -416,14 +418,14 @@ function AdminTeamsPage() {
 						{/* Modal Header */}
 						<div className="flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-4">
 							<h2 className="font-black text-white text-xl uppercase italic">
-								{formData.id ? "EDITAR TIME" : "NOVO TIME"}
+								{formData.id ? t("teams.editTitle") : t("teams.newTitle")}
 							</h2>
 							<div className="flex items-center gap-2">
 								{formData.id && ( // Only show delete button if editing an existing team
 									<button
 										onClick={() => handleDelete(formData.id!, formData.name)}
 										className="rounded-sm p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#ff2e2e]"
-										title="Excluir Time"
+										title={t("teams.deleteTitle")}
 									>
 										<Trash2 className="h-5 w-5" />
 									</button>
@@ -445,7 +447,7 @@ function AdminTeamsPage() {
 							<div className="space-y-4">
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Nome do Time
+										{t("teams.nameLabel")}
 									</label>
 									<input
 										required
@@ -479,7 +481,7 @@ function AdminTeamsPage() {
 								<div className="grid grid-cols-2 gap-4">
 									<div className="relative">
 										<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-											Região
+											{t("teams.region")}
 										</label>
 
 										{/* Custom Dropdown Trigger */}
@@ -527,7 +529,7 @@ function AdminTeamsPage() {
 							<div className="flex flex-col gap-4">
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Logo URL (ou Upload)
+										{t("teams.logoUrlLabel")}
 									</label>
 									<div className="flex gap-2">
 										<div className="relative flex-1">
@@ -576,20 +578,19 @@ function AdminTeamsPage() {
 											type="button"
 											onClick={() => fileInputRef.current?.click()}
 											className="border-[3px] border-black bg-black px-3 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:bg-[#2e5cff] active:translate-y-[2px] active:shadow-none"
-											title="Upload Imagem"
+											title={t("teams.uploadImage")}
 										>
 											<Upload className="h-4 w-4" />
 										</button>
 									</div>
 									{formData.logoUrl.startsWith("data:") && (
 										<p className="mt-1 font-bold text-[10px] text-red-500 uppercase italic">
-											⚠️ Esta logo está em Base64. Salve para converter para R2
-											ou use a{" "}
+											{t("teams.base64Warning")}{" "}
 											<Link
 												to="/admin/migrate-logos"
 												className="underline hover:text-red-700"
 											>
-												Página de Migração
+												{t("common.logoMigrationPage")}
 											</Link>
 										</p>
 									)}
@@ -609,7 +610,7 @@ function AdminTeamsPage() {
 												LOGO
 											</span>
 											<span className="font-bold text-xs uppercase">
-												Preview da Imagem
+												{t("teams.imagePreview")}
 											</span>
 										</div>
 									)}
@@ -635,7 +636,7 @@ function AdminTeamsPage() {
 									className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase transition-colors hover:bg-gray-100 disabled:opacity-50"
 									disabled={isSubmitting}
 								>
-									Cancelar
+									{t("teams.cancel")}
 								</button>
 								<button
 									type="submit"
@@ -647,7 +648,7 @@ function AdminTeamsPage() {
 									) : (
 										<Plus strokeWidth={4} className="h-5 w-5" />
 									)}
-									{isSubmitting ? "Salvando..." : "Salvar Time"}
+									{isSubmitting ? t("teams.saving") : t("teams.save")}
 								</button>
 							</div>
 						</form>
@@ -664,13 +665,13 @@ function AdminTeamsPage() {
 								<Trash2 className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
 							</div>
 							<h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
-								Confirmar Exclusão
+								{t("teams.deleteConfirm")}
 							</h3>
 						</div>
 
 						<div className="p-6">
 							<p className="mb-2 font-bold text-black text-lg">
-								Tem certeza que deseja excluir este time?
+								{t("teams.deleteConfirmMessage")}
 							</p>
 							<div className="mb-6 flex items-center gap-4 border-[3px] border-black bg-gray-100 p-4">
 								{teamToDelete.name && (
@@ -680,7 +681,7 @@ function AdminTeamsPage() {
 								)}
 								<div>
 									<span className="block font-black text-[10px] text-gray-500 uppercase tracking-widest">
-										Time Selecionado
+										{t("teams.selectedTeam")}
 									</span>
 									<span className="block font-black text-black text-xl uppercase italic">
 										{teamToDelete.name}
@@ -697,7 +698,7 @@ function AdminTeamsPage() {
 									{isSubmitting ? (
 										<Loader2 className="h-6 w-6 animate-spin" />
 									) : (
-										"SIM, EXCLUIR TIME"
+										t("teams.deleteConfirmAction")
 									)}
 								</button>
 								<button
@@ -708,7 +709,7 @@ function AdminTeamsPage() {
 									disabled={isSubmitting}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100 disabled:opacity-50"
 								>
-									Não, Cancelar
+									{t("teams.deleteCancel")}
 								</button>
 							</div>
 						</div>

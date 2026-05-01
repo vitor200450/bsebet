@@ -1,66 +1,66 @@
 {
-  "common": {
-    "title": "Administration",
-    "users": "Users",
-    "teams": "Teams",
-    "tournaments": "Tournaments",
-    "compensations": "Point Compensation",
-    "migrateLogos": "Logo Migration",
-    "logoMigrationPage": "Migration Page"
-  },
-  "users": {
-    "title": "Manage Users"
-  },
-  "teams": {
-    "title": "Manage Teams",
-    "create": "New Team",
-    "edit": "Edit Team",
-    "delete": "Delete Team",
-    "deleteConfirm": "Confirm Deletion",
-    "deleteCancel": "No, Cancel",
-    "region": "Region",
-    "logoTooLarge": "File is too large! Maximum 500KB.",
-    "base64Warning": "This logo is in Base64. Save to convert to storage object.",
-    "toast": {
-      "deleted": "Team deleted!",
-      "saveError": "Error saving team",
-      "deleteError": "Error deleting team"
-    }
-  },
-  "tournaments": {
-    "title": "Manage Tournaments",
-    "create": "New Tournament",
-    "edit": "Edit Tournament",
-    "underdogLimits": "Invalid underdog limits: {{details}}",
-    "tier1Bonus": "Underdog tier 1 bonus",
-    "tier2Bonus": "Underdog tier 2 bonus",
-    "tier1Threshold": "Tier 1 threshold (%)",
-    "tier2Threshold": "Tier 2 threshold (%)",
-    "maxVotes": "Maximum vote limit",
-    "autoFallback": "Auto fallback",
-    "base64Warning": "This logo is in Base64. Save to convert to storage object."
-  },
-  "compensations": {
-    "title": "POINT COMPENSATION",
-    "new": "New Compensation",
-    "user": "User",
-    "searchUser": "Search user by name or email...",
-    "points": "Points",
-    "reason": "Reason",
-    "reasonPlaceholder": "Describe the reason for the compensation...",
-    "confirm": "Confirm Compensation",
-    "auditNote": "This action will be logged and is irreversible. Only administrators can perform compensations.",
-    "irreversible": "This action cannot be undone.",
-    "history": "Adjustment History",
-    "description": "Manual point adjustment for users affected by bugs or system errors."
-  },
-  "migrateLogos": {
-    "description": "What will be done?",
-    "warning": "Warning: This process modifies the database and cannot be undone. Make sure you have a recent backup before proceeding.",
-    "start": "Start Migration",
-    "running": "Running...",
-    "success": "Migration Complete",
-    "error": "Migration Error",
-    "completedAt": "Completed at: {{time}}"
-  }
+	"common": {
+		"title": "Administration",
+		"users": "Users",
+		"teams": "Teams",
+		"tournaments": "Tournaments",
+		"compensations": "Point Compensation",
+		"migrateLogos": "Logo Migration",
+		"logoMigrationPage": "Migration Page"
+	},
+	"users": {
+		"title": "Manage Users"
+	},
+	"teams": {
+		"title": "Manage Teams",
+		"create": "New Team",
+		"edit": "Edit Team",
+		"delete": "Delete Team",
+		"deleteConfirm": "Confirm Deletion",
+		"deleteCancel": "No, Cancel",
+		"region": "Region",
+		"logoTooLarge": "File is too large! Maximum 500KB.",
+		"base64Warning": "This logo is in Base64. Save to convert to storage object.",
+		"toast": {
+			"deleted": "Team deleted!",
+			"saveError": "Error saving team",
+			"deleteError": "Error deleting team"
+		}
+	},
+	"tournaments": {
+		"title": "Manage Tournaments",
+		"create": "New Tournament",
+		"edit": "Edit Tournament",
+		"underdogLimits": "Invalid underdog limits: {{details}}",
+		"tier1Bonus": "Underdog tier 1 bonus",
+		"tier2Bonus": "Underdog tier 2 bonus",
+		"tier1Threshold": "Tier 1 threshold (%)",
+		"tier2Threshold": "Tier 2 threshold (%)",
+		"maxVotes": "Maximum vote limit",
+		"autoFallback": "Auto fallback",
+		"base64Warning": "This logo is in Base64. Save to convert to storage object."
+	},
+	"compensations": {
+		"title": "POINT COMPENSATION",
+		"new": "New Compensation",
+		"user": "User",
+		"searchUser": "Search user by name or email...",
+		"points": "Points",
+		"reason": "Reason",
+		"reasonPlaceholder": "Describe the reason for the compensation...",
+		"confirm": "Confirm Compensation",
+		"auditNote": "This action will be logged and is irreversible. Only administrators can perform compensations.",
+		"irreversible": "This action cannot be undone.",
+		"history": "Adjustment History",
+		"description": "Manual point adjustment for users affected by bugs or system errors."
+	},
+	"migrateLogos": {
+		"description": "What will be done?",
+		"warning": "Warning: This process modifies the database and cannot be undone. Make sure you have a recent backup before proceeding.",
+		"start": "Start Migration",
+		"running": "Running...",
+		"success": "Migration Complete",
+		"error": "Migration Error",
+		"completedAt": "Completed at: {{time}}"
+	}
 }
