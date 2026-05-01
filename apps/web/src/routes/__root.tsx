@@ -62,10 +62,10 @@ function RootDocument() {
 							<Outlet />
 						</div>
 						<Toaster richColors />
-						<Scripts />
-						<SpeedInsights route={location.pathname} />
 					</HeaderProvider>
 				</I18nRootProvider>
+				<Scripts />
+				<SpeedInsights route={location.pathname} />
 			</body>
 		</html>
 	);

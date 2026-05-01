@@ -22,11 +22,10 @@ import { toast } from "sonner";
 
 import { useLangLink } from "@/i18n/useLangLink";
 import {
-	createTournament,
+	copyTournament,
 	deleteTournament,
-	duplicateTournament,
 	getTournaments,
-	updateTournament,
+	saveTournament,
 } from "@/server/tournaments";
 import { useSetHeader } from "../../../../components/HeaderContext";
 
