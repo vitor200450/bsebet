@@ -1,0 +1,19 @@
+{
+  "title": "Perfil",
+  "editInfo": "Edite suas informações",
+  "displayNameLabel": "Nome de exibição",
+  "displayNameHint": "Seu nome de exibição no leaderboard",
+  "avatarNote": "JPG, PNG — máx. 2MB",
+  "googleAccountNote": "Esses dados vêm da sua conta Google e não podem ser alterados.",
+  "saveChanges": "SALVAR ALTERAÇÕES",
+  "viewPublic": "Ver Perfil Público",
+  "toast": {
+    "saved": "Perfil atualizado com sucesso!",
+    "error": "Erro ao salvar. Tente novamente.",
+    "avatarRestoreError": "Não foi possível restaurar o avatar do Google. Tente sair e entrar novamente."
+  },
+  "userMenu": {
+    "label": "Perfil do Usuário",
+    "viewPublic": "Ver Perfil Público"
+  }
+}

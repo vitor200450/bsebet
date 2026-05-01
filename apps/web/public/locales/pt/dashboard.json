@@ -1,0 +1,17 @@
+{
+  "greeting": "Olá, {{name}}!",
+  "stats": {
+    "title": "Suas Estatísticas",
+    "underdogsWon": "Azarões Vencedores"
+  },
+  "viewHistory": "Ver histórico completo",
+  "empty": {
+    "noBets": "Faça suas apostas e acompanhe aqui!",
+    "noActive": "Nenhum palpite ativo"
+  },
+  "betLabel": "Seu palpite",
+  "status": {
+    "live": "AO VIVO",
+    "scheduled": "AGENDADO"
+  }
+}

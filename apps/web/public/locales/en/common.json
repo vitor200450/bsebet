@@ -1,0 +1,42 @@
+{
+  "appName": "BSEBET",
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "myBets": "My Bets",
+    "leaderboard": "Leaderboard",
+    "tournaments": "Tournaments",
+    "teams": "Teams",
+    "admin": "Admin",
+    "adminUsers": "Users",
+    "adminTeams": "Teams",
+    "adminTournaments": "Tournaments",
+    "adminCompensations": "Compensations",
+    "adminLive": "Live",
+    "profile": "Profile",
+    "profileView": "View Public Profile"
+  },
+  "matchStatus": {
+    "scheduled": "Scheduled",
+    "live": "Live",
+    "finished": "Finished",
+    "locked": "Locked",
+    "draft": "Draft",
+    "open": "Open"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading...",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
+  },
+  "region": "Region",
+  "series": "Series",
+  "points": "points",
+  "finished": "Finished"
+}

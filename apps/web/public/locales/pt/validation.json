@@ -1,0 +1,11 @@
+{
+  "nameRequired": "Nome é obrigatório",
+  "slugRequired": "Slug é obrigatório",
+  "imageUrlRequired": "Deve ser uma URL válida ou imagem Base64",
+  "matchIdPositive": "Match ID deve ser um número positivo",
+  "winnerIdPositive": "Winner ID deve ser um número positivo",
+  "negativeScore": "O placar não pode ser negativo",
+  "maxSets": "Máximo de {{n}} sets neste formato",
+  "someoneMustWin": "Alguém precisa vencer {{n}} sets",
+  "scoreLogic": "Lógica inconsistente: o vencedor deve ter exatamente {{n}} sets ganhos"
+}

@@ -1,0 +1,17 @@
+{
+  "greeting": "Hello, {{name}}!",
+  "stats": {
+    "title": "Your Stats",
+    "underdogsWon": "Winning Underdogs"
+  },
+  "viewHistory": "View full history",
+  "empty": {
+    "noBets": "Place your bets and track them here!",
+    "noActive": "No active bets"
+  },
+  "betLabel": "Your bet",
+  "status": {
+    "live": "LIVE",
+    "scheduled": "SCHEDULED"
+  }
+}

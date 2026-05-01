@@ -1,0 +1,42 @@
+{
+  "appName": "BSEBET",
+  "nav": {
+    "home": "Início",
+    "dashboard": "Painel",
+    "myBets": "Meus Palpites",
+    "leaderboard": "Ranking",
+    "tournaments": "Torneios",
+    "teams": "Times",
+    "admin": "Admin",
+    "adminUsers": "Usuários",
+    "adminTeams": "Times",
+    "adminTournaments": "Torneios",
+    "adminCompensations": "Compensação",
+    "adminLive": "Ao Vivo",
+    "profile": "Perfil",
+    "profileView": "Ver Perfil Público"
+  },
+  "matchStatus": {
+    "scheduled": "Agendado",
+    "live": "Ao Vivo",
+    "finished": "Finalizado",
+    "locked": "Trancado",
+    "draft": "Rascunho",
+    "open": "Aberto"
+  },
+  "actions": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "expandAll": "Expandir todos",
+    "collapseAll": "Recolher todos"
+  },
+  "region": "Região",
+  "series": "Série",
+  "points": "pontos",
+  "finished": "Concluído"
+}

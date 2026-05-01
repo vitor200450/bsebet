@@ -1,0 +1,11 @@
+{
+  "stats": {
+    "general": "ESTATÍSTICAS GERAIS",
+    "underdogs": "Azarões",
+    "tournamentHistory": "Histórico de Torneios",
+    "filterTournament": "Filtrar torneio"
+  },
+  "medals": {
+    "latest": "Últimas Conquistas"
+  }
+}

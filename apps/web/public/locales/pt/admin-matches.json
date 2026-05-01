@@ -1,0 +1,45 @@
+{
+  "matchBuilder": {
+    "title": "Gerenciar Partidas",
+    "description": "Crie e organize as partidas visualmente para ficarem idênticas à disposição do torneio oficial.",
+    "groupStage": "Fase de Grupos",
+    "manageGroupMatches": "Gerencie as partidas e resultados da fase de grupos",
+    "existingMatchesWarning": "ATENÇÃO: Já existem partidas de grupo geradas. Gerar novamente REMOVERÁ todas as partidas existentes e as apostas associadas.",
+    "continueQuestion": "Deseja continuar?"
+  },
+  "reset": {
+    "confirm": "Tem certeza que deseja resetar esta partida? Todas as apostas serão removidas.",
+    "resetAllConfirm": "Tem certeza que deseja resetar TODAS as partidas deste torneio? Todas as apostas serão removidas."
+  },
+  "recalc": {
+    "button": "Recalcular Pontuação",
+    "success": "Recálculo concluído: {{matchCount}} partidas, {{betCount}} apostas",
+    "error": "Erro ao recalcular pontuação do torneio"
+  },
+  "modal": {
+    "saveError": "Falha ao salvar atualização da partida",
+    "woDescription": "W.O. com um único time definido será resolvido como vitória automática do time presente.",
+    "woUpdated": "Vencedor do W.O. atualizado com sucesso",
+    "clearWinner": "Limpar vencedor"
+  },
+  "live": {
+    "tieWarning": "O placar está empatado. Defina um vencedor.",
+    "teamsError": "Erro: Times não definidos",
+    "scoringStarted": "Você começou a pontuar esta partida.",
+    "irreversibleWarning": "Esta ação não pode ser desfeita automaticamente.",
+    "whatToDo": "O que deseja fazer com as alterações?"
+  },
+  "matchDays": {
+    "title": "Match Days",
+    "created": "Dia criado com sucesso!",
+    "deleted": "Dia excluído.",
+    "createError": "Erro ao criar dia.",
+    "deleteError": "Erro ao excluir dia.",
+    "updateError": "Erro ao atualizar match day.",
+    "draft": "Draft = Ainda não disponível"
+  },
+  "ordering": {
+    "saved": "Ordem salva com sucesso!",
+    "saveError": "Erro ao salvar ordem"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "matchBuilder": {
+    "title": "Manage Matches",
+    "description": "Create and organize matches visually to match the official tournament layout.",
+    "groupStage": "Group Stage",
+    "manageGroupMatches": "Manage group stage matches and results",
+    "existingMatchesWarning": "WARNING: Group matches already exist. Regenerating will REMOVE all existing matches and associated bets.",
+    "continueQuestion": "Do you want to continue?"
+  },
+  "reset": {
+    "confirm": "Are you sure you want to reset this match? All bets will be removed.",
+    "resetAllConfirm": "Are you sure you want to reset ALL matches in this tournament? All bets will be removed."
+  },
+  "recalc": {
+    "button": "Recalculate Scores",
+    "success": "Recalculation complete: {{matchCount}} matches, {{betCount}} bets",
+    "error": "Error recalculating tournament scores"
+  },
+  "modal": {
+    "saveError": "Failed to save match update",
+    "woDescription": "Walkover with a single defined team will be resolved as an automatic win for the present team.",
+    "woUpdated": "Walkover winner updated successfully",
+    "clearWinner": "Clear winner"
+  },
+  "live": {
+    "tieWarning": "The score is tied. Set a winner.",
+    "teamsError": "Error: Teams not defined",
+    "scoringStarted": "You've started scoring this match.",
+    "irreversibleWarning": "This action cannot be undone automatically.",
+    "whatToDo": "What would you like to do with the changes?"
+  },
+  "matchDays": {
+    "title": "Match Days",
+    "created": "Day created successfully!",
+    "deleted": "Day deleted.",
+    "createError": "Error creating day.",
+    "deleteError": "Error deleting day.",
+    "updateError": "Error updating match day.",
+    "draft": "Draft = Not yet available"
+  },
+  "ordering": {
+    "saved": "Order saved successfully!",
+    "saveError": "Error saving order"
+  }
+}

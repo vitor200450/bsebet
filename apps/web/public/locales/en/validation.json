@@ -1,0 +1,11 @@
+{
+  "nameRequired": "Name is required",
+  "slugRequired": "Slug is required",
+  "imageUrlRequired": "Must be a valid URL or Base64 image",
+  "matchIdPositive": "Match ID must be a positive number",
+  "winnerIdPositive": "Winner ID must be a positive number",
+  "negativeScore": "Score cannot be negative",
+  "maxSets": "Maximum of {{n}} sets in this format",
+  "someoneMustWin": "Someone must win {{n}} sets",
+  "scoreLogic": "Inconsistent logic: winner must have exactly {{n}} sets won"
+}

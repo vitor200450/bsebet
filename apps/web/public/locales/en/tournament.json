@@ -1,0 +1,42 @@
+{
+  "browse": {
+    "description": "High-level Brawl Stars competitions",
+    "searchPlaceholder": "Search tournaments...",
+    "empty": "Nothing here",
+    "noResults": "No results",
+    "noActive": "No active tournaments at the moment.",
+    "noScheduled": "No scheduled tournaments at the moment.",
+    "noFinished": "No finished tournaments at the moment.",
+    "tabs": {
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "finished": "Finished"
+    }
+  },
+  "detail": {
+    "overview": "Overview",
+    "bracket": "Bracket",
+    "standings": "Standings",
+    "history": "History",
+    "noMatches": "No matches found",
+    "round": "round {{number}}",
+    "elimination": "elimination"
+  },
+  "podium": {
+    "title": "Final Podium",
+    "champion": "CHAMPION"
+  },
+  "selector": {
+    "recovery": "RECOVERY",
+    "label": "Select tournament"
+  },
+  "matchDay": {
+    "completed": "Completed",
+    "available": "available",
+    "availablePlural": "available",
+    "noMatchDay": "No match days available for this tournament.",
+    "selectPrompt": "Choose which match day you want to view",
+    "noMatches": "No matches assigned",
+    "pending": "Awaiting update"
+  }
+}

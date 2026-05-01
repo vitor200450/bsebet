@@ -1,0 +1,23 @@
+{
+  "unauthenticated": "Not authenticated",
+  "matchNotFound": "Match not found",
+  "tournamentNotFound": "Tournament not found",
+  "teamNotFound": "Team not found",
+  "userNotFound": "User not found",
+  "bettingClosed": "Betting closed — the match has already started",
+  "bettingDisabled": "Betting is disabled for this match",
+  "invalidWinner": "Predicted winner must be one of the teams in the match",
+  "invalidWinnerAlt": "Invalid winner for the match",
+  "winnerMustHaveMorePoints": "The winner must have more points than the loser",
+  "validationErrors": "Validation errors",
+  "betsSaved": "bet(s) saved successfully",
+  "recoveryUnavailable": "Match unavailable for recovery in current state",
+  "recoveryAlreadyPlaced": "Recovery bet has already been placed and cannot be changed.",
+  "cannotDeleteTeam": "Cannot delete this team because it is linked to tournaments: {{tournaments}}",
+  "googleAccountNotFound": "Google account not found",
+  "googleAvatarError": "Could not get Google avatar. Try signing out and back in.",
+  "adminOnly": "Only administrators can adjust points",
+  "adminOnlySearch": "Only administrators can search users",
+  "pointAdjustmentError": "Error fetching point adjustments",
+  "pointAdjustmentFallbackUser": "User"
+}

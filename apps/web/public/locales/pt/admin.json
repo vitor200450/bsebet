@@ -1,0 +1,66 @@
+{
+  "common": {
+    "title": "Administração",
+    "users": "Usuários",
+    "teams": "Times",
+    "tournaments": "Torneios",
+    "compensations": "Compensação de Pontos",
+    "migrateLogos": "Migração de Logos",
+    "logoMigrationPage": "Página de Migração"
+  },
+  "users": {
+    "title": "Gerenciar Usuários"
+  },
+  "teams": {
+    "title": "Gerenciar Times",
+    "create": "Novo Time",
+    "edit": "Editar Time",
+    "delete": "Excluir Time",
+    "deleteConfirm": "Confirmar Exclusão",
+    "deleteCancel": "Não, Cancelar",
+    "region": "Região",
+    "logoTooLarge": "O arquivo é muito grande! Máximo 500KB.",
+    "base64Warning": "Esta logo está em Base64. Salve para converter para objeto de storage.",
+    "toast": {
+      "deleted": "Time excluído!",
+      "saveError": "Erro ao salvar time",
+      "deleteError": "Erro ao excluir time"
+    }
+  },
+  "tournaments": {
+    "title": "Gerenciar Torneios",
+    "create": "Novo Torneio",
+    "edit": "Editar Torneio",
+    "underdogLimits": "Limites de underdog inválidos: {{details}}",
+    "tier1Bonus": "Bônus do tier 1 de underdog",
+    "tier2Bonus": "Bônus do tier 2 de underdog",
+    "tier1Threshold": "Tier 1 até (%)",
+    "tier2Threshold": "Tier 2 até (%)",
+    "maxVotes": "Limite máximo de votos",
+    "autoFallback": "Fallback automático",
+    "base64Warning": "Esta logo está em Base64. Salve para converter para objeto de storage."
+  },
+  "compensations": {
+    "title": "COMPENSAÇÃO DE PONTOS",
+    "new": "Nova Compensação",
+    "user": "Usuário",
+    "searchUser": "Buscar usuário por nome ou email...",
+    "points": "Pontos",
+    "reason": "Motivo",
+    "reasonPlaceholder": "Descreva o motivo da compensação...",
+    "confirm": "Confirmar Compensação",
+    "auditNote": "Esta ação será registrada e é irreversível. Apenas administradores podem realizar compensações.",
+    "irreversible": "Esta ação não pode ser desfeita.",
+    "history": "Histórico de Ajustes",
+    "description": "Ajuste manual de pontos para usuários afetados por bugs ou erros de sistema."
+  },
+  "migrateLogos": {
+    "description": "O que será feito?",
+    "warning": "Atenção: Este processo modifica o banco de dados e não pode ser desfeito. Certifique-se de ter um backup recente antes de prosseguir.",
+    "start": "Iniciar Migração",
+    "running": "Executando...",
+    "success": "Migração Concluída",
+    "error": "Erro na Migração",
+    "completedAt": "Concluído em: {{time}}"
+  }
+}

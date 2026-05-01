@@ -1,0 +1,40 @@
+{
+  "hero": {
+    "title": "Faça seus palpites e suba no ranking",
+    "subtitle": "você entende do competitivo",
+    "description": "Acumule pontos com seus palpites certeiros e escale até o topo"
+  },
+  "recovery": {
+    "available": "APOSTAS DE RECUPERAÇÃO DISPONÍVEIS!",
+    "active": "Modo Recuperação Ativo",
+    "errorPrompt": "Você errou algumas previsões. Tem direito a apostas de recuperação!",
+    "qualify": "Tem direito a apostas de recuperação!",
+    "points": "recuperar pontos",
+    "wrongMatchup": "Confronto diferente do palpite",
+    "wrongWinner": "Seu palpite de vencedor não bateu",
+    "matchupLabel": "Você apostou num confronto que não ocorreu"
+  },
+  "bonus": {
+    "underdog": "Bônus azarão (+{{percent}}%)",
+    "underdogLabel": "Azarões"
+  },
+  "toast": {
+    "confirmed": "Suas apostas foram confirmadas! Boa sorte, campeão!",
+    "updated": "Aposta atualizada com sucesso",
+    "saved": "Aposta registrada com sucesso"
+  },
+  "empty": {
+    "noTournament": "Nenhum Torneio Disponível",
+    "noMatches": "Os jogos de hoje já começaram ou ainda não foram agendados."
+  },
+  "betLabel": "Você apostou em:",
+  "totalPoints": "Total: {{count}} ponto",
+  "totalPoints_other": "Total: {{count}} pontos",
+  "matchDayComplete": "Concluído!",
+  "matchDayNewAvailable": "Há um novo match day disponível",
+  "nextMatch": "Próximo Jogo",
+  "betCount_one": "{{count}} palpite",
+  "betCount_other": "{{count}} palpites",
+  "walkoverNote": "Todos os apostadores recebem pontos de vencedor",
+  "walkoverTitle": "Partida encerrada por walkover"
+}

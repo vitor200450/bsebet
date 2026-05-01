@@ -1,0 +1,19 @@
+{
+  "title": "Leaderboard",
+  "rankingCriteria": "Ranking Criteria",
+  "tabs": {
+    "global": "Global Ranking",
+    "tournament": "By Tournament"
+  },
+  "columns": {
+    "position": "Position",
+    "player": "Player",
+    "score": "Score",
+    "underdogs": "Underdogs",
+    "globalPosition": "Overall position",
+    "lastMonthResult": "Previous month result",
+    "primaryCriteria": "Primary criteria"
+  },
+  "empty": "No data available",
+  "selectTournament": "Filter tournament"
+}

@@ -1,0 +1,26 @@
+{
+  "header": "Histórico completo dos seus palpites",
+  "tabs": {
+    "all": "Todas",
+    "pending": "Pendentes",
+    "finished": "Finalizados",
+    "recovery": "Recuperação"
+  },
+  "labels": {
+    "projection": "Projeção",
+    "projectionTooltip": "Projeção baseada na sua performance histórica",
+    "futureProjection": "Projeção futura",
+    "underdogLabel": "Azarão",
+    "waitingScore": "Aguardando resultado",
+    "selectTournament": "Selecionar torneio",
+    "clickToExpand": "Clique no nome do torneio para expandir"
+  },
+  "empty": {
+    "none": "Nenhum palpite encontrado",
+    "noMatches": "Nenhuma partida encontrada",
+    "cta": "Faça suas apostas nos torneios ativos!"
+  },
+  "actions": {
+    "viewTournament": "Ver torneio"
+  }
+}

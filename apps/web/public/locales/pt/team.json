@@ -1,0 +1,14 @@
+{
+  "stats": {
+    "winRate": "Taxa de Vitória",
+    "wins": "Vitórias",
+    "currentStreak": "Sequência Atual"
+  },
+  "sections": {
+    "upcoming": "Próximas Partidas",
+    "recentHistory": "Histórico Recente"
+  },
+  "empty": {
+    "noFinishedMatches": "Nenhuma partida finalizada"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "unauthenticated": "Usuário não autenticado",
+  "matchNotFound": "Partida não encontrada",
+  "tournamentNotFound": "Torneio não encontrado",
+  "teamNotFound": "Time não encontrado",
+  "userNotFound": "Usuário não encontrado",
+  "bettingClosed": "Apostas encerradas — a partida já começou",
+  "bettingDisabled": "Apostas desabilitadas para esta partida",
+  "invalidWinner": "Vencedor previsto deve ser um dos times da partida",
+  "invalidWinnerAlt": "Vencedor inválido para partida",
+  "winnerMustHaveMorePoints": "O vencedor deve ter mais pontos que o perdedor",
+  "validationErrors": "Erros de validação",
+  "betsSaved": "aposta(s) salva(s) com sucesso",
+  "recoveryUnavailable": "Partida indisponível para recovery no estado atual",
+  "recoveryAlreadyPlaced": "Aposta de recuperação já foi realizada e não pode ser alterada.",
+  "cannotDeleteTeam": "Não é possível excluir este time porque ele está vinculado aos torneios: {{tournaments}}",
+  "googleAccountNotFound": "Conta Google não encontrada",
+  "googleAvatarError": "Não foi possível obter o avatar do Google. Tente sair e entrar novamente.",
+  "adminOnly": "Apenas administradores podem ajustar pontos",
+  "adminOnlySearch": "Apenas administradores podem buscar usuários",
+  "pointAdjustmentError": "Erro ao buscar ajustes de pontos",
+  "pointAdjustmentFallbackUser": "Usuário"
+}
