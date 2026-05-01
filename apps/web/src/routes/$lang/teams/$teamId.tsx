@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ArrowLeft, Award, Target, TrendingUp, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { TeamLogo } from "@/components/TeamLogo";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTeamBySlug } from "@/server/teams";
@@ -578,9 +578,9 @@ function TeamDetailsPage() {
 
 												{/* Opponent */}
 												{opponent?.id ? (
-														<Link
-															to={linkTo("/teams/$teamId")}
-															params={{ teamId: opponent.slug }}
+													<Link
+														to={linkTo("/teams/$teamId")}
+														params={{ teamId: opponent.slug }}
 														className="flex items-center gap-3 border-[2px] border-black p-2 transition-colors hover:bg-gray-50"
 													>
 														<div className="flex h-12 w-12 items-center justify-center overflow-hidden border-[2px] border-black bg-white p-1 shadow-[2px_2px_0_0_#000]">
@@ -624,10 +624,10 @@ function TeamDetailsPage() {
 											{/* Tournament Badge */}
 											<div className="flex items-center gap-2 text-xs">
 												{match.tournament?.slug ? (
-												<Link
-													to={linkTo("/tournaments/$slug")}
-													params={{ slug: match.tournament.slug }}
-													className="flex items-center gap-2 transition-opacity hover:opacity-80"
+													<Link
+														to={linkTo("/tournaments/$slug")}
+														params={{ slug: match.tournament.slug }}
+														className="flex items-center gap-2 transition-opacity hover:opacity-80"
 													>
 														<div className="flex h-6 w-6 items-center justify-center border-[2px] border-black bg-white p-0.5">
 															{match.tournament.logoUrl ? (

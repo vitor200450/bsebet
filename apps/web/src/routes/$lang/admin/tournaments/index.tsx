@@ -19,8 +19,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
 import { useLangLink } from "@/i18n/useLangLink";
-import { uploadImage } from "@/functions/upload-image";
 import {
 	createTournament,
 	deleteTournament,
@@ -434,7 +434,9 @@ function AdminTournamentsPage() {
 
 											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
 												<Link
-													to={linkTo("/admin/tournaments/$tournamentId/matches")}
+													to={linkTo(
+														"/admin/tournaments/$tournamentId/matches",
+													)}
 													params={{ tournamentId: String(t.id) }}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
 													title="Match Scheduler"

@@ -13,8 +13,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLangLink } from "@/i18n/useLangLink";
 import { getUserPoints } from "@/functions/get-user-points";
+import { useLangLink } from "@/i18n/useLangLink";
 import { authClient } from "@/lib/auth-client";
 import { getUserMedalCounts } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";

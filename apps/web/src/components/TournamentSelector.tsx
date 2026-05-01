@@ -254,7 +254,11 @@ export function TournamentSelector({
 										)}
 									>
 										<Gamepad2 className="h-4 w-4" />
-										<span>{t("selector.matchesAvailable", { count: tournament.matchCount })}</span>
+										<span>
+											{t("selector.matchesAvailable", {
+												count: tournament.matchCount,
+											})}
+										</span>
 									</div>
 								</div>
 
@@ -273,7 +277,9 @@ export function TournamentSelector({
 											t("selector.wait")
 										) : (
 											<>
-												{tournament.hasUserBets ? t("selector.viewBets") : t("selector.betNow")}
+												{tournament.hasUserBets
+													? t("selector.viewBets")
+													: t("selector.betNow")}
 												<ArrowRight className="h-5 w-5 text-[#ccff00]" />
 											</>
 										)}

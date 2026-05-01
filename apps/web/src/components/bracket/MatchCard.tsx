@@ -206,8 +206,7 @@ export const MatchCard = ({
 	const blockedReason = (() => {
 		if (isGhost) return t("blocked.waitingDefinition");
 		if (match.isLockedDependency) return t("blocked.betPreviousFirst");
-		if (!effectiveBettingEnabled)
-			return t("blocked.outsideMatchDay");
+		if (!effectiveBettingEnabled) return t("blocked.outsideMatchDay");
 		if (!isMatchEditable && matchDayStatus === "locked") {
 			return t("blocked.recoveryUnavailable");
 		}
@@ -309,7 +308,9 @@ export const MatchCard = ({
 									if (isWalkover) {
 										return (
 											<>
-												<div className="font-bold text-yellow-300">{t("walkoverTitle")}</div>
+												<div className="font-bold text-yellow-300">
+													{t("walkoverTitle")}
+												</div>
 												<div className="text-[9px] text-gray-300">
 													{t("walkoverDescription")}
 												</div>

@@ -4,9 +4,9 @@ import { Camera, Lock, Save, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { useLangLink } from "@/i18n/useLangLink";
 import { ImageCropper } from "@/components/image-cropper";
 import { getUser } from "@/functions/get-user";
+import { useLangLink } from "@/i18n/useLangLink";
 import { authClient } from "@/lib/auth-client";
 import {
 	getMyProfile,

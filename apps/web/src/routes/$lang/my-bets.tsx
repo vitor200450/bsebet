@@ -14,11 +14,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getMyBets } from "@/functions/get-my-bets";
 import { getUser } from "@/functions/get-user";
+import { useLangLink } from "@/i18n/useLangLink";
 
 export const Route = createFileRoute("/$lang/my-bets")({
 	component: RouteComponent,

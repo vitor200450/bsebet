@@ -348,24 +348,24 @@ export function MatchCard({
 									if (!isCorrect) {
 										return (
 											<>
-							<div className="font-bold text-red-300">
-									{t("prediction.incorrect")}
-								</div>
-								<div className="text-[9px] text-gray-300">
-									{t("betLabel")}{" "}
-									{match.teamA?.id === initialBet.predictedWinnerId
-										? match.teamA?.name
-										: match.teamB?.name}
-								</div>
-								<div className="text-[9px] text-gray-300">
-									{t("actualWinner")}{" "}
-									{match.teamA?.id === match.winnerId
-										? match.teamA?.name
-										: match.teamB?.name}
-								</div>
-								<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-									{t("totalPoints", { count: 0 })}
-								</div>
+												<div className="font-bold text-red-300">
+													{t("prediction.incorrect")}
+												</div>
+												<div className="text-[9px] text-gray-300">
+													{t("betLabel")}{" "}
+													{match.teamA?.id === initialBet.predictedWinnerId
+														? match.teamA?.name
+														: match.teamB?.name}
+												</div>
+												<div className="text-[9px] text-gray-300">
+													{t("actualWinner")}{" "}
+													{match.teamA?.id === match.winnerId
+														? match.teamA?.name
+														: match.teamB?.name}
+												</div>
+												<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
+													{t("totalPoints", { count: 0 })}
+												</div>
 											</>
 										);
 									}

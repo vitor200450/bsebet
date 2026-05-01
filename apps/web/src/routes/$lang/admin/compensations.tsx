@@ -401,7 +401,7 @@ function CompensationsPage() {
 
 							{/* User Search */}
 							<div className="relative">
-									<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<User className="h-4 w-4" />
 									{t("compensations.user")}
 								</label>
@@ -830,7 +830,7 @@ function CompensationsPage() {
 							</div>
 
 							<div className="rounded border-2 border-yellow-200 bg-yellow-50 p-3 font-bold text-sm text-yellow-800">
-									{t("compensations.irreversible")}
+								{t("compensations.irreversible")}
 							</div>
 
 							<div className="flex flex-col gap-3 pt-2">

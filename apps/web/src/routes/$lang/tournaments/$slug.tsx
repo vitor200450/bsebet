@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { TournamentPodium } from "@/components/TournamentPodium";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTournamentBySlug } from "@/server/tournaments";

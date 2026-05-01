@@ -12,10 +12,10 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { useLangLink } from "@/i18n/useLangLink";
 import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { MatchOrdering } from "@/components/admin/MatchOrdering";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getMatchDays } from "@/server/match-days";
 import {
 	deleteMatch,

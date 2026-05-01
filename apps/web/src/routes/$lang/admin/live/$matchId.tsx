@@ -67,7 +67,7 @@ function LiveMatchControl() {
 		setEditingScoreTeam(null);
 
 		try {
-			const { updateMatch } = await import("../../../server/matches");
+			const { updateMatch } = await import("../../../../server/matches");
 			const updated = await updateMatch({
 				data: {
 					matchId: match.id,

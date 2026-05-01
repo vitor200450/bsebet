@@ -9,118 +9,85 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TournamentsRouteImport } from './routes/tournaments'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as MyBetsRouteImport } from './routes/my-bets'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
-import { Route as LandingRouteImport } from './routes/landing'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as TournamentsIndexRouteImport } from './routes/tournaments/index'
-import { Route as UsersUserIdRouteImport } from './routes/users/$userId'
-import { Route as TournamentsSlugRouteImport } from './routes/tournaments/$slug'
-import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminTournamentsRouteImport } from './routes/admin/tournaments'
-import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
-import { Route as AdminMigrateLogosRouteImport } from './routes/admin/migrate-logos'
-import { Route as AdminCompensationsRouteImport } from './routes/admin/compensations'
-import { Route as AdminTournamentsIndexRouteImport } from './routes/admin/tournaments/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as LangIndexRouteImport } from './routes/$lang/index'
+import { Route as LangTournamentsRouteImport } from './routes/$lang/tournaments'
+import { Route as LangProfileRouteImport } from './routes/$lang/profile'
+import { Route as LangMyBetsRouteImport } from './routes/$lang/my-bets'
+import { Route as LangLoginRouteImport } from './routes/$lang/login'
+import { Route as LangLeaderboardRouteImport } from './routes/$lang/leaderboard'
+import { Route as LangLandingRouteImport } from './routes/$lang/landing'
+import { Route as LangDashboardRouteImport } from './routes/$lang/dashboard'
+import { Route as Lang_layoutRouteImport } from './routes/$lang/__layout'
+import { Route as LangTournamentsIndexRouteImport } from './routes/$lang/tournaments/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AdminLiveMatchIdRouteImport } from './routes/admin/live/$matchId'
-import { Route as AdminTournamentsTournamentIdMatchesRouteImport } from './routes/admin/tournaments/$tournamentId/matches'
+import { Route as LangUsersUserIdRouteImport } from './routes/$lang/users/$userId'
+import { Route as LangTournamentsSlugRouteImport } from './routes/$lang/tournaments/$slug'
+import { Route as LangTeamsTeamIdRouteImport } from './routes/$lang/teams/$teamId'
+import { Route as LangAdminUsersRouteImport } from './routes/$lang/admin/users'
+import { Route as LangAdminTournamentsRouteImport } from './routes/$lang/admin/tournaments'
+import { Route as LangAdminTeamsRouteImport } from './routes/$lang/admin/teams'
+import { Route as LangAdminMigrateLogosRouteImport } from './routes/$lang/admin/migrate-logos'
+import { Route as LangAdminCompensationsRouteImport } from './routes/$lang/admin/compensations'
+import { Route as LangAdminTournamentsIndexRouteImport } from './routes/$lang/admin/tournaments/index'
+import { Route as LangAdminLiveMatchIdRouteImport } from './routes/$lang/admin/live/$matchId'
+import { Route as LangAdminTournamentsTournamentIdMatchesRouteImport } from './routes/$lang/admin/tournaments/$tournamentId/matches'
 
-const TournamentsRoute = TournamentsRouteImport.update({
-  id: '/tournaments',
-  path: '/tournaments',
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const LangIndexRoute = LangIndexRouteImport.update({
+  id: '/$lang/',
+  path: '/$lang/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MyBetsRoute = MyBetsRouteImport.update({
-  id: '/my-bets',
-  path: '/my-bets',
+const LangTournamentsRoute = LangTournamentsRouteImport.update({
+  id: '/$lang/tournaments',
+  path: '/$lang/tournaments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const LangProfileRoute = LangProfileRouteImport.update({
+  id: '/$lang/profile',
+  path: '/$lang/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
+const LangMyBetsRoute = LangMyBetsRouteImport.update({
+  id: '/$lang/my-bets',
+  path: '/$lang/my-bets',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
+const LangLoginRoute = LangLoginRouteImport.update({
+  id: '/$lang/login',
+  path: '/$lang/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const LangLeaderboardRoute = LangLeaderboardRouteImport.update({
+  id: '/$lang/leaderboard',
+  path: '/$lang/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const LangLandingRoute = LangLandingRouteImport.update({
+  id: '/$lang/landing',
+  path: '/$lang/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangDashboardRoute = LangDashboardRouteImport.update({
+  id: '/$lang/dashboard',
+  path: '/$lang/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Lang_layoutRoute = Lang_layoutRouteImport.update({
+  id: '/$lang/__layout',
+  path: '/$lang',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangTournamentsIndexRoute = LangTournamentsIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TournamentsIndexRoute = TournamentsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TournamentsRoute,
-} as any)
-const UsersUserIdRoute = UsersUserIdRouteImport.update({
-  id: '/users/$userId',
-  path: '/users/$userId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TournamentsSlugRoute = TournamentsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => TournamentsRoute,
-} as any)
-const TeamsTeamIdRoute = TeamsTeamIdRouteImport.update({
-  id: '/teams/$teamId',
-  path: '/teams/$teamId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminTournamentsRoute = AdminTournamentsRouteImport.update({
-  id: '/admin/tournaments',
-  path: '/admin/tournaments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminTeamsRoute = AdminTeamsRouteImport.update({
-  id: '/admin/teams',
-  path: '/admin/teams',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminMigrateLogosRoute = AdminMigrateLogosRouteImport.update({
-  id: '/admin/migrate-logos',
-  path: '/admin/migrate-logos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminCompensationsRoute = AdminCompensationsRouteImport.update({
-  id: '/admin/compensations',
-  path: '/admin/compensations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminTournamentsIndexRoute = AdminTournamentsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminTournamentsRoute,
+  getParentRoute: () => LangTournamentsRoute,
 } as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
@@ -132,310 +99,319 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminLiveMatchIdRoute = AdminLiveMatchIdRouteImport.update({
-  id: '/admin/live/$matchId',
-  path: '/admin/live/$matchId',
+const LangUsersUserIdRoute = LangUsersUserIdRouteImport.update({
+  id: '/$lang/users/$userId',
+  path: '/$lang/users/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminTournamentsTournamentIdMatchesRoute =
-  AdminTournamentsTournamentIdMatchesRouteImport.update({
+const LangTournamentsSlugRoute = LangTournamentsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LangTournamentsRoute,
+} as any)
+const LangTeamsTeamIdRoute = LangTeamsTeamIdRouteImport.update({
+  id: '/$lang/teams/$teamId',
+  path: '/$lang/teams/$teamId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminUsersRoute = LangAdminUsersRouteImport.update({
+  id: '/$lang/admin/users',
+  path: '/$lang/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminTournamentsRoute = LangAdminTournamentsRouteImport.update({
+  id: '/$lang/admin/tournaments',
+  path: '/$lang/admin/tournaments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminTeamsRoute = LangAdminTeamsRouteImport.update({
+  id: '/$lang/admin/teams',
+  path: '/$lang/admin/teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminMigrateLogosRoute = LangAdminMigrateLogosRouteImport.update({
+  id: '/$lang/admin/migrate-logos',
+  path: '/$lang/admin/migrate-logos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminCompensationsRoute = LangAdminCompensationsRouteImport.update({
+  id: '/$lang/admin/compensations',
+  path: '/$lang/admin/compensations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminTournamentsIndexRoute =
+  LangAdminTournamentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => LangAdminTournamentsRoute,
+  } as any)
+const LangAdminLiveMatchIdRoute = LangAdminLiveMatchIdRouteImport.update({
+  id: '/$lang/admin/live/$matchId',
+  path: '/$lang/admin/live/$matchId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangAdminTournamentsTournamentIdMatchesRoute =
+  LangAdminTournamentsTournamentIdMatchesRouteImport.update({
     id: '/$tournamentId/matches',
     path: '/$tournamentId/matches',
-    getParentRoute: () => AdminTournamentsRoute,
+    getParentRoute: () => LangAdminTournamentsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/landing': typeof LandingRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
-  '/my-bets': typeof MyBetsRoute
-  '/profile': typeof ProfileRoute
-  '/tournaments': typeof TournamentsRouteWithChildren
-  '/admin/compensations': typeof AdminCompensationsRoute
-  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
-  '/admin/teams': typeof AdminTeamsRoute
-  '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
-  '/admin/users': typeof AdminUsersRoute
-  '/teams/$teamId': typeof TeamsTeamIdRoute
-  '/tournaments/$slug': typeof TournamentsSlugRoute
-  '/users/$userId': typeof UsersUserIdRoute
-  '/tournaments/': typeof TournamentsIndexRoute
-  '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
+  '/$': typeof SplatRoute
+  '/$lang': typeof Lang_layoutRoute
+  '/$lang/dashboard': typeof LangDashboardRoute
+  '/$lang/landing': typeof LangLandingRoute
+  '/$lang/leaderboard': typeof LangLeaderboardRoute
+  '/$lang/login': typeof LangLoginRoute
+  '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/profile': typeof LangProfileRoute
+  '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
+  '/$lang/': typeof LangIndexRoute
+  '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
+  '/$lang/admin/teams': typeof LangAdminTeamsRoute
+  '/$lang/admin/tournaments': typeof LangAdminTournamentsRouteWithChildren
+  '/$lang/admin/users': typeof LangAdminUsersRoute
+  '/$lang/teams/$teamId': typeof LangTeamsTeamIdRoute
+  '/$lang/tournaments/$slug': typeof LangTournamentsSlugRoute
+  '/$lang/users/$userId': typeof LangUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/admin/tournaments/': typeof AdminTournamentsIndexRoute
-  '/admin/tournaments/$tournamentId/matches': typeof AdminTournamentsTournamentIdMatchesRoute
+  '/$lang/tournaments/': typeof LangTournamentsIndexRoute
+  '/$lang/admin/live/$matchId': typeof LangAdminLiveMatchIdRoute
+  '/$lang/admin/tournaments/': typeof LangAdminTournamentsIndexRoute
+  '/$lang/admin/tournaments/$tournamentId/matches': typeof LangAdminTournamentsTournamentIdMatchesRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/landing': typeof LandingRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
-  '/my-bets': typeof MyBetsRoute
-  '/profile': typeof ProfileRoute
-  '/admin/compensations': typeof AdminCompensationsRoute
-  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
-  '/admin/teams': typeof AdminTeamsRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/teams/$teamId': typeof TeamsTeamIdRoute
-  '/tournaments/$slug': typeof TournamentsSlugRoute
-  '/users/$userId': typeof UsersUserIdRoute
-  '/tournaments': typeof TournamentsIndexRoute
-  '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
+  '/$': typeof SplatRoute
+  '/$lang': typeof LangIndexRoute
+  '/$lang/dashboard': typeof LangDashboardRoute
+  '/$lang/landing': typeof LangLandingRoute
+  '/$lang/leaderboard': typeof LangLeaderboardRoute
+  '/$lang/login': typeof LangLoginRoute
+  '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/profile': typeof LangProfileRoute
+  '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
+  '/$lang/admin/teams': typeof LangAdminTeamsRoute
+  '/$lang/admin/users': typeof LangAdminUsersRoute
+  '/$lang/teams/$teamId': typeof LangTeamsTeamIdRoute
+  '/$lang/tournaments/$slug': typeof LangTournamentsSlugRoute
+  '/$lang/users/$userId': typeof LangUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/admin/tournaments': typeof AdminTournamentsIndexRoute
-  '/admin/tournaments/$tournamentId/matches': typeof AdminTournamentsTournamentIdMatchesRoute
+  '/$lang/tournaments': typeof LangTournamentsIndexRoute
+  '/$lang/admin/live/$matchId': typeof LangAdminLiveMatchIdRoute
+  '/$lang/admin/tournaments': typeof LangAdminTournamentsIndexRoute
+  '/$lang/admin/tournaments/$tournamentId/matches': typeof LangAdminTournamentsTournamentIdMatchesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/landing': typeof LandingRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
-  '/my-bets': typeof MyBetsRoute
-  '/profile': typeof ProfileRoute
-  '/tournaments': typeof TournamentsRouteWithChildren
-  '/admin/compensations': typeof AdminCompensationsRoute
-  '/admin/migrate-logos': typeof AdminMigrateLogosRoute
-  '/admin/teams': typeof AdminTeamsRoute
-  '/admin/tournaments': typeof AdminTournamentsRouteWithChildren
-  '/admin/users': typeof AdminUsersRoute
-  '/teams/$teamId': typeof TeamsTeamIdRoute
-  '/tournaments/$slug': typeof TournamentsSlugRoute
-  '/users/$userId': typeof UsersUserIdRoute
-  '/tournaments/': typeof TournamentsIndexRoute
-  '/admin/live/$matchId': typeof AdminLiveMatchIdRoute
+  '/$': typeof SplatRoute
+  '/$lang/__layout': typeof Lang_layoutRoute
+  '/$lang/dashboard': typeof LangDashboardRoute
+  '/$lang/landing': typeof LangLandingRoute
+  '/$lang/leaderboard': typeof LangLeaderboardRoute
+  '/$lang/login': typeof LangLoginRoute
+  '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/profile': typeof LangProfileRoute
+  '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
+  '/$lang/': typeof LangIndexRoute
+  '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
+  '/$lang/admin/teams': typeof LangAdminTeamsRoute
+  '/$lang/admin/tournaments': typeof LangAdminTournamentsRouteWithChildren
+  '/$lang/admin/users': typeof LangAdminUsersRoute
+  '/$lang/teams/$teamId': typeof LangTeamsTeamIdRoute
+  '/$lang/tournaments/$slug': typeof LangTournamentsSlugRoute
+  '/$lang/users/$userId': typeof LangUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/admin/tournaments/': typeof AdminTournamentsIndexRoute
-  '/admin/tournaments/$tournamentId/matches': typeof AdminTournamentsTournamentIdMatchesRoute
+  '/$lang/tournaments/': typeof LangTournamentsIndexRoute
+  '/$lang/admin/live/$matchId': typeof LangAdminLiveMatchIdRoute
+  '/$lang/admin/tournaments/': typeof LangAdminTournamentsIndexRoute
+  '/$lang/admin/tournaments/$tournamentId/matches': typeof LangAdminTournamentsTournamentIdMatchesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/dashboard'
-    | '/landing'
-    | '/leaderboard'
-    | '/login'
-    | '/my-bets'
-    | '/profile'
-    | '/tournaments'
-    | '/admin/compensations'
-    | '/admin/migrate-logos'
-    | '/admin/teams'
-    | '/admin/tournaments'
-    | '/admin/users'
-    | '/teams/$teamId'
-    | '/tournaments/$slug'
-    | '/users/$userId'
-    | '/tournaments/'
-    | '/admin/live/$matchId'
+    | '/$'
+    | '/$lang'
+    | '/$lang/dashboard'
+    | '/$lang/landing'
+    | '/$lang/leaderboard'
+    | '/$lang/login'
+    | '/$lang/my-bets'
+    | '/$lang/profile'
+    | '/$lang/tournaments'
+    | '/$lang/'
+    | '/$lang/admin/compensations'
+    | '/$lang/admin/migrate-logos'
+    | '/$lang/admin/teams'
+    | '/$lang/admin/tournaments'
+    | '/$lang/admin/users'
+    | '/$lang/teams/$teamId'
+    | '/$lang/tournaments/$slug'
+    | '/$lang/users/$userId'
     | '/api/auth/$'
     | '/api/trpc/$'
-    | '/admin/tournaments/'
-    | '/admin/tournaments/$tournamentId/matches'
+    | '/$lang/tournaments/'
+    | '/$lang/admin/live/$matchId'
+    | '/$lang/admin/tournaments/'
+    | '/$lang/admin/tournaments/$tournamentId/matches'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/dashboard'
-    | '/landing'
-    | '/leaderboard'
-    | '/login'
-    | '/my-bets'
-    | '/profile'
-    | '/admin/compensations'
-    | '/admin/migrate-logos'
-    | '/admin/teams'
-    | '/admin/users'
-    | '/teams/$teamId'
-    | '/tournaments/$slug'
-    | '/users/$userId'
-    | '/tournaments'
-    | '/admin/live/$matchId'
+    | '/$'
+    | '/$lang'
+    | '/$lang/dashboard'
+    | '/$lang/landing'
+    | '/$lang/leaderboard'
+    | '/$lang/login'
+    | '/$lang/my-bets'
+    | '/$lang/profile'
+    | '/$lang/admin/compensations'
+    | '/$lang/admin/migrate-logos'
+    | '/$lang/admin/teams'
+    | '/$lang/admin/users'
+    | '/$lang/teams/$teamId'
+    | '/$lang/tournaments/$slug'
+    | '/$lang/users/$userId'
     | '/api/auth/$'
     | '/api/trpc/$'
-    | '/admin/tournaments'
-    | '/admin/tournaments/$tournamentId/matches'
+    | '/$lang/tournaments'
+    | '/$lang/admin/live/$matchId'
+    | '/$lang/admin/tournaments'
+    | '/$lang/admin/tournaments/$tournamentId/matches'
   id:
     | '__root__'
-    | '/'
-    | '/dashboard'
-    | '/landing'
-    | '/leaderboard'
-    | '/login'
-    | '/my-bets'
-    | '/profile'
-    | '/tournaments'
-    | '/admin/compensations'
-    | '/admin/migrate-logos'
-    | '/admin/teams'
-    | '/admin/tournaments'
-    | '/admin/users'
-    | '/teams/$teamId'
-    | '/tournaments/$slug'
-    | '/users/$userId'
-    | '/tournaments/'
-    | '/admin/live/$matchId'
+    | '/$'
+    | '/$lang/__layout'
+    | '/$lang/dashboard'
+    | '/$lang/landing'
+    | '/$lang/leaderboard'
+    | '/$lang/login'
+    | '/$lang/my-bets'
+    | '/$lang/profile'
+    | '/$lang/tournaments'
+    | '/$lang/'
+    | '/$lang/admin/compensations'
+    | '/$lang/admin/migrate-logos'
+    | '/$lang/admin/teams'
+    | '/$lang/admin/tournaments'
+    | '/$lang/admin/users'
+    | '/$lang/teams/$teamId'
+    | '/$lang/tournaments/$slug'
+    | '/$lang/users/$userId'
     | '/api/auth/$'
     | '/api/trpc/$'
-    | '/admin/tournaments/'
-    | '/admin/tournaments/$tournamentId/matches'
+    | '/$lang/tournaments/'
+    | '/$lang/admin/live/$matchId'
+    | '/$lang/admin/tournaments/'
+    | '/$lang/admin/tournaments/$tournamentId/matches'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
-  LandingRoute: typeof LandingRoute
-  LeaderboardRoute: typeof LeaderboardRoute
-  LoginRoute: typeof LoginRoute
-  MyBetsRoute: typeof MyBetsRoute
-  ProfileRoute: typeof ProfileRoute
-  TournamentsRoute: typeof TournamentsRouteWithChildren
-  AdminCompensationsRoute: typeof AdminCompensationsRoute
-  AdminMigrateLogosRoute: typeof AdminMigrateLogosRoute
-  AdminTeamsRoute: typeof AdminTeamsRoute
-  AdminTournamentsRoute: typeof AdminTournamentsRouteWithChildren
-  AdminUsersRoute: typeof AdminUsersRoute
-  TeamsTeamIdRoute: typeof TeamsTeamIdRoute
-  UsersUserIdRoute: typeof UsersUserIdRoute
-  AdminLiveMatchIdRoute: typeof AdminLiveMatchIdRoute
+  SplatRoute: typeof SplatRoute
+  Lang_layoutRoute: typeof Lang_layoutRoute
+  LangDashboardRoute: typeof LangDashboardRoute
+  LangLandingRoute: typeof LangLandingRoute
+  LangLeaderboardRoute: typeof LangLeaderboardRoute
+  LangLoginRoute: typeof LangLoginRoute
+  LangMyBetsRoute: typeof LangMyBetsRoute
+  LangProfileRoute: typeof LangProfileRoute
+  LangTournamentsRoute: typeof LangTournamentsRouteWithChildren
+  LangIndexRoute: typeof LangIndexRoute
+  LangAdminCompensationsRoute: typeof LangAdminCompensationsRoute
+  LangAdminMigrateLogosRoute: typeof LangAdminMigrateLogosRoute
+  LangAdminTeamsRoute: typeof LangAdminTeamsRoute
+  LangAdminTournamentsRoute: typeof LangAdminTournamentsRouteWithChildren
+  LangAdminUsersRoute: typeof LangAdminUsersRoute
+  LangTeamsTeamIdRoute: typeof LangTeamsTeamIdRoute
+  LangUsersUserIdRoute: typeof LangUsersUserIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
+  LangAdminLiveMatchIdRoute: typeof LangAdminLiveMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tournaments': {
-      id: '/tournaments'
-      path: '/tournaments'
-      fullPath: '/tournaments'
-      preLoaderRoute: typeof TournamentsRouteImport
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/$lang/': {
+      id: '/$lang/'
+      path: '/$lang'
+      fullPath: '/$lang/'
+      preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/my-bets': {
-      id: '/my-bets'
-      path: '/my-bets'
-      fullPath: '/my-bets'
-      preLoaderRoute: typeof MyBetsRouteImport
+    '/$lang/tournaments': {
+      id: '/$lang/tournaments'
+      path: '/$lang/tournaments'
+      fullPath: '/$lang/tournaments'
+      preLoaderRoute: typeof LangTournamentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/$lang/profile': {
+      id: '/$lang/profile'
+      path: '/$lang/profile'
+      fullPath: '/$lang/profile'
+      preLoaderRoute: typeof LangProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
+    '/$lang/my-bets': {
+      id: '/$lang/my-bets'
+      path: '/$lang/my-bets'
+      fullPath: '/$lang/my-bets'
+      preLoaderRoute: typeof LangMyBetsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
+    '/$lang/login': {
+      id: '/$lang/login'
+      path: '/$lang/login'
+      fullPath: '/$lang/login'
+      preLoaderRoute: typeof LangLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/$lang/leaderboard': {
+      id: '/$lang/leaderboard'
+      path: '/$lang/leaderboard'
+      fullPath: '/$lang/leaderboard'
+      preLoaderRoute: typeof LangLeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/$lang/landing': {
+      id: '/$lang/landing'
+      path: '/$lang/landing'
+      fullPath: '/$lang/landing'
+      preLoaderRoute: typeof LangLandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/dashboard': {
+      id: '/$lang/dashboard'
+      path: '/$lang/dashboard'
+      fullPath: '/$lang/dashboard'
+      preLoaderRoute: typeof LangDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/__layout': {
+      id: '/$lang/__layout'
+      path: '/$lang'
+      fullPath: '/$lang'
+      preLoaderRoute: typeof Lang_layoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/tournaments/': {
+      id: '/$lang/tournaments/'
       path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tournaments/': {
-      id: '/tournaments/'
-      path: '/'
-      fullPath: '/tournaments/'
-      preLoaderRoute: typeof TournamentsIndexRouteImport
-      parentRoute: typeof TournamentsRoute
-    }
-    '/users/$userId': {
-      id: '/users/$userId'
-      path: '/users/$userId'
-      fullPath: '/users/$userId'
-      preLoaderRoute: typeof UsersUserIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tournaments/$slug': {
-      id: '/tournaments/$slug'
-      path: '/$slug'
-      fullPath: '/tournaments/$slug'
-      preLoaderRoute: typeof TournamentsSlugRouteImport
-      parentRoute: typeof TournamentsRoute
-    }
-    '/teams/$teamId': {
-      id: '/teams/$teamId'
-      path: '/teams/$teamId'
-      fullPath: '/teams/$teamId'
-      preLoaderRoute: typeof TeamsTeamIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/admin/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/tournaments': {
-      id: '/admin/tournaments'
-      path: '/admin/tournaments'
-      fullPath: '/admin/tournaments'
-      preLoaderRoute: typeof AdminTournamentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/teams': {
-      id: '/admin/teams'
-      path: '/admin/teams'
-      fullPath: '/admin/teams'
-      preLoaderRoute: typeof AdminTeamsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/migrate-logos': {
-      id: '/admin/migrate-logos'
-      path: '/admin/migrate-logos'
-      fullPath: '/admin/migrate-logos'
-      preLoaderRoute: typeof AdminMigrateLogosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/compensations': {
-      id: '/admin/compensations'
-      path: '/admin/compensations'
-      fullPath: '/admin/compensations'
-      preLoaderRoute: typeof AdminCompensationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/tournaments/': {
-      id: '/admin/tournaments/'
-      path: '/'
-      fullPath: '/admin/tournaments/'
-      preLoaderRoute: typeof AdminTournamentsIndexRouteImport
-      parentRoute: typeof AdminTournamentsRoute
+      fullPath: '/$lang/tournaments/'
+      preLoaderRoute: typeof LangTournamentsIndexRouteImport
+      parentRoute: typeof LangTournamentsRoute
     }
     '/api/trpc/$': {
       id: '/api/trpc/$'
@@ -451,70 +427,135 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/live/$matchId': {
-      id: '/admin/live/$matchId'
-      path: '/admin/live/$matchId'
-      fullPath: '/admin/live/$matchId'
-      preLoaderRoute: typeof AdminLiveMatchIdRouteImport
+    '/$lang/users/$userId': {
+      id: '/$lang/users/$userId'
+      path: '/$lang/users/$userId'
+      fullPath: '/$lang/users/$userId'
+      preLoaderRoute: typeof LangUsersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/tournaments/$tournamentId/matches': {
-      id: '/admin/tournaments/$tournamentId/matches'
+    '/$lang/tournaments/$slug': {
+      id: '/$lang/tournaments/$slug'
+      path: '/$slug'
+      fullPath: '/$lang/tournaments/$slug'
+      preLoaderRoute: typeof LangTournamentsSlugRouteImport
+      parentRoute: typeof LangTournamentsRoute
+    }
+    '/$lang/teams/$teamId': {
+      id: '/$lang/teams/$teamId'
+      path: '/$lang/teams/$teamId'
+      fullPath: '/$lang/teams/$teamId'
+      preLoaderRoute: typeof LangTeamsTeamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/users': {
+      id: '/$lang/admin/users'
+      path: '/$lang/admin/users'
+      fullPath: '/$lang/admin/users'
+      preLoaderRoute: typeof LangAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/tournaments': {
+      id: '/$lang/admin/tournaments'
+      path: '/$lang/admin/tournaments'
+      fullPath: '/$lang/admin/tournaments'
+      preLoaderRoute: typeof LangAdminTournamentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/teams': {
+      id: '/$lang/admin/teams'
+      path: '/$lang/admin/teams'
+      fullPath: '/$lang/admin/teams'
+      preLoaderRoute: typeof LangAdminTeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/migrate-logos': {
+      id: '/$lang/admin/migrate-logos'
+      path: '/$lang/admin/migrate-logos'
+      fullPath: '/$lang/admin/migrate-logos'
+      preLoaderRoute: typeof LangAdminMigrateLogosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/compensations': {
+      id: '/$lang/admin/compensations'
+      path: '/$lang/admin/compensations'
+      fullPath: '/$lang/admin/compensations'
+      preLoaderRoute: typeof LangAdminCompensationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/tournaments/': {
+      id: '/$lang/admin/tournaments/'
+      path: '/'
+      fullPath: '/$lang/admin/tournaments/'
+      preLoaderRoute: typeof LangAdminTournamentsIndexRouteImport
+      parentRoute: typeof LangAdminTournamentsRoute
+    }
+    '/$lang/admin/live/$matchId': {
+      id: '/$lang/admin/live/$matchId'
+      path: '/$lang/admin/live/$matchId'
+      fullPath: '/$lang/admin/live/$matchId'
+      preLoaderRoute: typeof LangAdminLiveMatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/admin/tournaments/$tournamentId/matches': {
+      id: '/$lang/admin/tournaments/$tournamentId/matches'
       path: '/$tournamentId/matches'
-      fullPath: '/admin/tournaments/$tournamentId/matches'
-      preLoaderRoute: typeof AdminTournamentsTournamentIdMatchesRouteImport
-      parentRoute: typeof AdminTournamentsRoute
+      fullPath: '/$lang/admin/tournaments/$tournamentId/matches'
+      preLoaderRoute: typeof LangAdminTournamentsTournamentIdMatchesRouteImport
+      parentRoute: typeof LangAdminTournamentsRoute
     }
   }
 }
 
-interface TournamentsRouteChildren {
-  TournamentsSlugRoute: typeof TournamentsSlugRoute
-  TournamentsIndexRoute: typeof TournamentsIndexRoute
+interface LangTournamentsRouteChildren {
+  LangTournamentsSlugRoute: typeof LangTournamentsSlugRoute
+  LangTournamentsIndexRoute: typeof LangTournamentsIndexRoute
 }
 
-const TournamentsRouteChildren: TournamentsRouteChildren = {
-  TournamentsSlugRoute: TournamentsSlugRoute,
-  TournamentsIndexRoute: TournamentsIndexRoute,
+const LangTournamentsRouteChildren: LangTournamentsRouteChildren = {
+  LangTournamentsSlugRoute: LangTournamentsSlugRoute,
+  LangTournamentsIndexRoute: LangTournamentsIndexRoute,
 }
 
-const TournamentsRouteWithChildren = TournamentsRoute._addFileChildren(
-  TournamentsRouteChildren,
+const LangTournamentsRouteWithChildren = LangTournamentsRoute._addFileChildren(
+  LangTournamentsRouteChildren,
 )
 
-interface AdminTournamentsRouteChildren {
-  AdminTournamentsIndexRoute: typeof AdminTournamentsIndexRoute
-  AdminTournamentsTournamentIdMatchesRoute: typeof AdminTournamentsTournamentIdMatchesRoute
+interface LangAdminTournamentsRouteChildren {
+  LangAdminTournamentsIndexRoute: typeof LangAdminTournamentsIndexRoute
+  LangAdminTournamentsTournamentIdMatchesRoute: typeof LangAdminTournamentsTournamentIdMatchesRoute
 }
 
-const AdminTournamentsRouteChildren: AdminTournamentsRouteChildren = {
-  AdminTournamentsIndexRoute: AdminTournamentsIndexRoute,
-  AdminTournamentsTournamentIdMatchesRoute:
-    AdminTournamentsTournamentIdMatchesRoute,
+const LangAdminTournamentsRouteChildren: LangAdminTournamentsRouteChildren = {
+  LangAdminTournamentsIndexRoute: LangAdminTournamentsIndexRoute,
+  LangAdminTournamentsTournamentIdMatchesRoute:
+    LangAdminTournamentsTournamentIdMatchesRoute,
 }
 
-const AdminTournamentsRouteWithChildren =
-  AdminTournamentsRoute._addFileChildren(AdminTournamentsRouteChildren)
+const LangAdminTournamentsRouteWithChildren =
+  LangAdminTournamentsRoute._addFileChildren(LangAdminTournamentsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
-  LandingRoute: LandingRoute,
-  LeaderboardRoute: LeaderboardRoute,
-  LoginRoute: LoginRoute,
-  MyBetsRoute: MyBetsRoute,
-  ProfileRoute: ProfileRoute,
-  TournamentsRoute: TournamentsRouteWithChildren,
-  AdminCompensationsRoute: AdminCompensationsRoute,
-  AdminMigrateLogosRoute: AdminMigrateLogosRoute,
-  AdminTeamsRoute: AdminTeamsRoute,
-  AdminTournamentsRoute: AdminTournamentsRouteWithChildren,
-  AdminUsersRoute: AdminUsersRoute,
-  TeamsTeamIdRoute: TeamsTeamIdRoute,
-  UsersUserIdRoute: UsersUserIdRoute,
-  AdminLiveMatchIdRoute: AdminLiveMatchIdRoute,
+  SplatRoute: SplatRoute,
+  Lang_layoutRoute: Lang_layoutRoute,
+  LangDashboardRoute: LangDashboardRoute,
+  LangLandingRoute: LangLandingRoute,
+  LangLeaderboardRoute: LangLeaderboardRoute,
+  LangLoginRoute: LangLoginRoute,
+  LangMyBetsRoute: LangMyBetsRoute,
+  LangProfileRoute: LangProfileRoute,
+  LangTournamentsRoute: LangTournamentsRouteWithChildren,
+  LangIndexRoute: LangIndexRoute,
+  LangAdminCompensationsRoute: LangAdminCompensationsRoute,
+  LangAdminMigrateLogosRoute: LangAdminMigrateLogosRoute,
+  LangAdminTeamsRoute: LangAdminTeamsRoute,
+  LangAdminTournamentsRoute: LangAdminTournamentsRouteWithChildren,
+  LangAdminUsersRoute: LangAdminUsersRoute,
+  LangTeamsTeamIdRoute: LangTeamsTeamIdRoute,
+  LangUsersUserIdRoute: LangUsersUserIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
+  LangAdminLiveMatchIdRoute: LangAdminLiveMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,10 +3,10 @@ import { clsx } from "clsx";
 import { ArrowLeft, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { TrophyCase } from "@/components/RealisticMedal";
 import { TeamLogo } from "@/components/TeamLogo";
+import { useLangLink } from "@/i18n/useLangLink";
 import {
 	getUserMedals,
 	getUserProfile,

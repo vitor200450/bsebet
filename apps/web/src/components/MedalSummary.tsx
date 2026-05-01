@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
 import { ChevronRight, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { twMerge } from "tailwind-merge";
+import { useLangLink } from "@/i18n/useLangLink";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

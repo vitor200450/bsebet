@@ -5,7 +5,7 @@ import { i18next, initI18n } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
 import { SUPPORTED_LANGS } from "@/i18n/config";
 
-export const Route = createFileRoute("/$lang")({
+export const Route = createFileRoute("/$lang/__layout")({
 	loader: ({ params }) => {
 		const { lang } = params;
 		if (!SUPPORTED_LANGS.includes(lang as SupportedLang)) {
@@ -30,5 +30,5 @@ function LangLayout() {
 		<I18nextProvider i18n={i18next}>
 			<Outlet />
 		</I18nextProvider>
-	);
+	)
 }

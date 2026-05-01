@@ -13,11 +13,11 @@ import {
 	Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLangLink } from "@/i18n/useLangLink";
 import { MedalSummary } from "@/components/MedalSummary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getDashboardData } from "@/functions/get-dashboard-data";
 import { getUser } from "@/functions/get-user";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getUserMedalCounts, getUserMedals } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";
 

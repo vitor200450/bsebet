@@ -63,8 +63,7 @@ export function MatchDaysManager({
 	};
 
 	const handleDelete = async (id: number) => {
-		if (!confirm(t("matchDays.deleteConfirm")))
-			return;
+		if (!confirm(t("matchDays.deleteConfirm"))) return;
 		try {
 			await deleteMatchDay({ data: id });
 			toast.success(t("matchDays.deleted"));
@@ -307,7 +306,9 @@ export function MatchDaysManager({
 													{day.status}
 												</span>
 												<span className="font-bold text-gray-400 text-xs">
-													{t("matchDays.matchCount", { count: day.matches.length })}
+													{t("matchDays.matchCount", {
+														count: day.matches.length,
+													})}
 												</span>
 											</div>
 										</div>
