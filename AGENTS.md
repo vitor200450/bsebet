@@ -189,3 +189,110 @@ Brazilian Brawl Stars esports fans — mostly young, mobile-first gamers who fol
 3. **Tactile Feedback** — Every interaction should feel physical. Buttons press down with comic shadow shifts, cards lift on hover, selections snap with neon green borders. The interface should feel like touching a real broadcast control surface.
 4. **Celebrate the Pick** — The core action is making a prediction. Make it feel significant — saved picks get badges, correct picks get satisfying point animations, leaderboard positions feel earned. Reward engagement visually.
 5. **Contrast is Non-Negotiable** — Text must always be readable against its background. Light surfaces get dark text, dark/saturated surfaces get white text. No exceptions. Every badge, pill, button, and card must have explicit text color paired with its background. See `DESIGN.md` mandatory contrast rules.
+
+## 19) i18n / Translation Rules (Critical)
+
+BSEBET uses **react-i18next** with URL-path-prefix language detection (`/pt/` and `/en/`). Every user-facing string MUST use a `t()` call — hardcoded strings will appear in the wrong language.
+
+### Architecture
+
+- **Library:** `react-i18next` + `i18next`
+- **Language detection:** URL path prefix (`/$lang/`) via TanStack Router segment
+- **Provider:** `I18nRootProvider` in `__root.tsx` initializes i18next with the correct language from the URL
+- **Routes:** All routes live under `routes/$lang/*` (e.g. `$lang/dashboard.tsx`, `$lang/admin/teams.tsx`)
+- **Config:** `apps/web/src/i18n/config.ts` loads all JSON translation files statically
+- **Init:** `apps/web/src/i18n/I18nRootProvider.tsx` — initializes i18next with the language from the URL
+
+### How to translate
+
+**In React components (client-side):**
+```tsx
+import { useTranslation } from "react-i18next";
+
+function MyComponent() {
+  const { t } = useTranslation("myNamespace");
+  return <h1>{t("myKey")}</h1>;
+}
+```
+
+**For cross-namespace references:**
+```tsx
+t("common:actions.cancel")  // references common.json > actions > cancel
+```
+
+**In server functions (server-side, no React):**
+```tsx
+import { createServerT } from "@/i18n";
+
+const t = createServerT(input.lang);
+throw new Error(t("errors:unauthenticated"));
+```
+
+### Namespace organization
+
+Translation files live in `apps/web/src/locales/{pt,en}/`:
+
+| Namespace | File | Content |
+|-----------|------|---------|
+| `common` | `common.json` | Nav, buttons, status labels, shared actions |
+| `betting` | `betting.json` | Betting carousel, match cards, recovery flow |
+| `dashboard` | `dashboard.json` | Dashboard page |
+| `my-bets` | `my-bets.json` | My bets page |
+| `leaderboard` | `leaderboard.json` | Leaderboard page |
+| `profile` | `profile.json` | Profile page + user menu |
+| `tournament` | `tournament.json` | Tournament listing, bracket, podium, match day selector |
+| `team` | `team.json` | Team detail page |
+| `user` | `user.json` | Public user profile |
+| `landing` | `landing.json` | Landing page + login |
+| `admin` | `admin.json` | Admin tournaments, teams, compensations |
+| `admin-matches` | `admin-matches.json` | Match builder, bracket editor, stage builder, live scoring |
+| `errors` | `errors.json` | Server error messages |
+| `validation` | `validation.json` | Zod validation messages |
+
+### Golden rules (NEVER break these)
+
+1. **NEVER hardcode user-facing strings.** Every text label, button, heading, tooltip, toast message, placeholder, and error message MUST use `t()`.
+2. **Always add keys to BOTH `pt/` and `en/` JSON files.** A missing key means one language shows the raw key string (e.g. `"hero.title"`) instead of translated text.
+3. **Use the correct namespace.** Check what `useTranslation("ns")` the file uses. If the key is in a different namespace, prefix it (e.g. `t("common:actions.save")`).
+4. **Use cross-namespace for shared strings.** Don't duplicate keys. Reference `common:actions.cancel` instead of adding "cancel" to every namespace.
+5. **Handle plurals.** i18next uses `_one`/`_other` suffixes:
+   ```json
+   { "betCount_one": "{{count}} palpite", "betCount_other": "{{count}} palpites" }
+   ```
+   ```tsx
+   t("betCount", { count: bets.length })
+   ```
+6. **Never put HTML in translation values.** Use two separate `t()` calls for split text with markup:
+   ```tsx
+   // GOOD
+   <span>{t("title")} <span className="highlight">{t("titleHighlight")}</span></span>
+   // BAD (don't put <span> inside JSON)
+   ```
+
+### Navigation with language prefix
+
+Use `useLangLink().routeTo()` for navigation inside the app:
+```tsx
+import { useLangLink } from "@/i18n/useLangLink";
+
+const { routeTo } = useLangLink();
+// <Link {...routeTo("/dashboard")}>Dashboard</Link>
+```
+
+This preserves the `/$lang` prefix and enables proper active-link highlighting.
+
+### Date formatting
+
+Always use the current language's locale:
+```tsx
+const { i18n } = useTranslation();
+const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+date.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+```
+
+### Before submitting any PR
+
+1. Search for Portuguese-specific characters (`ã`, `ç`, `ê`, etc.) in your changed files to catch missed hardcoded strings
+2. Verify both `/pt/` and `/en/` routes render correctly
+3. Run `bun run build` to catch missing imports or broken references
+4. Add new keys to JSON files BEFORE using them in `t()` calls
