@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { Plus, Zap } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { GSLGroupView } from "../bracket/GSLGroupView";
 import { StandardGroupView } from "../bracket/StandardGroupView";
 import type { Match } from "../bracket/types";
@@ -9,7 +10,7 @@ const MATCH_HEIGHT = 125;
 
 // Abbreviate long team labels for bracket display
 function abbreviateLabel(label: string | null | undefined): string {
-	if (!label) return "TBD";
+	if (!label) return "";
 
 	// Light abbreviations - keep it readable
 	const abbreviations: Record<string, string> = {
@@ -58,6 +59,7 @@ export function BracketEditor({
 	onGenerateFullBracket,
 	stageType = "Double Elimination",
 }: BracketEditorProps) {
+	const { t } = useTranslation("admin-matches");
 	// Group matches by Side > Round
 	const { upper, lower, final, bracketType } = useMemo(() => {
 		const upp: Record<number, Match[]> = {};
@@ -109,18 +111,30 @@ export function BracketEditor({
 
 	const getRoundTitle = (side: "upper" | "lower", idx: number): string => {
 		const isDouble = stageType === "Double Elimination";
+		const roundLabels = [
+			t("bracketEditor.quarterFinals"),
+			t("bracketEditor.semiFinals"),
+			t("bracketEditor.final"),
+		];
+		const ubLabels = [
+			t("bracketEditor.quarterFinals"),
+			t("bracketEditor.semiFinals"),
+			t("bracketEditor.ubFinal"),
+		];
+		const lbLabels = [
+			"LB R1",
+			"LB R2",
+			"LB Semi",
+			"LB Final",
+		];
 
 		if (side === "upper") {
 			if (!isDouble) {
-				return (
-					["Quarter-Finals", "Semi-Finals", "Final"][idx] || `Round ${idx + 1}`
-				);
+				return roundLabels[idx] || `${t("bracketEditor.round")} ${idx + 1}`;
 			}
-			return (
-				["Quarter-Finals", "Semi-Finals", "UB Final"][idx] || `UB R${idx + 1}`
-			);
+			return ubLabels[idx] || `UB R${idx + 1}`;
 		}
-		return ["LB R1", "LB R2", "LB Semi", "LB Final"][idx] || `LB R${idx + 1}`;
+		return lbLabels[idx] || `LB R${idx + 1}`;
 	};
 
 	// Extract round indices

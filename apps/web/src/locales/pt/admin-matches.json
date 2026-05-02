@@ -98,5 +98,12 @@
 	"ordering": {
 		"saved": "Ordem salva com sucesso!",
 		"saveError": "Erro ao salvar ordem"
+	},
+	"bracketEditor": {
+		"quarterFinals": "Quartas de Final",
+		"semiFinals": "Semifinais",
+		"final": "Final",
+		"ubFinal": "UB Final",
+		"round": "Rodada"
 	}
 }
