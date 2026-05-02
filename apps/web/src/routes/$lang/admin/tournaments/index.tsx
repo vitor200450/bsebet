@@ -352,7 +352,7 @@ function AdminTournamentsPage() {
 								<div className="divide-y-[3px] divide-black">
 									{filteredTournaments.map((tournament, index) => (
 										<div
-key={tournament.id}
+											key={tournament.id}
 											className={`flex flex-col items-start gap-4 px-6 py-4 transition-colors md:grid md:grid-cols-12 md:items-center ${
 												index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]"
 											} hover:bg-[#ccff00]/10`}
@@ -393,13 +393,16 @@ key={tournament.id}
 														className="truncate font-bold text-gray-600 text-xs uppercase"
 														title={tournament.format}
 													>
-														<span className="mr-1 md:hidden">{t("tournaments.formatAbbr")}:</span>
+														<span className="mr-1 md:hidden">
+															{t("tournaments.formatAbbr")}:
+														</span>
 														{tournament.format}
 													</span>
 												)}
 												{tournament.participantsCount && (
 													<span className="w-fit rounded bg-gray-200 px-1 font-mono text-[10px] text-gray-500">
-														{tournament.participantsCount} {t("tournaments.teams")}
+														{tournament.participantsCount}{" "}
+														{t("tournaments.teams")}
 													</span>
 												)}
 											</div>
@@ -412,13 +415,17 @@ key={tournament.id}
 														{tournament.endDate && (
 															<span className="text-gray-400 text-xs">
 																<span className="md:hidden">-</span>
-																<span className="hidden md:inline">{t("tournaments.to")}</span>{" "}
+																<span className="hidden md:inline">
+																	{t("tournaments.to")}
+																</span>{" "}
 																{formatDateUTC(tournament.endDate)}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-gray-400 italic">{t("tournaments.tbd")}</span>
+													<span className="text-gray-400 italic">
+														{t("tournaments.tbd")}
+													</span>
 												)}
 											</div>
 
@@ -450,7 +457,10 @@ key={tournament.id}
 												</Link>
 												<button
 													onClick={() =>
-														handleDuplicate({ id: tournament.id, name: tournament.name })
+														handleDuplicate({
+															id: tournament.id,
+															name: tournament.name,
+														})
 													}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
 													title={t("tournaments.duplicate")}
@@ -465,7 +475,9 @@ key={tournament.id}
 													<Edit2 className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 												<button
-													onClick={() => handleDelete(tournament.id, tournament.name)}
+													onClick={() =>
+														handleDelete(tournament.id, tournament.name)
+													}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
 													title={t("tournaments.delete")}
 												>

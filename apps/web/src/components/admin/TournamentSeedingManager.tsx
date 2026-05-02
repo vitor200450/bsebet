@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,15 +30,14 @@ export function TournamentSeedingManager({
 	groupsCount = 4,
 	maxTeamsPerGroup = 4,
 }: TournamentSeedingManagerProps) {
+	const { t } = useTranslation("admin-matches");
 	const [localTeams, setLocalTeams] = useState(teams);
 	const [savingTeams, setSavingTeams] = useState<Set<number>>(new Set());
 	const [justSavedTeams, setJustSavedTeams] = useState<Set<number>>(new Set());
 
-	// Function to save change to server
 	const saveTeamChange = async (team: Team, field: string, value: any) => {
 		setSavingTeams((prev) => new Set(prev).add(team.id));
 
-		// Optimistic update details
 		const updatedTeam = { ...team, [field]: value };
 
 		try {
@@ -50,7 +50,6 @@ export function TournamentSeedingManager({
 				},
 			});
 
-			// Show "Saved" state briefly
 			setJustSavedTeams((prev) => new Set(prev).add(team.id));
 			setTimeout(() => {
 				setJustSavedTeams((prev) => {
@@ -60,8 +59,7 @@ export function TournamentSeedingManager({
 				});
 			}, 2000);
 		} catch (e) {
-			toast.error(`Failed to save ${team.name}`);
-			// Revert local change if needed (complex with optimistic UI, skipping for now as explicit error is enough)
+			toast.error(t("seeding.saveError", { name: team.name }));
 		} finally {
 			setSavingTeams((prev) => {
 				const next = new Set(prev);
@@ -76,7 +74,6 @@ export function TournamentSeedingManager({
 		field: "group" | "seed",
 		value: string | number | null,
 	) => {
-		// Check constraints if changing group
 		if (field === "group" && value) {
 			const targetGroup = value as string;
 			const currentGroupCount = localTeams.filter(
@@ -85,13 +82,12 @@ export function TournamentSeedingManager({
 
 			if (currentGroupCount >= maxTeamsPerGroup) {
 				toast.error(
-					`Group ${targetGroup} is full (Max ${maxTeamsPerGroup} teams)`,
+					t("seeding.groupFull", { group: targetGroup, max: maxTeamsPerGroup }),
 				);
 				return;
 			}
 		}
 
-		// Check constraints if changing seed
 		if (field === "seed" && value) {
 			const targetSeed = Number(value);
 			const currentGroup = localTeams.find((t) => t.id === teamId)?.group;
@@ -105,19 +101,17 @@ export function TournamentSeedingManager({
 				);
 				if (seedTaken) {
 					toast.error(
-						`Seed ${targetSeed} is already taken in Group ${currentGroup}`,
+						t("seeding.seedTaken", { seed: targetSeed, group: currentGroup }),
 					);
 					return;
 				}
 			}
 		}
 
-		// 1. Update local state immediately
 		setLocalTeams((prev) =>
 			prev.map((t) => {
 				if (t.id === teamId) {
 					const updated = { ...t, [field]: value };
-					// 2. Trigger background save
 					saveTeamChange(updated, field, value);
 					return updated;
 				}
@@ -126,7 +120,6 @@ export function TournamentSeedingManager({
 		);
 	};
 
-	// Group teams by assigned group for better visualization
 	const groupedTeams = localTeams.reduce(
 		(acc, team) => {
 			const g = team.group || "Unassigned";
@@ -144,29 +137,27 @@ export function TournamentSeedingManager({
 			<div className="flex items-center justify-between border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
 				<div>
 					<h2 className="font-black text-2xl text-black uppercase italic">
-						Seeding Manager
+						{t("seeding.title")}
 					</h2>
 					<p className="font-bold text-gray-500 text-sm">
-						Assign teams to groups and seeds. Changes are saved automatically.
+						{t("seeding.description")}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					{/* Global Status Indicator could go here */}
 					{savingTeams.size > 0 && (
 						<div className="flex items-center gap-2 font-bold text-gray-500 text-xs uppercase">
 							<Loader2 className="h-4 w-4 animate-spin" />
-							Saving {savingTeams.size} changes...
+							{t("seeding.saving", { count: savingTeams.size })}
 						</div>
 					)}
 				</div>
 			</div>
 
 			<div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-				{/* Unassigned Teams */}
 				{groupedTeams["Unassigned"]?.length > 0 && (
 					<div className="border-2 border-black/20 border-dashed bg-gray-100 p-4 lg:col-span-2">
 						<h3 className="mb-4 font-black text-gray-400 uppercase">
-							Unassigned Teams
+							{t("seeding.unassigned")}
 						</h3>
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 							{groupedTeams["Unassigned"].map((team) => (
@@ -184,16 +175,15 @@ export function TournamentSeedingManager({
 					</div>
 				)}
 
-				{/* Groups */}
 				{availableGroups.map((group) => (
 					<div
 						key={group}
 						className="flex flex-col border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
 					>
 						<div className="flex items-center justify-between bg-black px-4 py-2 font-black text-white uppercase italic">
-							<span>Group {group}</span>
+							<span>{t("seeding.group", { group })}</span>
 							<span className="font-normal text-gray-400 text-xs not-italic">
-								{(groupedTeams[group] || []).length} Teams
+								{t("seeding.teamsCount", { count: (groupedTeams[group] || []).length })}
 							</span>
 						</div>
 						<div className="flex flex-col gap-3 p-4">
@@ -212,7 +202,7 @@ export function TournamentSeedingManager({
 								))}
 							{(groupedTeams[group] || []).length === 0 && (
 								<div className="py-8 text-center font-bold text-gray-300 text-xs uppercase">
-									Empty Group
+									{t("seeding.emptyGroup")}
 								</div>
 							)}
 						</div>
@@ -238,9 +228,9 @@ function TeamSeedingCard({
 	isSaved: boolean;
 	maxTeamsPerGroup: number;
 }) {
+	const { t } = useTranslation("admin-matches");
 	return (
 		<div className="relative flex items-center gap-3 border-2 border-black bg-white p-2 text-black shadow-sm transition-shadow hover:shadow-md">
-			{/* Status Overlays */}
 			{isSaving && (
 				<div className="absolute top-1 right-1">
 					<Loader2 className="h-3 w-3 animate-spin text-gray-400" />
@@ -269,7 +259,7 @@ function TeamSeedingCard({
 						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-bold text-[10px] text-black uppercase hover:bg-gray-100"
 						disabled={isSaving}
 					>
-						<option value="">- Grp -</option>
+						<option value="">{t("seeding.selectGroup")}</option>
 						{availableGroups.map((g) => (
 							<option key={g} value={g}>
 								{g}
@@ -288,7 +278,7 @@ function TeamSeedingCard({
 						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-bold text-[10px] text-black uppercase hover:bg-gray-100"
 						disabled={isSaving}
 					>
-						<option value="">- Seed -</option>
+						<option value="">{t("seeding.selectSeed")}</option>
 						{SEEDS.slice(0, maxTeamsPerGroup || 4).map((s) => (
 							<option key={s} value={s}>
 								{s}

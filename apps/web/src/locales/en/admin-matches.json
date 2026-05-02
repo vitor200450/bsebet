@@ -3,7 +3,31 @@
 		"addSuccess": "Team added!",
 		"addError": "Failed to add team",
 		"removeSuccess": "Team removed!",
-		"removeError": "Failed to remove team"
+		"removeError": "Failed to remove team",
+		"addTitle": "Add Team to Tournament",
+		"selectTeam": "Select Team",
+		"addButton": "Add",
+		"participatingTitle": "Participating Teams",
+		"sortLabel": "Sort:",
+		"sortRecent": "Recents",
+		"sortAZ": "A-Z",
+		"sortRegion": "Region",
+		"emptyState": "No teams added yet",
+		"removeTooltip": "Remove from tournament"
+	},
+	"seeding": {
+		"saveError": "Failed to save {{name}}",
+		"groupFull": "Group {{group}} is full (Max {{max}} teams)",
+		"seedTaken": "Seed {{seed}} is already taken in Group {{group}}",
+		"title": "Seeding Manager",
+		"description": "Assign teams to groups and seeds. Changes are saved automatically.",
+		"saving": "Saving {{count}} changes...",
+		"unassigned": "Unassigned Teams",
+		"group": "Group {{group}}",
+		"teamsCount": "{{count}} Teams",
+		"emptyGroup": "Empty Group",
+		"selectGroup": "- Grp -",
+		"selectSeed": "- Seed -"
 	},
 	"matches": {
 		"deleteSuccess": "Match deleted!",

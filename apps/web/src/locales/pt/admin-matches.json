@@ -3,7 +3,31 @@
 		"addSuccess": "Time adicionado!",
 		"addError": "Falha ao adicionar time",
 		"removeSuccess": "Time removido!",
-		"removeError": "Falha ao remover time"
+		"removeError": "Falha ao remover time",
+		"addTitle": "Adicionar Time ao Torneio",
+		"selectTeam": "Selecionar Time",
+		"addButton": "Adicionar",
+		"participatingTitle": "Times Participantes",
+		"sortLabel": "Ordenar:",
+		"sortRecent": "Recentes",
+		"sortAZ": "A-Z",
+		"sortRegion": "Região",
+		"emptyState": "Nenhum time adicionado ainda",
+		"removeTooltip": "Remover do torneio"
+	},
+	"seeding": {
+		"saveError": "Falha ao salvar {{name}}",
+		"groupFull": "Grupo {{group}} está cheio (Máx {{max}} times)",
+		"seedTaken": "Seed {{seed}} já está ocupada no Grupo {{group}}",
+		"title": "Gerenciar Distribuição",
+		"description": "Atribua times aos grupos e seeds. As alterações são salvas automaticamente.",
+		"saving": "Salvando {{count}} alterações...",
+		"unassigned": "Times Não Atribuídos",
+		"group": "Grupo {{group}}",
+		"teamsCount": "{{count}} Times",
+		"emptyGroup": "Grupo Vazio",
+		"selectGroup": "- Grp -",
+		"selectSeed": "- Seed -"
 	},
 	"matches": {
 		"deleteSuccess": "Partida excluída!",

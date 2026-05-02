@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { MatchCard } from "./MatchCard";
 import { StandingsTable, useStandings } from "./StandingsTable";
 import type { Match, Prediction } from "./types";
@@ -26,6 +27,7 @@ export function GSLGroupView({
 	renderMatchCard,
 	isReadOnly = false,
 }: GSLGroupViewProps) {
+	const { t } = useTranslation("admin-matches");
 	// Sort matches by displayOrder (1-5)
 	const sortedMatches = useMemo(() => {
 		return [...matches].sort(
@@ -74,10 +76,10 @@ export function GSLGroupView({
 			{/* Header */}
 			<div className="flex items-center justify-between border-black/10 border-b-2 pb-4">
 				<h3 className="font-black text-2xl text-black uppercase italic">
-					{groupName} -- GSL Format
+					{groupName} -- {t("bracketView.gslFormat")}
 				</h3>
 				<div className="bg-black px-3 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-widest">
-					Top 2 Advance
+					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
@@ -90,7 +92,7 @@ export function GSLGroupView({
 					{/* Round 1: Opening */}
 					<div className="flex w-64 shrink-0 flex-col justify-center gap-6">
 						<div className="mb-1 text-center font-bold text-[9px] text-gray-400 uppercase">
-							Opening Matches
+							{t("bracketView.openingMatches")}
 						</div>
 						{openingMatches.map((m) => (
 							<div key={m.id}>{renderCard(m)}</div>
@@ -104,13 +106,13 @@ export function GSLGroupView({
 					<div className="flex w-64 shrink-0 flex-col justify-center gap-12">
 						<div className="flex flex-col gap-2">
 							<div className="mx-auto mb-1 w-max bg-black px-2 py-0.5 text-center font-bold text-[#ccff00] text-[9px] uppercase">
-								Winners Match
+								{t("bracketView.winnersMatch")}
 							</div>
 							{renderCard(winnersMatch)}
 						</div>
 						<div className="flex flex-col gap-2">
 							<div className="mx-auto mb-1 w-max bg-black/5 px-2 py-0.5 text-center font-bold text-[9px] text-red-500 uppercase">
-								Elimination Match
+								{t("bracketView.eliminationMatch")}
 							</div>
 							{renderCard(elimMatch)}
 						</div>
@@ -122,7 +124,7 @@ export function GSLGroupView({
 					{/* Round 3: Decider */}
 					<div className="flex w-64 shrink-0 flex-col justify-center gap-2">
 						<div className="mx-auto mb-1 w-max bg-gray-200 px-2 py-0.5 text-center font-bold text-[9px] text-black uppercase">
-							Decider Match
+							{t("bracketView.deciderMatch")}
 						</div>
 						{renderCard(deciderMatch)}
 					</div>

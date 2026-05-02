@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { TeamLogo } from "../TeamLogo";
 import type { Match, Prediction, Team } from "./types";
 
@@ -124,15 +125,16 @@ export function useStandings(
 }
 
 export function StandingsTable({ standings }: { standings: Standing[] }) {
+	const { t } = useTranslation("admin-matches");
 	return (
 		<div className="w-[420px] flex-shrink-0">
 			<table className="w-full table-fixed border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
 				<thead className="bg-black font-black text-[10px] text-white uppercase italic tracking-wider">
 					<tr>
-						<th className="w-48 p-2 text-left">Team</th>
-						<th className="w-12 p-2 text-center">W-L</th>
-						<th className="w-12 p-2 text-center">Maps</th>
-						<th className="w-12 p-2 text-center">Diff</th>
+						<th className="w-48 p-2 text-left">{t("bracketView.colTeam")}</th>
+						<th className="w-12 p-2 text-center">{t("bracketView.colWL")}</th>
+						<th className="w-12 p-2 text-center">{t("bracketView.colMaps")}</th>
+						<th className="w-12 p-2 text-center">{t("bracketView.colDiff")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -169,7 +171,7 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
 								{/* Qualifying label */}
 								{i < 2 && (
 									<span className="ml-auto flex-shrink-0 border-black/20 bg-[#ccff00] px-1 py-0.5 font-black text-[6px] text-black/60 uppercase">
-										QUAL
+										{t("bracketView.qualified")}
 									</span>
 								)}
 							</td>
@@ -200,7 +202,7 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
 								colSpan={4}
 								className="p-4 text-center text-[10px] text-gray-400 italic"
 							>
-								No matches played
+								{t("bracketView.noMatches")}
 							</td>
 						</tr>
 					)}

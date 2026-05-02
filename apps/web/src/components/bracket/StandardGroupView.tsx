@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { MatchCard } from "./MatchCard";
 import { StandingsTable, useStandings } from "./StandingsTable";
 import type { Match, Prediction } from "./types";
@@ -25,6 +26,7 @@ export function StandardGroupView({
 	renderMatchCard,
 	isReadOnly = false,
 }: StandardGroupViewProps) {
+	const { t } = useTranslation("admin-matches");
 	const standings = useStandings(matches, predictions);
 
 	const DefaultCard = (m: Match) => (
@@ -47,10 +49,10 @@ export function StandardGroupView({
 			{/* Header */}
 			<div className="flex items-center justify-between border-black/10 border-b-2 pb-4">
 				<h3 className="font-black text-2xl text-black uppercase italic">
-					{groupName} -- Round Robin
+					{groupName} -- {t("bracketView.roundRobin")}
 				</h3>
 				<div className="bg-black px-3 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-widest">
-					Top 2 Advance
+					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
@@ -69,7 +71,7 @@ export function StandardGroupView({
 					</div>
 					{matches.length === 0 && (
 						<div className="p-8 text-center text-gray-400 text-sm italic">
-							No matches scheduled
+							{t("bracketView.noMatches")}
 						</div>
 					)}
 				</div>

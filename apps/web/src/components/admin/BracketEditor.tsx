@@ -121,12 +121,7 @@ export function BracketEditor({
 			t("bracketEditor.semiFinals"),
 			t("bracketEditor.ubFinal"),
 		];
-		const lbLabels = [
-			"LB R1",
-			"LB R2",
-			"LB Semi",
-			"LB Final",
-		];
+		const lbLabels = ["LB R1", "LB R2", "LB Semi", "LB Final"];
 
 		if (side === "upper") {
 			if (!isDouble) {

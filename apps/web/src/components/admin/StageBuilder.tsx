@@ -1,4 +1,5 @@
 import { Plus, Settings, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CustomDatePicker, CustomSelect } from "./CustomInputs";
 
 // Re-using the types from the schema/validation
@@ -34,10 +35,11 @@ interface StageBuilderProps {
 }
 
 export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
+	const { t } = useTranslation("admin-matches");
 	const addStage = () => {
 		const newStage: Stage = {
 			id: crypto.randomUUID(),
-			name: `Stage ${stages.length + 1}`,
+			name: t("stageBuilder.defaultName", { number: stages.length + 1 }),
 			type: "Single Elimination",
 			settings: {
 				matchType: "Bo3",
@@ -71,14 +73,14 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 		<div className="flex flex-col gap-4">
 			<div className="flex items-center justify-between">
 				<label className="ml-1 block font-black text-black text-xs uppercase">
-					Tournament Stages Flow
+					{t("stageBuilder.title")}
 				</label>
 				<button
 					type="button"
 					onClick={addStage}
 					className="flex items-center gap-1 bg-black px-2 py-1 font-bold text-white text-xs uppercase transition-colors hover:bg-[#ccff00] hover:text-black"
 				>
-					<Plus className="h-3 w-3" /> Add Stage
+					<Plus className="h-3 w-3" /> {t("stageBuilder.addStage")}
 				</button>
 			</div>
 
@@ -101,24 +103,30 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 						<div className="mb-4 grid grid-cols-1 gap-4 pr-6 md:grid-cols-2">
 							<div>
 								<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-									Stage Name
+									{t("stageBuilder.stageName")}
 								</label>
 								<input
 									type="text"
 									value={stage.name}
 									onChange={(e) => updateStage(index, "name", e.target.value)}
 									className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-									placeholder="e.g. Group Stage"
+									placeholder={t("stageBuilder.stageNamePlaceholder")}
 								/>
 							</div>
 							<CustomSelect
-								label="Type"
+								label={t("stageBuilder.type")}
 								value={stage.type}
 								onChange={(val) => updateStage(index, "type", val)}
 								options={[
-									{ value: "Single Elimination", label: "Single Elimination" },
-									{ value: "Double Elimination", label: "Double Elimination" },
-									{ value: "Groups", label: "Groups" },
+									{
+										value: "Single Elimination",
+										label: t("stageBuilder.singleElimination"),
+									},
+									{
+										value: "Double Elimination",
+										label: t("stageBuilder.doubleElimination"),
+									},
+									{ value: "Groups", label: t("stageBuilder.groups") },
 								]}
 							/>
 						</div>
@@ -128,38 +136,41 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 							<div className="mb-2 flex items-center gap-2 text-gray-400">
 								<Settings className="h-3 w-3" />
 								<span className="font-bold text-[10px] uppercase">
-									Settings
+									{t("stageBuilder.settings")}
 								</span>
 							</div>
 
 							<div className="grid grid-cols-2 gap-2 md:grid-cols-4">
 								<CustomSelect
-									label="Match Type"
+									label={t("stageBuilder.matchType")}
 									value={stage.settings.matchType || "Bo3"}
 									onChange={(val) => updateSettings(index, "matchType", val)}
 									options={[
-										{ value: "Bo1", label: "Best of 1" },
-										{ value: "Bo3", label: "Best of 3" },
-										{ value: "Bo5", label: "Best of 5" },
+										{ value: "Bo1", label: t("stageBuilder.bestOf1") },
+										{ value: "Bo3", label: t("stageBuilder.bestOf3") },
+										{ value: "Bo5", label: t("stageBuilder.bestOf5") },
 									]}
 								/>
 
 								{stage.type === "Groups" && (
 									<>
 										<CustomSelect
-											label="Format"
+											label={t("stageBuilder.format")}
 											value={stage.settings.groupFormat || "GSL"}
 											onChange={(val) =>
 												updateSettings(index, "groupFormat", val)
 											}
 											options={[
-												{ value: "GSL", label: "GSL" },
-												{ value: "Round Robin", label: "Round Robin" },
+												{ value: "GSL", label: t("stageBuilder.gsl") },
+												{
+													value: "Round Robin",
+													label: t("stageBuilder.roundRobin"),
+												},
 											]}
 										/>
 										<div>
 											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-												Groups Count
+												{t("stageBuilder.groupsCount")}
 											</label>
 											<input
 												type="number"
@@ -173,12 +184,12 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 													)
 												}
 												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-												placeholder="e.g. 4"
+												placeholder={t("stageBuilder.groupsCountPlaceholder")}
 											/>
 										</div>
 										<div>
 											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-												Teams / Group
+												{t("stageBuilder.teamsPerGroup")}
 											</label>
 											<input
 												type="number"
@@ -192,12 +203,12 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 													)
 												}
 												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-												placeholder="e.g. 4"
+												placeholder={t("stageBuilder.teamsPerGroupPlaceholder")}
 											/>
 										</div>
 										<div>
 											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-												Top N Advance
+												{t("stageBuilder.topNAdvance")}
 											</label>
 											<input
 												type="number"
@@ -211,7 +222,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 													)
 												}
 												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-												placeholder="e.g. 2"
+												placeholder={t("stageBuilder.topNAdvancePlaceholder")}
 											/>
 										</div>
 									</>
@@ -222,12 +233,12 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 						{/* Dates Grid */}
 						<div className="grid grid-cols-2 gap-4">
 							<CustomDatePicker
-								label="Start Date"
+								label={t("stageBuilder.startDate")}
 								value={stage.startDate || ""}
 								onChange={(val) => updateStage(index, "startDate", val)}
 							/>
 							<CustomDatePicker
-								label="End Date"
+								label={t("stageBuilder.endDate")}
 								value={stage.endDate || ""}
 								onChange={(val) => updateStage(index, "endDate", val)}
 							/>
@@ -238,13 +249,13 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 							<div className="mb-2 flex items-center gap-2 text-gray-400">
 								<Settings className="h-3 w-3" />
 								<span className="font-bold text-[10px] uppercase">
-									Scoring Overrides (Optional)
+									{t("stageBuilder.scoringOverrides")}
 								</span>
 							</div>
 							<div className="grid grid-cols-2 gap-2">
 								<div>
 									<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-										Winner Pts
+										{t("stageBuilder.winnerPts")}
 									</label>
 									<input
 										type="number"
@@ -270,12 +281,12 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											}
 										}}
 										className="w-full border-2 border-gray-300 bg-white p-1 text-black text-xs focus:border-black focus:outline-none"
-										placeholder="Default"
+										placeholder={t("stageBuilder.default")}
 									/>
 								</div>
 								<div>
 									<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-										Exact Pts
+										{t("stageBuilder.exactPts")}
 									</label>
 									<input
 										type="number"
@@ -297,15 +308,15 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											});
 										}}
 										className="w-full border-2 border-gray-300 bg-white p-1 text-black text-xs focus:border-black focus:outline-none"
-										placeholder="Default"
+										placeholder={t("stageBuilder.default")}
 									/>
 								</div>
 								<div>
 									<label
 										className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-										title="Bonus for underdog with ≤25% of votes"
+										title={t("stageBuilder.underdogT1Tooltip")}
 									>
-										Underdog T1 (≤25%)
+										{t("stageBuilder.underdogT1")}
 									</label>
 									<input
 										type="number"
@@ -327,15 +338,15 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											});
 										}}
 										className="w-full border-2 border-gray-300 bg-white p-1 text-black text-xs focus:border-black focus:outline-none"
-										placeholder="Default"
+										placeholder={t("stageBuilder.default")}
 									/>
 								</div>
 								<div>
 									<label
 										className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
-										title="Bonus for underdog with 26-50% of votes"
+										title={t("stageBuilder.underdogT2Tooltip")}
 									>
-										Underdog T2 (26-50%)
+										{t("stageBuilder.underdogT2")}
 									</label>
 									<input
 										type="number"
@@ -357,7 +368,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											});
 										}}
 										className="w-full border-2 border-gray-300 bg-white p-1 text-black text-xs focus:border-black focus:outline-none"
-										placeholder="Default"
+										placeholder={t("stageBuilder.default")}
 									/>
 								</div>
 							</div>
@@ -376,9 +387,9 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 				{stages.length === 0 && (
 					<div className="rounded-sm border-2 border-gray-300 border-dashed p-8 text-center">
 						<p className="font-bold text-gray-400 text-sm uppercase">
-							No stages defined
+							{t("stageBuilder.emptyState")}
 						</p>
-						<p className="text-gray-300 text-xs">Click "Add Stage" to begin</p>
+						<p className="text-gray-300 text-xs">{t("stageBuilder.emptyStateHint")}</p>
 					</div>
 				)}
 			</div>
