@@ -55,7 +55,7 @@ function RootDocument() {
 				<HeadContent />
 			</head>
 			<body suppressHydrationWarning>
-				<I18nRootProvider>
+				<I18nRootProvider lang={lang}>
 					<HeaderProvider>
 						<div className="min-h-screen w-full overflow-x-hidden font-sans">
 							<GlobalHeader />

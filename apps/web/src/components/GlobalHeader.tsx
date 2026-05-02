@@ -3,6 +3,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ChevronRight, LogOut, Shield } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import BRFlag from "country-flag-icons/react/3x2/BR";
+import USFlag from "country-flag-icons/react/3x2/US";
 import { useTranslation } from "react-i18next";
 import { getLiveStatus } from "@/functions/get-live-status";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -207,12 +209,12 @@ export function GlobalHeader() {
 									: "border-gray-300 text-gray-500 hover:border-black hover:text-black",
 							)}
 						>
-							<span className={clsx("fi", lang === "pt" ? "fi-br" : "fi-us", "h-5 w-5 rounded-sm")} />
+							{lang === "pt" ? <BRFlag className="h-5 w-5 shrink-0 rounded-sm" /> : <USFlag className="h-5 w-5 shrink-0 rounded-sm" />}
 							<span>{lang === "pt" ? "PT" : "EN"}</span>
 							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
 						</button>
 						{isLangOpen && (
-							<div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+							<div className="absolute right-0 top-full z-50 mt-1 w-48 whitespace-nowrap overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
 								<button
 									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
 									className={clsx(
@@ -220,7 +222,7 @@ export function GlobalHeader() {
 										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
 									)}
 								>
-									<span className="fi fi-br h-5 w-5 rounded-sm" />
+									<BRFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>Português</span>
 									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
 								</button>
@@ -232,7 +234,7 @@ export function GlobalHeader() {
 										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
 									)}
 								>
-									<span className="fi fi-us h-5 w-5 rounded-sm" />
+									<USFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>English</span>
 									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
 								</button>
@@ -260,11 +262,11 @@ export function GlobalHeader() {
 							onClick={() => setIsLangOpen(!isLangOpen)}
 							className="flex items-center gap-1.5 rounded-lg border-2 border-gray-300 px-2 py-1 font-black text-xs uppercase tracking-wider text-gray-500 transition-all hover:border-black hover:text-black"
 						>
-							<span className={clsx("fi h-4 w-4 rounded-sm", lang === "pt" ? "fi-br" : "fi-us")} />
+							{lang === "pt" ? <BRFlag className="h-5 w-5 shrink-0 rounded-sm" /> : <USFlag className="h-5 w-5 shrink-0 rounded-sm" />}
 							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
 						</button>
 						{isLangOpen && (
-							<div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+							<div className="absolute right-0 top-full z-50 mt-1 w-48 whitespace-nowrap overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
 								<button
 									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
 									className={clsx(
@@ -272,7 +274,7 @@ export function GlobalHeader() {
 										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
 									)}
 								>
-									<span className="fi fi-br h-5 w-5 rounded-sm" />
+									<BRFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>Português</span>
 									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
 								</button>
@@ -284,7 +286,7 @@ export function GlobalHeader() {
 										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
 									)}
 								>
-									<span className="fi fi-us h-5 w-5 rounded-sm" />
+									<USFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>English</span>
 									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
 								</button>
