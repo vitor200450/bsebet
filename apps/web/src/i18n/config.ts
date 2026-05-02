@@ -71,6 +71,7 @@ export const resources = {
 export const i18nOptions: InitOptions = {
 	lng: DEFAULT_LANG,
 	fallbackLng: DEFAULT_LANG,
+	supportedLngs: ["pt", "en"],
 	ns: NAMESPACES as unknown as string[],
 	defaultNS: "common",
 	resources: resources as unknown as InitOptions["resources"],

@@ -33,7 +33,9 @@
 	},
 	"review": {
 		"title": "{{tournament}} - REVISÃO",
-		"titleFallback": "TORNEIO"
+		"confirmTitle": "CONFIRME SEUS PALPITES",
+		"titleFallback": "TORNEIO",
+		"description": "Tem certeza que deseja confirmar esses palpites? Você não poderá alterá-los depois."
 	},
 	"betLabel": "Você apostou em:",
 	"totalPoints": "Total: {{count}} ponto",

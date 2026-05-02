@@ -33,7 +33,9 @@
 	},
 	"review": {
 		"title": "{{tournament}} - REVIEW",
-		"titleFallback": "TOURNAMENT"
+		"confirmTitle": "CONFIRM YOUR PICKS",
+		"titleFallback": "TOURNAMENT",
+		"description": "Are you sure you want to lock in these predictions? You won't be able to change them later."
 	},
 	"betLabel": "You bet on:",
 	"totalPoints": "Total: {{count}} point",

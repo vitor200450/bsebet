@@ -2196,12 +2196,11 @@ function SubmitBetsModal({
 		<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-6 backdrop-blur-md duration-300">
 			<div className="relative flex w-full max-w-md flex-col items-center overflow-hidden border-[6px] border-black bg-white p-8 text-center shadow-[16px_16px_0px_0px_#000]">
 				<h3 className="mb-4 font-black font-display text-3xl text-black uppercase italic">
-					CONFIRM YOUR PICKS
+					{t("review.confirmTitle")}
 				</h3>
 
 				<p className="mb-8 font-body font-bold text-gray-600">
-					Are you sure you want to lock in these predictions? You won't be able
-					to change them later.
+					{t("review.description")}
 				</p>
 
 				{status === "error" && (
