@@ -350,9 +350,9 @@ function AdminTournamentsPage() {
 								</div>
 							) : (
 								<div className="divide-y-[3px] divide-black">
-									{filteredTournaments.map((t, index) => (
+									{filteredTournaments.map((tournament, index) => (
 										<div
-											key={t.id}
+key={tournament.id}
 											className={`flex flex-col items-start gap-4 px-6 py-4 transition-colors md:grid md:grid-cols-12 md:items-center ${
 												index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]"
 											} hover:bg-[#ccff00]/10`}
@@ -360,10 +360,10 @@ function AdminTournamentsPage() {
 											{/* Tournament Info */}
 											<div className="flex w-full items-center gap-4 md:col-span-4">
 												<div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border-[3px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-													{t.logoUrl ? (
+													{tournament.logoUrl ? (
 														<img
-															src={t.logoUrl}
-															alt={t.name}
+															src={tournament.logoUrl}
+															alt={tournament.name}
 															className="h-full w-full object-contain p-2"
 														/>
 													) : (
@@ -372,59 +372,53 @@ function AdminTournamentsPage() {
 												</div>
 												<div className="min-w-0">
 													<h3 className="break-words font-black text-black text-lg uppercase italic leading-none">
-														{t.name}
+														{tournament.name}
 													</h3>
 													<span className="rounded border border-gray-300 bg-gray-100 px-1 font-bold font-mono text-gray-500 text-xs">
-														{t.slug}
+														{tournament.slug}
 													</span>
 												</div>
 											</div>
 
 											{/* Details (Region, Format, Players) */}
 											<div className="flex w-full flex-row flex-wrap gap-2 md:col-span-2 md:flex-col md:gap-1">
-												{t.region && (
+												{tournament.region && (
 													<span className="flex items-center gap-1 font-bold text-black text-xs uppercase">
 														<span className="h-2 w-2 rounded-full bg-blue-500" />{" "}
-														{t.region}
+														{tournament.region}
 													</span>
 												)}
-												{t.format && (
+												{tournament.format && (
 													<span
 														className="truncate font-bold text-gray-600 text-xs uppercase"
-														title={t.format}
+														title={tournament.format}
 													>
-														<span className="mr-1 md:hidden">
-															{t("tournaments.formatAbbr")}:
-														</span>
-														{t.format}
+														<span className="mr-1 md:hidden">{t("tournaments.formatAbbr")}:</span>
+														{tournament.format}
 													</span>
 												)}
-												{t.participantsCount && (
+												{tournament.participantsCount && (
 													<span className="w-fit rounded bg-gray-200 px-1 font-mono text-[10px] text-gray-500">
-														{t.participantsCount} {t("tournaments.teams")}
+														{tournament.participantsCount} {t("tournaments.teams")}
 													</span>
 												)}
 											</div>
 
 											{/* Dates */}
 											<div className="flex w-full gap-2 font-bold text-gray-600 text-sm uppercase md:col-span-2 md:block">
-												{t.startDate ? (
+												{tournament.startDate ? (
 													<div className="flex flex-row gap-x-2 md:flex-col">
-														<span>{formatDateUTC(t.startDate)}</span>
-														{t.endDate && (
+														<span>{formatDateUTC(tournament.startDate)}</span>
+														{tournament.endDate && (
 															<span className="text-gray-400 text-xs">
 																<span className="md:hidden">-</span>
-																<span className="hidden md:inline">
-																	{t("tournaments.to")}
-																</span>{" "}
-																{formatDateUTC(t.endDate)}
+																<span className="hidden md:inline">{t("tournaments.to")}</span>{" "}
+																{formatDateUTC(tournament.endDate)}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-gray-400 italic">
-														{t("tournaments.tbd")}
-													</span>
+													<span className="text-gray-400 italic">{t("tournaments.tbd")}</span>
 												)}
 											</div>
 
@@ -432,12 +426,12 @@ function AdminTournamentsPage() {
 											<div className="flex w-full justify-start md:col-span-2 md:justify-center">
 												<span
 													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-black text-[10px] uppercase italic ${getStatusColor(
-														t.status || "upcoming",
+														tournament.status || "upcoming",
 													)}`}
 												>
-													{t.status === "active"
+													{tournament.status === "active"
 														? t("tournaments.statusActive")
-														: t.status === "finished"
+														: tournament.status === "finished"
 															? t("tournaments.statusFinished")
 															: t("tournaments.statusUpcoming")}
 												</span>
@@ -448,7 +442,7 @@ function AdminTournamentsPage() {
 													to={linkTo(
 														"/admin/tournaments/$tournamentId/matches",
 													)}
-													params={{ tournamentId: String(t.id) }}
+													params={{ tournamentId: String(tournament.id) }}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
 													title={t("tournaments.matchScheduler")}
 												>
@@ -456,7 +450,7 @@ function AdminTournamentsPage() {
 												</Link>
 												<button
 													onClick={() =>
-														handleDuplicate({ id: t.id, name: t.name })
+														handleDuplicate({ id: tournament.id, name: tournament.name })
 													}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
 													title={t("tournaments.duplicate")}
@@ -464,50 +458,14 @@ function AdminTournamentsPage() {
 													<Copy className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 												<button
-													onClick={() => handleEdit(t)}
+													onClick={() => handleEdit(tournament)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
 													title={t("tournaments.edit")}
 												>
 													<Edit2 className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 												<button
-													onClick={() => handleDelete(t.id, t.name)}
-													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
-													title={t("tournaments.delete")}
-												>
-													<Trash2 className="h-4 w-4" strokeWidth={2.5} />
-												</button>
-											</div>
-
-											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
-												<Link
-													to={linkTo(
-														"/admin/tournaments/$tournamentId/matches",
-													)}
-													params={{ tournamentId: String(t.id) }}
-													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
-													title={t("tournaments.matchScheduler")}
-												>
-													<Calendar className="h-4 w-4" strokeWidth={2.5} />
-												</Link>
-												<button
-													onClick={() =>
-														handleDuplicate({ id: t.id, name: t.name })
-													}
-													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
-													title={t("tournaments.duplicate")}
-												>
-													<Copy className="h-4 w-4" strokeWidth={2.5} />
-												</button>
-												<button
-													onClick={() => handleEdit(t)}
-													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
-													title={t("tournaments.edit")}
-												>
-													<Edit2 className="h-4 w-4" strokeWidth={2.5} />
-												</button>
-												<button
-													onClick={() => handleDelete(t.id, t.name)}
+													onClick={() => handleDelete(tournament.id, tournament.name)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
 													title={t("tournaments.delete")}
 												>
@@ -516,7 +474,7 @@ function AdminTournamentsPage() {
 											</div>
 											{formData.logoUrl.startsWith("data:") && (
 												<p className="mt-1 w-full font-bold text-[10px] text-red-500 uppercase italic">
-													{t("tournaments.base64Warning")}{" "}
+													⚠️ {t("tournaments.base64Warning")}{" "}
 													<Link
 														to={linkTo("/admin/migrate-logos")}
 														className="underline hover:text-red-700"
