@@ -225,12 +225,12 @@ function AdminTournamentsPage() {
 				},
 			});
 
-			toast.success("Tournament saved successfully!");
+			toast.success(t("tournaments.saveSuccess"));
 			setIsModalOpen(false);
 			router.invalidate();
 		} catch (error) {
 			console.error(error);
-			toast.error("Failed to save tournament.");
+			toast.error(t("tournaments.saveError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -246,7 +246,7 @@ function AdminTournamentsPage() {
 		setIsSubmitting(true);
 		try {
 			await deleteTournament({ data: itemToDelete.id });
-			toast.success("Tournament deleted.");
+			toast.success(t("tournaments.deleteSuccess"));
 			setIsDeleteModalOpen(false);
 			setItemToDelete(null);
 			router.invalidate();
@@ -254,7 +254,7 @@ function AdminTournamentsPage() {
 				setIsModalOpen(false);
 			}
 		} catch (error) {
-			toast.error("Failed to delete.");
+			toast.error(t("tournaments.deleteError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -268,15 +268,11 @@ function AdminTournamentsPage() {
 	const confirmDuplicate = async () => {
 		if (!itemToDuplicate) return;
 
-		// Optimistically close modal or keep open?
-		// Let's keep open with loading state like delete/save
 		try {
-			// We'll wrap the promise here inside the component logic or just use the toast promise
-			// but we want to wait for it to close the modal.
 			await toast.promise(copyTournament({ data: itemToDuplicate.id }), {
-				loading: "Duplicating tournament...",
-				success: "Tournament duplicated!",
-				error: "Failed to duplicate tournament",
+				loading: t("tournaments.duplicating"),
+				success: t("tournaments.duplicateSuccess"),
+				error: t("tournaments.duplicateError"),
 			});
 
 			router.invalidate();
@@ -329,11 +325,11 @@ function AdminTournamentsPage() {
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header - Hidden on small screens */}
 							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
-								<div className="col-span-4">Tournament Info</div>
-								<div className="col-span-2">Details</div>
-								<div className="col-span-2">Dates</div>
-								<div className="col-span-2 text-center">Status</div>
-								<div className="col-span-2 text-right">Actions</div>
+								<div className="col-span-4">{t("tournaments.tableInfo")}</div>
+								<div className="col-span-2">{t("tournaments.tableDetails")}</div>
+								<div className="col-span-2">{t("tournaments.tableDates")}</div>
+								<div className="col-span-2 text-center">{t("tournaments.tableStatus")}</div>
+								<div className="col-span-2 text-right">{t("tournaments.tableActions")}</div>
 							</div>
 
 							{/* Table Rows */}
@@ -391,13 +387,13 @@ function AdminTournamentsPage() {
 														className="truncate font-bold text-gray-600 text-xs uppercase"
 														title={t.format}
 													>
-														<span className="mr-1 md:hidden">Fmt:</span>
+														<span className="mr-1 md:hidden">{t("tournaments.formatAbbr")}:</span>
 														{t.format}
 													</span>
 												)}
 												{t.participantsCount && (
 													<span className="w-fit rounded bg-gray-200 px-1 font-mono text-[10px] text-gray-500">
-														{t.participantsCount} Teams
+														{t.participantsCount} {t("tournaments.teams")}
 													</span>
 												)}
 											</div>
@@ -410,13 +406,13 @@ function AdminTournamentsPage() {
 														{t.endDate && (
 															<span className="text-gray-400 text-xs">
 																<span className="md:hidden">-</span>
-																<span className="hidden md:inline">to</span>{" "}
+																<span className="hidden md:inline">{t("tournaments.to")}</span>{" "}
 																{formatDateUTC(t.endDate)}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-gray-400 italic">TBD</span>
+													<span className="text-gray-400 italic">{t("tournaments.tbd")}</span>
 												)}
 											</div>
 
@@ -427,8 +423,48 @@ function AdminTournamentsPage() {
 														t.status || "upcoming",
 													)}`}
 												>
-													{t.status || "upcoming"}
+{t.status === "active"
+														? t("tournaments.statusActive")
+														: t.status === "finished"
+															? t("tournaments.statusFinished")
+															: t("tournaments.statusUpcoming")}
 												</span>
+											</div>
+
+											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
+												<Link
+													to={linkTo(
+														"/admin/tournaments/$tournamentId/matches",
+													)}
+													params={{ tournamentId: String(t.id) }}
+													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
+													title={t("tournaments.matchScheduler")}
+												>
+													<Calendar className="h-4 w-4" strokeWidth={2.5} />
+												</Link>
+												<button
+													onClick={() =>
+														handleDuplicate({ id: t.id, name: t.name })
+													}
+													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
+													title={t("tournaments.duplicate")}
+												>
+													<Copy className="h-4 w-4" strokeWidth={2.5} />
+												</button>
+												<button
+													onClick={() => handleEdit(t)}
+													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
+													title={t("tournaments.edit")}
+												>
+													<Edit2 className="h-4 w-4" strokeWidth={2.5} />
+												</button>
+												<button
+													onClick={() => handleDelete(t.id, t.name)}
+													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
+													title={t("tournaments.delete")}
+												>
+													<Trash2 className="h-4 w-4" strokeWidth={2.5} />
+												</button>
 											</div>
 
 											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
@@ -494,7 +530,7 @@ function AdminTournamentsPage() {
 						{/* Modal Header */}
 						<div className="sticky top-0 z-50 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
 							<h2 className="font-black text-lg text-white uppercase italic">
-								{formData.id ? "EDITAR TORNEIO" : "NOVO TORNEIO"}
+								{formData.id ? t("tournaments.editTitle") : t("tournaments.createTitle")}
 							</h2>
 							<button
 								onClick={() => setIsModalOpen(false)}
@@ -612,9 +648,9 @@ function AdminTournamentsPage() {
 										}
 										className="w-full cursor-pointer border-[3px] border-black bg-white p-3 font-bold text-black uppercase focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 									>
-										<option value="upcoming">Upcoming</option>
-										<option value="active">Active</option>
-										<option value="finished">Finished</option>
+										<option value="upcoming">{t("tournaments.statusUpcoming")}</option>
+										<option value="active">{t("tournaments.statusActive")}</option>
+										<option value="finished">{t("tournaments.statusFinished")}</option>
 									</select>
 								</div>
 

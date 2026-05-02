@@ -251,7 +251,7 @@ function AdminTeamsPage() {
 		});
 
 	useSetHeader({
-		title: "TEAMS",
+		title: t("common:nav.adminTeams"),
 		actions: (
 			<div className="flex w-full flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
 				{/* Sorting Dropdown */}
@@ -261,7 +261,7 @@ function AdminTeamsPage() {
 						onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
 						className="relative flex w-full min-w-[120px] items-center gap-2 border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold text-black text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 					>
-						<span className="mr-1 text-gray-400 text-xs">Sort:</span>
+						<span className="mr-1 text-gray-400 text-xs">{t("common:actions.sort")}:</span>
 						{sortOrder === "recent"
 							? "Recents"
 							: sortOrder === "name"

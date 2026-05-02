@@ -99,7 +99,7 @@ function CompensationsPage() {
 			<div className="flex items-center gap-2 text-gray-600 text-sm">
 				<History className="h-4 w-4" />
 				<span className="font-bold uppercase">
-					{adjustments.length} ajustes realizados
+					{t("compensations.adjustmentCount", { count: adjustments.length })}
 				</span>
 			</div>
 		),

@@ -14,6 +14,7 @@ import {
 	X,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/$lang/admin/users")({
 });
 
 function AdminUsersPage() {
+	const { t } = useTranslation("admin");
 	const { linkTo } = useLangLink();
 	const users = Route.useLoaderData();
 	const router = useRouter();
@@ -187,13 +189,13 @@ function AdminUsersPage() {
 	};
 
 	useSetHeader({
-		title: "USERS",
+		title: t("common:nav.adminUsers"),
 		actions: (
 			<div className="flex w-full items-center gap-4 sm:w-auto">
 				<div className="relative w-full sm:w-auto">
 					<input
 						type="text"
-						placeholder="SEARCH USERS..."
+						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-96"

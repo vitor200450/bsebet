@@ -15,7 +15,8 @@
 		"adminLive": "Live",
 		"profile": "Profile",
 		"profileView": "View Public Profile",
-		"exitAdmin": "Exit Admin"
+		"exitAdmin": "Exit Admin",
+		"adminPanel": "Admin Panel"
 	},
 	"matchStatus": {
 		"scheduled": "Scheduled",
@@ -34,7 +35,9 @@
 		"back": "Back",
 		"loading": "Loading...",
 		"expandAll": "Expand all",
-		"collapseAll": "Collapse all"
+		"collapseAll": "Collapse all",
+		"search": "SEARCH...",
+		"sort": "Sort"
 	},
 	"region": "Region",
 	"series": "Series",

@@ -12,7 +12,7 @@ import UserMenu from "./user-menu";
 
 export function GlobalHeader() {
 	const { t } = useTranslation("common");
-	const { routeTo } = useLangLink();
+	const { lang, routeTo } = useLangLink();
 	const router = useRouterState();
 	const { config } = useHeader();
 	const [mounted, setMounted] = useState(false);
@@ -47,7 +47,7 @@ export function GlobalHeader() {
 	];
 
 	const isAdmin = session?.user?.role === "admin";
-	const isInsideAdmin = router.location.pathname.startsWith("/admin");
+	const isInsideAdmin = router.location.pathname.startsWith(`/${lang}/admin`);
 	const variant = config?.variant || (isInsideAdmin ? "light" : "light");
 
 	if (config?.hideHeader) return null;
@@ -103,7 +103,7 @@ export function GlobalHeader() {
 									variant === "dark" ? "text-gray-700" : "text-gray-300",
 								)}
 							>
-								ADMIN
+								{t("nav.admin")}
 							</span>
 							<ChevronRight
 								className={clsx(
@@ -117,7 +117,7 @@ export function GlobalHeader() {
 									variant === "dark" ? "text-white" : "text-black",
 								)}
 							>
-								{config?.title || "DASHBOARD"}
+								{config?.title || t("nav.dashboard")}
 							</h1>
 						</div>
 					)}
@@ -129,12 +129,14 @@ export function GlobalHeader() {
 						{!isInsideAdmin && (
 							<div className="flex items-center gap-8">
 								{navItems.map((item) => {
-									// For "Home", consider both /landing and /dashboard as active
+									const normalize = (p: string) => p.replace(/\/$/, "") || "/";
+									const linkDest = normalize(`/${lang}${item.to}`);
+									const curPath = normalize(router.location.pathname);
 									const isActive =
 										item.label === "Home"
-											? router.location.pathname === "/landing" ||
-												router.location.pathname === "/dashboard"
-											: router.location.pathname === item.to;
+											? curPath === normalize(`/${lang}/landing`) ||
+												curPath === normalize(`/${lang}/dashboard`)
+											: curPath === linkDest;
 
 									return (
 										<Link
@@ -182,10 +184,10 @@ export function GlobalHeader() {
 								className="skew-x-12 transform"
 							/>
 							<span className="skew-x-12 transform whitespace-nowrap">
-								Admin Panel
+								{t("nav.adminPanel")}
 							</span>
-						</Link>
-					)}
+					</Link>
+				)}
 
 					<UserMenu variant={variant} />
 				</div>
@@ -229,12 +231,14 @@ export function GlobalHeader() {
 					{!isInsideAdmin && (
 						<nav className="mb-6 flex flex-col gap-4">
 							{navItems.map((item) => {
-								// For "Home", consider both /landing and /dashboard as active
+								const normalize = (p: string) => p.replace(/\/$/, "") || "/";
+								const linkDest = normalize(`/${lang}${item.to}`);
+								const curPath = normalize(router.location.pathname);
 								const isActive =
 									item.label === "Home"
-										? router.location.pathname === "/landing" ||
-											router.location.pathname === "/dashboard"
-										: router.location.pathname === item.to;
+										? curPath === normalize(`/${lang}/landing`) ||
+											curPath === normalize(`/${lang}/dashboard`)
+										: curPath === linkDest;
 
 								return (
 									<Link
@@ -260,7 +264,7 @@ export function GlobalHeader() {
 							className="mb-4 flex items-center justify-center gap-2 border-[3px] border-black bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider shadow-comic transition-all active:translate-y-1 active:shadow-none"
 						>
 							<Shield size={20} strokeWidth={3} />
-							<span>Admin Panel</span>
+							<span>{t("nav.adminPanel")}</span>
 						</Link>
 					)}
 				</div>
@@ -289,7 +293,8 @@ export function GlobalHeader() {
 										to: "/admin/compensations",
 									},
 								].map((tab) => {
-									const isActive = router.location.pathname.startsWith(tab.to);
+									const tabPath = `/${lang}${tab.to}`;
+									const isActive = router.location.pathname.startsWith(tabPath);
 									return (
 										<Link
 											key={tab.to}

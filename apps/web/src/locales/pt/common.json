@@ -15,7 +15,8 @@
 		"adminLive": "Ao Vivo",
 		"profile": "Perfil",
 		"profileView": "Ver Perfil Público",
-		"exitAdmin": "Sair do Admin"
+		"exitAdmin": "Sair do Admin",
+		"adminPanel": "Painel Admin"
 	},
 	"matchStatus": {
 		"scheduled": "Agendado",
@@ -34,7 +35,9 @@
 		"back": "Voltar",
 		"loading": "Carregando...",
 		"expandAll": "Expandir todos",
-		"collapseAll": "Recolher todos"
+		"collapseAll": "Recolher todos",
+		"search": "BUSCAR...",
+		"sort": "Ordenar"
 	},
 	"region": "Região",
 	"series": "Série",
