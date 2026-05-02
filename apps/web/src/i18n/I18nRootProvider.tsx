@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import { i18next } from "./index";
 import { i18nOptions } from "./config";
+import { i18next } from "./index";
 
 let initialized = false;
 

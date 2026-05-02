@@ -10,7 +10,7 @@ interface LandingPageProps {
 
 export function LandingPage({ isAuthenticated }: LandingPageProps) {
 	const { t } = useTranslation("landing");
-	const { linkTo } = useLangLink();
+	const { routeTo } = useLangLink();
 	// Hide header for unauthenticated users (landing page has its own branding)
 	useSetHeader(!isAuthenticated ? { hideHeader: true } : {});
 
@@ -75,7 +75,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.6, duration: 0.6 }}
 					>
-						<Link to={linkTo(ctaLink)}>
+						<Link {...routeTo(ctaLink)}>
 							<button className="group relative inline-block">
 								<div className="absolute inset-0 translate-x-2 translate-y-2 -skew-x-12 transform rounded-lg bg-black" />
 								<div className="relative -skew-x-12 transform rounded-lg border-4 border-black bg-[#ccff00] px-8 py-4 shadow-[8px_8px_0px_0px_#000] transition-all duration-200 hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_0px_#000] md:px-12 md:py-6">

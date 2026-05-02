@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
+import { Award, Crown, Medal, Star, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -69,7 +70,7 @@ export function RealisticMedal({
 	tournamentSlug,
 	className,
 }: RealisticMedalProps) {
-	const { linkTo } = useLangLink();
+	const { routeTo, lang } = useLangLink();
 	const config = tierConfig[tier];
 	const Icon = config.icon;
 
@@ -268,8 +269,8 @@ export function RealisticMedal({
 	if (tournamentSlug) {
 		return (
 			<Link
-				to={linkTo("/tournaments/$slug")}
-				params={{ slug: tournamentSlug }}
+				{...routeTo("/tournaments/$slug")}
+				params={{ slug: tournamentSlug, lang }}
 				className="block cursor-pointer"
 			>
 				{content}

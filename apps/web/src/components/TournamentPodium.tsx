@@ -61,7 +61,7 @@ export function TournamentPodium({
 	className,
 }: TournamentPodiumProps) {
 	const { t } = useTranslation("tournament");
-	const { linkTo } = useLangLink();
+	const { routeTo } = useLangLink();
 	const { data: leaderboard, isLoading } = useQuery({
 		queryKey: ["tournamentLeaderboard", tournamentId],
 		queryFn: () => getLeaderboard({ data: tournamentId }),
@@ -138,7 +138,7 @@ export function TournamentPodium({
 					</div>
 
 					<Link
-						to={linkTo("/leaderboard")}
+						{...routeTo("/leaderboard")}
 						search={{ tab: "season", tournamentId }}
 						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
 					>
@@ -201,7 +201,7 @@ interface PodiumBlockProps {
 
 function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 	const { t } = useTranslation("tournament");
-	const { linkTo } = useLangLink();
+	const { routeTo, lang } = useLangLink();
 	const Icon = config.icon;
 
 	return (
@@ -210,8 +210,8 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 		>
 			{/* Avatar */}
 			<Link
-				to={linkTo("/users/$userId")}
-				params={{ userId: entry.userId }}
+				{...routeTo("/users/$userId")}
+				params={{ userId: entry.userId, lang }}
 				className={cn(
 					"group relative mb-3 border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]",
 					isWinner ? "h-20 w-20 md:h-24 md:w-24" : "h-14 w-14 md:h-16 md:w-16",
@@ -253,8 +253,8 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 
 			{/* Name */}
 			<Link
-				to={linkTo("/users/$userId")}
-				params={{ userId: entry.userId }}
+				{...routeTo("/users/$userId")}
+				params={{ userId: entry.userId, lang }}
 				className={cn(
 					"mb-2 transform border border-black bg-white px-3 py-1 text-center shadow-[2px_2px_0_0_#000] transition-all hover:bg-gray-50",
 					isWinner ? "-rotate-1" : "rotate-1",

@@ -54,7 +54,7 @@ export function MatchCard({
 	showPredictionScore = false,
 }: MatchCardProps) {
 	const { t } = useTranslation("betting");
-	const { linkTo } = useLangLink();
+	const { routeTo, lang } = useLangLink();
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
 	const isWalkover = match.resultType === "wo";
@@ -167,8 +167,8 @@ export function MatchCard({
 						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-end leading-tight">
 							{teamA?.slug ? (
 								<Link
-									to={linkTo("/teams/$teamId")}
-									params={{ teamId: teamA.slug }}
+									{...routeTo("/teams/$teamId")}
+									params={{ teamId: teamA.slug, lang }}
 									className={clsx(
 										"block w-full break-normal text-right font-black uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
@@ -283,8 +283,8 @@ export function MatchCard({
 						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-start leading-tight">
 							{teamB?.slug ? (
 								<Link
-									to={linkTo("/teams/$teamId")}
-									params={{ teamId: teamB.slug }}
+									{...routeTo("/teams/$teamId")}
+									params={{ teamId: teamB.slug, lang }}
 									className={clsx(
 										"block w-full break-normal text-left font-black uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",

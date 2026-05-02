@@ -1,9 +1,11 @@
 {
 	"browse": {
+		"title": "Torneios",
 		"description": "Competições de alto nível de Brawl Stars",
 		"searchPlaceholder": "Buscar torneio...",
 		"empty": "Nada por aqui",
 		"noResults": "Nenhum resultado",
+		"searchHint": "Tente ajustar sua busca ou mudar os filtros.",
 		"noActive": "Não há torneios ativos no momento.",
 		"noScheduled": "Não há torneios programados no momento.",
 		"noFinished": "Não há torneios finalizados no momento.",

@@ -9,5 +9,10 @@ export function useLangLink() {
 		return `/${lang}${cleanPath}`;
 	}
 
-	return { lang, linkTo };
+	function routeTo(path: string) {
+		const cleanPath = path.startsWith("/") ? path : `/${path}`;
+		return { to: `/${"$lang"}${cleanPath}`, params: { lang } };
+	}
+
+	return { lang, linkTo, routeTo };
 }

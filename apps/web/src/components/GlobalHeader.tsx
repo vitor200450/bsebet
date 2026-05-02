@@ -12,7 +12,7 @@ import UserMenu from "./user-menu";
 
 export function GlobalHeader() {
 	const { t } = useTranslation("common");
-	const { linkTo } = useLangLink();
+	const { routeTo } = useLangLink();
 	const router = useRouterState();
 	const { config } = useHeader();
 	const [mounted, setMounted] = useState(false);
@@ -64,7 +64,7 @@ export function GlobalHeader() {
 				<div className="flex min-w-0 flex-1 items-center gap-4 md:gap-6">
 					{/* LOGO AREA - Dynamic link based on auth */}
 					<Link
-						to={linkTo(isAuthenticated ? "/dashboard" : "/landing")}
+						{...routeTo(isAuthenticated ? "/dashboard" : "/landing")}
 						className="group relative flex shrink-0 items-center"
 					>
 						<div
@@ -139,7 +139,7 @@ export function GlobalHeader() {
 									return (
 										<Link
 											key={item.label}
-											to={linkTo(item.to)}
+											{...routeTo(item.to)}
 											className={clsx(
 												"group relative font-black text-xl uppercase italic tracking-tighter transition-all",
 												isActive
@@ -173,7 +173,7 @@ export function GlobalHeader() {
 
 					{isAdmin && !isInsideAdmin && (
 						<Link
-							to={linkTo("/admin/tournaments")}
+							{...routeTo("/admin/tournaments")}
 							className="group flex -skew-x-12 transform items-center gap-2 border-[3px] border-black bg-black px-5 py-2 font-black text-white text-xs uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 						>
 							<Shield
@@ -239,7 +239,7 @@ export function GlobalHeader() {
 								return (
 									<Link
 										key={item.label}
-										to={linkTo(item.to)}
+										{...routeTo(item.to)}
 										className={clsx(
 											"border-l-[6px] px-4 py-2 font-black text-3xl uppercase italic tracking-tighter transition-all",
 											isActive
@@ -256,7 +256,7 @@ export function GlobalHeader() {
 
 					{isAdmin && !isInsideAdmin && (
 						<Link
-							to={linkTo("/admin/tournaments")}
+							{...routeTo("/admin/tournaments")}
 							className="mb-4 flex items-center justify-center gap-2 border-[3px] border-black bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider shadow-comic transition-all active:translate-y-1 active:shadow-none"
 						>
 							<Shield size={20} strokeWidth={3} />
@@ -293,7 +293,7 @@ export function GlobalHeader() {
 									return (
 										<Link
 											key={tab.to}
-											to={linkTo(tab.to)}
+											{...routeTo(tab.to)}
 											className={clsx(
 												"relative -skew-x-6 transform border-[2px] border-black px-3 py-1.5 font-black text-xs uppercase italic tracking-tight transition-all md:border-[3px] md:px-4 md:py-2 md:text-sm",
 												isActive
@@ -312,7 +312,7 @@ export function GlobalHeader() {
 
 							{isAdmin && (
 								<Link
-									to={linkTo("/")}
+									{...routeTo("/")}
 									className={clsx(
 										"group flex shrink-0 -skew-x-12 transform items-center gap-2 border-[2px] border-black px-3 py-1.5 font-black text-[10px] uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none md:border-[3px] md:px-5 md:py-2 md:text-xs",
 										variant === "dark"

@@ -4,7 +4,8 @@
 		"picksTitle": "PICKS",
 		"title": "Make your picks and climb the leaderboard",
 		"badge": "🏆 Brawl Stars Competitive",
-		"cta": "ENTER NOW"
+		"cta": "ENTER NOW",
+		"loginCta": "Sign in to start betting"
 	},
 	"features": {
 		"predictTitle": "MAKE YOUR",

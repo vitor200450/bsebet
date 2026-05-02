@@ -4,7 +4,8 @@
 		"picksTitle": "PALPITES",
 		"title": "Faça seus palpites e suba no ranking",
 		"badge": "🏆 Competitivo de Brawl Stars",
-		"cta": "ENTRAR AGORA"
+		"cta": "ENTRAR AGORA",
+		"loginCta": "Faça login para começar a apostar"
 	},
 	"features": {
 		"predictTitle": "FAÇA SEUS",

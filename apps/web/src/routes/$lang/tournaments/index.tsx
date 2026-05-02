@@ -29,7 +29,7 @@ function TournamentsPage() {
 	const { t } = useTranslation("tournament");
 	const tournaments = Route.useLoaderData();
 	const { filter } = Route.useSearch();
-	const navigate = useNavigate({ from: "/tournaments/" });
+	const navigate = useNavigate();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Filter tournaments by status and search query
@@ -67,7 +67,7 @@ function TournamentsPage() {
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
 							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
-								Torneios
+								{t("browse.title")}
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
 								{t("browse.description")}
@@ -149,16 +149,29 @@ function TournamentCard({
 		status: "upcoming" | "active" | "finished";
 	};
 }) {
+	const { t } = useTranslation("tournament");
 	const { linkTo } = useLangLink();
 	const isActive = tournament.status === "active";
 	const isFinished = tournament.status === "finished";
 
 	// Status config
 	const statusConfig = isActive
-		? { label: "Ao Vivo", color: "bg-[#ff2e2e] text-white", dot: true }
+		? {
+				label: t("common:matchStatus.live"),
+				color: "bg-[#ff2e2e] text-white",
+				dot: true,
+			}
 		: isFinished
-			? { label: "Finalizado", color: "bg-gray-200 text-gray-700", dot: false }
-			: { label: "Em Breve", color: "bg-[#ffc700] text-black", dot: false };
+			? {
+					label: t("common:matchStatus.finished"),
+					color: "bg-gray-200 text-gray-700",
+					dot: false,
+				}
+			: {
+					label: t("common:matchStatus.scheduled"),
+					color: "bg-[#ffc700] text-black",
+					dot: false,
+				};
 
 	return (
 		<article className="group">
@@ -281,6 +294,7 @@ function EmptyState({
 	filter: "active" | "upcoming" | "finished";
 	hasSearch: boolean;
 }) {
+	const { t } = useTranslation("tournament");
 	return (
 		<div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
 			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
@@ -291,7 +305,7 @@ function EmptyState({
 			</h2>
 			<p className="mx-auto max-w-md text-gray-600 text-sm">
 				{hasSearch
-					? "Tente ajustar sua busca ou mudar os filtros."
+					? t("browse.searchHint")
 					: filter === "active"
 						? t("browse.noActive")
 						: filter === "upcoming"

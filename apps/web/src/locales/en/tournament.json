@@ -1,9 +1,11 @@
 {
 	"browse": {
+		"title": "Tournaments",
 		"description": "High-level Brawl Stars competitions",
 		"searchPlaceholder": "Search tournaments...",
 		"empty": "Nothing here",
 		"noResults": "No results",
+		"searchHint": "Try adjusting your search or changing the filters.",
 		"noActive": "No active tournaments at the moment.",
 		"noScheduled": "No scheduled tournaments at the moment.",
 		"noFinished": "No finished tournaments at the moment.",
