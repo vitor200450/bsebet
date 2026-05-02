@@ -451,7 +451,7 @@ export function MatchModal({
 
 	const validateResultState = () => {
 		if (formData.resultType === "wo" && formData.status !== "finished") {
-			return "W.O. requires match status to be Finished.";
+			return t("modal.woRequiresFinished");
 		}
 
 		if (formData.resultType === "wo" && !formData.winnerId) {
@@ -462,7 +462,7 @@ export function MatchModal({
 				return null;
 			}
 
-			return "W.O. requires a winner when both teams are defined.";
+			return t("modal.woRequiresWinner");
 		}
 
 		if (formData.status === "finished" && !formData.winnerId) {
@@ -472,7 +472,7 @@ export function MatchModal({
 				}
 			}
 
-			return "Cannot finish match without a winner!";
+			return t("modal.errorNoWinner");
 		}
 
 		return null;
@@ -577,7 +577,7 @@ export function MatchModal({
 			} catch (error) {
 				console.error("Save failed:", error);
 				setSaveStatus("error");
-				toast.error("Failed to save changes");
+				toast.error(t("modal.saveError"));
 				setIsSubmitting(false);
 				throw error;
 			}
@@ -642,18 +642,18 @@ export function MatchModal({
 		try {
 			const payload = buildPayload();
 			if (!payload) {
-				toast.error("Please select both date and time");
+				toast.error(t("modal.selectDateTime"));
 				setIsSubmitting(false);
 				return;
 			}
 
 			await createMatch({ data: payload });
-			toast.success("Match created successfully!");
+			toast.success(t("modal.createSuccess"));
 			await onSuccess();
 			onClose();
 		} catch (error) {
 			console.error(error);
-			toast.error("Failed to create match.");
+			toast.error(t("modal.createError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -667,7 +667,7 @@ export function MatchModal({
 				<div className="sticky top-0 z-10 flex items-center justify-between border-black border-b-[4px] bg-[#ccff00] p-3">
 					<div className="flex items-center gap-3">
 						<h2 className="font-black text-black text-lg uppercase italic">
-							{matchToEdit ? "Edit Match" : "Create Match"}
+							{matchToEdit ? t("modal.editMatch") : t("modal.createMatch")}
 						</h2>
 						{/* Auto-save status indicator */}
 						{matchToEdit && (
@@ -675,19 +675,19 @@ export function MatchModal({
 								{saveStatus === "saving" && (
 									<div className="flex items-center gap-1 font-bold text-black/60 text-xs">
 										<Loader2 className="h-3 w-3 animate-spin" />
-										<span>Saving...</span>
+										<span>{t("modal.saving")}</span>
 									</div>
 								)}
 								{saveStatus === "saved" && (
 									<div className="flex items-center gap-1 font-bold text-green-700 text-xs">
 										<Check className="h-3 w-3" />
-										<span>Saved</span>
+										<span>{t("modal.saved")}</span>
 									</div>
 								)}
 								{saveStatus === "error" && (
 									<div className="flex items-center gap-1 font-bold text-red-600 text-xs">
 										<AlertCircle className="h-3 w-3" />
-										<span>Error</span>
+										<span>{t("modal.errorStatus")}</span>
 									</div>
 								)}
 							</div>
@@ -713,7 +713,7 @@ export function MatchModal({
 							<div className="flex items-center justify-between">
 								<h3 className="flex items-center gap-2 font-black text-black text-sm uppercase italic">
 									<span className="h-2.5 w-2.5 animate-pulse rounded-full bg-black" />{" "}
-									Result & Scores
+									{t("modal.resultScores")}
 								</h3>
 								<div className="flex items-center gap-2">
 									<button
@@ -737,10 +737,10 @@ export function MatchModal({
 												: "bg-white text-black hover:bg-gray-100",
 										)}
 									>
-										W.O.
+										{t("modal.wo")}
 									</button>
 									<label className="font-black text-[10px] text-black uppercase">
-										Status:
+										{t("modal.statusLabel")}
 									</label>
 									<select
 										value={formData.status}
@@ -762,9 +762,13 @@ export function MatchModal({
 										}}
 										className="border-2 border-black bg-black px-2 py-0.5 font-black text-[#ccff00] text-[10px] uppercase focus:outline-none"
 									>
-										<option value="scheduled">Scheduled</option>
-										<option value="live">LIVE</option>
-										<option value="finished">Finished</option>
+										<option value="scheduled">
+											{t("modal.statusScheduled")}
+										</option>
+										<option value="live">{t("modal.statusLive")}</option>
+										<option value="finished">
+											{t("modal.statusFinished")}
+										</option>
 									</select>
 								</div>
 							</div>
@@ -775,11 +779,11 @@ export function MatchModal({
 									<div className="mb-1 flex items-center gap-2">
 										<div className="h-3 w-3 rounded-full border border-black bg-brawl-blue shadow-[1px_1px_0px_0px_#000]" />
 										<label className="font-black text-[10px] text-black uppercase">
-											{matchToEdit?.teamA?.name || "Team A"}
+											{matchToEdit?.teamA?.name || t("modal.teamA")}
 										</label>
 										{formData.winnerId === resolvedTeamAId && (
 											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
-												✓ WINNER
+												{t("modal.winnerBadge")}
 											</span>
 										)}
 									</div>
@@ -797,7 +801,7 @@ export function MatchModal({
 									/>
 									{matchToEdit?.tournament?.format && (
 										<p className="font-bold text-[9px] text-gray-500 uppercase">
-											Max:{" "}
+											{t("modal.max")}{" "}
 											{Math.ceil(
 												(matchToEdit.tournament.format
 													.toLowerCase()
@@ -809,7 +813,7 @@ export function MatchModal({
 														? 7
 														: 5) / 2,
 											)}{" "}
-											wins
+											{t("modal.wins")}
 										</p>
 									)}
 								</div>
@@ -819,11 +823,11 @@ export function MatchModal({
 									<div className="mb-1 flex items-center gap-2">
 										<div className="h-3 w-3 rounded-full border border-black bg-brawl-red shadow-[1px_1px_0px_0px_#000]" />
 										<label className="font-black text-[10px] text-black uppercase">
-											{matchToEdit?.teamB?.name || "Team B"}
+											{matchToEdit?.teamB?.name || t("modal.teamB")}
 										</label>
 										{formData.winnerId === resolvedTeamBId && (
 											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
-												✓ WINNER
+												{t("modal.winnerBadge")}
 											</span>
 										)}
 									</div>
@@ -841,7 +845,7 @@ export function MatchModal({
 									/>
 									{matchToEdit?.tournament?.format && (
 										<p className="font-bold text-[9px] text-gray-500 uppercase">
-											Max:{" "}
+											{t("modal.max")}{" "}
 											{Math.ceil(
 												(matchToEdit.tournament.format
 													.toLowerCase()
@@ -853,7 +857,7 @@ export function MatchModal({
 														? 7
 														: 5) / 2,
 											)}{" "}
-											wins
+											{t("modal.wins")}
 										</p>
 									)}
 								</div>
@@ -862,7 +866,7 @@ export function MatchModal({
 							{formData.status === "finished" && (
 								<div className="slide-in-from-top-2 animate-in pt-2 duration-300">
 									<label className="mb-2 ml-1 block font-black text-[10px] text-black uppercase italic">
-										Winner (Auto-detected from score)
+										{t("modal.autoWinner")}
 									</label>
 									<div className="grid grid-cols-2 gap-3">
 										<button
@@ -884,7 +888,7 @@ export function MatchModal({
 											{formData.winnerId === resolvedTeamAId && (
 												<Check className="h-4 w-4" />
 											)}
-											{matchToEdit?.teamA?.name || "Team A"}
+											{matchToEdit?.teamA?.name || t("modal.teamA")}
 										</button>
 										<button
 											type="button"
@@ -905,7 +909,7 @@ export function MatchModal({
 											{formData.winnerId === resolvedTeamBId && (
 												<Check className="h-4 w-4" />
 											)}
-											{matchToEdit?.teamB?.name || "Team B"}
+											{matchToEdit?.teamB?.name || t("modal.teamB")}
 										</button>
 									</div>
 									{canAutoResolveOneSidedWalkover && (
@@ -959,17 +963,16 @@ export function MatchModal({
 										<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
 											<p className="flex items-center gap-2 font-black text-[10px] text-red-600 uppercase">
 												<AlertCircle className="h-4 w-4" />
-												ERROR: Cannot finish match without a winner!
+												{t("modal.errorNoWinner")}
 											</p>
 											<p className="mt-1 text-[9px] text-red-600">
-												Please select a winner above or ensure one team has
-												enough wins.
+												{t("modal.errorNoWinnerDetail")}
 											</p>
 										</div>
 									) : (
 										<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-red-500 uppercase">
 											<AlertCircle className="h-3 w-3" />
-											Warning: Finalizing will settle user points immediately.
+											{t("modal.finalizeWarning")}
 										</p>
 									)}
 								</div>
@@ -982,8 +985,8 @@ export function MatchModal({
 					{formData.bracketSide !== "groups" && (
 						<div className="space-y-3 border-2 border-black bg-gray-100 p-4">
 							<h3 className="flex items-center gap-2 font-bold text-black text-xs uppercase">
-								<span className="h-2 w-2 rounded-full bg-black" /> Bracket
-								Placement
+								<span className="h-2 w-2 rounded-full bg-black" />{" "}
+								{t("modal.bracketPlacement")}
 							</h3>
 							<div
 								className={clsx(
@@ -997,21 +1000,21 @@ export function MatchModal({
 								{stages.find((s) => s.id === formData.stageId)?.type ===
 									"Double Elimination" && (
 									<CustomSelect
-										label="Side"
+										label={t("modal.side")}
 										value={formData.bracketSide}
 										onChange={(val) =>
 											setFormData({ ...formData, bracketSide: val })
 										}
 										options={[
-											{ value: "upper", label: "Upper Bracket" },
-											{ value: "lower", label: "Lower Bracket" },
-											{ value: "grand_final", label: "Grand Final" },
+											{ value: "upper", label: t("modal.upperBracket") },
+											{ value: "lower", label: t("modal.lowerBracket") },
+											{ value: "grand_final", label: t("modal.grandFinal") },
 										]}
 									/>
 								)}
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Round # (Column)
+										{t("modal.roundNumber")}
 									</label>
 									<input
 										type="number"
@@ -1025,12 +1028,12 @@ export function MatchModal({
 										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
 									<p className="mt-1 font-bold text-[9px] text-gray-500 leading-tight">
-										0=Start, 1=Semis, 2=Final
+										{t("modal.roundHint")}
 									</p>
 								</div>
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Display Order
+										{t("modal.displayOrder")}
 									</label>
 									<input
 										type="number"
@@ -1044,7 +1047,7 @@ export function MatchModal({
 										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
 									<p className="mt-1 font-bold text-[9px] text-gray-500 leading-tight">
-										Vertical Pos. (1=Top)
+										{t("modal.verticalPosHint")}
 									</p>
 								</div>
 							</div>
@@ -1053,7 +1056,7 @@ export function MatchModal({
 					<div className="grid grid-cols-2 gap-4">
 						{/* Stage Selection */}
 						<CustomSelect
-							label="Stage"
+							label={t("modal.stage")}
 							value={formData.stageId}
 							onChange={(val) =>
 								setFormData({ ...formData, stageId: val, label: val })
@@ -1063,7 +1066,7 @@ export function MatchModal({
 
 						{/* Match Day Selection - Optional but recommended */}
 						<CustomSelect
-							label="Match Day (Optional)"
+							label={t("modal.matchDay")}
 							value={formData.matchDayId ? String(formData.matchDayId) : ""}
 							onChange={(val) => {
 								const dayId = Number(val);
@@ -1083,7 +1086,7 @@ export function MatchModal({
 								});
 							}}
 							options={[
-								{ value: "", label: "Select a Day..." },
+								{ value: "", label: t("modal.selectDay") },
 								...matchDays.map((day) => ({
 									value: String(day.id),
 									label: `${day.label} (${new Date(day.date).toLocaleDateString(
@@ -1100,11 +1103,11 @@ export function MatchModal({
 
 					<div>
 						<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-							Match Name (Optional)
+							{t("modal.matchName")}
 						</label>
 						<input
 							type="text"
-							placeholder="e.g. Opening Match"
+							placeholder={t("modal.matchNamePlaceholder")}
 							value={formData.name}
 							onChange={(e) =>
 								setFormData({ ...formData, name: e.target.value })
@@ -1116,10 +1119,10 @@ export function MatchModal({
 					<div className="flex items-center justify-between border-2 border-black bg-gray-50 p-3">
 						<div className="flex flex-col">
 							<label className="font-black text-black text-xs uppercase">
-								Enable Betting
+								{t("modal.enableBetting")}
 							</label>
 							<p className="font-bold text-[10px] text-gray-500 uppercase">
-								Show this match in the public betting carousel
+								{t("modal.enableBettingDesc")}
 							</p>
 						</div>
 						<button
@@ -1147,12 +1150,12 @@ export function MatchModal({
 					{/* Date Time */}
 					<div className="grid grid-cols-2 gap-4">
 						<CustomDatePicker
-							label="Date"
+							label={t("modal.date")}
 							value={formData.date}
 							onChange={(val) => setFormData({ ...formData, date: val })}
 						/>
 						<CustomTimePicker
-							label="Time"
+							label={t("modal.time")}
 							value={formData.time}
 							onChange={(val) => setFormData({ ...formData, time: val })}
 						/>
@@ -1162,7 +1165,7 @@ export function MatchModal({
 						{/* Team A */}
 						<div className="space-y-2">
 							<label className="ml-1 block font-black text-black text-xs uppercase">
-								Team A Source
+								{t("modal.teamASource")}
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const).map((type) => (
@@ -1198,7 +1201,7 @@ export function MatchModal({
 							{formData.teamAType === "match" && (
 								<div className="space-y-2">
 									<CustomSelect
-										label="Source Match"
+										label={t("modal.sourceMatch")}
 										value={
 											formData.teamAPreviousMatchId
 												? String(formData.teamAPreviousMatchId)
@@ -1246,7 +1249,7 @@ export function MatchModal({
 							{formData.teamAType === "group" && (
 								<div className="grid grid-cols-2 gap-2">
 									<CustomSelect
-										label="Group"
+										label={t("modal.group")}
 										value={formData.teamAGroup}
 										onChange={(val) =>
 											setFormData({ ...formData, teamAGroup: val })
@@ -1259,7 +1262,7 @@ export function MatchModal({
 										}))}
 									/>
 									<CustomSelect
-										label="Placement"
+										label={t("modal.placement")}
 										value={formData.teamAPlacement}
 										onChange={(val) =>
 											setFormData({ ...formData, teamAPlacement: val })
@@ -1268,18 +1271,7 @@ export function MatchModal({
 											{ length: advancingPerGroup },
 											(_, i) => ({
 												value: String(i + 1),
-												label: `${
-													[
-														"1st",
-														"2nd",
-														"3rd",
-														"4th",
-														"5th",
-														"6th",
-														"7th",
-														"8th",
-													][i] || i + 1 + "th"
-												} Place`,
+												label: t(`modal.placement${i + 1}` as const),
 											}),
 										)}
 									/>
@@ -1290,7 +1282,7 @@ export function MatchModal({
 						{/* Team B */}
 						<div className="space-y-2">
 							<label className="ml-1 block font-black text-black text-xs uppercase">
-								Team B Source
+								{t("modal.teamBSource")}
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const).map((type) => (
@@ -1326,7 +1318,7 @@ export function MatchModal({
 							{formData.teamBType === "match" && (
 								<div className="space-y-2">
 									<CustomSelect
-										label="Source Match"
+										label={t("modal.sourceMatch")}
 										value={
 											formData.teamBPreviousMatchId
 												? String(formData.teamBPreviousMatchId)
@@ -1374,7 +1366,7 @@ export function MatchModal({
 							{formData.teamBType === "group" && (
 								<div className="grid grid-cols-2 gap-2">
 									<CustomSelect
-										label="Group"
+										label={t("modal.group")}
 										value={formData.teamBGroup}
 										onChange={(val) =>
 											setFormData({ ...formData, teamBGroup: val })
@@ -1387,7 +1379,7 @@ export function MatchModal({
 										}))}
 									/>
 									<CustomSelect
-										label="Placement"
+										label={t("modal.placement")}
 										value={formData.teamBPlacement}
 										onChange={(val) =>
 											setFormData({ ...formData, teamBPlacement: val })
@@ -1396,18 +1388,7 @@ export function MatchModal({
 											{ length: advancingPerGroup },
 											(_, i) => ({
 												value: String(i + 1),
-												label: `${
-													[
-														"1st",
-														"2nd",
-														"3rd",
-														"4th",
-														"5th",
-														"6th",
-														"7th",
-														"8th",
-													][i] || i + 1 + "th"
-												} Place`,
+												label: t(`modal.placement${i + 1}` as const),
 											}),
 										)}
 									/>
@@ -1431,10 +1412,10 @@ export function MatchModal({
 						) : matchToEdit ? (
 							<>
 								<Check className="h-5 w-5" />
-								Done
+								{t("modal.done")}
 							</>
 						) : (
-							"Create Match"
+							t("modal.createMatch")
 						)}
 					</button>
 				</form>

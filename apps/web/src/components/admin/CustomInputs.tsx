@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const CustomSelect = ({
 	label,
@@ -6,7 +7,7 @@ export const CustomSelect = ({
 	onChange,
 	onConfirm,
 	options,
-	placeholder = "Select...",
+	placeholder: placeholderProp,
 }: {
 	label: string;
 	value: string;
@@ -15,6 +16,8 @@ export const CustomSelect = ({
 	options: { value: string; label: string }[];
 	placeholder?: string;
 }) => {
+	const { t } = useTranslation("admin-matches");
+	const placeholder = placeholderProp ?? t("customInputs.selectPlaceholder");
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +65,7 @@ export const CustomSelect = ({
 						<input
 							autoFocus
 							type="text"
-							placeholder="SEARCH..."
+							placeholder={t("customInputs.searchPlaceholder")}
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 							onKeyDown={(e) => {
@@ -81,7 +84,7 @@ export const CustomSelect = ({
 					</div>
 					{filteredOptions.length === 0 ? (
 						<div className="p-4 text-center font-bold text-gray-400 text-xs uppercase">
-							No results found
+							{t("customInputs.noResults")}
 						</div>
 					) : (
 						filteredOptions.map((opt) => (
@@ -118,6 +121,7 @@ export const CustomDatePicker = ({
 	minDate?: string; // Format: YYYY-MM-DD
 	maxDate?: string; // Format: YYYY-MM-DD
 }) => {
+	const { t } = useTranslation("admin-matches");
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [currentDate, setCurrentDate] = useState(
@@ -192,7 +196,7 @@ export const CustomDatePicker = ({
 				onClick={() => setIsOpen(!isOpen)}
 				className="flex h-[50px] w-full items-center justify-between border-[3px] border-black bg-white p-3 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 			>
-				<span>{value || "Select Date"}</span>
+				<span>{value || t("customInputs.selectDate")}</span>
 				<span className="text-xs">📅</span>
 			</button>
 
@@ -204,7 +208,7 @@ export const CustomDatePicker = ({
 							onClick={() => changeMonth(-1)}
 							className="px-2 font-bold hover:text-[#ccff00]"
 						>
-							{"<"}
+							{t("customInputs.prevMonth")}
 						</button>
 						<span className="font-bold text-xs uppercase">
 							{currentDate.toLocaleString("default", {
@@ -217,11 +221,13 @@ export const CustomDatePicker = ({
 							onClick={() => changeMonth(1)}
 							className="px-2 font-bold hover:text-[#ccff00]"
 						>
-							{">"}
+							{t("customInputs.nextMonth")}
 						</button>
 					</div>
 					<div className="mb-1 grid grid-cols-7 gap-1 text-center">
-						{["S", "M", "T", "W", "T", "F", "S"].map((d) => (
+						{(
+							t("customInputs.dayHeaders", { returnObjects: true }) as string[]
+						).map((d) => (
 							<div key={d} className="font-bold text-[10px] text-gray-400">
 								{d}
 							</div>

@@ -121,6 +121,16 @@ export function MatchDaysManager({
 		}
 	};
 
+	const getStatusLabel = (status: string) => {
+		const labels: Record<string, string> = {
+			draft: t("matchDays.statusDraft"),
+			open: t("matchDays.statusOpen"),
+			locked: t("matchDays.statusLocked"),
+			finished: t("matchDays.statusFinished"),
+		};
+		return labels[status] || status;
+	};
+
 	return (
 		<div className="space-y-6">
 			{/* Info Box */}
@@ -169,7 +179,7 @@ export function MatchDaysManager({
 					</div>
 					<div className="w-48">
 						<CustomDatePicker
-							label="Data"
+							label={t("matchDays.dateLabel")}
 							value={newDayDate}
 							onChange={setNewDayDate}
 							minDate={
@@ -226,7 +236,7 @@ export function MatchDaysManager({
 										</div>
 										<div className="w-48">
 											<CustomDatePicker
-												label="Data"
+												label={t("matchDays.dateLabel")}
 												value={editDate}
 												onChange={setEditDate}
 												minDate={
@@ -247,19 +257,22 @@ export function MatchDaysManager({
 										</div>
 										<div className="w-48">
 											<CustomSelect
-												label="Status"
+												label={t("matchDays.statusLabel")}
 												value={editStatus}
 												onChange={(val) =>
 													setEditStatus(val as MatchDay["status"])
 												}
 												options={[
-													{ value: "draft", label: "Draft" },
-													{ value: "open", label: "Open (Apostas Ativas)" },
+													{ value: "draft", label: t("matchDays.statusDraft") },
+													{ value: "open", label: t("matchDays.statusOpen") },
 													{
 														value: "locked",
-														label: "Locked (Apostas Fechadas)",
+														label: t("matchDays.statusLocked"),
 													},
-													{ value: "finished", label: "Finished" },
+													{
+														value: "finished",
+														label: t("matchDays.statusFinished"),
+													},
 												]}
 												placeholder={t("matchDays.selectPlaceholder")}
 											/>
@@ -303,7 +316,7 @@ export function MatchDaysManager({
 														day.status,
 													)}`}
 												>
-													{day.status}
+													{getStatusLabel(day.status)}
 												</span>
 												<span className="font-bold text-gray-400 text-xs">
 													{t("matchDays.matchCount", {

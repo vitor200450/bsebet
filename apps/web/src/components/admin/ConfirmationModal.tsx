@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { AlertTriangle, Loader2, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmationModalProps {
 	isOpen: boolean;
@@ -19,11 +20,14 @@ export function ConfirmationModal({
 	onConfirm,
 	title,
 	description,
-	confirmLabel = "Confirm",
-	cancelLabel = "Cancel",
+	confirmLabel: confirmLabelProp,
+	cancelLabel: cancelLabelProp,
 	isLoading = false,
 	variant = "warning",
 }: ConfirmationModalProps) {
+	const { t } = useTranslation("admin-matches");
+	const confirmLabel = confirmLabelProp ?? t("confirmation.confirm");
+	const cancelLabel = cancelLabelProp ?? t("confirmation.cancel");
 	if (!isOpen) return null;
 
 	const styles = {

@@ -389,7 +389,9 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 						<p className="font-bold text-gray-400 text-sm uppercase">
 							{t("stageBuilder.emptyState")}
 						</p>
-						<p className="text-gray-300 text-xs">{t("stageBuilder.emptyStateHint")}</p>
+						<p className="text-gray-300 text-xs">
+							{t("stageBuilder.emptyStateHint")}
+						</p>
 					</div>
 				)}
 			</div>

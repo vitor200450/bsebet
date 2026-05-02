@@ -46,6 +46,7 @@ function MatchItemCard({
 	dragListeners?: any;
 	dragAttributes?: any;
 }) {
+	const { t } = useTranslation("admin-matches");
 	return (
 		<div
 			className={`flex items-center gap-6 border-[3px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all duration-200 ${
@@ -72,7 +73,7 @@ function MatchItemCard({
 				{/* Match Info */}
 				<div className="flex min-w-0 flex-grow select-none flex-col">
 					<span className="break-words font-black text-black text-xl uppercase uppercase italic leading-[1.1]">
-						{match.name || match.label || "TBD vs TBD"}
+						{match.name || match.label || t("ordering.tbdVsTbd")}
 					</span>
 					<div className="mt-1 flex items-center gap-2">
 						<span className="font-black text-gray-500 text-xs uppercase">
@@ -84,12 +85,12 @@ function MatchItemCard({
 						</span>
 						{match.status === "finished" && (
 							<span className="bg-black px-1.5 py-0.5 font-black text-[10px] text-white uppercase leading-none">
-								FINAL
+								{t("bracketEditor.badgeFinal")}
 							</span>
 						)}
 						{match.status === "live" && (
 							<span className="animate-pulse bg-red-500 px-1.5 py-0.5 font-black text-[10px] text-white uppercase leading-none">
-								LIVE
+								{t("bracketEditor.badgeLive")}
 							</span>
 						)}
 					</div>
@@ -100,13 +101,15 @@ function MatchItemCard({
 					{/* Team A */}
 					<div className="flex w-[160px] items-center justify-end gap-3">
 						<span className="truncate text-right font-bold text-black text-sm uppercase">
-							{match.teamA?.name || match.labelTeamA || "?"}
+							{match.teamA?.name ||
+								match.labelTeamA ||
+								t("ordering.unknownTeam")}
 						</span>
 						<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border-2 border-black bg-white shadow-sm">
 							{match.teamA?.logoUrl ? (
 								<img
 									src={match.teamA.logoUrl}
-									alt="Team A"
+									alt={t("ordering.teamA")}
 									className="h-8 w-8 object-contain"
 								/>
 							) : (
@@ -117,7 +120,7 @@ function MatchItemCard({
 
 					<div className="flex w-[40px] flex-col items-center">
 						<span className="font-black text-gray-300 text-xl italic leading-none">
-							VS
+							{t("ordering.vs")}
 						</span>
 					</div>
 
@@ -127,7 +130,7 @@ function MatchItemCard({
 							{match.teamB?.logoUrl ? (
 								<img
 									src={match.teamB.logoUrl}
-									alt="Team B"
+									alt={t("ordering.teamB")}
 									className="h-8 w-8 object-contain"
 								/>
 							) : (
@@ -135,7 +138,9 @@ function MatchItemCard({
 							)}
 						</div>
 						<span className="truncate text-left font-bold text-black text-sm uppercase">
-							{match.teamB?.name || match.labelTeamB || "?"}
+							{match.teamB?.name ||
+								match.labelTeamB ||
+								t("ordering.unknownTeam")}
 						</span>
 					</div>
 				</div>

@@ -121,15 +121,20 @@ export function BracketEditor({
 			t("bracketEditor.semiFinals"),
 			t("bracketEditor.ubFinal"),
 		];
-		const lbLabels = ["LB R1", "LB R2", "LB Semi", "LB Final"];
+		const lbLabels = [
+			t("bracketEditor.lbR1"),
+			t("bracketEditor.lbR2"),
+			t("bracketEditor.lbSemi"),
+			t("bracketEditor.lbFinal"),
+		];
 
 		if (side === "upper") {
 			if (!isDouble) {
 				return roundLabels[idx] || `${t("bracketEditor.round")} ${idx + 1}`;
 			}
-			return ubLabels[idx] || `UB R${idx + 1}`;
+			return ubLabels[idx] || t("bracketEditor.ubRound", { round: idx + 1 });
 		}
-		return lbLabels[idx] || `LB R${idx + 1}`;
+		return lbLabels[idx] || t("bracketEditor.lbRound", { round: idx + 1 });
 	};
 
 	// Extract round indices
@@ -146,10 +151,10 @@ export function BracketEditor({
 			<div className="mb-8 flex items-center justify-between rounded-lg border-2 border-black/10 border-dashed bg-white/50 p-4">
 				<div className="flex flex-col">
 					<h2 className="font-black text-3xl text-black uppercase italic">
-						Bracket Editor
+						{t("bracketEditor.title")}
 					</h2>
 					<p className="font-bold text-[10px] text-black/40 uppercase">
-						Tournament Structure Management
+						{t("bracketEditor.subtitle")}
 					</p>
 				</div>
 
@@ -161,8 +166,8 @@ export function BracketEditor({
 						>
 							<Zap className="h-5 w-5 group-hover:animate-pulse" />
 							{bracketType === "groups"
-								? "Generate Group Matches"
-								: "Generate Entire Bracket"}
+								? t("bracketEditor.generateGroups")
+								: t("bracketEditor.generateBracket")}
 						</button>
 					)}
 				</div>
@@ -176,7 +181,7 @@ export function BracketEditor({
 							matches.reduce(
 								(acc, m) => {
 									// Group by Label (e.g. "Group A")
-									const groupName = m.label || "Unknown Group";
+									const groupName = m.label || t("bracketEditor.unknownGroup");
 									if (!acc[groupName]) acc[groupName] = [];
 									acc[groupName].push(m);
 									return acc;
@@ -240,7 +245,7 @@ export function BracketEditor({
 							{stageType === "Double Elimination" && (
 								<div className="relative mb-4 h-8">
 									<div className="absolute top-0 left-0 z-10 -skew-x-12 transform border-2 border-white bg-black px-4 py-1.5 font-black text-white text-xs uppercase italic tracking-widest shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
-										UPPER BRACKET
+										{t("bracketEditor.upperBracket")}
 									</div>
 								</div>
 							)}
@@ -267,11 +272,12 @@ export function BracketEditor({
 											{(upper[roundIdx] || []).length === 0 && (
 												<div className="w-64">
 													<AddMatchButton
+														label={t("bracketEditor.addMatch")}
 														onClick={() =>
 															onCreateMatch({
 																roundIndex: roundIdx,
 																bracketSide: "upper",
-																label: "New Match",
+																label: t("bracketEditor.newMatch"),
 															})
 														}
 													/>
@@ -285,7 +291,7 @@ export function BracketEditor({
 								{(stageType === "Double Elimination" || final.length > 0) && (
 									<div className="flex flex-col gap-2">
 										<div className="h-4 text-center font-bold text-[9px] text-gray-500 uppercase tracking-wider">
-											GRAND FINAL
+											{t("bracketEditor.grandFinal")}
 										</div>
 										<div className="flex h-full flex-col justify-around gap-4">
 											{(final || []).map((match) => (
@@ -299,11 +305,12 @@ export function BracketEditor({
 											{final.length === 0 && (
 												<div className="w-64">
 													<AddMatchButton
+														label={t("bracketEditor.addMatch")}
 														onClick={() =>
 															onCreateMatch({
 																roundIndex: 0,
 																bracketSide: "grand_final",
-																label: "Grand Final",
+																label: t("bracketEditor.grandFinal"),
 															})
 														}
 													/>
@@ -320,7 +327,7 @@ export function BracketEditor({
 							<div className="relative border-black/10 border-t-[3px] border-dashed pt-8">
 								<div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
 									<div className="-skew-x-12 transform border-2 border-white bg-black px-4 py-1.5 font-black text-white text-xs uppercase italic tracking-widest shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
-										LOWER BRACKET
+										{t("bracketEditor.lowerBracket")}
 									</div>
 								</div>
 								<div className="flex items-stretch gap-6">
@@ -354,14 +361,20 @@ export function BracketEditor({
 	);
 }
 
-function AddMatchButton({ onClick }: { onClick: () => void }) {
+function AddMatchButton({
+	onClick,
+	label,
+}: {
+	onClick: () => void;
+	label?: string;
+}) {
 	return (
 		<button
 			onClick={onClick}
 			className="group flex h-10 w-full items-center justify-center rounded border-2 border-black/10 border-dashed bg-gray-50/10 transition-all hover:border-black hover:bg-white"
 		>
 			<div className="flex items-center gap-2 font-bold text-[9px] text-black/20 uppercase group-hover:text-black">
-				<Plus className="h-3 w-3" /> Add Match
+				<Plus className="h-3 w-3" /> {label}
 			</div>
 		</button>
 	);
@@ -422,17 +435,17 @@ function EditorMatchCard({
 			{/* Status Badges */}
 			{match.status === "live" && (
 				<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-					LIVE
+					{t("bracketEditor.badgeLive")}
 				</div>
 			)}
 			{match.status === "finished" && (
 				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-					FINAL
+					{t("bracketEditor.badgeFinal")}
 				</div>
 			)}
 			{isWalkover && (
 				<div className="absolute top-6 -right-1 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-					W.O.
+					{t("bracketEditor.badgeWO")}
 				</div>
 			)}
 

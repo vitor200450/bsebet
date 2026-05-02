@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CustomSelect } from "./CustomInputs";
 
 interface Team {

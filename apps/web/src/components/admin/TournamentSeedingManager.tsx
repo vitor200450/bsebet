@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
 import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { updateTeamSeeding } from "@/server/tournament-teams";
 import { TeamLogo } from "../TeamLogo";
@@ -183,7 +183,9 @@ export function TournamentSeedingManager({
 						<div className="flex items-center justify-between bg-black px-4 py-2 font-black text-white uppercase italic">
 							<span>{t("seeding.group", { group })}</span>
 							<span className="font-normal text-gray-400 text-xs not-italic">
-								{t("seeding.teamsCount", { count: (groupedTeams[group] || []).length })}
+								{t("seeding.teamsCount", {
+									count: (groupedTeams[group] || []).length,
+								})}
 							</span>
 						</div>
 						<div className="flex flex-col gap-3 p-4">
