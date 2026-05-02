@@ -257,8 +257,14 @@ function LeaderboardPage() {
 							},
 							{
 								num: 5,
-								label: tab === "global" ? t("columns.medals") : t("columns.decisiveMatch"),
-								desc: tab === "global" ? t("columns.tiebreaker4") : t("columns.tiebreakerFinal"),
+								label:
+									tab === "global"
+										? t("columns.medals")
+										: t("columns.decisiveMatch"),
+								desc:
+									tab === "global"
+										? t("columns.tiebreaker4")
+										: t("columns.tiebreakerFinal"),
 								color: "bg-yellow-300",
 							},
 							...(tab === "season"
@@ -317,7 +323,9 @@ function LeaderboardPage() {
 							/>
 							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-gray-600">{t("columns.perfect")}</span>
+						<span className="text-[10px] text-gray-600">
+							{t("columns.perfect")}
+						</span>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded border border-black/20 bg-white px-1.5 py-0.5">
@@ -332,7 +340,9 @@ function LeaderboardPage() {
 						<div className="flex items-center gap-1 rounded bg-green-500 px-1.5 py-0.5">
 							<span className="font-black text-[10px] text-white">70%</span>
 						</div>
-						<span className="text-[10px] text-gray-600">{t("columns.hitRate")}</span>
+						<span className="text-[10px] text-gray-600">
+							{t("columns.hitRate")}
+						</span>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded bg-purple-400 px-1.5 py-0.5">
@@ -347,7 +357,9 @@ function LeaderboardPage() {
 						<MiniMedalBadge tier="1st" size="sm" />
 						<MiniMedalBadge tier="2nd" size="sm" />
 						<MiniMedalBadge tier="3rd" size="sm" />
-						<span className="text-[10px] text-gray-600">{t("columns.medals")}</span>
+						<span className="text-[10px] text-gray-600">
+							{t("columns.medals")}
+						</span>
 					</div>
 				</div>
 

@@ -11,8 +11,8 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { useLangLink } from "@/i18n/useLangLink";
 import { i18next } from "@/i18n";
+import { useLangLink } from "@/i18n/useLangLink";
 import { getTournaments } from "@/server/tournaments";
 
 // Schema for URL search params (filter state)
