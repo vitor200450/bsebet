@@ -43,7 +43,10 @@
 		"lockIn": "LOCK IN",
 		"updateBets": "UPDATE BETS",
 		"picksLocked": "Picks Locked",
-		"noValidPicks": "No Valid Picks"
+		"noValidPicks": "No Valid Picks",
+		"successTitle": "PICKS",
+		"successTitleHighlight": "LOCKED!",
+		"viewMyBets": "VIEW MY BETS"
 	},
 	"betLabel": "You bet on:",
 	"totalPoints": "Total: {{count}} point",

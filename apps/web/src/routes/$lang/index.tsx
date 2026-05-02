@@ -2170,7 +2170,7 @@ function SubmitBetsModal({
 					</div>
 
 					<h3 className="mb-4 -skew-x-12 transform font-black font-display text-5xl text-black uppercase italic leading-none tracking-tighter">
-						PICKS <span className="text-brawl-red">LOCKED!</span>
+						{t("review.successTitle")} <span className="text-brawl-red">{t("review.successTitleHighlight")}</span>
 					</h3>
 
 					<p className="mb-8 font-body font-bold text-black text-lg leading-snug">
@@ -2185,7 +2185,7 @@ function SubmitBetsModal({
 						}}
 						className="w-full border-[4px] border-black bg-black py-4 font-black text-lg text-white uppercase tracking-widest shadow-[6px_6px_0px_0px_#ccff00] transition-all hover:bg-zinc-800 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 					>
-						VER MINHAS APOSTAS
+						{t("review.viewMyBets")}
 					</button>
 				</div>
 			</div>

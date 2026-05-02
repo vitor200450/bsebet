@@ -43,7 +43,10 @@
 		"lockIn": "CONFIRMAR",
 		"updateBets": "ATUALIZAR APOSTAS",
 		"picksLocked": "Apostas Bloqueadas",
-		"noValidPicks": "Sem Palpites Válidos"
+		"noValidPicks": "Sem Palpites Válidos",
+		"successTitle": "APOSTAS",
+		"successTitleHighlight": "CONFIRMADAS!",
+		"viewMyBets": "VER MINHAS APOSTAS"
 	},
 	"betLabel": "Você apostou em:",
 	"totalPoints": "Total: {{count}} ponto",
