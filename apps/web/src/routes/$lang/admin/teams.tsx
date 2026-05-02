@@ -261,12 +261,14 @@ function AdminTeamsPage() {
 						onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
 						className="relative flex w-full min-w-[120px] items-center gap-2 border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold text-black text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 					>
-						<span className="mr-1 text-gray-400 text-xs">{t("common:actions.sort")}:</span>
+						<span className="mr-1 text-gray-400 text-xs">
+							{t("common:actions.sort")}:
+						</span>
 						{sortOrder === "recent"
-							? "Recents"
+							? t("teams.sortByRecent")
 							: sortOrder === "name"
-								? "A-Z"
-								: "Region"}
+								? t("teams.sortByName")
+								: t("teams.sortByRegion")}
 						<div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
 							<span className="text-[10px]">▼</span>
 						</div>
@@ -275,9 +277,9 @@ function AdminTeamsPage() {
 					{isSortDropdownOpen && (
 						<div className="absolute top-full left-0 z-50 mt-1 w-full border-[3px] border-black bg-white py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
 							{[
-								{ id: "recent", label: "Recents" },
-								{ id: "name", label: "A-Z" },
-								{ id: "region", label: "Region" },
+								{ id: "recent", label: t("teams.sortByRecent") },
+								{ id: "name", label: t("teams.sortByName") },
+								{ id: "region", label: t("teams.sortByRegion") },
 							].map((opt) => (
 								<button
 									key={opt.id}
@@ -300,7 +302,7 @@ function AdminTeamsPage() {
 				<div className="relative w-full sm:w-auto">
 					<input
 						type="text"
-						placeholder="BUSCAR TIME..."
+						placeholder={t("teams.searchPlaceholder")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-64"
@@ -457,13 +459,13 @@ function AdminTeamsPage() {
 										value={formData.name}
 										onChange={(e) => handleNameChange(e.target.value)}
 										className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-										placeholder="EX: LOUD"
+										placeholder={t("teams.namePlaceholder")}
 									/>
 								</div>
 
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Slug (URL)
+										{t("teams.slugLabel")}
 									</label>
 									<div className="relative">
 										<input
@@ -474,7 +476,7 @@ function AdminTeamsPage() {
 												setFormData({ ...formData, slug: e.target.value })
 											}
 											className="w-full border-[3px] border-black bg-gray-50 p-3 pr-10 font-mono text-black text-sm focus:border-[#2e5cff] focus:outline-none"
-											placeholder="ex: loud-gg"
+											placeholder={t("teams.slugPlaceholder")}
 										/>
 										<Copy className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-black" />
 									</div>
@@ -540,7 +542,7 @@ function AdminTeamsPage() {
 												type="text"
 												value={
 													formData.logoUrl.startsWith("data:")
-														? "[IMAGEM BASE64 - SALVE PARA CONVERTER]"
+														? t("teams.base64Placeholder")
 														: formData.logoUrl
 												}
 												readOnly={formData.logoUrl.startsWith("data:")}
@@ -555,7 +557,7 @@ function AdminTeamsPage() {
 														? "bg-gray-100 text-gray-400 italic"
 														: ""
 												}`}
-												placeholder="https://..."
+												placeholder={t("teams.logoPlaceholder")}
 											/>
 											{formData.logoUrl.startsWith("data:") && (
 												<button
@@ -609,7 +611,7 @@ function AdminTeamsPage() {
 									) : (
 										<div className="text-center text-gray-400">
 											<span className="mb-2 block font-black text-4xl opacity-20">
-												LOGO
+												{t("teams.logoPreview")}
 											</span>
 											<span className="font-bold text-xs uppercase">
 												{t("teams.imagePreview")}

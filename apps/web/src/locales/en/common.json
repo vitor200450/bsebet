@@ -2,6 +2,7 @@
 	"appName": "BSEBET",
 	"nav": {
 		"home": "Home",
+		"bet": "Bet",
 		"dashboard": "Dashboard",
 		"myBets": "My Bets",
 		"leaderboard": "Leaderboard",
@@ -13,6 +14,7 @@
 		"adminTournaments": "Tournaments",
 		"adminCompensations": "Compensations",
 		"adminLive": "Live",
+		"live": "LIVE",
 		"profile": "Profile",
 		"profileView": "View Public Profile",
 		"exitAdmin": "Exit Admin",

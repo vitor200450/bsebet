@@ -12,10 +12,12 @@
 		"error": "Erro ao salvar. Tente novamente.",
 		"avatarRestoreError": "Não foi possível restaurar o avatar do Google. Tente sair e entrar novamente."
 	},
+	"signIn": "Entrar",
 	"userMenu": {
 		"label": "Perfil do Usuário",
 		"viewPublic": "Ver Perfil Público",
 		"playerMenu": "Menu do Jogador",
+		"commandCenter": "Central de Comando",
 		"medals": "Medalhas",
 		"myBets": "Minhas Apostas",
 		"signOut": "Sair da Conta"

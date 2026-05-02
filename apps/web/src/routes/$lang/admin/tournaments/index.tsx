@@ -107,13 +107,13 @@ function AdminTournamentsPage() {
 	};
 
 	useSetHeader({
-		title: "TOURNAMENTS",
+		title: t("tournaments.title"),
 		actions: (
 			<div className="flex w-full flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
 				<div className="relative w-full sm:w-auto">
 					<input
 						type="text"
-						placeholder="SEARCH..."
+						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-64"
@@ -148,7 +148,7 @@ function AdminTournamentsPage() {
 					className="flex w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-2 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 				>
 					<Plus className="h-5 w-5" strokeWidth={3} />
-					<span className="inline">NOVO TORNEIO</span>
+					<span className="inline">{t("tournaments.create")}</span>
 				</button>
 			</div>
 		),
@@ -326,10 +326,16 @@ function AdminTournamentsPage() {
 							{/* Table Header - Hidden on small screens */}
 							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
 								<div className="col-span-4">{t("tournaments.tableInfo")}</div>
-								<div className="col-span-2">{t("tournaments.tableDetails")}</div>
+								<div className="col-span-2">
+									{t("tournaments.tableDetails")}
+								</div>
 								<div className="col-span-2">{t("tournaments.tableDates")}</div>
-								<div className="col-span-2 text-center">{t("tournaments.tableStatus")}</div>
-								<div className="col-span-2 text-right">{t("tournaments.tableActions")}</div>
+								<div className="col-span-2 text-center">
+									{t("tournaments.tableStatus")}
+								</div>
+								<div className="col-span-2 text-right">
+									{t("tournaments.tableActions")}
+								</div>
 							</div>
 
 							{/* Table Rows */}
@@ -339,7 +345,7 @@ function AdminTournamentsPage() {
 										<Copy className="h-8 w-8 text-gray-400" />
 									</div>
 									<span className="font-black text-gray-400 text-lg uppercase italic">
-										No tournaments found
+										{t("tournaments.empty")}
 									</span>
 								</div>
 							) : (
@@ -387,7 +393,9 @@ function AdminTournamentsPage() {
 														className="truncate font-bold text-gray-600 text-xs uppercase"
 														title={t.format}
 													>
-														<span className="mr-1 md:hidden">{t("tournaments.formatAbbr")}:</span>
+														<span className="mr-1 md:hidden">
+															{t("tournaments.formatAbbr")}:
+														</span>
 														{t.format}
 													</span>
 												)}
@@ -406,13 +414,17 @@ function AdminTournamentsPage() {
 														{t.endDate && (
 															<span className="text-gray-400 text-xs">
 																<span className="md:hidden">-</span>
-																<span className="hidden md:inline">{t("tournaments.to")}</span>{" "}
+																<span className="hidden md:inline">
+																	{t("tournaments.to")}
+																</span>{" "}
 																{formatDateUTC(t.endDate)}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-gray-400 italic">{t("tournaments.tbd")}</span>
+													<span className="text-gray-400 italic">
+														{t("tournaments.tbd")}
+													</span>
 												)}
 											</div>
 
@@ -423,7 +435,7 @@ function AdminTournamentsPage() {
 														t.status || "upcoming",
 													)}`}
 												>
-{t.status === "active"
+													{t.status === "active"
 														? t("tournaments.statusActive")
 														: t.status === "finished"
 															? t("tournaments.statusFinished")
@@ -474,7 +486,7 @@ function AdminTournamentsPage() {
 													)}
 													params={{ tournamentId: String(t.id) }}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
-													title="Match Scheduler"
+													title={t("tournaments.matchScheduler")}
 												>
 													<Calendar className="h-4 w-4" strokeWidth={2.5} />
 												</Link>
@@ -483,29 +495,28 @@ function AdminTournamentsPage() {
 														handleDuplicate({ id: t.id, name: t.name })
 													}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ccff00] hover:text-black hover:shadow-none md:flex-none"
-													title="Duplicate"
+													title={t("tournaments.duplicate")}
 												>
 													<Copy className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 												<button
 													onClick={() => handleEdit(t)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
-													title="Edit"
+													title={t("tournaments.edit")}
 												>
 													<Edit2 className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 												<button
 													onClick={() => handleDelete(t.id, t.name)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
-													title="Delete"
+													title={t("tournaments.delete")}
 												>
 													<Trash2 className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 											</div>
 											{formData.logoUrl.startsWith("data:") && (
 												<p className="mt-1 w-full font-bold text-[10px] text-red-500 uppercase italic">
-													⚠️ Esta logo está em Base64. Salve para converter para
-													R2 ou use a{" "}
+													{t("tournaments.base64Warning")}{" "}
 													<Link
 														to={linkTo("/admin/migrate-logos")}
 														className="underline hover:text-red-700"
@@ -530,7 +541,9 @@ function AdminTournamentsPage() {
 						{/* Modal Header */}
 						<div className="sticky top-0 z-50 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
 							<h2 className="font-black text-lg text-white uppercase italic">
-								{formData.id ? t("tournaments.editTitle") : t("tournaments.createTitle")}
+								{formData.id
+									? t("tournaments.editTitle")
+									: t("tournaments.createTitle")}
 							</h2>
 							<button
 								onClick={() => setIsModalOpen(false)}
@@ -548,7 +561,7 @@ function AdminTournamentsPage() {
 							<div className="space-y-4">
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Tournament Name
+										{t("tournaments.nameLabel")}
 									</label>
 									<input
 										required
@@ -556,13 +569,13 @@ function AdminTournamentsPage() {
 										value={formData.name}
 										onChange={(e) => handleNameChange(e.target.value)}
 										className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-										placeholder="EX: WORLD FINALS 2025"
+										placeholder={t("tournaments.namePlaceholder")}
 									/>
 								</div>
 
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Slug (URL)
+										{t("tournaments.slugLabel")}
 									</label>
 									<div className="relative">
 										<input
@@ -583,7 +596,7 @@ function AdminTournamentsPage() {
 								<div className="grid grid-cols-2 gap-4">
 									<div>
 										<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-											Participants
+											{t("tournaments.participantsLabel")}
 										</label>
 										<input
 											type="number"
@@ -595,38 +608,41 @@ function AdminTournamentsPage() {
 												})
 											}
 											className="w-full border-[3px] border-black bg-white p-2 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-											placeholder="Ex: 16"
+											placeholder={t("tournaments.participantsPlaceholder")}
 										/>
 									</div>
 									<CustomSelect
-										label="Region"
+										label={t("tournaments.regionLabel")}
 										value={formData.region}
 										onChange={(val) =>
 											setFormData({ ...formData, region: val })
 										}
 										options={[
-											{ value: "Global", label: "Global / World" },
-											{ value: "NA", label: "North America" },
-											{ value: "EMEA", label: "EMEA" },
-											{ value: "SA", label: "South America" },
-											{ value: "CN", label: "China" },
-											{ value: "EA", label: "East Asia (KR/JP)" },
-											{ value: "SEA", label: "Southeast Asia" },
-											{ value: "SAS", label: "South Asia" },
+											{
+												value: "Global",
+												label: t("tournaments.regions.global"),
+											},
+											{ value: "NA", label: t("tournaments.regions.na") },
+											{ value: "EMEA", label: t("tournaments.regions.emea") },
+											{ value: "SA", label: t("tournaments.regions.sa") },
+											{ value: "CN", label: t("tournaments.regions.cn") },
+											{ value: "EA", label: t("tournaments.regions.ea") },
+											{ value: "SEA", label: t("tournaments.regions.sea") },
+											{ value: "SAS", label: t("tournaments.regions.sas") },
 										]}
 									/>
 								</div>
 
 								<div className="grid grid-cols-2 gap-4">
 									<CustomDatePicker
-										label="Start Date"
+										label={t("tournaments.startDate")}
 										value={formData.startDate}
 										onChange={(val) =>
 											setFormData({ ...formData, startDate: val })
 										}
 									/>
 									<CustomDatePicker
-										label="End Date"
+										label={t("tournaments.endDate")}
 										value={formData.endDate}
 										onChange={(val) =>
 											setFormData({ ...formData, endDate: val })
@@ -636,7 +652,7 @@ function AdminTournamentsPage() {
 
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Status
+										{t("tournaments.statusLabel")}
 									</label>
 									<select
 										value={formData.status}
@@ -648,21 +664,27 @@ function AdminTournamentsPage() {
 										}
 										className="w-full cursor-pointer border-[3px] border-black bg-white p-3 font-bold text-black uppercase focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 									>
-										<option value="upcoming">{t("tournaments.statusUpcoming")}</option>
-										<option value="active">{t("tournaments.statusActive")}</option>
-										<option value="finished">{t("tournaments.statusFinished")}</option>
+										<option value="upcoming">
+											{t("tournaments.statusUpcoming")}
+										</option>
+										<option value="active">
+											{t("tournaments.statusActive")}
+										</option>
+										<option value="finished">
+											{t("tournaments.statusFinished")}
+										</option>
 									</select>
 								</div>
 
 								{/* Default Scoring Rules */}
 								<div className="space-y-3 border-[3px] border-black bg-gray-50 p-4">
 									<h3 className="flex items-center gap-2 font-black text-black text-sm uppercase">
-										Default Scoring Rules
+										{t("tournaments.scoringRules")}
 									</h3>
 									<div className="grid grid-cols-2 gap-3">
 										<div>
 											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-												Winner
+												{t("tournaments.winner")}
 											</label>
 											<input
 												type="number"
@@ -681,7 +703,7 @@ function AdminTournamentsPage() {
 										</div>
 										<div>
 											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
-												Exact Score
+												{t("tournaments.exactScore")}
 											</label>
 											<input
 												type="number"
@@ -705,7 +727,7 @@ function AdminTournamentsPage() {
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
 												title={t("tournaments.tier1Bonus")}
 											>
-												Underdog Tier 1 (Pts)
+												{t("tournaments.underdogTier1")}
 											</label>
 											<input
 												type="number"
@@ -727,7 +749,7 @@ function AdminTournamentsPage() {
 												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
 												title={t("tournaments.tier2Bonus")}
 											>
-												Underdog Tier 2 (Pts)
+												{t("tournaments.underdogTier2")}
 											</label>
 											<input
 												type="number"
@@ -828,7 +850,7 @@ function AdminTournamentsPage() {
 								{/* Logo Upload */}
 								<div>
 									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
-										Logo URL
+										{t("tournaments.logoUrlLabel")}
 									</label>
 									<div className="flex gap-2">
 										<div className="relative flex-1">
@@ -837,7 +859,7 @@ function AdminTournamentsPage() {
 												type="text"
 												value={
 													formData.logoUrl.startsWith("data:")
-														? "[IMAGEM BASE64 - SALVE PARA CONVERTER]"
+														? t("tournaments.base64Display")
 														: formData.logoUrl
 												}
 												readOnly={formData.logoUrl.startsWith("data:")}
@@ -849,7 +871,7 @@ function AdminTournamentsPage() {
 														? "bg-gray-100 text-gray-400 italic"
 														: "bg-white"
 												}`}
-												placeholder="https://..."
+												placeholder={t("tournaments.logoPlaceholder")}
 											/>
 											{formData.logoUrl.startsWith("data:") && (
 												<button
@@ -897,7 +919,7 @@ function AdminTournamentsPage() {
 									onClick={() => setIsModalOpen(false)}
 									className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 								<button
 									type="submit"
@@ -905,7 +927,7 @@ function AdminTournamentsPage() {
 									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black text-lg uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000] disabled:cursor-not-allowed disabled:opacity-70"
 								>
 									{isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />}
-									SAVE TOURNAMENT
+									{t("tournaments.saveButton")}
 								</button>
 							</div>
 						</form>
@@ -922,13 +944,13 @@ function AdminTournamentsPage() {
 								<Trash2 className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
 							</div>
 							<h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
-								DELETE TOURNAMENT
+								{t("tournaments.deleteTitle")}
 							</h3>
 						</div>
 
 						<div className="p-6">
 							<p className="mb-4 font-bold text-black text-lg">
-								Are you sure you want to delete{" "}
+								{t("tournaments.deleteConfirm")}{" "}
 								<span className="font-black italic">{itemToDelete.name}</span>?
 							</p>
 
@@ -941,14 +963,14 @@ function AdminTournamentsPage() {
 									{isSubmitting ? (
 										<Loader2 className="h-6 w-6 animate-spin" />
 									) : (
-										"YES, DELETE IT"
+										t("tournaments.deleteConfirmButton")
 									)}
 								</button>
 								<button
 									onClick={() => setIsDeleteModalOpen(false)}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 							</div>
 						</div>
@@ -964,13 +986,13 @@ function AdminTournamentsPage() {
 								<Copy className="h-6 w-6 stroke-[3px] text-black" />
 							</div>
 							<h3 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-								DUPLICATE TOURNAMENT
+								{t("tournaments.duplicateTitle")}
 							</h3>
 						</div>
 
 						<div className="p-6">
 							<p className="mb-4 font-bold text-black text-lg">
-								Are you sure you want to duplicate{" "}
+								{t("tournaments.duplicateConfirm")}{" "}
 								<span className="font-black italic">
 									{itemToDuplicate.name}
 								</span>
@@ -978,9 +1000,9 @@ function AdminTournamentsPage() {
 							</p>
 
 							<div className="mb-6 rounded border-2 border-yellow-200 bg-yellow-50 p-3 font-bold text-sm text-yellow-800">
-								This will create a new tournament with the same settings, but
+								{t("tournaments.duplicateWarning1")}
 								<span className="ml-1 underline">
-									without participants or logo
+									{t("tournaments.duplicateWarning2")}
 								</span>
 								.
 							</div>
@@ -990,13 +1012,13 @@ function AdminTournamentsPage() {
 									onClick={confirmDuplicate}
 									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ccff00] py-4 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
-									Confirm Duplicate
+									{t("tournaments.duplicateConfirmButton")}
 								</button>
 								<button
 									onClick={() => setIsDuplicateModalOpen(false)}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 							</div>
 						</div>

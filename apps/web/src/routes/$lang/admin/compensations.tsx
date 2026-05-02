@@ -327,9 +327,12 @@ function CompensationsPage() {
 			});
 
 			toast.success(
-				`Compensação de ${calculatedPoints} pontos aplicada para ${result.userName}!`,
+				t("compensations.applied", {
+					points: calculatedPoints,
+					userName: result.userName,
+				}),
 				{
-					description: `Motivo: ${reason}`,
+					description: t("compensations.reasonDescription", { reason }),
 				},
 			);
 
@@ -350,7 +353,7 @@ function CompensationsPage() {
 
 			router.invalidate();
 		} catch (error: any) {
-			toast.error(error.message || "Erro ao aplicar compensação");
+			toast.error(error.message || t("compensations.applyError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -378,7 +381,7 @@ function CompensationsPage() {
 							<div>
 								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<Trophy className="h-4 w-4" />
-									Torneio
+									{t("compensations.tournament")}
 								</label>
 								<CustomSelect
 									label=""
@@ -388,9 +391,9 @@ function CompensationsPage() {
 									onChange={(val) =>
 										setSelectedTournamentId(val ? Number(val) : "")
 									}
-									placeholder="Selecione um torneio..."
+									placeholder={t("compensations.selectTournament")}
 									options={[
-										{ value: "", label: "Selecione um torneio..." },
+										{ value: "", label: t("compensations.selectTournament") },
 										...tournaments.map((t) => ({
 											value: String(t.id),
 											label: t.name,
@@ -499,8 +502,10 @@ function CompensationsPage() {
 							<div>
 								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<Trophy className="h-4 w-4" />
-									Partida Afetada{" "}
-									<span className="font-normal text-gray-500">(opcional)</span>
+									{t("compensations.affectedMatch")}{" "}
+									<span className="font-normal text-gray-500">
+										{t("compensations.optional")}
+									</span>
 								</label>
 								<CustomSelect
 									key={`match-select-${selectedTournamentId}-${tournamentMatches.length}`}
@@ -509,19 +514,19 @@ function CompensationsPage() {
 									onChange={(val) => setSelectedMatchId(val ? Number(val) : "")}
 									placeholder={
 										selectedTournamentId
-											? "Selecione uma partida..."
-											: "Selecione um torneio primeiro"
+											? t("compensations.selectMatch")
+											: t("compensations.selectTournamentFirst")
 									}
 									options={[
 										{
 											value: "",
 											label: selectedTournamentId
-												? "Selecione uma partida..."
-												: "Selecione um torneio primeiro",
+												? t("compensations.selectMatch")
+												: t("compensations.selectTournamentFirst"),
 										},
 										...tournamentMatches.map((m) => ({
 											value: String(m.id),
-											label: `${m.name || `Partida #${m.id}`}${m.teamAName && m.teamBName ? ` - ${m.teamAName} vs ${m.teamBName}` : ""}`,
+											label: `${m.name || `${t("compensations.matchLabel")} #${m.id}`}${m.teamAName && m.teamBName ? ` - ${m.teamAName} vs ${m.teamBName}` : ""}`,
 										})),
 									]}
 								/>
@@ -531,7 +536,7 @@ function CompensationsPage() {
 							<div>
 								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<Award className="h-4 w-4" />
-									Placar da Aposta (Score)
+									{t("compensations.betScore")}
 								</label>
 								<div className="flex gap-3">
 									<div className="flex flex-1 flex-col items-center gap-2">
@@ -539,7 +544,10 @@ function CompensationsPage() {
 											{selectedMatchData?.teamALogo ? (
 												<img
 													src={selectedMatchData.teamALogo}
-													alt={selectedMatchData?.teamAName || "Time A"}
+													alt={
+														selectedMatchData?.teamAName ||
+														t("compensations.teamAFallback")
+													}
 													className="h-full w-full object-contain"
 												/>
 											) : (
@@ -549,7 +557,8 @@ function CompensationsPage() {
 											)}
 										</div>
 										<label className="w-full text-center font-bold text-[10px] text-gray-500 uppercase leading-tight">
-											{selectedMatchData?.teamAName || "Time A"}
+											{selectedMatchData?.teamAName ||
+												t("compensations.teamAFallback")}
 										</label>
 										<input
 											type="number"
@@ -569,7 +578,10 @@ function CompensationsPage() {
 											{selectedMatchData?.teamBLogo ? (
 												<img
 													src={selectedMatchData.teamBLogo}
-													alt={selectedMatchData?.teamBName || "Time B"}
+													alt={
+														selectedMatchData?.teamBName ||
+														t("compensations.teamBFallback")
+													}
 													className="h-full w-full object-contain"
 												/>
 											) : (
@@ -579,7 +591,8 @@ function CompensationsPage() {
 											)}
 										</div>
 										<label className="w-full text-center font-bold text-[10px] text-gray-500 uppercase leading-tight">
-											{selectedMatchData?.teamBName || "Time B"}
+											{selectedMatchData?.teamBName ||
+												t("compensations.teamBFallback")}
 										</label>
 										<input
 											type="number"
@@ -599,14 +612,14 @@ function CompensationsPage() {
 								<div className="border-[#ccff00] border-[3px] bg-[#ccff00]/10 p-4">
 									<div className="flex items-center justify-between">
 										<span className="font-bold text-black text-sm">
-											Pontos Calculados:
+											{t("compensations.calculatedPoints")}
 										</span>
 										<span className="font-black text-2xl text-black">
 											+{calculatedPoints}
 										</span>
 									</div>
 									<p className="mt-1 text-gray-600 text-xs">
-										Baseado no placar informado e no resultado real da partida
+										{t("compensations.pointsExplanation")}
 									</p>
 								</div>
 							)}
@@ -615,11 +628,10 @@ function CompensationsPage() {
 									selectedMatchData?.scoreB === null) && (
 									<div className="border-2 border-yellow-300 bg-yellow-50 p-3">
 										<p className="font-bold text-sm text-yellow-800">
-											⚠️ Partida sem resultado final
+											⚠️ {t("compensations.noResultTitle")}
 										</p>
 										<p className="text-xs text-yellow-700">
-											Selecione uma partida finalizada para calcular os pontos
-											automaticamente.
+											{t("compensations.noResultDescription")}
 										</p>
 									</div>
 								)}
@@ -645,9 +657,9 @@ function CompensationsPage() {
 							<div>
 								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
 									<AlertTriangle className="h-4 w-4" />
-									Justificativa{" "}
+									{t("compensations.reason")}{" "}
 									<span className="font-normal text-gray-500">
-										(mín. 10 caracteres)
+										{t("compensations.minCharacters")}
 									</span>
 								</label>
 								<textarea
@@ -664,11 +676,10 @@ function CompensationsPage() {
 								<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
 								<div>
 									<p className="font-bold text-red-700 text-sm">
-										Esta ação será registrada e é irreversível
+										{t("compensations.irreversibleWarning")}
 									</p>
 									<p className="mt-1 text-red-600 text-xs">
-										O ajuste será auditado com seu ID de administrador, data e
-										justificativa. Use com responsabilidade.
+										{t("compensations.irreversibleDescription")}
 									</p>
 								</div>
 							</div>
@@ -710,7 +721,7 @@ function CompensationsPage() {
 										<History className="h-8 w-8 text-gray-400" />
 									</div>
 									<span className="font-black text-gray-400 text-lg uppercase italic">
-										Nenhum ajuste realizado
+										{t("compensations.noAdjustments")}
 									</span>
 								</div>
 							) : (
@@ -738,7 +749,7 @@ function CompensationsPage() {
 														</span>
 														{adj.isRecoveryCompensation && (
 															<span className="border border-yellow-300 bg-yellow-100 px-2 py-0.5 font-bold text-[10px] text-yellow-800 uppercase">
-																Recovery
+																{t("compensations.recovery")}
 															</span>
 														)}
 													</div>
@@ -755,7 +766,11 @@ function CompensationsPage() {
 															)}
 														</span>
 														<span>•</span>
-														<span>por {adj.adminName}</span>
+														<span>
+															{t("compensations.by", {
+																adminName: adj.adminName,
+															})}
+														</span>
 													</div>
 												</div>
 											</div>
@@ -777,20 +792,24 @@ function CompensationsPage() {
 								<AlertTriangle className="h-6 w-6 stroke-[3px] text-black" />
 							</div>
 							<h3 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-								Confirmar Ajuste
+								{t("compensations.confirmAdjustment")}
 							</h3>
 						</div>
 
 						<div className="space-y-4 p-6">
 							<div className="space-y-2 border-2 border-black bg-gray-50 p-4">
 								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">Usuário:</span>
+									<span className="text-gray-500 text-sm">
+										{t("compensations.userLabel")}
+									</span>
 									<span className="font-bold text-black">
 										{selectedUser?.name}
 									</span>
 								</div>
 								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">Torneio:</span>
+									<span className="text-gray-500 text-sm">
+										{t("compensations.tournamentLabel")}
+									</span>
 									<span className="font-bold text-black">
 										{
 											tournaments.find(
@@ -801,7 +820,7 @@ function CompensationsPage() {
 								</div>
 								<div className="flex justify-between">
 									<span className="text-gray-500 text-sm">
-										Placar Informado:
+										{t("compensations.informedScore")}
 									</span>
 									<span className="font-bold text-black">
 										{predictedScoreA} × {predictedScoreB}
@@ -809,7 +828,7 @@ function CompensationsPage() {
 								</div>
 								<div className="flex justify-between">
 									<span className="text-gray-500 text-sm">
-										Pontos Calculados:
+										{t("compensations.calculatedPointsLabel")}
 									</span>
 									<span
 										className={`font-black text-lg ${
@@ -823,7 +842,9 @@ function CompensationsPage() {
 							</div>
 
 							<div>
-								<span className="text-gray-500 text-sm">Justificativa:</span>
+								<span className="text-gray-500 text-sm">
+									{t("compensations.reasonLabel")}
+								</span>
 								<p className="mt-1 border border-gray-200 bg-gray-50 p-3 font-medium text-black text-sm">
 									{reason}
 								</p>
@@ -850,7 +871,7 @@ function CompensationsPage() {
 									disabled={isSubmitting}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancelar
+									{t("common:actions.cancel")}
 								</button>
 							</div>
 						</div>

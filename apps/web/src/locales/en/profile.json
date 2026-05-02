@@ -12,10 +12,12 @@
 		"error": "Error saving. Please try again.",
 		"avatarRestoreError": "Could not restore the Google avatar. Try signing out and back in."
 	},
+	"signIn": "Sign In",
 	"userMenu": {
 		"label": "User Profile",
 		"viewPublic": "View Public Profile",
 		"playerMenu": "Player Menu",
+		"commandCenter": "Command Center",
 		"medals": "Medals",
 		"myBets": "My Bets",
 		"signOut": "Sign Out"

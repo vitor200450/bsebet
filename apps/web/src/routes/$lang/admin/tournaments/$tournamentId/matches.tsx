@@ -116,10 +116,10 @@ function TournamentMatchesPage() {
 			await addTeamToTournament({
 				data: { tournamentId: tournament.id, teamId },
 			});
-			toast.success("Team added!");
+			toast.success(t("teams.addSuccess"));
 			router.invalidate();
 		} catch (e) {
-			toast.error("Failed to add team");
+			toast.error(t("teams.addError"));
 		}
 	};
 
@@ -128,12 +128,12 @@ function TournamentMatchesPage() {
 		setIsDeleting(true);
 		try {
 			await deleteMatch({ data: matchToDelete });
-			toast.success("Match deleted!");
+			toast.success(t("matches.deleteSuccess"));
 			setIsDeleteModalOpen(false);
 			setMatchToDelete(null);
 			router.invalidate();
 		} catch (e) {
-			toast.error("Failed to delete match");
+			toast.error(t("matches.deleteError"));
 		} finally {
 			setIsDeleting(false);
 		}
@@ -144,10 +144,10 @@ function TournamentMatchesPage() {
 			await removeTeamFromTournament({
 				data: { tournamentId: tournament.id, teamId },
 			});
-			toast.success("Team removed!");
+			toast.success(t("teams.removeSuccess"));
 			router.invalidate();
 		} catch (e) {
-			toast.error("Failed to remove team");
+			toast.error(t("teams.removeError"));
 		}
 	};
 
@@ -258,7 +258,7 @@ function TournamentMatchesPage() {
 						)?.id,
 					},
 				});
-				toast.success("Group matches generated!");
+				toast.success(t("matches.groupGenerateSuccess"));
 			} else if (pendingGeneration === "bracket") {
 				const { generateFullBracket } = await import("@/server/matches");
 				await generateFullBracket({
@@ -268,14 +268,14 @@ function TournamentMatchesPage() {
 							selectedStageFilter !== "all" ? selectedStageFilter : undefined,
 					},
 				});
-				toast.success("Full bracket generated recursively!");
+				toast.success(t("matches.bracketGenerateSuccess"));
 			}
 
 			router.invalidate();
 			setIsGenerateModalOpen(false);
 			setPendingGeneration(null);
 		} catch (e) {
-			toast.error("Failed to generate matches");
+			toast.error(t("matches.generateError"));
 		} finally {
 			setIsGenerating(false);
 		}
@@ -347,7 +347,7 @@ function TournamentMatchesPage() {
 									: "bg-white hover:bg-gray-50"
 							}`}
 						>
-							Teams
+							{t("matches.tabTeams")}
 						</button>
 
 						{/* 2. Schedule - Define match days */}
@@ -359,7 +359,7 @@ function TournamentMatchesPage() {
 									: "bg-white hover:bg-gray-50"
 							}`}
 						>
-							Schedule
+							{t("matches.tabSchedule")}
 						</button>
 
 						{/* 3. Seeding - Distribute teams into groups (if applicable) */}
@@ -372,7 +372,7 @@ function TournamentMatchesPage() {
 										: "bg-white hover:bg-gray-50"
 								}`}
 							>
-								Seeding
+								{t("matches.tabSeeding")}
 							</button>
 						)}
 
@@ -386,7 +386,7 @@ function TournamentMatchesPage() {
 										: "bg-white hover:bg-gray-50"
 								}`}
 							>
-								Groups
+								{t("matches.tabGroups")}
 							</button>
 						)}
 
@@ -400,7 +400,7 @@ function TournamentMatchesPage() {
 										: "bg-white hover:bg-gray-50"
 								}`}
 							>
-								Bracket
+								{t("matches.tabBracket")}
 							</button>
 						)}
 
@@ -413,7 +413,7 @@ function TournamentMatchesPage() {
 									: "bg-white hover:bg-gray-50"
 							}`}
 						>
-							Matches
+							{t("matches.tabMatches")}
 						</button>
 
 						{/* 7. Order - Fine-tune display order */}
@@ -425,7 +425,7 @@ function TournamentMatchesPage() {
 									: "bg-white hover:bg-gray-50"
 							}`}
 						>
-							Order
+							{t("matches.tabOrder")}
 						</button>
 					</div>
 
@@ -467,20 +467,20 @@ function TournamentMatchesPage() {
 					onClick={() => setActiveTab("teams")}
 					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "teams" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
-					Teams
+					{t("matches.tabTeams")}
 				</button>
 				<button
 					onClick={() => setActiveTab("schedule")}
 					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "schedule" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
-					Days
+					{t("matches.tabDays")}
 				</button>
 				{hasGroups && (
 					<button
 						onClick={() => setActiveTab("seeding")}
 						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "seeding" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
-						Seeding
+						{t("matches.tabSeeding")}
 					</button>
 				)}
 				{hasGroups && (
@@ -488,7 +488,7 @@ function TournamentMatchesPage() {
 						onClick={() => setActiveTab("groups")}
 						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "groups" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
-						Groups
+						{t("matches.tabGroups")}
 					</button>
 				)}
 				{hasBracket && (
@@ -496,20 +496,20 @@ function TournamentMatchesPage() {
 						onClick={() => setActiveTab("bracket")}
 						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
-						Bracket
+						{t("matches.tabBracket")}
 					</button>
 				)}
 				<button
 					onClick={() => setActiveTab("matches")}
 					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "matches" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
-					Matches
+					{t("matches.tabMatches")}
 				</button>
 				<button
 					onClick={() => setActiveTab("ordering")}
 					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "ordering" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
-					Order
+					{t("matches.tabOrder")}
 				</button>
 			</div>
 
@@ -552,7 +552,7 @@ function TournamentMatchesPage() {
 					<div className="space-y-6">
 						<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
 							<h2 className="font-black text-2xl text-black uppercase italic">
-								Group Stage
+								{t("matches.groupStage")}
 							</h2>
 							<p className="font-bold text-gray-500 text-sm">
 								{t("matchBuilder.groupStageDescription")}
@@ -599,10 +599,10 @@ function TournamentMatchesPage() {
 											)?.id,
 										},
 									});
-									toast.success("Group matches generated!");
+									toast.success(t("matches.groupGenerateSuccess"));
 									router.invalidate();
 								} catch (e) {
-									toast.error("Failed to generate group matches");
+									toast.error(t("matches.groupGenerateError"));
 								}
 							}}
 						/>
@@ -613,7 +613,7 @@ function TournamentMatchesPage() {
 					<div className="space-y-6">
 						<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
 							<h2 className="font-black text-2xl text-black uppercase italic">
-								Playoffs Bracket
+								{t("matches.playoffs")}
 							</h2>
 							<p className="font-bold text-gray-500 text-sm">
 								{t("matchBuilder.description")}
@@ -662,10 +662,10 @@ function TournamentMatchesPage() {
 											bracketSide: side as any,
 										},
 									});
-									toast.success("Next round generated!");
+									toast.success(t("matches.nextRoundSuccess"));
 									router.invalidate();
 								} catch (e) {
-									toast.error("Failed to generate next round");
+									toast.error(t("matches.nextRoundError"));
 								}
 							}}
 							onGenerateFullBracket={async (_roundIndex, _side) => {
@@ -697,10 +697,10 @@ function TournamentMatchesPage() {
 													: playoffStage?.id,
 										},
 									});
-									toast.success("Full bracket generated recursively!");
+									toast.success(t("matches.bracketGenerateSuccess"));
 									router.invalidate();
 								} catch (e) {
-									toast.error("Failed to generate bracket");
+									toast.error(t("matches.bracketGenerateError"));
 								}
 							}}
 						/>
@@ -722,11 +722,11 @@ function TournamentMatchesPage() {
 						<div className="flex items-end justify-between border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
 							<div className="w-64">
 								<CustomSelect
-									label="Filter Stage"
+									label={t("matches.filterStage")}
 									value={selectedStageFilter}
 									onChange={setSelectedStageFilter}
 									options={[
-										{ value: "all", label: "All Stages" },
+										{ value: "all", label: t("matches.allStages") },
 										...stages.map((s) => ({ value: s.id, label: s.name })),
 									]}
 								/>
@@ -736,7 +736,7 @@ function TournamentMatchesPage() {
 								className="flex items-center gap-2 border-[3px] border-black bg-black px-6 py-3 font-black text-sm text-white uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#ccff00] hover:text-black active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 							>
 								<Plus className="h-5 w-5" strokeWidth={3} />
-								Add Match
+								{t("matches.addMatch")}
 							</button>
 						</div>
 
@@ -745,7 +745,7 @@ function TournamentMatchesPage() {
 							{filteredMatchSegments.length === 0 ? (
 								<div className="border-4 border-gray-300 border-dashed py-12 text-center">
 									<p className="font-bold text-gray-400 text-xl uppercase">
-										No matches found
+										{t("matches.noMatches")}
 									</p>
 								</div>
 							) : (
@@ -781,7 +781,7 @@ function TournamentMatchesPage() {
 																				s.id === match.label,
 																		)?.name ||
 																			match.label ||
-																			"Unknown Stage"}
+																			t("matches.unknownStage")}
 																	</span>
 																	{match.name && (
 																		<span className="mt-1 font-black text-[10px] text-black uppercase">
@@ -808,7 +808,7 @@ function TournamentMatchesPage() {
 																		</div>
 																	) : (
 																		<div className="mt-1 font-bold text-[9px] text-red-500">
-																			⚠️ No date set
+																			⚠️ {t("matches.noDateSet")}
 																		</div>
 																	)}
 																	<div className="mt-1">
@@ -820,11 +820,11 @@ function TournamentMatchesPage() {
 																			)}
 																		{match.isBettingEnabled ? (
 																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0px_0px_#000]">
-																				BETS OPEN
+																				{t("matches.betsOpen")}
 																			</span>
 																		) : (
 																			<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-black text-[9px] text-gray-400 uppercase">
-																				BETS CLOSED
+																				{t("matches.betsClosed")}
 																			</span>
 																		)}
 																	</div>
@@ -1024,8 +1024,8 @@ function TournamentMatchesPage() {
 				}}
 				onConfirm={handleDeleteMatch}
 				isDeleting={isDeleting}
-				title="Delete Match"
-				description="Are you sure you want to delete this match? All related data will be lost."
+				title={t("matches.deleteTitle")}
+				description={t("matches.deleteDescription")}
 			/>
 
 			<ConfirmationModal

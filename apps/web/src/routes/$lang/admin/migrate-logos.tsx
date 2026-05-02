@@ -140,43 +140,57 @@ function MigrateLogosPage() {
 												<span className="block font-black text-2xl text-green-700">
 													{result.summary.teams.success}
 												</span>
-												<span className="text-green-600 text-sm">Sucesso</span>
+												<span className="text-green-600 text-sm">
+													{t("migrateLogos.successLabel")}
+												</span>
 											</div>
 											<div className="rounded bg-red-100 p-3 text-center">
 												<span className="block font-black text-2xl text-red-700">
 													{result.summary.teams.failed}
 												</span>
-												<span className="text-red-600 text-sm">Falhas</span>
+												<span className="text-red-600 text-sm">
+													{t("migrateLogos.failedLabel")}
+												</span>
 											</div>
 											<div className="rounded bg-gray-100 p-3 text-center">
 												<span className="block font-black text-2xl text-gray-700">
 													{result.summary.teams.skipped}
 												</span>
-												<span className="text-gray-600 text-sm">Pulados</span>
+												<span className="text-gray-600 text-sm">
+													{t("migrateLogos.skippedLabel")}
+												</span>
 											</div>
 										</div>
 									</div>
 
 									<div>
-										<h4 className="mb-2 font-bold text-lg">Torneios:</h4>
+										<h4 className="mb-2 font-bold text-lg">
+											{t("migrateLogos.tournaments")}
+										</h4>
 										<div className="grid grid-cols-3 gap-4">
 											<div className="rounded bg-green-100 p-3 text-center">
 												<span className="block font-black text-2xl text-green-700">
 													{result.summary.tournaments.success}
 												</span>
-												<span className="text-green-600 text-sm">Sucesso</span>
+												<span className="text-green-600 text-sm">
+													{t("migrateLogos.successLabel")}
+												</span>
 											</div>
 											<div className="rounded bg-red-100 p-3 text-center">
 												<span className="block font-black text-2xl text-red-700">
 													{result.summary.tournaments.failed}
 												</span>
-												<span className="text-red-600 text-sm">Falhas</span>
+												<span className="text-red-600 text-sm">
+													{t("migrateLogos.failedLabel")}
+												</span>
 											</div>
 											<div className="rounded bg-gray-100 p-3 text-center">
 												<span className="block font-black text-2xl text-gray-700">
 													{result.summary.tournaments.skipped}
 												</span>
-												<span className="text-gray-600 text-sm">Pulados</span>
+												<span className="text-gray-600 text-sm">
+													{t("migrateLogos.skippedLabel")}
+												</span>
 											</div>
 										</div>
 									</div>
@@ -186,7 +200,7 @@ function MigrateLogosPage() {
 							{result.errors && result.errors.length > 0 && (
 								<div className="mt-4">
 									<h4 className="mb-2 font-bold text-lg text-red-800">
-										Erros:
+										{t("migrateLogos.errorsLabel")}
 									</h4>
 									<div className="max-h-40 overflow-y-auto rounded bg-red-100 p-3">
 										<ul className="list-inside list-disc space-y-1 text-red-700 text-sm">

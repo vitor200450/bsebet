@@ -39,11 +39,11 @@ export function GlobalHeader() {
 	const isAuthenticated = mounted && !!session;
 
 	const navItems = [
-		{ label: "Home", to: isAuthenticated ? "/dashboard" : "/landing" },
-		{ label: "Apostar", to: "/" },
-		{ label: "Torneios", to: "/tournaments" },
-		{ label: "Leaderboard", to: "/leaderboard" },
-		...(isAuthenticated ? [{ label: "Minhas Apostas", to: "/my-bets" }] : []),
+		{ label: t("nav.home"), to: isAuthenticated ? "/dashboard" : "/landing" },
+		{ label: t("nav.bet"), to: "/" },
+		{ label: t("nav.tournaments"), to: "/tournaments" },
+		{ label: t("nav.leaderboard"), to: "/leaderboard" },
+		...(isAuthenticated ? [{ label: t("nav.myBets"), to: "/my-bets" }] : []),
 	];
 
 	const isAdmin = session?.user?.role === "admin";
@@ -78,7 +78,7 @@ export function GlobalHeader() {
 							<div className="flex skew-x-12 transform items-center gap-2">
 								<img
 									src="/logo-new.png"
-									alt="BSEBET"
+									alt={t("appName")}
 									className={clsx(
 										"h-6 object-contain md:h-8",
 										variant === "dark" ? "brightness-200 grayscale-0" : "",
@@ -168,7 +168,7 @@ export function GlobalHeader() {
 						<div className="flex -skew-x-6 transform items-center gap-2 rounded-full border-[2px] border-black bg-black px-3 py-1.5 text-white">
 							<span className="h-2 w-2 animate-pulse rounded-full bg-[#00ff55] shadow-[0_0_8px_rgba(0,255,85,0.6)]" />
 							<span className="mt-0.5 skew-x-6 transform font-black text-[10px] uppercase tracking-widest">
-								LIVE
+								{t("nav.live")}
 							</span>
 						</div>
 					)}
@@ -186,8 +186,8 @@ export function GlobalHeader() {
 							<span className="skew-x-12 transform whitespace-nowrap">
 								{t("nav.adminPanel")}
 							</span>
-					</Link>
-				)}
+						</Link>
+					)}
 
 					<UserMenu variant={variant} />
 				</div>
@@ -198,7 +198,7 @@ export function GlobalHeader() {
 						<div className="flex -skew-x-6 transform items-center gap-1.5 rounded-full border-[2px] border-black bg-black px-2 py-1 text-white">
 							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00ff55] shadow-[0_0_8px_rgba(0,255,85,0.6)]" />
 							<span className="mt-0.5 skew-x-6 transform font-black text-[9px] uppercase tracking-widest">
-								LIVE
+								{t("nav.live")}
 							</span>
 						</div>
 					)}
@@ -285,8 +285,11 @@ export function GlobalHeader() {
 							{/* Admin Navigation Tabs */}
 							<div className="flex items-center gap-2 md:gap-3">
 								{[
-									{ label: "Torneios", to: "/admin/tournaments" },
-									{ label: "Times", to: "/admin/teams" },
+									{
+										label: t("nav.adminTournaments"),
+										to: "/admin/tournaments",
+									},
+									{ label: t("nav.adminTeams"), to: "/admin/teams" },
 									{ label: t("nav.adminUsers"), to: "/admin/users" },
 									{
 										label: t("nav.adminCompensations"),

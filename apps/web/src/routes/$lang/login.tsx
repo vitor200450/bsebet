@@ -54,11 +54,11 @@ function RouteComponent() {
 								WebkitTextStroke: "2px white",
 							}}
 						>
-							BSEBET
+							{t("common:appName")}
 						</h1>
 						<div className="absolute -top-4 -right-6 rotate-12 transform">
 							<span className="border-2 border-black bg-[#CCFF00] px-2 py-1 font-black text-black text-xs shadow-[2px_2px_0px_#000]">
-								BETA
+								{t("beta")}
 							</span>
 						</div>
 					</div>
@@ -68,7 +68,7 @@ function RouteComponent() {
 				<div className="space-y-8">
 					<div className="space-y-2 text-center">
 						<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-							BEM-VINDO
+							{t("welcome")}
 						</h2>
 						<p className="font-bold text-gray-500 text-sm uppercase tracking-wider">
 							{t("hero.loginCta")}

@@ -96,7 +96,9 @@ export default function UserMenu({
 							: "border-black bg-[#ccff00] text-black",
 					)}
 				>
-					<span className="inline-block skew-x-12 transform">Sign In</span>
+					<span className="inline-block skew-x-12 transform">
+						{t("signIn")}
+					</span>
 				</button>
 			</Link>
 		);
@@ -206,7 +208,7 @@ export default function UserMenu({
 						<span className="material-symbols-outlined mr-2 text-sm">
 							dashboard
 						</span>
-						Command Center
+						{t("userMenu.commandCenter")}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"

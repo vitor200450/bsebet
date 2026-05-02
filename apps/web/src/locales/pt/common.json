@@ -2,6 +2,7 @@
 	"appName": "BSEBET",
 	"nav": {
 		"home": "Início",
+		"bet": "Apostar",
 		"dashboard": "Painel",
 		"myBets": "Meus Palpites",
 		"leaderboard": "Ranking",
@@ -13,6 +14,7 @@
 		"adminTournaments": "Torneios",
 		"adminCompensations": "Compensação",
 		"adminLive": "Ao Vivo",
+		"live": "AO VIVO",
 		"profile": "Perfil",
 		"profileView": "Ver Perfil Público",
 		"exitAdmin": "Sair do Admin",
