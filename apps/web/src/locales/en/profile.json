@@ -14,6 +14,24 @@
 		"imageTooLarge": "Image too large. Max 2MB."
 	},
 	"saving": "SAVING...",
+	"loading": "...",
+	"google": "GOOGLE",
+	"restoreGoogle": "Restore Google photo",
+	"avatarSection": "PROFILE PICTURE",
+	"changePhoto": "CHANGE PHOTO",
+	"accountSection": "ACCOUNT INFO",
+	"nameLabel": "NAME",
+	"emailLabel": "E-MAIL",
+	"nicknameSection": "NICKNAME",
+	"nicknameLabel": "YOUR RANKING NICKNAME",
+	"nicknamePlaceholder": "Enter your nickname...",
+	"toast": {
+		"saved": "Profile updated successfully!",
+		"error": "Error saving. Please try again.",
+		"avatarRestoreError": "Could not restore Google avatar. Try signing out and back in.",
+		"imageTooLarge": "Image too large. Max 2MB.",
+		"googleRestored": "Google avatar restored!"
+	},
 	"signIn": "Sign In",
 	"userMenu": {
 		"label": "User Profile",

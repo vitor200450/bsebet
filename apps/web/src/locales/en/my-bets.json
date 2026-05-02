@@ -24,6 +24,7 @@
 		"noMatches": "No matches found",
 		"cta": "Place your bets on active tournaments!"
 	},
+	"betLabel": "Your pick",
 	"actions": {
 		"viewTournament": "View tournament",
 		"viewMatches": "View Matches",

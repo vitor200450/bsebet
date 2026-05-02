@@ -24,6 +24,7 @@
 		"noMatches": "Nenhuma partida encontrada",
 		"cta": "Faça suas apostas nos torneios ativos!"
 	},
+	"betLabel": "Seu palpite",
 	"actions": {
 		"viewTournament": "Ver torneio",
 		"viewMatches": "Ver Partidas",

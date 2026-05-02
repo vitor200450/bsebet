@@ -203,7 +203,7 @@ export default function UserMenu({
 
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate({ to: "/dashboard" })}
+						onClick={() => navigate(routeTo("/dashboard"))}
 					>
 						<span className="material-symbols-outlined mr-2 text-sm">
 							dashboard
@@ -212,7 +212,7 @@ export default function UserMenu({
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate({ to: "/profile" })}
+						onClick={() => navigate(routeTo("/profile"))}
 					>
 						<span className="material-symbols-outlined mr-2 text-sm">
 							person
@@ -221,12 +221,10 @@ export default function UserMenu({
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() =>
-							navigate({
-								to: "/users/$userId",
-								params: { userId: session.user.id },
-							})
-						}
+						onClick={() => {
+							const r = routeTo("/users/$userId");
+							navigate({ to: r.to, params: { ...r.params, userId: session.user.id } });
+						}}
 					>
 						<span className="material-symbols-outlined mr-2 text-sm">
 							public
@@ -235,7 +233,7 @@ export default function UserMenu({
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate({ to: "/my-bets" })}
+						onClick={() => navigate(routeTo("/my-bets"))}
 					>
 						<span className="material-symbols-outlined mr-2 text-sm">
 							sports
@@ -249,9 +247,7 @@ export default function UserMenu({
 							authClient.signOut({
 								fetchOptions: {
 									onSuccess: () => {
-										navigate({
-											to: "/",
-										});
+										navigate(routeTo("/"));
 									},
 								},
 							});

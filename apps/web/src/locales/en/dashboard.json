@@ -12,7 +12,10 @@
 		"achievements": "Achievements",
 		"viewMatches": "View Matches",
 		"tournaments": "Tournaments",
-		"noActiveTournaments": "No active tournaments"
+		"noActiveTournaments": "No active tournaments",
+		"perfectPicks": "Perfect Picks",
+		"totalBets": "Total Bets",
+		"correctCount": "{{correct}} of {{total}} correct"
 	},
 	"viewHistory": "View full history",
 	"empty": {

@@ -30,7 +30,7 @@ export const Route = createFileRoute("/$lang/profile")({
 
 function RouteComponent() {
 	const { t } = useTranslation("profile");
-	const { linkTo } = useLangLink();
+	const { linkTo, routeTo } = useLangLink();
 	const { session } = Route.useRouteContext();
 
 	const { data: profile, refetch } = useQuery({
@@ -84,7 +84,7 @@ function RouteComponent() {
 			const { pictureUrl } = await restoreGoogleAvatar();
 			setAvatarPreview(pictureUrl);
 			await Promise.all([refetch(), refetchSession()]);
-			toast.success("Avatar do Google restaurado!");
+			toast.success(t("toast.googleRestored"));
 		} catch (err) {
 			const msg =
 				err instanceof Error ? err.message : t("toast.avatarRestoreError");
@@ -166,7 +166,7 @@ function RouteComponent() {
 				<div className="relative z-10 mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-6 md:px-6 md:py-10">
 					<div className="inline-block -skew-x-12 transform border-[3px] border-white bg-black px-6 py-3 text-white shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] md:px-8 md:py-4">
 						<h1 className="skew-x-12 transform font-black text-3xl uppercase italic tracking-tighter md:text-5xl">
-							MEU PERFIL
+							{t("title")}
 						</h1>
 					</div>
 					<div className="flex skew-x-0 transform items-center gap-2">
@@ -194,7 +194,7 @@ function RouteComponent() {
 							<Camera className="h-5 w-5 text-white" strokeWidth={3} />
 						</div>
 						<h2 className="font-black text-black text-xl uppercase italic tracking-tighter">
-							FOTO DE PERFIL
+							{t("avatarSection")}
 						</h2>
 					</div>
 
@@ -232,12 +232,12 @@ function RouteComponent() {
 							onClick={() => fileInputRef.current?.click()}
 							className="border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase tracking-widest transition-colors hover:bg-black hover:text-white"
 						>
-							TROCAR FOTO
+							{t("changePhoto")}
 						</button>
 						<button
 							onClick={handleRestoreGoogleAvatar}
 							disabled={isRestoring}
-							title="Restaurar foto do Google"
+							title={t("restoreGoogle")}
 							className="flex items-center gap-1.5 border-[2px] border-gray-400 px-4 py-1.5 font-black text-[10px] text-gray-600 uppercase tracking-widest transition-colors hover:border-black hover:text-black disabled:opacity-50"
 						>
 							<svg
@@ -247,7 +247,7 @@ function RouteComponent() {
 							>
 								<path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
 							</svg>
-							{isRestoring ? "..." : "GOOGLE"}
+							{isRestoring ? t("loading") : t("google")}
 						</button>
 					</div>
 					<p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
@@ -270,7 +270,7 @@ function RouteComponent() {
 							<Lock className="h-5 w-5 text-white" strokeWidth={3} />
 						</div>
 						<h2 className="font-black text-black text-xl uppercase italic tracking-tighter">
-							DADOS DA CONTA
+							{t("accountSection")}
 						</h2>
 					</div>
 
@@ -279,7 +279,7 @@ function RouteComponent() {
 						<div className="flex flex-col gap-1">
 							<span className="flex items-center gap-1 font-black text-[9px] text-gray-500 uppercase tracking-widest">
 								<Lock size={9} />
-								NOME
+								{t("nameLabel")}
 							</span>
 							<div className="flex items-center justify-between border-[2px] border-black/20 bg-[#e6e6e6] px-3 py-2.5">
 								<span className="font-black text-black text-sm">
@@ -293,7 +293,7 @@ function RouteComponent() {
 						<div className="flex flex-col gap-1">
 							<span className="flex items-center gap-1 font-black text-[9px] text-gray-500 uppercase tracking-widest">
 								<Lock size={9} />
-								E-MAIL
+								{t("emailLabel")}
 							</span>
 							<div className="flex items-center justify-between border-[2px] border-black/20 bg-[#e6e6e6] px-3 py-2.5">
 								<span className="truncate font-black text-black text-sm">
@@ -322,20 +322,20 @@ function RouteComponent() {
 							</span>
 						</div>
 						<h2 className="font-black text-black text-xl uppercase italic tracking-tighter">
-							NICKNAME
+							{t("nicknameSection")}
 						</h2>
 					</div>
 
 					<div className="flex flex-col gap-2">
 						<label className="font-black text-[9px] text-black uppercase tracking-widest">
-							SEU APELIDO NO RANKING
+							{t("nicknameLabel")}
 						</label>
 						<div className="relative">
 							<input
 								type="text"
 								value={nickname}
 								onChange={(e) => setNickname(e.target.value.slice(0, 50))}
-								placeholder="Digite seu nickname..."
+								placeholder={t("nicknamePlaceholder")}
 								className="w-full border-[3px] border-black bg-white px-3 py-3 font-black text-black text-sm transition-all placeholder:font-normal placeholder:text-gray-400 focus:border-[#ccff00] focus:shadow-[0_0_0_2px_#ccff00] focus:outline-none"
 							/>
 							<span className="absolute right-3 bottom-2 font-black font-mono text-[9px] text-gray-400">
@@ -366,10 +366,10 @@ function RouteComponent() {
 
 				{/* Ver Perfil Público */}
 				{user?.id && (
-					<Link
-						to={linkTo("/users/$userId")}
-						params={{ userId: user.id }}
-						className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
+				<Link
+					{...routeTo("/users/$userId")}
+					params={{ userId: user.id }}
+					className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white px-6 py-4 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]"
 					>
 						<span className="material-symbols-outlined text-sm">public</span>
 						{t("viewPublic")}

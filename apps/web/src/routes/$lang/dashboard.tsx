@@ -171,7 +171,7 @@ function RouteComponent() {
 									{t("stats.hitRate")}
 								</div>
 								<div className="mt-1 font-medium text-[10px] text-gray-500">
-									{stats.correctPredictions} de {stats.totalBets} corretos
+									{t("stats.correctCount", { correct: stats.correctPredictions, total: stats.totalBets })}
 								</div>
 							</div>
 
@@ -186,7 +186,7 @@ function RouteComponent() {
 									{stats.perfectPicks}
 								</div>
 								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
-									Placares Exatos
+									{t("stats.perfectPicks")}
 								</div>
 							</div>
 
@@ -233,7 +233,7 @@ function RouteComponent() {
 										{stats.totalBets}
 									</div>
 									<div className="font-bold text-[10px] text-white/70 uppercase tracking-wider">
-										Total de Apostas
+										{t("stats.totalBets")}
 									</div>
 								</div>
 							</div>

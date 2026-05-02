@@ -12,7 +12,10 @@
 		"achievements": "Conquistas",
 		"viewMatches": "Ver Partidas",
 		"tournaments": "Torneios",
-		"noActiveTournaments": "Sem torneios ativos"
+		"noActiveTournaments": "Sem torneios ativos",
+		"perfectPicks": "Placares Exatos",
+		"totalBets": "Total de Apostas",
+		"correctCount": "{{correct}} de {{total}} corretos"
 	},
 	"viewHistory": "Ver histórico completo",
 	"empty": {
