@@ -2,14 +2,26 @@
 	"hero": {
 		"tagline": "FAÇA SEUS",
 		"taglineHighlight": "PALPITES",
+		"arenaTitle": "FAÇA SEUS",
+		"picksTitle": "PALPITES",
+		"title": "Faça seus palpites e suba no ranking",
 		"subtitle": "e suba no ranking!",
-		"loginCta": "Faça login para começar a apostar"
+		"badge": "você entende do competitivo.",
+		"loginCta": "Faça login para começar a apostar",
+		"cta": "Faça login para começar a apostar"
 	},
 	"features": {
 		"predict": "Preveja resultados",
 		"predictDesc": "você entende do competitivo.",
+		"predictTitle": "PREVEJA",
 		"score": "Acumule pontos",
 		"scoreDesc": "com seus palpites certeiros",
-		"prizes": "PRÊMIOS"
+		"scoreTitle": "ACUMULE",
+		"prizes": "PRÊMIOS",
+		"prizesTitle": "PRÊMIOS",
+		"prizesDesc": "Ganhe prêmios exclusivos com seus palpites"
+	},
+	"footer": {
+		"copyright": "© 2026 BSEBET. Todos os direitos reservados."
 	}
 }

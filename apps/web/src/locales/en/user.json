@@ -6,6 +6,14 @@
 		"filterTournament": "Filter tournament"
 	},
 	"medals": {
-		"latest": "Latest Achievements"
+		"latest": "Latest Achievements",
+		"yourAchievements": "Your Achievements",
+		"viewAll": "View all",
+		"empty": "No achievements yet",
+		"emptySubtitle": "Complete your picks to earn medals",
+		"gold": "Gold",
+		"silver": "Silver",
+		"bronze": "Bronze",
+		"total": "Total"
 	}
 }

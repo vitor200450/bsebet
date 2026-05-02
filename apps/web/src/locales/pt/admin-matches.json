@@ -3,11 +3,13 @@
 		"title": "Gerenciar Partidas",
 		"description": "Crie e organize as partidas visualmente para ficarem idênticas à disposição do torneio oficial.",
 		"groupStage": "Fase de Grupos",
+		"groupStageDescription": "Gerencie as partidas e resultados da fase de grupos",
 		"manageGroupMatches": "Gerencie as partidas e resultados da fase de grupos",
 		"existingMatchesWarning": "ATENÇÃO: Já existem partidas de grupo geradas. Gerar novamente REMOVERÁ todas as partidas existentes e as apostas associadas.",
 		"continueQuestion": "Deseja continuar?"
 	},
 	"reset": {
+		"button": "Resetar",
 		"confirm": "Tem certeza que deseja resetar esta partida? Todas as apostas serão removidas.",
 		"resetAllConfirm": "Tem certeza que deseja resetar TODAS as partidas deste torneio? Todas as apostas serão removidas."
 	},
@@ -23,6 +25,23 @@
 		"clearWinner": "Limpar vencedor"
 	},
 	"live": {
+		"headerTitle": "Partida ao Vivo",
+		"winnerDeclared": "Vencedor declarado!",
+		"teamA": "Time A",
+		"teamB": "Time B",
+		"resetScore": "Resetar Placar",
+		"defineWinner": "Definir Vencedor",
+		"slideToFinalize": "Deslize para finalizar",
+		"finalizeMatch": "Finalizar Partida",
+		"matchQuestionSuffix": "da partida?",
+		"winner": "Vencedor",
+		"cancel": "Cancelar",
+		"confirm": "Confirmar",
+		"exitMatch": "Sair da Partida",
+		"matchQuestion": "O que deseja fazer",
+		"keepLive": "Manter ao Vivo",
+		"discardMatch": "Descartar Alterações",
+		"cancelAndBack": "Cancelar e Voltar",
 		"tieWarning": "O placar está empatado. Defina um vencedor.",
 		"teamsError": "Erro: Times não definidos",
 		"scoringStarted": "Você começou a pontuar esta partida.",
@@ -36,7 +55,8 @@
 		"createError": "Erro ao criar dia.",
 		"deleteError": "Erro ao excluir dia.",
 		"updateError": "Erro ao atualizar match day.",
-		"draft": "Draft = Ainda não disponível"
+		"draft": "Draft = Ainda não disponível",
+		"deleteConfirm": "Tem certeza que deseja excluir este dia?"
 	},
 	"ordering": {
 		"saved": "Ordem salva com sucesso!",

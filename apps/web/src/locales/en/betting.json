@@ -25,7 +25,10 @@
 	},
 	"empty": {
 		"noTournament": "No Tournament Available",
-		"noMatches": "Today's games have already started or haven't been scheduled yet."
+		"noMatches": "Today's games have already started or haven't been scheduled yet.",
+		"title": "No Matches",
+		"now": "Now",
+		"waiting": "Waiting"
 	},
 	"betLabel": "You bet on:",
 	"totalPoints": "Total: {{count}} point",
@@ -36,5 +39,30 @@
 	"betCount_one": "{{count}} bet",
 	"betCount_other": "{{count}} bets",
 	"walkoverNote": "All bettors receive winner points",
-	"walkoverTitle": "Match ended by walkover"
+	"walkoverTitle": "Match ended by walkover",
+	"reviewAll": "Review All",
+	"missingScores": "Missing scores",
+	"reviewBets": "Review Bets",
+	"betsClosed": "Closed",
+	"betsOpen": "Open",
+	"betSaved": "Bet saved!",
+	"betPredictionPrefix": "Pick:",
+	"actualWinner": "Actual winner:",
+	"prediction": {
+		"incorrect": "Incorrect",
+		"breakdown": "Pick details"
+	},
+	"perfectScore": "Perfect score!",
+	"correctWinner": "Correct winner",
+	"blocked": {
+		"waitingDefinition": "Awaiting definition",
+		"betPreviousFirst": "Bet on previous matches first",
+		"outsideMatchDay": "Outside selected match day",
+		"recoveryUnavailable": "Recovery unavailable",
+		"betsUnavailable": "Bets unavailable",
+		"waitingResults": "Waiting for previous results",
+		"waitingPreviousBets": "Waiting for your previous bets"
+	},
+	"walkoverDescription": "Walkover declared. All bettors receive winner points.",
+	"teamB": "Team B"
 }

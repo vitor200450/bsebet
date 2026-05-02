@@ -6,6 +6,14 @@
 		"filterTournament": "Filtrar torneio"
 	},
 	"medals": {
-		"latest": "Últimas Conquistas"
+		"latest": "Últimas Conquistas",
+		"yourAchievements": "Suas Conquistas",
+		"viewAll": "Ver todas",
+		"empty": "Nenhuma conquista ainda",
+		"emptySubtitle": "Complete seus palpites para ganhar medalhas",
+		"gold": "Ouro",
+		"silver": "Prata",
+		"bronze": "Bronze",
+		"total": "Total"
 	}
 }

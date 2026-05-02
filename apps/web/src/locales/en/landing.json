@@ -2,14 +2,26 @@
 	"hero": {
 		"tagline": "MAKE YOUR",
 		"taglineHighlight": "PICKS",
+		"arenaTitle": "MAKE YOUR",
+		"picksTitle": "PICKS",
+		"title": "Make your picks and climb the leaderboard",
 		"subtitle": "and climb the leaderboard!",
-		"loginCta": "Sign in to start betting"
+		"badge": "you know the competitive scene.",
+		"loginCta": "Sign in to start betting",
+		"cta": "Sign in to start betting"
 	},
 	"features": {
 		"predict": "Predict results",
 		"predictDesc": "you know the competitive scene.",
+		"predictTitle": "PREDICT",
 		"score": "Earn points",
 		"scoreDesc": "with your winning picks",
-		"prizes": "PRIZES"
+		"scoreTitle": "EARN",
+		"prizes": "PRIZES",
+		"prizesTitle": "PRIZES",
+		"prizesDesc": "Win exclusive prizes with your picks"
+	},
+	"footer": {
+		"copyright": "© 2026 BSEBET. All rights reserved."
 	}
 }

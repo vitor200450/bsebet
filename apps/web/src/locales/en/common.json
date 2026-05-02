@@ -14,7 +14,8 @@
 		"adminCompensations": "Compensations",
 		"adminLive": "Live",
 		"profile": "Profile",
-		"profileView": "View Public Profile"
+		"profileView": "View Public Profile",
+		"exitAdmin": "Exit Admin"
 	},
 	"matchStatus": {
 		"scheduled": "Scheduled",

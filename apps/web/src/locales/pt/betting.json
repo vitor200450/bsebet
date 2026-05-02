@@ -25,7 +25,10 @@
 	},
 	"empty": {
 		"noTournament": "Nenhum Torneio Disponível",
-		"noMatches": "Os jogos de hoje já começaram ou ainda não foram agendados."
+		"noMatches": "Os jogos de hoje já começaram ou ainda não foram agendados.",
+		"title": "Sem Partidas",
+		"now": "Agora",
+		"waiting": "Aguardando"
 	},
 	"betLabel": "Você apostou em:",
 	"totalPoints": "Total: {{count}} ponto",
@@ -36,5 +39,30 @@
 	"betCount_one": "{{count}} palpite",
 	"betCount_other": "{{count}} palpites",
 	"walkoverNote": "Todos os apostadores recebem pontos de vencedor",
-	"walkoverTitle": "Partida encerrada por walkover"
+	"walkoverTitle": "Partida encerrada por walkover",
+	"reviewAll": "Revisar todos",
+	"missingScores": "Placar não informado",
+	"reviewBets": "Revisar Apostas",
+	"betsClosed": "Fechadas",
+	"betsOpen": "Abertas",
+	"betSaved": "Aposta salva!",
+	"betPredictionPrefix": "Palpite:",
+	"actualWinner": "Vencedor real:",
+	"prediction": {
+		"incorrect": "Errou",
+		"breakdown": "Detalhes do palpite"
+	},
+	"perfectScore": "Placar exato!",
+	"correctWinner": "Vencedor correto",
+	"blocked": {
+		"waitingDefinition": "Aguardando definição",
+		"betPreviousFirst": "Aposte nas partidas anteriores primeiro",
+		"outsideMatchDay": "Fora do match day selecionado",
+		"recoveryUnavailable": "Recuperação indisponível",
+		"betsUnavailable": "Apostas indisponíveis",
+		"waitingResults": "Aguardando resultados anteriores",
+		"waitingPreviousBets": "Aguardando suas apostas anteriores"
+	},
+	"walkoverDescription": "W.O. declarado. Todos os apostadores recebem pontos de vencedor.",
+	"teamB": "Time B"
 }

@@ -3,11 +3,13 @@
 		"title": "Manage Matches",
 		"description": "Create and organize matches visually to match the official tournament layout.",
 		"groupStage": "Group Stage",
+		"groupStageDescription": "Manage group stage matches and results",
 		"manageGroupMatches": "Manage group stage matches and results",
 		"existingMatchesWarning": "WARNING: Group matches already exist. Regenerating will REMOVE all existing matches and associated bets.",
 		"continueQuestion": "Do you want to continue?"
 	},
 	"reset": {
+		"button": "Reset",
 		"confirm": "Are you sure you want to reset this match? All bets will be removed.",
 		"resetAllConfirm": "Are you sure you want to reset ALL matches in this tournament? All bets will be removed."
 	},
@@ -23,6 +25,23 @@
 		"clearWinner": "Clear winner"
 	},
 	"live": {
+		"headerTitle": "Live Match",
+		"winnerDeclared": "Winner declared!",
+		"teamA": "Team A",
+		"teamB": "Team B",
+		"resetScore": "Reset Score",
+		"defineWinner": "Set Winner",
+		"slideToFinalize": "Slide to finalize",
+		"finalizeMatch": "Finalize Match",
+		"matchQuestionSuffix": "of the match?",
+		"winner": "Winner",
+		"cancel": "Cancel",
+		"confirm": "Confirm",
+		"exitMatch": "Exit Match",
+		"matchQuestion": "What would you like to do",
+		"keepLive": "Keep Live",
+		"discardMatch": "Discard Changes",
+		"cancelAndBack": "Cancel and Go Back",
 		"tieWarning": "The score is tied. Set a winner.",
 		"teamsError": "Error: Teams not defined",
 		"scoringStarted": "You've started scoring this match.",
@@ -36,7 +55,8 @@
 		"createError": "Error creating day.",
 		"deleteError": "Error deleting day.",
 		"updateError": "Error updating match day.",
-		"draft": "Draft = Not yet available"
+		"draft": "Draft = Not yet available",
+		"deleteConfirm": "Are you sure you want to delete this day?"
 	},
 	"ordering": {
 		"saved": "Order saved successfully!",

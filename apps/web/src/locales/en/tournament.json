@@ -24,11 +24,24 @@
 	},
 	"podium": {
 		"title": "Final Podium",
-		"champion": "CHAMPION"
+		"champion": "CHAMPION",
+		"viewRanking": "View Ranking",
+		"rank1": "1st Place",
+		"rank2": "2nd Place",
+		"rank3": "3rd Place"
 	},
 	"selector": {
 		"recovery": "RECOVERY",
-		"label": "Select tournament"
+		"label": "Select tournament",
+		"yourBets": "Your Bets",
+		"startDate": "Start date",
+		"currentPhase": "Current phase",
+		"groupStage": "Group Stage",
+		"matchesAvailable": "matches available",
+		"wait": "WAIT",
+		"viewBets": "View Bets",
+		"betNow": "Bet Now",
+		"betsDisabled": "Bets disabled"
 	},
 	"matchDay": {
 		"completed": "Completed",
@@ -37,6 +50,14 @@
 		"noMatchDay": "No match days available for this tournament.",
 		"selectPrompt": "Choose which match day you want to view",
 		"noMatches": "No matches assigned",
-		"pending": "Awaiting update"
+		"pending": "Awaiting update",
+		"betsOpen": "Bets open",
+		"betsClosed": "Bets closed",
+		"draft": "Draft",
+		"selectTitle": "Select Match Day",
+		"tournamentLabel": "Tournament",
+		"active": "Active",
+		"unavailable": "Unavailable",
+		"noMatchDayTitle": "No Match Day"
 	}
 }

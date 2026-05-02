@@ -24,8 +24,27 @@
 		"toast": {
 			"deleted": "Time excluído!",
 			"saveError": "Erro ao salvar time",
-			"deleteError": "Erro ao excluir time"
-		}
+			"deleteError": "Erro ao excluir time",
+			"saved": "Time salvo com sucesso!",
+			"checkData": "Verifique os dados e tente novamente.",
+			"tryAgain": "Tente novamente."
+		},
+		"newButton": "Novo Time",
+		"editButton": "Editar",
+		"addTeam": "Adicionar Time",
+		"editTitle": "Editar Time",
+		"newTitle": "Novo Time",
+		"deleteTitle": "Excluir Time",
+		"nameLabel": "Nome do Time",
+		"logoUrlLabel": "URL da Logo",
+		"uploadImage": "Enviar Imagem",
+		"imagePreview": "Pré-visualização",
+		"cancel": "Cancelar",
+		"saving": "Salvando...",
+		"save": "Salvar",
+		"deleteConfirmMessage": "Tem certeza que deseja excluir este time?",
+		"selectedTeam": "Time selecionado",
+		"deleteConfirmAction": "Sim, Excluir"
 	},
 	"tournaments": {
 		"title": "Gerenciar Torneios",
@@ -52,15 +71,25 @@
 		"auditNote": "Esta ação será registrada e é irreversível. Apenas administradores podem realizar compensações.",
 		"irreversible": "Esta ação não pode ser desfeita.",
 		"history": "Histórico de Ajustes",
-		"description": "Ajuste manual de pontos para usuários afetados por bugs ou erros de sistema."
+		"description": "Ajuste manual de pontos para usuários afetados por bugs ou erros de sistema.",
+		"noUserFound": "Nenhum usuário encontrado",
+		"applying": "Aplicando..."
 	},
 	"migrateLogos": {
+		"title": "Migração de Logos",
 		"description": "O que será feito?",
 		"warning": "Atenção: Este processo modifica o banco de dados e não pode ser desfeito. Certifique-se de ter um backup recente antes de prosseguir.",
 		"start": "Iniciar Migração",
 		"running": "Executando...",
 		"success": "Migração Concluída",
 		"error": "Erro na Migração",
-		"completedAt": "Concluído em: {{time}}"
+		"completedAt": "Concluído em: {{time}}",
+		"confirmMessage": "Tem certeza? Esta ação não pode ser desfeita.",
+		"step1": "1. Conecte-se ao R2",
+		"step2": "2. Faça upload das logos",
+		"step3": "3. Atualize as URLs no banco",
+		"warningTitle": "Aviso",
+		"migrating": "Migrando...",
+		"teams": "Times"
 	}
 }

@@ -14,6 +14,10 @@
 	},
 	"userMenu": {
 		"label": "User Profile",
-		"viewPublic": "View Public Profile"
+		"viewPublic": "View Public Profile",
+		"playerMenu": "Player Menu",
+		"medals": "Medals",
+		"myBets": "My Bets",
+		"signOut": "Sign Out"
 	}
 }

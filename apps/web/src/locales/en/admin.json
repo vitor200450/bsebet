@@ -24,8 +24,27 @@
 		"toast": {
 			"deleted": "Team deleted!",
 			"saveError": "Error saving team",
-			"deleteError": "Error deleting team"
-		}
+			"deleteError": "Error deleting team",
+			"saved": "Team saved successfully!",
+			"checkData": "Check the data and try again.",
+			"tryAgain": "Try again."
+		},
+		"newButton": "New Team",
+		"editButton": "Edit",
+		"addTeam": "Add Team",
+		"editTitle": "Edit Team",
+		"newTitle": "New Team",
+		"deleteTitle": "Delete Team",
+		"nameLabel": "Team Name",
+		"logoUrlLabel": "Logo URL",
+		"uploadImage": "Upload Image",
+		"imagePreview": "Preview",
+		"cancel": "Cancel",
+		"saving": "Saving...",
+		"save": "Save",
+		"deleteConfirmMessage": "Are you sure you want to delete this team?",
+		"selectedTeam": "Selected team",
+		"deleteConfirmAction": "Yes, Delete"
 	},
 	"tournaments": {
 		"title": "Manage Tournaments",
@@ -52,15 +71,25 @@
 		"auditNote": "This action will be logged and is irreversible. Only administrators can perform compensations.",
 		"irreversible": "This action cannot be undone.",
 		"history": "Adjustment History",
-		"description": "Manual point adjustment for users affected by bugs or system errors."
+		"description": "Manual point adjustment for users affected by bugs or system errors.",
+		"noUserFound": "No user found",
+		"applying": "Applying..."
 	},
 	"migrateLogos": {
+		"title": "Logo Migration",
 		"description": "What will be done?",
 		"warning": "Warning: This process modifies the database and cannot be undone. Make sure you have a recent backup before proceeding.",
 		"start": "Start Migration",
 		"running": "Running...",
 		"success": "Migration Complete",
 		"error": "Migration Error",
-		"completedAt": "Completed at: {{time}}"
+		"completedAt": "Completed at: {{time}}",
+		"confirmMessage": "Are you sure? This action cannot be undone.",
+		"step1": "1. Connect to R2",
+		"step2": "2. Upload logos",
+		"step3": "3. Update URLs in database",
+		"warningTitle": "Warning",
+		"migrating": "Migrating...",
+		"teams": "Teams"
 	}
 }

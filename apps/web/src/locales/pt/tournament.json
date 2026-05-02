@@ -24,11 +24,24 @@
 	},
 	"podium": {
 		"title": "Pódio Final",
-		"champion": "CAMPEÃO"
+		"champion": "CAMPEÃO",
+		"viewRanking": "Ver Ranking",
+		"rank1": "1º Lugar",
+		"rank2": "2º Lugar",
+		"rank3": "3º Lugar"
 	},
 	"selector": {
 		"recovery": "RECUPERAÇÃO",
-		"label": "Selecionar torneio"
+		"label": "Selecionar torneio",
+		"yourBets": "Suas Apostas",
+		"startDate": "Data de início",
+		"currentPhase": "Fase atual",
+		"groupStage": "Fase de Grupos",
+		"matchesAvailable": "partidas disponíveis",
+		"wait": "AGUARDE",
+		"viewBets": "Ver Apostas",
+		"betNow": "Apostar Agora",
+		"betsDisabled": "Apostas desabilitadas"
 	},
 	"matchDay": {
 		"completed": "Concluído",
@@ -37,6 +50,14 @@
 		"noMatchDay": "Não há match days disponíveis para este torneio.",
 		"selectPrompt": "Escolha qual dia de partidas você quer visualizar",
 		"noMatches": "Nenhuma partida atribuída",
-		"pending": "Aguardando atualização"
+		"pending": "Aguardando atualização",
+		"betsOpen": "Apostas abertas",
+		"betsClosed": "Apostas encerradas",
+		"draft": "Rascunho",
+		"selectTitle": "Selecionar Match Day",
+		"tournamentLabel": "Torneio",
+		"active": "Ativo",
+		"unavailable": "Indisponível",
+		"noMatchDayTitle": "Nenhum Match Day"
 	}
 }
