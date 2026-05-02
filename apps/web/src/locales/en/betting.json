@@ -35,7 +35,15 @@
 		"title": "{{tournament}} - REVIEW",
 		"confirmTitle": "CONFIRM YOUR PICKS",
 		"titleFallback": "TOURNAMENT",
-		"description": "Are you sure you want to lock in these predictions? You won't be able to change them later."
+		"description": "Are you sure you want to lock in these predictions? You won't be able to change them later.",
+		"reviewTitle": "REVIEW YOUR",
+		"reviewTitleHighlight": "PICKS",
+		"reviewSubtitle": "Check everything before locking in!",
+		"lockAll": "Lock in All Picks",
+		"lockIn": "LOCK IN",
+		"updateBets": "UPDATE BETS",
+		"picksLocked": "Picks Locked",
+		"noValidPicks": "No Valid Picks"
 	},
 	"betLabel": "You bet on:",
 	"totalPoints": "Total: {{count}} point",

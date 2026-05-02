@@ -852,10 +852,10 @@ function ReviewScreen({
 							})}
 						</div>
 						<h2 className="-skew-x-12 transform font-black font-display text-4xl text-black uppercase italic tracking-tighter">
-							Review Your <span className="text-brawl-red">Picks</span>
+							{t("review.reviewTitle")} <span className="text-brawl-red">{t("review.reviewTitleHighlight")}</span>
 						</h2>
 						<p className="mt-2 font-bold text-gray-500 text-xs uppercase tracking-widest">
-							Check everything before locking in!
+							{t("review.reviewSubtitle")}
 						</p>
 					</header>
 
@@ -1887,13 +1887,13 @@ function ReviewScreen({
 								verified
 							</span>
 							{editableRecoveryMatchIds.size > 0
-								? "ATUALIZAR APOSTAS"
-								: "Lock in All Picks"}
+								? t("review.updateBets")
+								: t("review.lockAll")}
 						</button>
 					) : (
 						<div className="mb-12 flex w-full max-w-xs items-center justify-center gap-3 border-[4px] border-zinc-200 bg-zinc-100 py-4 font-black text-xl text-zinc-400 uppercase italic">
 							<span className="material-symbols-outlined text-2xl">lock</span>
-							{isReadOnly ? "Picks Locked" : "No Valid Picks"}
+							{isReadOnly ? t("review.picksLocked") : t("review.noValidPicks")}
 						</div>
 					)}
 				</div>
@@ -1957,7 +1957,7 @@ function SubmitBetsModal({
 	matchDayStatus?: string;
 	onSuccess?: () => void;
 }) {
-	const { t } = useTranslation("betting");
+	const { t, i18n } = useTranslation("betting");
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<
 		"idle" | "submitting" | "success" | "error"
@@ -2126,7 +2126,7 @@ function SubmitBetsModal({
 			}
 
 			const { submitMultipleBets } = await import("../../server/bets");
-			await submitMultipleBets({ data: { bets: betsToSubmit } });
+			await submitMultipleBets({ data: { bets: betsToSubmit, lang: i18n.language } });
 
 			// After successful submission:
 			// 1. Update local predictions with the resolved scores so the review screen
@@ -2215,8 +2215,8 @@ function SubmitBetsModal({
 						disabled={status === "submitting"}
 						className="flex-1 border-[3px] border-black bg-gray-200 py-3 font-black text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-300 active:shadow-none"
 					>
-						Cancel
-					</button>
+{t("common:actions.cancel")}
+						</button>
 					<button
 						onClick={handleSubmit}
 						disabled={status === "submitting" || !hasValidBetsToSubmit}
@@ -2232,7 +2232,7 @@ function SubmitBetsModal({
 								refresh
 							</span>
 						) : (
-							<span>LOCK IN</span>
+							<span>{t("review.lockIn")}</span>
 						)}
 					</button>
 				</div>
