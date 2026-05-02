@@ -10,8 +10,10 @@
 	"toast": {
 		"saved": "Profile updated successfully!",
 		"error": "Error saving. Please try again.",
-		"avatarRestoreError": "Could not restore the Google avatar. Try signing out and back in."
+		"avatarRestoreError": "Could not restore the Google avatar. Try signing out and back in.",
+		"imageTooLarge": "Image too large. Max 2MB."
 	},
+	"saving": "SAVING...",
 	"signIn": "Sign In",
 	"userMenu": {
 		"label": "User Profile",

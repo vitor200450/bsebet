@@ -8,6 +8,14 @@
 		"upcoming": "Próximas Partidas",
 		"recentHistory": "Histórico Recente"
 	},
+	"status": {
+		"live": "AO VIVO",
+		"now": "AGORA"
+	},
+	"actions": {
+		"follow": "Acompanhar",
+		"bet": "Apostar"
+	},
 	"empty": {
 		"noFinishedMatches": "Nenhuma partida finalizada"
 	}

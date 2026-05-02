@@ -17,10 +17,14 @@
 	},
 	"empty": {
 		"none": "No bets found",
+		"noPending": "No pending bets",
+		"noFinished": "No finished bets",
+		"filterHint": "Try another filter or place more bets.",
 		"noMatches": "No matches found",
 		"cta": "Place your bets on active tournaments!"
 	},
 	"actions": {
-		"viewTournament": "View tournament"
+		"viewTournament": "View tournament",
+		"viewMatches": "View Matches"
 	}
 }

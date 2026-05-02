@@ -99,7 +99,7 @@ function RouteComponent() {
 		if (!file) return;
 
 		if (file.size > 2 * 1024 * 1024) {
-			toast.error("Imagem muito grande. Máximo 2MB.");
+			toast.error(t("toast.imageTooLarge"));
 			return;
 		}
 
@@ -360,7 +360,7 @@ function RouteComponent() {
 						className="skew-x-12 transform transition-transform group-hover:scale-110"
 					/>
 					<span className="skew-x-12 transform">
-						{isSaving ? "SALVANDO..." : t("saveChanges")}
+						{isSaving ? t("saving") : t("saveChanges")}
 					</span>
 				</button>
 

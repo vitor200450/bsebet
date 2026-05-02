@@ -211,7 +211,7 @@ function TeamDetailsPage() {
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
 								<span className="rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
-									AO VIVO
+									{t("status.live")}
 								</span>
 							)}
 						</div>
@@ -243,7 +243,7 @@ function TeamDetailsPage() {
 																: "bg-[#ccff00] text-black",
 														)}
 													>
-														{isLive ? "AO VIVO" : "VS"}
+														{isLive ? t("status.live") : "VS"}
 													</span>
 													{match.tournament?.name && (
 														<span className="max-w-[100px] truncate font-bold text-[10px] text-gray-700 uppercase">
@@ -253,7 +253,7 @@ function TeamDetailsPage() {
 												</div>
 												<span className="font-bold text-[10px] text-gray-700 uppercase">
 													{isLive
-														? "AGORA"
+														? t("status.now")
 														: new Date(match.startTime).toLocaleDateString(
 																"pt-BR",
 																{
@@ -323,7 +323,7 @@ function TeamDetailsPage() {
 												to={linkTo("/")}
 												className="block w-full rounded-lg border-2 border-black bg-[#ffc700] py-2.5 text-center font-bold text-black text-sm uppercase shadow-[2px_2px_0_0_#000]"
 											>
-												{isLive ? "Acompanhar" : "Fazer Aposta"}
+												{isLive ? t("actions.follow") : t("actions.bet")}
 											</Link>
 										</div>
 
@@ -424,7 +424,7 @@ function TeamDetailsPage() {
 											<div className="hidden shrink-0 rounded-lg border-2 border-black bg-[#f0f0f0] px-3 py-2 text-center shadow-[2px_2px_0_0_#000] xl:block">
 												<div className="font-bold text-[10px] text-gray-900 uppercase">
 													{isLive
-														? "AGORA"
+														? t("status.now")
 														: new Date(match.startTime)
 																.toLocaleDateString("pt-BR", {
 																	month: "short",
@@ -445,7 +445,7 @@ function TeamDetailsPage() {
 												to={linkTo("/")}
 												className="shrink-0 rounded-lg border-2 border-black bg-[#ffc700] px-4 py-2 font-bold text-black text-xs uppercase shadow-[2px_2px_0_0_#000] transition-all hover:shadow-[3px_3px_0_0_#000]"
 											>
-												{isLive ? "Acompanhar" : "Apostar"}
+												{isLive ? t("actions.follow") : t("actions.bet")}
 											</Link>
 										</div>
 									</div>

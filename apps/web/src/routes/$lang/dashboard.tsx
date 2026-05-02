@@ -98,11 +98,11 @@ function RouteComponent() {
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
 							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
-								Dashboard
+								{t("title")}
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
 								{t("greeting", { name: displayName })}
-								Acompanhe seu desempenho e palpites.
+								{t("subtitle")}
 							</p>
 						</div>
 						<Link
@@ -152,7 +152,7 @@ function RouteComponent() {
 									{stats.totalPoints}
 								</div>
 								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
-									Total de Pontos
+									{t("stats.totalPoints")}
 								</div>
 							</div>
 
@@ -168,7 +168,7 @@ function RouteComponent() {
 									<span className="text-xl">%</span>
 								</div>
 								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
-									Taxa de Acerto
+									{t("stats.hitRate")}
 								</div>
 								<div className="mt-1 font-medium text-[10px] text-gray-500">
 									{stats.correctPredictions} de {stats.totalBets} corretos
@@ -201,7 +201,7 @@ function RouteComponent() {
 									{stats.pendingBets}
 								</div>
 								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
-									Palpites Pendentes
+									{t("stats.pendingBets")}
 								</div>
 							</div>
 						</div>
@@ -252,7 +252,7 @@ function RouteComponent() {
 							/>
 						</div>
 						<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-							Conquistas
+							{t("stats.achievements")}
 						</h2>
 					</div>
 					<MedalSummary
@@ -280,7 +280,7 @@ function RouteComponent() {
 								</span>
 							</div>
 							<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-								Meus Palpites Ativos
+								{t("stats.activeBets")}
 							</h2>
 							{activeBets.length > 0 && (
 								<span className="rounded-md bg-[#ccff00] px-2 py-0.5 font-black text-black text-xs">
@@ -464,7 +464,7 @@ function RouteComponent() {
 										type="button"
 										className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
 									>
-										Ver Partidas
+										{t("stats.viewMatches")}
 									</button>
 								</Link>
 							</div>
@@ -478,7 +478,7 @@ function RouteComponent() {
 								<Trophy className="h-5 w-5 text-black" strokeWidth={2.5} />
 							</div>
 							<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-								Torneios
+								{t("stats.tournaments")}
 							</h2>
 						</div>
 
@@ -518,7 +518,9 @@ function RouteComponent() {
 											<p className="truncate font-bold text-[#121212] text-sm">
 												{tournament.name}
 											</p>
-											<p className="text-gray-500 text-xs">Ver partidas</p>
+											<p className="text-gray-500 text-xs">
+												{t("stats.viewMatches")}
+											</p>
 										</div>
 										<ChevronRight
 											className="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-[#121212]"
@@ -530,7 +532,7 @@ function RouteComponent() {
 						) : (
 							<div className="rounded-lg border-2 border-black bg-white p-6 text-center shadow-[3px_3px_0_0_#000]">
 								<p className="font-bold text-gray-600 text-sm">
-									Sem torneios ativos
+									{t("stats.noActiveTournaments")}
 								</p>
 							</div>
 						)}

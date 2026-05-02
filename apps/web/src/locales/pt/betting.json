@@ -28,7 +28,12 @@
 		"noMatches": "Os jogos de hoje já começaram ou ainda não foram agendados.",
 		"title": "Sem Partidas",
 		"now": "Agora",
-		"waiting": "Aguardando"
+		"waiting": "Aguardando",
+		"waitNextMatchDay": "Aguarde o próximo match day."
+	},
+	"review": {
+		"title": "{{tournament}} - REVISÃO",
+		"titleFallback": "TORNEIO"
 	},
 	"betLabel": "Você apostou em:",
 	"totalPoints": "Total: {{count}} ponto",

@@ -324,7 +324,9 @@ function LeaderboardPage() {
 							<span className="font-black text-[10px] text-green-600">✓</span>
 							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-gray-600">Acertos</span>
+						<span className="text-[10px] text-gray-600">
+							{t("columns.hits")}
+						</span>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded bg-green-500 px-1.5 py-0.5">
@@ -337,7 +339,9 @@ function LeaderboardPage() {
 							<Zap className="h-3 w-3 text-black" strokeWidth={2} />
 							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-gray-600">Azarões</span>
+						<span className="text-[10px] text-gray-600">
+							{t("columns.underdogs")}
+						</span>
 					</div>
 					<div className="flex items-center gap-1">
 						<MiniMedalBadge tier="1st" size="sm" />

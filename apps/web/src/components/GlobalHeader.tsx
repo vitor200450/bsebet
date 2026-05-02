@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { ChevronRight, LogOut, Shield } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 import BRFlag from "country-flag-icons/react/3x2/BR";
 import USFlag from "country-flag-icons/react/3x2/US";
+import { ChevronRight, LogOut, Shield } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getLiveStatus } from "@/functions/get-live-status";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -16,11 +16,17 @@ export function GlobalHeader() {
 	const { t } = useTranslation("common");
 	const { lang, routeTo } = useLangLink();
 	const router = useRouterState();
-	const switchLangTo = useCallback((targetLang: string) => {
-		if (targetLang === lang) return;
-		const path = router.location.pathname.replace(/^\/[^/]+/, `/${targetLang}`);
-		window.location.href = path;
-	}, [lang, router.location.pathname]);
+	const switchLangTo = useCallback(
+		(targetLang: string) => {
+			if (targetLang === lang) return;
+			const path = router.location.pathname.replace(
+				/^\/[^/]+/,
+				`/${targetLang}`,
+			);
+			window.location.href = path;
+		},
+		[lang, router.location.pathname],
+	);
 	const { config } = useHeader();
 	const [mounted, setMounted] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -209,34 +215,58 @@ export function GlobalHeader() {
 									: "border-gray-300 text-gray-500 hover:border-black hover:text-black",
 							)}
 						>
-							{lang === "pt" ? <BRFlag className="h-5 w-5 shrink-0 rounded-sm" /> : <USFlag className="h-5 w-5 shrink-0 rounded-sm" />}
+							{lang === "pt" ? (
+								<BRFlag className="h-5 w-5 shrink-0 rounded-sm" />
+							) : (
+								<USFlag className="h-5 w-5 shrink-0 rounded-sm" />
+							)}
 							<span>{lang === "pt" ? "PT" : "EN"}</span>
-							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
+							<ChevronRight
+								className={clsx(
+									"h-3 w-3 transition-transform",
+									isLangOpen && "rotate-90",
+								)}
+								strokeWidth={3}
+							/>
 						</button>
 						{isLangOpen && (
-							<div className="absolute right-0 top-full z-50 mt-1 w-48 whitespace-nowrap overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+							<div className="absolute top-full right-0 z-50 mt-1 w-48 overflow-hidden whitespace-nowrap rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
 								<button
-									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
+									onClick={() => {
+										switchLangTo("pt");
+										setIsLangOpen(false);
+									}}
 									className={clsx(
 										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
-										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+										lang === "pt"
+											? "bg-[#ccff00]/20 text-black"
+											: "text-gray-500",
 									)}
 								>
 									<BRFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>Português</span>
-									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
+									{lang === "pt" && (
+										<span className="ml-auto text-[#ccff00]">✓</span>
+									)}
 								</button>
-								<div className="border-t-2 border-black/10" />
+								<div className="border-black/10 border-t-2" />
 								<button
-									onClick={() => { switchLangTo("en"); setIsLangOpen(false); }}
+									onClick={() => {
+										switchLangTo("en");
+										setIsLangOpen(false);
+									}}
 									className={clsx(
 										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
-										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+										lang === "en"
+											? "bg-[#ccff00]/20 text-black"
+											: "text-gray-500",
 									)}
 								>
 									<USFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>English</span>
-									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
+									{lang === "en" && (
+										<span className="ml-auto text-[#ccff00]">✓</span>
+									)}
 								</button>
 							</div>
 						)}
@@ -260,35 +290,59 @@ export function GlobalHeader() {
 					<div className="relative">
 						<button
 							onClick={() => setIsLangOpen(!isLangOpen)}
-							className="flex items-center gap-1.5 rounded-lg border-2 border-gray-300 px-2 py-1 font-black text-xs uppercase tracking-wider text-gray-500 transition-all hover:border-black hover:text-black"
+							className="flex items-center gap-1.5 rounded-lg border-2 border-gray-300 px-2 py-1 font-black text-gray-500 text-xs uppercase tracking-wider transition-all hover:border-black hover:text-black"
 						>
-							{lang === "pt" ? <BRFlag className="h-5 w-5 shrink-0 rounded-sm" /> : <USFlag className="h-5 w-5 shrink-0 rounded-sm" />}
-							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
+							{lang === "pt" ? (
+								<BRFlag className="h-5 w-5 shrink-0 rounded-sm" />
+							) : (
+								<USFlag className="h-5 w-5 shrink-0 rounded-sm" />
+							)}
+							<ChevronRight
+								className={clsx(
+									"h-3 w-3 transition-transform",
+									isLangOpen && "rotate-90",
+								)}
+								strokeWidth={3}
+							/>
 						</button>
 						{isLangOpen && (
-							<div className="absolute right-0 top-full z-50 mt-1 w-48 whitespace-nowrap overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+							<div className="absolute top-full right-0 z-50 mt-1 w-48 overflow-hidden whitespace-nowrap rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
 								<button
-									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
+									onClick={() => {
+										switchLangTo("pt");
+										setIsLangOpen(false);
+									}}
 									className={clsx(
 										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
-										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+										lang === "pt"
+											? "bg-[#ccff00]/20 text-black"
+											: "text-gray-500",
 									)}
 								>
 									<BRFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>Português</span>
-									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
+									{lang === "pt" && (
+										<span className="ml-auto text-[#ccff00]">✓</span>
+									)}
 								</button>
-								<div className="border-t-2 border-black/10" />
+								<div className="border-black/10 border-t-2" />
 								<button
-									onClick={() => { switchLangTo("en"); setIsLangOpen(false); }}
+									onClick={() => {
+										switchLangTo("en");
+										setIsLangOpen(false);
+									}}
 									className={clsx(
 										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
-										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+										lang === "en"
+											? "bg-[#ccff00]/20 text-black"
+											: "text-gray-500",
 									)}
 								>
 									<USFlag className="h-6 w-6 shrink-0 rounded-sm" />
 									<span>English</span>
-									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
+									{lang === "en" && (
+										<span className="ml-auto text-[#ccff00]">✓</span>
+									)}
 								</button>
 							</div>
 						)}

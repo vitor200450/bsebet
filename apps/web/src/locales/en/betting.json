@@ -28,7 +28,12 @@
 		"noMatches": "Today's games have already started or haven't been scheduled yet.",
 		"title": "No Matches",
 		"now": "Now",
-		"waiting": "Waiting"
+		"waiting": "Waiting",
+		"waitNextMatchDay": "Wait for the next match day."
+	},
+	"review": {
+		"title": "{{tournament}} - REVIEW",
+		"titleFallback": "TOURNAMENT"
 	},
 	"betLabel": "You bet on:",
 	"totalPoints": "Total: {{count}} point",

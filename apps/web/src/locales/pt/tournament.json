@@ -9,6 +9,11 @@
 		"noActive": "Não há torneios ativos no momento.",
 		"noScheduled": "Não há torneios programados no momento.",
 		"noFinished": "Não há torneios finalizados no momento.",
+		"totalCount": "{{count}} torneios no total",
+		"teams": "times",
+		"follow": "Acompanhar",
+		"viewResults": "Ver Resultados",
+		"viewDetails": "Ver Detalhes",
 		"noDates": "TBD",
 		"tabs": {
 			"active": "Ativos",

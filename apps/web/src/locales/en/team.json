@@ -8,6 +8,14 @@
 		"upcoming": "Upcoming Matches",
 		"recentHistory": "Recent History"
 	},
+	"status": {
+		"live": "LIVE",
+		"now": "NOW"
+	},
+	"actions": {
+		"follow": "Follow",
+		"bet": "Bet"
+	},
 	"empty": {
 		"noFinishedMatches": "No finished matches"
 	}

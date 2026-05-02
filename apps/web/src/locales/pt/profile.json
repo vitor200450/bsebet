@@ -10,8 +10,10 @@
 	"toast": {
 		"saved": "Perfil atualizado com sucesso!",
 		"error": "Erro ao salvar. Tente novamente.",
-		"avatarRestoreError": "Não foi possível restaurar o avatar do Google. Tente sair e entrar novamente."
+		"avatarRestoreError": "Não foi possível restaurar o avatar do Google. Tente sair e entrar novamente.",
+		"imageTooLarge": "Imagem muito grande. Máximo 2MB."
 	},
+	"saving": "SALVANDO...",
 	"signIn": "Entrar",
 	"userMenu": {
 		"label": "Perfil do Usuário",

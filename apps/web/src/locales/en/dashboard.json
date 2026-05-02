@@ -1,8 +1,18 @@
 {
+	"title": "Dashboard",
 	"greeting": "Hello, {{name}}!",
+	"subtitle": "Track your performance and bets.",
 	"stats": {
 		"title": "Your Stats",
-		"underdogsWon": "Winning Underdogs"
+		"underdogsWon": "Winning Underdogs",
+		"totalPoints": "Total Points",
+		"hitRate": "Hit Rate",
+		"pendingBets": "Pending Bets",
+		"activeBets": "My Active Bets",
+		"achievements": "Achievements",
+		"viewMatches": "View Matches",
+		"tournaments": "Tournaments",
+		"noActiveTournaments": "No active tournaments"
 	},
 	"viewHistory": "View full history",
 	"empty": {

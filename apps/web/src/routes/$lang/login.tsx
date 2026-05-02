@@ -116,7 +116,7 @@ function RouteComponent() {
 										</svg>
 									</div>
 									<span className="font-black text-black text-lg uppercase italic tracking-wide">
-										Entrar com Google
+										{t("loginWithGoogle")}
 									</span>
 								</>
 							)}

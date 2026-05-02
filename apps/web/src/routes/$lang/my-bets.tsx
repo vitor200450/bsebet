@@ -664,20 +664,18 @@ function RouteComponent() {
 							{filter === "all"
 								? t("empty.none")
 								: filter === "pending"
-									? "Nenhum palpite pendente"
-									: "Nenhum palpite finalizado"}
+									? t("empty.noPending")
+									: t("empty.noFinished")}
 						</p>
 						<p className="mb-5 text-gray-600 text-sm">
-							{filter === "all"
-								? t("empty.cta")
-								: "Tente outro filtro ou faça mais apostas."}
+							{filter === "all" ? t("empty.cta") : t("empty.filterHint")}
 						</p>
 						<Link to={linkTo("/")}>
 							<button
 								type="button"
 								className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
 							>
-								Ver Partidas
+								{t("actions.viewMatches")}
 							</button>
 						</Link>
 					</div>

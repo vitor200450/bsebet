@@ -17,10 +17,14 @@
 	},
 	"empty": {
 		"none": "Nenhum palpite encontrado",
+		"noPending": "Nenhum palpite pendente",
+		"noFinished": "Nenhum palpite finalizado",
+		"filterHint": "Tente outro filtro ou faça mais apostas.",
 		"noMatches": "Nenhuma partida encontrada",
 		"cta": "Faça suas apostas nos torneios ativos!"
 	},
 	"actions": {
-		"viewTournament": "Ver torneio"
+		"viewTournament": "Ver torneio",
+		"viewMatches": "Ver Partidas"
 	}
 }

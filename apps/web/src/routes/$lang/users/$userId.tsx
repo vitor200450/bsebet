@@ -52,7 +52,7 @@ function UserProfilePage() {
 				if (!acc[tournamentId]) {
 					acc[tournamentId] = {
 						id: tournamentId,
-						name: bet.match.tournament?.name || "Torneio Desconhecido",
+						name: bet.match.tournament?.name || t("unknownTournament"),
 						logoUrl: bet.match.tournament?.logoUrl,
 						bets: [] as typeof recentBets,
 					};
@@ -81,7 +81,7 @@ function UserProfilePage() {
 		});
 
 		return groups;
-	}, [recentBets]);
+	}, [recentBets, t]);
 
 	const filteredRecentBetGroups = useMemo(() => {
 		if (recentBetsTournamentFilter === "all") {
@@ -119,7 +119,7 @@ function UserProfilePage() {
 						{/* Title Badge md:flex-row */}
 						<div className="inline-block w-fit -skew-x-12 transform border-[3px] border-black bg-black px-6 py-3 text-white shadow-[4px_4px_0_0_#000] md:px-8 md:py-4">
 							<h1 className="skew-x-12 transform font-black text-3xl text-[#ccff00] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
-								PERFIL
+								{t("profile")}
 							</h1>
 						</div>
 					</div>
@@ -135,7 +135,7 @@ function UserProfilePage() {
 								className="h-5 w-5 transition-transform group-hover:-translate-x-1"
 								strokeWidth={3}
 							/>
-							VOLTAR
+							{t("back")}
 						</span>
 					</Link>
 				</div>
@@ -176,7 +176,7 @@ function UserProfilePage() {
 									{user.nickname ?? user.name}
 								</h2>
 								<p className="mt-2 font-bold text-gray-500 text-sm uppercase">
-									Membro desde {memberSince}
+									{t("memberSince")} {memberSince}
 								</p>
 							</div>
 						</div>
@@ -213,7 +213,7 @@ function UserProfilePage() {
 										{stats.totalPoints}
 									</div>
 									<div className="font-black text-[10px] text-black uppercase tracking-wider">
-										Total de Pontos
+										{t("totalPoints")}
 									</div>
 								</div>
 
@@ -229,7 +229,7 @@ function UserProfilePage() {
 										{stats.accuracy}%
 									</div>
 									<div className="font-black text-[10px] text-black uppercase tracking-wider">
-										Taxa de Acerto
+										{t("hitRate")}
 									</div>
 								</div>
 
@@ -245,7 +245,7 @@ function UserProfilePage() {
 										{stats.perfectPicks}
 									</div>
 									<div className="font-black text-[10px] text-black uppercase tracking-wider">
-										Placares Exatos
+										{t("exactScores")}
 									</div>
 								</div>
 
@@ -277,7 +277,7 @@ function UserProfilePage() {
 										{stats.totalBets}
 									</div>
 									<div className="font-black text-[10px] text-black uppercase tracking-wider">
-										Total de Apostas
+										{t("totalBets")}
 									</div>
 								</div>
 							</div>
@@ -293,16 +293,16 @@ function UserProfilePage() {
 										</span>
 									</div>
 									<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
-										Apostas Recentes
+										{t("recentBets")}
 									</h2>
 									{betsByTournament.length > 1 && (
 										<div className="ml-auto w-full max-w-[320px]">
 											<CustomSelect
-												label="Torneio"
+												label={t("filterLabel")}
 												value={recentBetsTournamentFilter}
 												onChange={setRecentBetsTournamentFilter}
 												options={[
-													{ value: "all", label: "Todos" },
+													{ value: "all", label: t("all") },
 													...betsByTournament.map((group) => ({
 														value: group.id,
 														label: group.name,
@@ -346,7 +346,7 @@ function UserProfilePage() {
 														bet.match.status === "finished";
 
 													let statusBadgeClass = "bg-[#f0f0f0] text-black";
-													let label = "AGENDADO";
+													let label = t("scheduled");
 
 													if (isWin) {
 														statusBadgeClass = "bg-[#ccff00] text-black";
@@ -357,7 +357,7 @@ function UserProfilePage() {
 													} else if (bet.match.status === "live") {
 														statusBadgeClass =
 															"bg-[#ff2e2e] text-white animate-pulse";
-														label = "AO VIVO";
+														label = t("live");
 													}
 
 													return (
@@ -403,7 +403,7 @@ function UserProfilePage() {
 																		{bet.predictedWinnerId ===
 																		bet.match.teamA?.id ? (
 																			<div className="bg-black px-2 py-0.5 font-black text-[#ccff00] text-[8px] uppercase">
-																				PALPITE
+																				{t("bet")}
 																			</div>
 																		) : (
 																			<div className="h-5" />
@@ -457,7 +457,7 @@ function UserProfilePage() {
 																		{bet.predictedWinnerId ===
 																		bet.match.teamB?.id ? (
 																			<div className="bg-black px-2 py-0.5 font-black text-[#ccff00] text-[8px] uppercase">
-																				PALPITE
+																				{t("bet")}
 																			</div>
 																		) : (
 																			<div className="h-5" />
@@ -487,7 +487,7 @@ function UserProfilePage() {
 																			casino
 																		</span>
 																		<span className="font-black text-[10px] text-black uppercase tracking-wide">
-																			Palpite:
+																			{t("betLabel")}
 																		</span>
 																	</div>
 																	<div className="flex items-center gap-1.5 opacity-80">
@@ -509,7 +509,7 @@ function UserProfilePage() {
 																			sports_score
 																		</span>
 																		<span className="font-black text-[10px] text-black uppercase tracking-wide">
-																			Real:
+																			{t("actualLabel")}
 																		</span>
 																	</div>
 																	<div className="flex items-center gap-1.5">
@@ -618,7 +618,7 @@ function UserProfilePage() {
 												<div className="grid grid-cols-2 gap-4">
 													<div className="flex flex-col border-black/10 border-r-2 border-dashed">
 														<span className="mb-1 font-black text-[9px] text-black/50 uppercase tracking-widest">
-															Perfeitos
+															{t("perfectScore")}
 														</span>
 														{history.perfectPicks > 0 ? (
 															<span className="flex items-center gap-1 font-black text-black text-xl">
@@ -636,7 +636,7 @@ function UserProfilePage() {
 													</div>
 													<div className="flex flex-col pl-2">
 														<span className="mb-1 font-black text-[9px] text-black/50 uppercase tracking-widest">
-															Pontos Finais
+															{t("finalPoints")}
 														</span>
 														<span className="flex items-center gap-1 font-black text-2xl text-black italic tracking-tight">
 															{history.totalPoints}

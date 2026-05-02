@@ -76,7 +76,7 @@ function TournamentsPage() {
 						<div className="flex items-center gap-2 text-gray-500">
 							<Trophy className="h-5 w-5" strokeWidth={2} />
 							<span className="font-bold text-sm uppercase tracking-wider">
-								{tournaments.length} torneios no total
+								{t("browse.totalCount", { count: tournaments.length })}
 							</span>
 						</div>
 					</div>
@@ -247,7 +247,7 @@ function TournamentCard({
 						{tournament.participantsCount && (
 							<span className="flex items-center gap-1 rounded bg-[#f0f0f0] px-2 py-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 								<Users className="h-3 w-3" strokeWidth={2} />
-								{tournament.participantsCount} times
+								{tournament.participantsCount} {t("browse.teams")}
 							</span>
 						)}
 					</div>
@@ -275,10 +275,10 @@ function TournamentCard({
 						)}
 					>
 						{isActive
-							? "Acompanhar"
+							? t("browse.follow")
 							: isFinished
-								? "Ver Resultados"
-								: "Ver Detalhes"}
+								? t("browse.viewResults")
+								: t("browse.viewDetails")}
 						<ArrowRight className="h-4 w-4" strokeWidth={2.5} />
 					</Link>
 				</div>

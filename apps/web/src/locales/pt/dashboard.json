@@ -1,8 +1,18 @@
 {
+	"title": "Dashboard",
 	"greeting": "Olá, {{name}}!",
+	"subtitle": "Acompanhe seu desempenho e palpites.",
 	"stats": {
 		"title": "Suas Estatísticas",
-		"underdogsWon": "Azarões Vencedores"
+		"underdogsWon": "Azarões Vencedores",
+		"totalPoints": "Total de Pontos",
+		"hitRate": "Taxa de Acerto",
+		"pendingBets": "Palpites Pendentes",
+		"activeBets": "Meus Palpites Ativos",
+		"achievements": "Conquistas",
+		"viewMatches": "Ver Partidas",
+		"tournaments": "Torneios",
+		"noActiveTournaments": "Sem torneios ativos"
 	},
 	"viewHistory": "Ver histórico completo",
 	"empty": {

@@ -845,7 +845,11 @@ function ReviewScreen({
 					<header className="mb-8 text-center">
 						<div className="mb-2 inline-flex -skew-x-12 transform items-center gap-1.5 rounded-full bg-black px-3 py-1 font-black text-[10px] text-white tracking-[0.2em]">
 							<span className="h-1.5 w-1.5 rounded-full bg-brawl-yellow" />
-							{matches[0]?.tournamentName?.toUpperCase() || "TORNEIO"} - REVISÃO
+							{t("review.title", {
+								tournament:
+									matches[0]?.tournamentName?.toUpperCase() ||
+									t("review.titleFallback"),
+							})}
 						</div>
 						<h2 className="-skew-x-12 transform font-black font-display text-4xl text-black uppercase italic tracking-tighter">
 							Review Your <span className="text-brawl-red">Picks</span>
@@ -3405,7 +3409,7 @@ function Home() {
 											Este match day foi finalizado.{" "}
 											{matchDays.find((md: any) => md.status === "open")
 												? t("matchDayNewAvailable")
-												: "Aguarde o próximo match day."}
+												: t("empty.waitNextMatchDay")}
 										</p>
 									</div>
 								</div>
