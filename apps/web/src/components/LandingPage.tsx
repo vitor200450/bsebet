@@ -109,6 +109,8 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
 								{t("features.predictTitle")}
+								<br />
+								{t("features.predictTitleSub")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
 								{t("features.predictDesc")}
@@ -130,6 +132,8 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
 								{t("features.scoreTitle")}
+								<br />
+								{t("features.scoreTitleSub")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
 								{t("features.scoreDesc")}
@@ -151,6 +155,8 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
 							</div>
 							<h3 className="mb-2 font-black text-2xl text-black uppercase italic tracking-tighter md:mb-4 md:text-3xl">
 								{t("features.prizesTitle")}
+								<br />
+								{t("features.prizesTitleSub")}
 							</h3>
 							<p className="font-bold text-gray-600 text-sm leading-relaxed md:text-base">
 								{t("features.prizesDesc")}

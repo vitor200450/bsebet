@@ -1,25 +1,21 @@
 {
 	"hero": {
-		"tagline": "MAKE YOUR",
-		"taglineHighlight": "PICKS",
-		"arenaTitle": "MAKE YOUR",
+		"arenaTitle": "THE ARENA OF",
 		"picksTitle": "PICKS",
 		"title": "Make your picks and climb the leaderboard",
-		"subtitle": "and climb the leaderboard!",
-		"badge": "you know the competitive scene.",
-		"loginCta": "Sign in to start betting",
-		"cta": "Sign in to start betting"
+		"badge": "🏆 Brawl Stars Competitive",
+		"cta": "ENTER NOW"
 	},
 	"features": {
-		"predict": "Predict results",
-		"predictDesc": "you know the competitive scene.",
-		"predictTitle": "PREDICT",
-		"score": "Earn points",
-		"scoreDesc": "with your winning picks",
-		"scoreTitle": "EARN",
-		"prizes": "PRIZES",
-		"prizesTitle": "PRIZES",
-		"prizesDesc": "Win exclusive prizes with your picks"
+		"predictTitle": "MAKE YOUR",
+		"predictTitleSub": "PICKS",
+		"predictDesc": "Predict Brawl Stars match results and prove you know the competitive scene.",
+		"scoreTitle": "CLIMB THE",
+		"scoreTitleSub": "RANKINGS",
+		"scoreDesc": "Earn points with your winning picks and climb to the top of the bettor leaderboard.",
+		"prizesTitle": "WIN",
+		"prizesTitleSub": "PRIZES",
+		"prizesDesc": "Top bettors win exclusive rewards and community recognition."
 	},
 	"footer": {
 		"copyright": "© 2026 BSEBET. All rights reserved."

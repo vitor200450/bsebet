@@ -1,25 +1,21 @@
 {
 	"hero": {
-		"tagline": "FAÇA SEUS",
-		"taglineHighlight": "PALPITES",
-		"arenaTitle": "FAÇA SEUS",
+		"arenaTitle": "A ARENA DOS",
 		"picksTitle": "PALPITES",
 		"title": "Faça seus palpites e suba no ranking",
-		"subtitle": "e suba no ranking!",
-		"badge": "você entende do competitivo.",
-		"loginCta": "Faça login para começar a apostar",
-		"cta": "Faça login para começar a apostar"
+		"badge": "🏆 Competitivo de Brawl Stars",
+		"cta": "ENTRAR AGORA"
 	},
 	"features": {
-		"predict": "Preveja resultados",
-		"predictDesc": "você entende do competitivo.",
-		"predictTitle": "PREVEJA",
-		"score": "Acumule pontos",
-		"scoreDesc": "com seus palpites certeiros",
-		"scoreTitle": "ACUMULE",
-		"prizes": "PRÊMIOS",
-		"prizesTitle": "PRÊMIOS",
-		"prizesDesc": "Ganhe prêmios exclusivos com seus palpites"
+		"predictTitle": "FAÇA SEUS",
+		"predictTitleSub": "PALPITES",
+		"predictDesc": "Preveja os resultados das partidas de Brawl Stars e mostre que você entende do competitivo.",
+		"scoreTitle": "SUBA NO",
+		"scoreTitleSub": "RANKING",
+		"scoreDesc": "Acumule pontos com seus palpites certeiros e escale até o topo do ranking de apostadores.",
+		"prizesTitle": "GANHE",
+		"prizesTitleSub": "PRÊMIOS",
+		"prizesDesc": "Os melhores apostadores ganham recompensas exclusivas e reconhecimento na comunidade."
 	},
 	"footer": {
 		"copyright": "© 2026 BSEBET. Todos os direitos reservados."
