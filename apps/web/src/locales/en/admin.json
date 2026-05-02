@@ -121,6 +121,7 @@
 		"base64Display": "[IMAGEM BASE64 - CONVERT BEFORE SAVING]",
 		"logoPlaceholder": "https://...",
 		"saveButton": "SAVE TOURNAMENT",
+		"delete": "Delete",
 		"deleteTitle": "DELETE TOURNAMENT",
 		"deleteConfirm": "Are you sure you want to delete",
 		"deleteConfirmButton": "YES, DELETE IT",

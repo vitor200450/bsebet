@@ -67,23 +67,47 @@
 		"groupStageDescription": "Gerencie as partidas e resultados da fase de grupos",
 		"manageGroupMatches": "Gerencie as partidas e resultados da fase de grupos",
 		"existingMatchesWarning": "ATENÇÃO: Já existem partidas de grupo geradas. Gerar novamente REMOVERÁ todas as partidas existentes e as apostas associadas.",
-		"continueQuestion": "Deseja continuar?"
+		"continueQuestion": "Deseja continuar?",
+		"cancel": "Cancelar",
+		"playoffWarning": "Isto irá gerar todo o chaveamento. As partidas existentes serão removidas e recriadas.",
+		"regenerateTitle": "Regenerar Chaveamento",
+		"regenerateConfirm": "Tem certeza que deseja regenerar o chaveamento? Todas as partidas e apostas existentes serão removidas."
 	},
 	"reset": {
 		"button": "Resetar",
 		"confirm": "Tem certeza que deseja resetar esta partida? Todas as apostas serão removidas.",
-		"resetAllConfirm": "Tem certeza que deseja resetar TODAS as partidas deste torneio? Todas as apostas serão removidas."
+		"resetAllConfirm": "Tem certeza que deseja resetar TODAS as partidas deste torneio? Todas as apostas serão removidas.",
+		"title": "Resetar Partida",
+		"cancelLabel": "Cancelar",
+		"confirmLabel": "Resetar",
+		"scoreReset": "Placar resetado!",
+		"scoreResetError": "Erro ao resetar placar",
+		"tournamentReset": "Todas as partidas foram resetadas!",
+		"tournamentResetError": "Erro ao resetar partidas do torneio",
+		"tournamentTitle": "Resetar Torneio",
+		"tournamentConfirm": "Tem certeza que deseja resetar TODAS as partidas?",
+		"tournamentDescription": "Isso irá remover todas as partidas e apostas associadas. Esta ação não pode ser desfeita."
 	},
 	"recalc": {
 		"button": "Recalcular Pontuação",
 		"success": "Recálculo concluído: {{matchCount}} partidas, {{betCount}} apostas",
-		"error": "Erro ao recalcular pontuação do torneio"
+		"error": "Erro ao recalcular pontuação do torneio",
+		"title": "Recalcular Pontuações",
+		"description": "Isto irá recalcular os pontos de todas as apostas para as partidas deste torneio.",
+		"confirmLabel": "Recalcular",
+		"cancelLabel": "Cancelar",
+		"skippedAdjustments": "{{count}} ajuste ignorado",
+		"skippedAdjustments_other": "{{count}} ajustes ignorados"
 	},
 	"modal": {
 		"saveError": "Falha ao salvar atualização da partida",
 		"woDescription": "W.O. com um único time definido será resolvido como vitória automática do time presente.",
 		"woUpdated": "Vencedor do W.O. atualizado com sucesso",
-		"clearWinner": "Limpar vencedor"
+		"clearWinner": "Limpar vencedor",
+		"refreshInfo": "Atualize a página se os dados não refletirem as alterações.",
+		"refreshWoWinner": "W.O. com vencedor definido será resolvido como vitória.",
+		"updating": "Atualizando...",
+		"woUpdateError": "Erro ao atualizar W.O."
 	},
 	"live": {
 		"headerTitle": "Partida ao Vivo",
@@ -107,7 +131,10 @@
 		"teamsError": "Erro: Times não definidos",
 		"scoringStarted": "Você começou a pontuar esta partida.",
 		"irreversibleWarning": "Esta ação não pode ser desfeita automaticamente.",
-		"whatToDo": "O que deseja fazer com as alterações?"
+		"whatToDo": "O que deseja fazer com as alterações?",
+		"control": "Controle da Partida",
+		"resetMatch": "Resetar Partida",
+		"setResult": "Definir Resultado"
 	},
 	"matchDays": {
 		"title": "Match Days",
@@ -117,11 +144,35 @@
 		"deleteError": "Erro ao excluir dia.",
 		"updateError": "Erro ao atualizar match day.",
 		"draft": "Draft = Ainda não disponível",
-		"deleteConfirm": "Tem certeza que deseja excluir este dia?"
+		"deleteConfirm": "Tem certeza que deseja excluir este dia?",
+		"infoTitle": "Informações do Match Day",
+		"newDay": "Novo Dia",
+		"nameLabel": "Nome",
+		"namePlaceholder": "Ex: Dia 1",
+		"selectPlaceholder": "Selecione um match day",
+		"create": "Criar",
+		"save": "Salvar",
+		"cancel": "Cancelar",
+		"updated": "Match Day atualizado!",
+		"noDays": "Nenhum match day definido",
+		"editTitle": "Editar Match Day",
+		"editNameLabel": "Nome do Match Day",
+		"matchCount": "{{count}} partida",
+		"matchCount_other": "{{count}} partidas",
+		"betsOpenBadge": "Apostas Abertas",
+		"betsClosedBadge": "Apostas Fechadas",
+		"draftBadge": "Rascunho",
+		"finishedBadge": "Finalizado",
+		"infoOpen": "Match Day aberto para apostas.",
+		"infoLocked": "Match Day fechado. Apostas bloqueadas.",
+		"infoFinished": "Match Day concluído."
 	},
 	"ordering": {
 		"saved": "Ordem salva com sucesso!",
-		"saveError": "Erro ao salvar ordem"
+		"saveError": "Erro ao salvar ordem",
+		"title": "Ordenar Partidas",
+		"subtitle": "Arraste as partidas para reordenar a exibição.",
+		"saveButton": "Salvar Ordem"
 	},
 	"bracketEditor": {
 		"quarterFinals": "Quartas de Final",
@@ -129,5 +180,57 @@
 		"final": "Final",
 		"ubFinal": "UB Final",
 		"round": "Rodada"
+	},
+	"bracketView": {
+		"roundRobin": "Round Robin",
+		"gslFormat": "Formato GSL",
+		"top2Advance": "Top 2 Avançam",
+		"openingMatches": "Partidas de Abertura",
+		"winnersMatch": "Partida dos Vencedores",
+		"eliminationMatch": "Partida de Eliminação",
+		"deciderMatch": "Partida Decisiva",
+		"noMatches": "Nenhuma partida agendada",
+		"colTeam": "Time",
+		"colWL": "V-D",
+		"colMaps": "Mapas",
+		"colDiff": "Dif",
+		"qualified": "CLASS"
+	},
+	"stageBuilder": {
+		"addStage": "Adicionar Fase",
+		"bestOf1": "Melhor de 1",
+		"bestOf3": "Melhor de 3",
+		"bestOf5": "Melhor de 5",
+		"default": "Padrão",
+		"defaultName": "Fase {{number}}",
+		"doubleElimination": "Dupla Eliminação",
+		"emptyState": "Nenhuma fase definida",
+		"emptyStateHint": "Clique em \"Adicionar Fase\" para começar",
+		"endDate": "Data Final",
+		"exactPts": "Placar Exato",
+		"format": "Formato",
+		"groups": "Grupos",
+		"groupsCount": "Quantidade de Grupos",
+		"groupsCountPlaceholder": "ex: 4",
+		"gsl": "GSL",
+		"matchType": "Tipo de Partida",
+		"roundRobin": "Round Robin",
+		"scoringOverrides": "Sobrescrita de Pontuação (Opcional)",
+		"settings": "Configurações",
+		"singleElimination": "Eliminação Simples",
+		"stageName": "Nome da Fase",
+		"stageNamePlaceholder": "ex: Fase de Grupos",
+		"startDate": "Data Inicial",
+		"teamsPerGroup": "Times / Grupo",
+		"teamsPerGroupPlaceholder": "ex: 4",
+		"title": "Fluxo de Fases do Torneio",
+		"topNAdvance": "Top N Avançam",
+		"topNAdvancePlaceholder": "ex: 2",
+		"type": "Tipo",
+		"underdogT1": "Azarão T1 (≤25%)",
+		"underdogT1Tooltip": "Bônus para azarão com ≤25% dos votos",
+		"underdogT2": "Azarão T2 (26-50%)",
+		"underdogT2Tooltip": "Bônus para azarão com 26-50% dos votos",
+		"winnerPts": "Pts Vencedor"
 	}
 }

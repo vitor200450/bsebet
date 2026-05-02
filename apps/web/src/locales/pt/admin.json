@@ -121,6 +121,7 @@
 		"base64Display": "[IMAGEM BASE64 - SALVE PARA CONVERTER]",
 		"logoPlaceholder": "https://...",
 		"saveButton": "SALVAR TORNEIO",
+		"delete": "Excluir",
 		"deleteTitle": "EXCLUIR TORNEIO",
 		"deleteConfirm": "Tem certeza que deseja excluir",
 		"deleteConfirmButton": "SIM, EXCLUIR",

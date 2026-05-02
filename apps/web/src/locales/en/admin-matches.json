@@ -9,7 +9,7 @@
 		"addButton": "Add",
 		"participatingTitle": "Participating Teams",
 		"sortLabel": "Sort:",
-		"sortRecent": "Recents",
+		"sortRecent": "Recent",
 		"sortAZ": "A-Z",
 		"sortRegion": "Region",
 		"emptyState": "No teams added yet",
@@ -67,23 +67,47 @@
 		"groupStageDescription": "Manage group stage matches and results",
 		"manageGroupMatches": "Manage group stage matches and results",
 		"existingMatchesWarning": "WARNING: Group matches already exist. Regenerating will REMOVE all existing matches and associated bets.",
-		"continueQuestion": "Do you want to continue?"
+		"continueQuestion": "Do you want to continue?",
+		"cancel": "Cancel",
+		"playoffWarning": "This will generate the entire bracket. Existing matches will be removed and recreated.",
+		"regenerateTitle": "Regenerate Bracket",
+		"regenerateConfirm": "Are you sure you want to regenerate the bracket? All existing matches and bets will be removed."
 	},
 	"reset": {
 		"button": "Reset",
 		"confirm": "Are you sure you want to reset this match? All bets will be removed.",
-		"resetAllConfirm": "Are you sure you want to reset ALL matches in this tournament? All bets will be removed."
+		"resetAllConfirm": "Are you sure you want to reset ALL matches in this tournament? All bets will be removed.",
+		"title": "Reset Match",
+		"cancelLabel": "Cancel",
+		"confirmLabel": "Reset",
+		"scoreReset": "Score reset!",
+		"scoreResetError": "Error resetting score",
+		"tournamentReset": "All matches have been reset!",
+		"tournamentResetError": "Error resetting tournament matches",
+		"tournamentTitle": "Reset Tournament",
+		"tournamentConfirm": "Are you sure you want to reset ALL matches?",
+		"tournamentDescription": "This will remove all matches and associated bets. This action cannot be undone."
 	},
 	"recalc": {
 		"button": "Recalculate Scores",
 		"success": "Recalculation complete: {{matchCount}} matches, {{betCount}} bets",
-		"error": "Error recalculating tournament scores"
+		"error": "Error recalculating tournament scores",
+		"title": "Recalculate Scores",
+		"description": "This will recalculate all bet points for matches in this tournament.",
+		"confirmLabel": "Recalculate",
+		"cancelLabel": "Cancel",
+		"skippedAdjustments": "{{count}} adjustment skipped",
+		"skippedAdjustments_other": "{{count}} adjustments skipped"
 	},
 	"modal": {
 		"saveError": "Failed to save match update",
 		"woDescription": "Walkover with a single defined team will be resolved as an automatic win for the present team.",
 		"woUpdated": "Walkover winner updated successfully",
-		"clearWinner": "Clear winner"
+		"clearWinner": "Clear winner",
+		"refreshInfo": "Refresh the page if data does not reflect the changes.",
+		"refreshWoWinner": "Walkover with a set winner will be resolved as a win.",
+		"updating": "Updating...",
+		"woUpdateError": "Error updating walkover"
 	},
 	"live": {
 		"headerTitle": "Live Match",
@@ -107,7 +131,10 @@
 		"teamsError": "Error: Teams not defined",
 		"scoringStarted": "You've started scoring this match.",
 		"irreversibleWarning": "This action cannot be undone automatically.",
-		"whatToDo": "What would you like to do with the changes?"
+		"whatToDo": "What would you like to do with the changes?",
+		"control": "Match Control",
+		"resetMatch": "Reset Match",
+		"setResult": "Set Result"
 	},
 	"matchDays": {
 		"title": "Match Days",
@@ -117,11 +144,35 @@
 		"deleteError": "Error deleting day.",
 		"updateError": "Error updating match day.",
 		"draft": "Draft = Not yet available",
-		"deleteConfirm": "Are you sure you want to delete this day?"
+		"deleteConfirm": "Are you sure you want to delete this day?",
+		"infoTitle": "Match Day Info",
+		"newDay": "New Day",
+		"nameLabel": "Name",
+		"namePlaceholder": "E.g. Day 1",
+		"selectPlaceholder": "Select a match day",
+		"create": "Create",
+		"save": "Save",
+		"cancel": "Cancel",
+		"updated": "Match Day updated!",
+		"noDays": "No match days defined",
+		"editTitle": "Edit Match Day",
+		"editNameLabel": "Match Day Name",
+		"matchCount": "{{count}} match",
+		"matchCount_other": "{{count}} matches",
+		"betsOpenBadge": "Bets Open",
+		"betsClosedBadge": "Bets Closed",
+		"draftBadge": "Draft",
+		"finishedBadge": "Finished",
+		"infoOpen": "Match Day open for betting.",
+		"infoLocked": "Match Day locked. Bets closed.",
+		"infoFinished": "Match Day completed."
 	},
 	"ordering": {
 		"saved": "Order saved successfully!",
-		"saveError": "Error saving order"
+		"saveError": "Error saving order",
+		"title": "Order Matches",
+		"subtitle": "Drag matches to reorder their display.",
+		"saveButton": "Save Order"
 	},
 	"bracketEditor": {
 		"quarterFinals": "Quarter-Finals",
@@ -129,5 +180,57 @@
 		"final": "Final",
 		"ubFinal": "UB Final",
 		"round": "Round"
+	},
+	"bracketView": {
+		"roundRobin": "Round Robin",
+		"gslFormat": "GSL Format",
+		"top2Advance": "Top 2 Advance",
+		"openingMatches": "Opening Matches",
+		"winnersMatch": "Winners Match",
+		"eliminationMatch": "Elimination Match",
+		"deciderMatch": "Decider Match",
+		"noMatches": "No matches scheduled",
+		"colTeam": "Team",
+		"colWL": "W-L",
+		"colMaps": "Maps",
+		"colDiff": "Diff",
+		"qualified": "QUAL"
+	},
+	"stageBuilder": {
+		"addStage": "Add Stage",
+		"bestOf1": "Best of 1",
+		"bestOf3": "Best of 3",
+		"bestOf5": "Best of 5",
+		"default": "Default",
+		"defaultName": "Stage {{number}}",
+		"doubleElimination": "Double Elimination",
+		"emptyState": "No stages defined",
+		"emptyStateHint": "Click \"Add Stage\" to begin",
+		"endDate": "End Date",
+		"exactPts": "Exact Score",
+		"format": "Format",
+		"groups": "Groups",
+		"groupsCount": "Groups Count",
+		"groupsCountPlaceholder": "e.g. 4",
+		"gsl": "GSL",
+		"matchType": "Match Type",
+		"roundRobin": "Round Robin",
+		"scoringOverrides": "Scoring Overrides (Optional)",
+		"settings": "Settings",
+		"singleElimination": "Single Elimination",
+		"stageName": "Stage Name",
+		"stageNamePlaceholder": "e.g. Group Stage",
+		"startDate": "Start Date",
+		"teamsPerGroup": "Teams / Group",
+		"teamsPerGroupPlaceholder": "e.g. 4",
+		"title": "Tournament Stages Flow",
+		"topNAdvance": "Top N Advance",
+		"topNAdvancePlaceholder": "e.g. 2",
+		"type": "Type",
+		"underdogT1": "Underdog T1 (≤25%)",
+		"underdogT1Tooltip": "Bonus for underdog with ≤25% of votes",
+		"underdogT2": "Underdog T2 (26-50%)",
+		"underdogT2Tooltip": "Bonus for underdog with 26-50% of votes",
+		"winnerPts": "Winner Pts"
 	}
 }
