@@ -1,8 +1,10 @@
 {
 	"title": "Leaderboard",
+	"subtitle": "The best predictors on BSEBET",
 	"rankingCriteria": "Ranking Criteria",
 	"tabs": {
 		"global": "Global Ranking",
+		"season": "Season",
 		"tournament": "By Tournament"
 	},
 	"columns": {
@@ -12,9 +14,23 @@
 		"underdogs": "Underdogs",
 		"globalPosition": "Overall position",
 		"hits": "Hits",
+		"perfect": "Perfect",
+		"hitRate": "Hit Rate",
+		"medals": "Medals",
+		"decisiveMatch": "Decisive Match",
 		"lastMonthResult": "Previous month result",
-		"primaryCriteria": "Primary criteria"
+		"primaryCriteria": "Primary criteria",
+		"totalPoints": "Total Points",
+		"hitCount": "Correct Predictions",
+		"tiebreaker1": "1st tiebreaker",
+		"tiebreaker2": "2nd tiebreaker",
+		"tiebreaker3": "3rd tiebreaker",
+		"tiebreaker4": "4th tiebreaker",
+		"tiebreakerFinal": "Final",
+		"previousTournaments": "Previous tournaments"
 	},
+	"legend": "Legend",
 	"empty": "No data available",
+	"emptyHint": "Be the first to score!",
 	"selectTournament": "Filter tournament"
 }

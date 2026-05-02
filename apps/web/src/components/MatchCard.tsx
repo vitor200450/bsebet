@@ -53,7 +53,8 @@ export function MatchCard({
 	initialBet,
 	showPredictionScore = false,
 }: MatchCardProps) {
-	const { t } = useTranslation("betting");
+	const { t, i18n } = useTranslation("betting");
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	const { routeTo, lang } = useLangLink();
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
@@ -84,7 +85,7 @@ export function MatchCard({
 	);
 
 	const formattedStartDate = new Date(match.startTime)
-		.toLocaleDateString("pt-BR", {
+		.toLocaleDateString(locale, {
 			day: "2-digit",
 			month: "short",
 			timeZone: "America/Sao_Paulo",

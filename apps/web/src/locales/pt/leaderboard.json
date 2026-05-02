@@ -1,8 +1,10 @@
 {
 	"title": "Ranking",
+	"subtitle": "Os melhores prognosticadores da BSEBET",
 	"rankingCriteria": "Critérios de Classificação",
 	"tabs": {
 		"global": "Ranking Mundial",
+		"season": "Temporada",
 		"tournament": "Camp Específico"
 	},
 	"columns": {
@@ -12,9 +14,23 @@
 		"underdogs": "Azarões",
 		"globalPosition": "Posição geral",
 		"hits": "Acertos",
+		"perfect": "Placares Exatos",
+		"hitRate": "Taxa de Acerto",
+		"medals": "Medalhas",
+		"decisiveMatch": "Partida Decisiva",
 		"lastMonthResult": "Resultado mês anterior",
-		"primaryCriteria": "Critério principal"
+		"primaryCriteria": "Critério principal",
+		"totalPoints": "Pontos Totais",
+		"hitCount": "Quantidade de Acertos",
+		"tiebreaker1": "1° desempate",
+		"tiebreaker2": "2° desempate",
+		"tiebreaker3": "3° desempate",
+		"tiebreaker4": "4° desempate",
+		"tiebreakerFinal": "Final",
+		"previousTournaments": "Torneios anteriores"
 	},
+	"legend": "Legenda",
 	"empty": "Nenhum dado disponível",
+	"emptyHint": "Seja o primeiro a pontuar!",
 	"selectTournament": "Filtrar torneio"
 }

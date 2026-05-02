@@ -36,7 +36,8 @@ export const Route = createFileRoute("/$lang/my-bets")({
 type FilterType = "all" | "pending" | "finished";
 
 function RouteComponent() {
-	const { t } = useTranslation("my-bets");
+	const { t, i18n } = useTranslation("my-bets");
+	const myBetsLocale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	const { linkTo } = useLangLink();
 	const [filter, setFilter] = useState<FilterType>("all");
 	const [tournamentFilter, setTournamentFilter] = useState<string>("all");
@@ -143,7 +144,7 @@ function RouteComponent() {
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
 							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
-								Minhas Apostas
+								{t("header")}
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
 								{t("header")}
@@ -153,7 +154,7 @@ function RouteComponent() {
 							to={linkTo("/dashboard")}
 							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
 						>
-							Voltar ao dashboard
+							{t("actions.backToDashboard")}
 							<ChevronRight
 								className="h-4 w-4 transition-transform group-hover:translate-x-1"
 								strokeWidth={3}
@@ -227,7 +228,7 @@ function RouteComponent() {
 								value={tournamentFilter}
 								onChange={setTournamentFilter}
 								options={[
-									{ value: "all", label: "Todos os torneios" },
+									{ value: "all", label: t("labels.allTournaments") },
 									...tournamentOptions.map((t) => ({
 										value: t.id,
 										label: t.name,
@@ -571,7 +572,7 @@ function RouteComponent() {
 																				/>
 																				{new Date(
 																					bet.match.startTime,
-																				).toLocaleString("pt-BR", {
+																				).toLocaleString(myBetsLocale, {
 																					day: "2-digit",
 																					month: "short",
 																					hour: "2-digit",

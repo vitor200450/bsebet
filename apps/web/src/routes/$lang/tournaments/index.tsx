@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { useLangLink } from "@/i18n/useLangLink";
+import { i18next } from "@/i18n";
 import { getTournaments } from "@/server/tournaments";
 
 // Schema for URL search params (filter state)
@@ -320,15 +321,16 @@ function formatDateRange(
 	startDate: Date | string | null,
 	endDate: Date | string | null,
 ): string {
-	if (!startDate) return "TBA";
+	if (!startDate) return "TBD";
 
 	const start = new Date(startDate);
 	const options: Intl.DateTimeFormatOptions = {
 		day: "2-digit",
 		month: "short",
 	};
+	const dateLocale = i18next.language === "pt" ? "pt-BR" : "en-US";
 	const startStr = start
-		.toLocaleDateString("pt-BR", { ...options, timeZone: "UTC" })
+		.toLocaleDateString(dateLocale, { ...options, timeZone: "UTC" })
 		.toUpperCase()
 		.replace(".", "");
 
@@ -336,7 +338,7 @@ function formatDateRange(
 
 	const end = new Date(endDate);
 	const endStr = end
-		.toLocaleDateString("pt-BR", { ...options, timeZone: "UTC" })
+		.toLocaleDateString(dateLocale, { ...options, timeZone: "UTC" })
 		.toUpperCase()
 		.replace(".", "");
 

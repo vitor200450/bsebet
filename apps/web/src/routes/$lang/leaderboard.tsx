@@ -102,10 +102,10 @@ function LeaderboardPage() {
 						</div>
 					</div>
 					<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
-						Ranking
+						{t("title")}
 					</h1>
 					<p className="mt-2 font-bold text-gray-600 text-lg">
-						Os melhores prognosticadores da BSEBET
+						{t("subtitle")}
 					</p>
 				</header>
 
@@ -126,7 +126,7 @@ function LeaderboardPage() {
 						)}
 					>
 						<Calendar className="h-4 w-4" strokeWidth={2.5} />
-						Temporada
+						{t("tabs.season")}
 					</button>
 					<button
 						type="button"
@@ -139,7 +139,7 @@ function LeaderboardPage() {
 						)}
 					>
 						<Globe className="h-4 w-4" strokeWidth={2.5} />
-						Mundial
+						{t("tabs.global")}
 					</button>
 				</div>
 
@@ -233,32 +233,32 @@ function LeaderboardPage() {
 						{[
 							{
 								num: 1,
-								label: "Pontos Totais",
+								label: t("columns.totalPoints"),
 								desc: t("columns.primaryCriteria"),
 								color: "bg-[#ffc700]",
 							},
 							{
 								num: 2,
-								label: "Quantidade de Acertos",
-								desc: "1° desempate",
+								label: t("columns.hitCount"),
+								desc: t("columns.tiebreaker1"),
 								color: "bg-gray-200",
 							},
 							{
 								num: 3,
-								label: "Perfect Picks",
-								desc: "2° desempate",
+								label: t("columns.perfect"),
+								desc: t("columns.tiebreaker2"),
 								color: "bg-gray-300",
 							},
 							{
 								num: 4,
 								label: t("columns.underdogs"),
-								desc: "3° desempate",
+								desc: t("columns.tiebreaker3"),
 								color: "bg-purple-300",
 							},
 							{
 								num: 5,
-								label: tab === "global" ? "Medalhas" : "Partida decisiva",
-								desc: tab === "global" ? "4° desempate" : "Final",
+								label: tab === "global" ? t("columns.medals") : t("columns.decisiveMatch"),
+								desc: tab === "global" ? t("columns.tiebreaker4") : t("columns.tiebreakerFinal"),
 								color: "bg-yellow-300",
 							},
 							...(tab === "season"
@@ -266,7 +266,7 @@ function LeaderboardPage() {
 										{
 											num: 6,
 											label: t("columns.lastMonthResult"),
-											desc: "Torneios anteriores",
+											desc: t("columns.previousTournaments"),
 											color: "bg-[#2e5cff] text-white",
 										},
 										{
@@ -306,7 +306,7 @@ function LeaderboardPage() {
 				{/* Legend - Clean */}
 				<div className="mb-6 flex flex-wrap items-center justify-center gap-3 rounded-lg border border-black/10 bg-white/80 px-4 py-3">
 					<span className="font-bold text-[10px] text-gray-500 uppercase">
-						Legenda:
+						{t("legend")}:
 					</span>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded bg-[#ffc700] px-1.5 py-0.5">
@@ -317,7 +317,7 @@ function LeaderboardPage() {
 							/>
 							<span className="font-black text-[10px] text-black">0</span>
 						</div>
-						<span className="text-[10px] text-gray-600">Perfect</span>
+						<span className="text-[10px] text-gray-600">{t("columns.perfect")}</span>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded border border-black/20 bg-white px-1.5 py-0.5">
@@ -332,7 +332,7 @@ function LeaderboardPage() {
 						<div className="flex items-center gap-1 rounded bg-green-500 px-1.5 py-0.5">
 							<span className="font-black text-[10px] text-white">70%</span>
 						</div>
-						<span className="text-[10px] text-gray-600">Taxa</span>
+						<span className="text-[10px] text-gray-600">{t("columns.hitRate")}</span>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<div className="flex items-center gap-1 rounded bg-purple-400 px-1.5 py-0.5">
@@ -347,7 +347,7 @@ function LeaderboardPage() {
 						<MiniMedalBadge tier="1st" size="sm" />
 						<MiniMedalBadge tier="2nd" size="sm" />
 						<MiniMedalBadge tier="3rd" size="sm" />
-						<span className="text-[10px] text-gray-600">Medalhas</span>
+						<span className="text-[10px] text-gray-600">{t("columns.medals")}</span>
 					</div>
 				</div>
 
@@ -360,7 +360,7 @@ function LeaderboardPage() {
 						<h2 className="mb-2 font-black text-[#121212] text-xl uppercase">
 							{t("empty")}
 						</h2>
-						<p className="text-gray-600 text-sm">Seja o primeiro a pontuar!</p>
+						<p className="text-gray-600 text-sm">{t("emptyHint")}</p>
 					</div>
 				) : (
 					<>
@@ -394,39 +394,40 @@ function getTiebreakerReason(
 	higher: LeaderboardEntry,
 	lower: LeaderboardEntry,
 	tab: "global" | "season",
+	t: (key: string) => string,
 ): string | null {
 	// Check if there's actually a tie that needed breaking
 	if (higher.totalPoints !== lower.totalPoints) return null;
 
 	// Check each tiebreaker criterion
 	if (higher.correctPredictions !== lower.correctPredictions) {
-		return "Acertos";
+		return t("columns.hits");
 	}
 	if (higher.perfectPicks !== lower.perfectPicks) {
-		return "Perfect Picks";
+		return t("columns.perfect");
 	}
 	if (higher.underdogPicks !== lower.underdogPicks) {
-		return "Azarões";
+		return t("columns.underdogs");
 	}
 
 	if (tab === "global") {
 		if (higher.medals.total !== lower.medals.total) {
-			return "Medalhas";
+			return t("columns.medals");
 		}
 	} else {
 		// Season-specific tiebreakers
 		if (higher.gotMostImportantMatch !== lower.gotMostImportantMatch) {
-			return "Partida decisiva";
+			return t("columns.decisiveMatch");
 		}
 		if (
 			higher.bestPreviousMonthResult !== lower.bestPreviousMonthResult &&
 			(higher.bestPreviousMonthResult === null) !==
 				(lower.bestPreviousMonthResult === null)
 		) {
-			return "Resultado anterior";
+			return t("columns.lastMonthResult");
 		}
 		if (higher.globalRank !== lower.globalRank) {
-			return "Ranking Mundial";
+			return t("tabs.global");
 		}
 	}
 
@@ -442,6 +443,7 @@ function PodiumSection({
 	currentUserId?: string;
 	tab: "global" | "season";
 }) {
+	const { t } = useTranslation("leaderboard");
 	const first = entries[0];
 	const second = entries[1];
 	const third = entries[2];
@@ -627,10 +629,10 @@ function PodiumSection({
 
 	// Calculate tiebreaker reasons
 	const secondTiebreaker = second
-		? getTiebreakerReason(first, second, tab)
+		? getTiebreakerReason(first, second, tab, t)
 		: null;
 	const thirdTiebreaker = third
-		? getTiebreakerReason(second || first, third, tab)
+		? getTiebreakerReason(second || first, third, tab, t)
 		: null;
 
 	return (

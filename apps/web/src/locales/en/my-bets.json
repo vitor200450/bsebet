@@ -7,6 +7,7 @@
 		"recovery": "Recovery"
 	},
 	"labels": {
+		"allTournaments": "All tournaments",
 		"projection": "Projection",
 		"projectionTooltip": "Projection based on your historical performance",
 		"futureProjection": "Future projection",
@@ -25,6 +26,7 @@
 	},
 	"actions": {
 		"viewTournament": "View tournament",
-		"viewMatches": "View Matches"
+		"viewMatches": "View Matches",
+		"backToDashboard": "Back to dashboard"
 	}
 }

@@ -22,7 +22,8 @@ export function MatchDaySelector({
 	onSelect,
 	tournamentName,
 }: MatchDaySelectorProps) {
-	const { t } = useTranslation("tournament");
+	const { t, i18n } = useTranslation("tournament");
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	const getStatusInfo = (status: string) => {
 		switch (status) {
 			case "open":
@@ -155,7 +156,7 @@ export function MatchDaySelector({
 												{md.label}
 											</h3>
 											<p className="font-bold text-gray-500 text-sm uppercase">
-												{new Date(md.date).toLocaleDateString("pt-BR", {
+												{new Date(md.date).toLocaleDateString(locale, {
 													weekday: "short",
 													day: "2-digit",
 													month: "short",
