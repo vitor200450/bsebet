@@ -9,6 +9,7 @@
 		"noActive": "No active tournaments at the moment.",
 		"noScheduled": "No scheduled tournaments at the moment.",
 		"noFinished": "No finished tournaments at the moment.",
+		"noDates": "TBD",
 		"tabs": {
 			"active": "Active",
 			"scheduled": "Scheduled",
@@ -43,7 +44,12 @@
 		"wait": "WAIT",
 		"viewBets": "View Bets",
 		"betNow": "Bet Now",
-		"betsDisabled": "Bets disabled"
+		"betsDisabled": "Bets disabled",
+		"statusActive": "ACTIVE",
+		"statusUpcoming": "UPCOMING",
+		"statusFinished": "FINISHED",
+		"chooseTitle": "Choose Your Tournament",
+		"pickHint": "// Pick a tournament to start betting //"
 	},
 	"matchDay": {
 		"completed": "Completed",

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { GSLGroupView } from "./bracket/GSLGroupView";
 import { StandardGroupView } from "./bracket/StandardGroupView";
 import type { Match, Prediction, Team } from "./bracket/types";
@@ -43,6 +44,7 @@ export function TournamentBracket({
 	editableMatchIds?: Set<number>;
 	matchDayStatus?: string | null;
 }) {
+	const { t } = useTranslation("betting");
 	// Logic to project matches based on predictions
 	const projectedMatches = useMemo(() => {
 		// Clone matches
@@ -296,7 +298,7 @@ export function TournamentBracket({
 						<div className="absolute inset-0 translate-x-2 translate-y-2 skew-x-[-12deg] transform border-2 border-black bg-[#ccff00] shadow-[2px_2px_0px_0px_#000]" />
 						<div className="relative skew-x-[-12deg] transform border-2 border-transparent bg-black px-8 py-2 text-white">
 							<h2 className="skew-x-[12deg] transform font-black text-2xl uppercase italic tracking-tighter">
-								COMPETITIVE <span className="text-[#ccff00]">BRACKETS</span>
+								{t("bracketTitle")} <span className="text-[#ccff00]">{t("bracketTitleHighlight")}</span>
 							</h2>
 						</div>
 					</div>

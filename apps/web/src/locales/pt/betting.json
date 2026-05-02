@@ -64,5 +64,16 @@
 		"waitingPreviousBets": "Aguardando suas apostas anteriores"
 	},
 	"walkoverDescription": "W.O. declarado. Todos os apostadores recebem pontos de vencedor.",
-	"teamB": "Time B"
+	"teamB": "Time B",
+	"bracketTitle": "CHAVEAMENTO",
+	"bracketTitleHighlight": "COMPETITIVO",
+	"matchCounter": "Partida {{current}} de {{total}}",
+	"pickScore": "Escolher Placar",
+	"viewFeed": "Feed",
+	"viewBracket": "Chaveamento",
+	"scoreDescription": {
+		"dominant": "Dominante",
+		"closeMatch": "Disputado",
+		"strongWin": "Vitória Convincente"
+	}
 }

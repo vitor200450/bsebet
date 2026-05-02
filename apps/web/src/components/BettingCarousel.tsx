@@ -277,10 +277,10 @@ export function BettingCarousel({
 				label,
 				description:
 					loserWins === 0
-						? "Dominant"
+						? t("scoreDescription.dominant")
 						: loserWins === winsNeeded - 1
-							? "Close Match"
-							: "Strong Win",
+							? t("scoreDescription.closeMatch")
+							: t("scoreDescription.strongWin"),
 			});
 		}
 		return options;

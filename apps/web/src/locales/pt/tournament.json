@@ -9,6 +9,7 @@
 		"noActive": "Não há torneios ativos no momento.",
 		"noScheduled": "Não há torneios programados no momento.",
 		"noFinished": "Não há torneios finalizados no momento.",
+		"noDates": "TBD",
 		"tabs": {
 			"active": "Ativos",
 			"scheduled": "Programados",
@@ -43,7 +44,12 @@
 		"wait": "AGUARDE",
 		"viewBets": "Ver Apostas",
 		"betNow": "Apostar Agora",
-		"betsDisabled": "Apostas desabilitadas"
+		"betsDisabled": "Apostas desabilitadas",
+		"statusActive": "ATIVO",
+		"statusUpcoming": "EM BREVE",
+		"statusFinished": "FINALIZADO",
+		"chooseTitle": "Escolha Seu Torneio",
+		"pickHint": "// Selecione um torneio para começar a apostar //"
 	},
 	"matchDay": {
 		"completed": "Concluído",

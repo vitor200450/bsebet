@@ -28,22 +28,22 @@ interface TournamentSelectorProps {
 
 const STATUS_STYLES: Record<
 	string,
-	{ bg: string; icon: React.ReactNode; label: string }
+	{ bg: string; icon: React.ReactNode; labelKey: string }
 > = {
 	active: {
 		bg: "bg-[#ccff00]",
 		icon: <span className="h-2 w-2 animate-pulse rounded-full bg-black" />,
-		label: "ACTIVE",
+		labelKey: "statusActive",
 	},
 	upcoming: {
 		bg: "bg-[#ffc700]",
 		icon: <Calendar className="h-3.5 w-3.5" />,
-		label: "UPCOMING",
+		labelKey: "statusUpcoming",
 	},
 	finished: {
 		bg: "bg-gray-300",
 		icon: null,
-		label: "FINISHED",
+		labelKey: "statusFinished",
 	},
 };
 
@@ -63,7 +63,8 @@ export function TournamentSelector({
 	tournaments,
 	onSelect,
 }: TournamentSelectorProps) {
-	const { t } = useTranslation("tournament");
+	const { t, i18n } = useTranslation("tournament");
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	return (
 		<div className="relative flex min-h-screen flex-col items-center justify-between overflow-x-hidden bg-paper bg-paper-texture">
 			{/* Subtle Noise Texture Overlay */}
@@ -80,7 +81,7 @@ export function TournamentSelector({
 				<div className="mx-auto w-full max-w-2xl -rotate-1 transform">
 					<div className="relative border-[#ccff00] border-b-4 bg-black px-4 py-3 text-center text-white shadow-[4px_4px_0px_0px_#000] md:px-8 md:py-4 md:shadow-[6px_6px_0px_0px_#000]">
 						<h1 className="font-black font-display text-2xl uppercase italic leading-tight tracking-tighter sm:text-3xl md:text-5xl">
-							Choose Your Tournament
+							{t("selector.chooseTitle")}
 						</h1>
 						{/* Corner decorations */}
 						<div className="absolute -top-1.5 -right-1.5 h-3 w-3 border-2 border-black bg-[#ccff00] md:-top-2 md:-right-2 md:h-4 md:w-4" />
@@ -163,7 +164,7 @@ export function TournamentSelector({
 									className={`absolute top-4 right-4 ${isDisabled ? "bg-gray-400" : statusStyle.bg} z-20 flex items-center gap-1 rounded-full border-2 border-black px-3 py-1 font-bold text-black text-sm uppercase shadow-[3px_3px_0px_0px_#000]`}
 								>
 									{statusStyle.icon}
-									{statusStyle.label}
+									{t("selector." + statusStyle.labelKey)}
 								</div>
 
 								{/* Card Hero */}
@@ -215,14 +216,14 @@ export function TournamentSelector({
 												<span>
 													{tournament.startDate
 														? new Date(tournament.startDate).toLocaleDateString(
-																"pt-BR",
+																locale,
 																{
 																	day: "2-digit",
 																	month: "short",
 																	timeZone: "UTC",
 																},
 															)
-														: "TBD"}
+														: t("browse.noDates")}
 												</span>
 											</div>
 										</div>
@@ -294,7 +295,7 @@ export function TournamentSelector({
 			{/* Footer */}
 			<footer className="z-10 w-full py-8 text-center">
 				<p className="inline-block rounded bg-white/50 px-4 py-1 font-body text-sm text-zinc-500 uppercase tracking-wide backdrop-blur-sm">
-					// Pick a tournament to start betting //
+					{t("selector.pickHint")}
 				</p>
 			</footer>
 

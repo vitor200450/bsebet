@@ -7,7 +7,7 @@ import {
 	Copy,
 	Edit2,
 	Globe,
-	Image,
+	Image as ImageIcon,
 	Loader2,
 	Plus,
 	Search,
@@ -27,6 +27,11 @@ import {
 	getTournaments,
 	saveTournament,
 } from "@/server/tournaments";
+import {
+	CustomDatePicker,
+	CustomSelect,
+} from "../../../../components/admin/CustomInputs";
+import { StageBuilder } from "../../../../components/admin/StageBuilder";
 import { useSetHeader } from "../../../../components/HeaderContext";
 
 export const Route = createFileRoute("/$lang/admin/tournaments/")({

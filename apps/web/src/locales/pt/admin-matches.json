@@ -115,9 +115,13 @@
 		"errorStatus": "Erro",
 		"resultScores": "Resultado & Placar",
 		"wo": "W.O.",
+		"dateLabel": "Data",
 		"statusLabel": "Status:",
 		"statusScheduled": "Agendado",
 		"statusLive": "AO VIVO",
+		"statusDraft": "Rascunho",
+		"statusOpen": "Aberto (Apostas Ativas)",
+		"statusLocked": "Trancado (Apostas Fechadas)",
 		"statusFinished": "Finalizado",
 		"teamA": "Time A",
 		"teamB": "Time B",
@@ -222,7 +226,13 @@
 		"finishedBadge": "Finalizado",
 		"infoOpen": "Match Day aberto para apostas.",
 		"infoLocked": "Match Day fechado. Apostas bloqueadas.",
-		"infoFinished": "Match Day concluído."
+		"infoFinished": "Match Day concluído.",
+		"dateLabel": "Data",
+		"statusLabel": "Status:",
+		"statusDraft": "Rascunho",
+		"statusOpen": "Aberto (Apostas Ativas)",
+		"statusLocked": "Trancado (Apostas Fechadas)",
+		"statusFinished": "Finalizado"
 	},
 	"ordering": {
 		"saved": "Ordem salva com sucesso!",
@@ -243,7 +253,24 @@
 		"ubFinal": "UB Final",
 		"round": "Rodada",
 		"badgeFinal": "FINAL",
-		"badgeLive": "AO VIVO"
+		"badgeLive": "AO VIVO",
+		"badgeWO": "W.O.",
+		"title": "Editor de Chaveamento",
+		"subtitle": "Gerenciamento de Estrutura do Torneio",
+		"generateGroups": "Gerar Partidas de Grupo",
+		"generateBracket": "Gerar Chaveamento Completo",
+		"unknownGroup": "Grupo Desconhecido",
+		"upperBracket": "CHAVE SUPERIOR",
+		"grandFinal": "GRANDE FINAL",
+		"lowerBracket": "CHAVE INFERIOR",
+		"addMatch": "Adicionar Partida",
+		"newMatch": "Nova Partida",
+		"lbR1": "LB R1",
+		"lbR2": "LB R2",
+		"lbSemi": "LB Semi",
+		"lbFinal": "LB Final",
+		"ubRound": "UB R{{round}}",
+		"lbRound": "LB R{{round}}"
 	},
 	"bracketView": {
 		"roundRobin": "Round Robin",
@@ -296,5 +323,14 @@
 		"underdogT2": "Azarão T2 (26-50%)",
 		"underdogT2Tooltip": "Bônus para azarão com 26-50% dos votos",
 		"winnerPts": "Pts Vencedor"
+	},
+	"customInputs": {
+		"selectPlaceholder": "Selecionar...",
+		"searchPlaceholder": "BUSCAR...",
+		"noResults": "Nenhum resultado encontrado",
+		"selectDate": "Selecionar Data",
+		"prevMonth": "<",
+		"nextMonth": ">",
+		"dayHeaders": ["D", "S", "T", "Q", "Q", "S", "S"]
 	}
 }

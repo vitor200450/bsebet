@@ -3359,7 +3359,7 @@ function Home() {
 								<span className="material-symbols-outlined xs:inline hidden text-base">
 									view_carousel
 								</span>
-								<span>Feed</span>
+								<span>{t("viewFeed")}</span>
 							</button>
 							<button
 								onClick={() => setViewMode("bracket")}
@@ -3376,7 +3376,7 @@ function Home() {
 								<span className="material-symbols-outlined xs:inline hidden text-base">
 									account_tree
 								</span>
-								<span>Bracket</span>
+								<span>{t("viewBracket")}</span>
 							</button>
 						</div>
 					)}

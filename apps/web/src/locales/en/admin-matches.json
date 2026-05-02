@@ -115,9 +115,13 @@
 		"errorStatus": "Error",
 		"resultScores": "Result & Scores",
 		"wo": "W.O.",
+		"dateLabel": "Date",
 		"statusLabel": "Status:",
 		"statusScheduled": "Scheduled",
 		"statusLive": "LIVE",
+		"statusDraft": "Draft",
+		"statusOpen": "Open (Bets Active)",
+		"statusLocked": "Locked (Bets Closed)",
 		"statusFinished": "Finished",
 		"teamA": "Team A",
 		"teamB": "Team B",
@@ -222,7 +226,13 @@
 		"finishedBadge": "Finished",
 		"infoOpen": "Match Day open for betting.",
 		"infoLocked": "Match Day locked. Bets closed.",
-		"infoFinished": "Match Day completed."
+		"infoFinished": "Match Day completed.",
+		"dateLabel": "Date",
+		"statusLabel": "Status:",
+		"statusDraft": "Draft",
+		"statusOpen": "Open (Bets Active)",
+		"statusLocked": "Locked (Bets Closed)",
+		"statusFinished": "Finished"
 	},
 	"ordering": {
 		"saved": "Order saved successfully!",
@@ -243,7 +253,24 @@
 		"ubFinal": "UB Final",
 		"round": "Round",
 		"badgeFinal": "FINAL",
-		"badgeLive": "LIVE"
+		"badgeLive": "LIVE",
+		"badgeWO": "W.O.",
+		"title": "Bracket Editor",
+		"subtitle": "Tournament Structure Management",
+		"generateGroups": "Generate Group Matches",
+		"generateBracket": "Generate Entire Bracket",
+		"unknownGroup": "Unknown Group",
+		"upperBracket": "UPPER BRACKET",
+		"grandFinal": "GRAND FINAL",
+		"lowerBracket": "LOWER BRACKET",
+		"addMatch": "Add Match",
+		"newMatch": "New Match",
+		"lbR1": "LB R1",
+		"lbR2": "LB R2",
+		"lbSemi": "LB Semi",
+		"lbFinal": "LB Final",
+		"ubRound": "UB R{{round}}",
+		"lbRound": "LB R{{round}}"
 	},
 	"bracketView": {
 		"roundRobin": "Round Robin",
@@ -296,5 +323,14 @@
 		"underdogT2": "Underdog T2 (26-50%)",
 		"underdogT2Tooltip": "Bonus for underdog with 26-50% of votes",
 		"winnerPts": "Winner Pts"
+	},
+	"customInputs": {
+		"selectPlaceholder": "Select...",
+		"searchPlaceholder": "SEARCH...",
+		"noResults": "No results found",
+		"selectDate": "Select Date",
+		"prevMonth": "<",
+		"nextMonth": ">",
+		"dayHeaders": ["S", "M", "T", "W", "T", "F", "S"]
 	}
 }

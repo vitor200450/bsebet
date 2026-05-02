@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ChevronRight, LogOut, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getLiveStatus } from "@/functions/get-live-status";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -14,9 +14,15 @@ export function GlobalHeader() {
 	const { t } = useTranslation("common");
 	const { lang, routeTo } = useLangLink();
 	const router = useRouterState();
+	const switchLangTo = useCallback((targetLang: string) => {
+		if (targetLang === lang) return;
+		const path = router.location.pathname.replace(/^\/[^/]+/, `/${targetLang}`);
+		window.location.href = path;
+	}, [lang, router.location.pathname]);
 	const { config } = useHeader();
 	const [mounted, setMounted] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [isLangOpen, setIsLangOpen] = useState(false);
 
 	const { data: session } = authClient.useSession();
 
@@ -30,9 +36,10 @@ export function GlobalHeader() {
 		setMounted(true);
 	}, []);
 
-	// Close mobile menu on route change
+	// Close menus on route change
 	useEffect(() => {
 		setIsMobileMenuOpen(false);
+		setIsLangOpen(false);
 	}, [router.location.pathname]);
 
 	// Dynamic navigation based on authentication
@@ -189,6 +196,49 @@ export function GlobalHeader() {
 						</Link>
 					)}
 
+					<div className="relative">
+						<button
+							onClick={() => setIsLangOpen(!isLangOpen)}
+							onBlur={() => setTimeout(() => setIsLangOpen(false), 150)}
+							className={clsx(
+								"flex items-center gap-2 rounded-lg border-2 px-3 py-1.5 font-black text-xs uppercase tracking-wider transition-all hover:scale-105 active:translate-y-[1px]",
+								variant === "dark"
+									? "border-white/20 text-white/70 hover:border-white hover:text-white"
+									: "border-gray-300 text-gray-500 hover:border-black hover:text-black",
+							)}
+						>
+							<span className={clsx("fi", lang === "pt" ? "fi-br" : "fi-us", "h-5 w-5 rounded-sm")} />
+							<span>{lang === "pt" ? "PT" : "EN"}</span>
+							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
+						</button>
+						{isLangOpen && (
+							<div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+								<button
+									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
+									className={clsx(
+										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
+										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+									)}
+								>
+									<span className="fi fi-br h-5 w-5 rounded-sm" />
+									<span>Português</span>
+									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
+								</button>
+								<div className="border-t-2 border-black/10" />
+								<button
+									onClick={() => { switchLangTo("en"); setIsLangOpen(false); }}
+									className={clsx(
+										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
+										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+									)}
+								>
+									<span className="fi fi-us h-5 w-5 rounded-sm" />
+									<span>English</span>
+									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
+								</button>
+							</div>
+						)}
+					</div>
 					<UserMenu variant={variant} />
 				</div>
 
@@ -204,6 +254,43 @@ export function GlobalHeader() {
 					)}
 
 					<UserMenu variant={variant} />
+
+					<div className="relative">
+						<button
+							onClick={() => setIsLangOpen(!isLangOpen)}
+							className="flex items-center gap-1.5 rounded-lg border-2 border-gray-300 px-2 py-1 font-black text-xs uppercase tracking-wider text-gray-500 transition-all hover:border-black hover:text-black"
+						>
+							<span className={clsx("fi h-4 w-4 rounded-sm", lang === "pt" ? "fi-br" : "fi-us")} />
+							<ChevronRight className={clsx("h-3 w-3 transition-transform", isLangOpen && "rotate-90")} strokeWidth={3} />
+						</button>
+						{isLangOpen && (
+							<div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
+								<button
+									onClick={() => { switchLangTo("pt"); setIsLangOpen(false); }}
+									className={clsx(
+										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
+										lang === "pt" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+									)}
+								>
+									<span className="fi fi-br h-5 w-5 rounded-sm" />
+									<span>Português</span>
+									{lang === "pt" && <span className="ml-auto text-[#ccff00]">✓</span>}
+								</button>
+								<div className="border-t-2 border-black/10" />
+								<button
+									onClick={() => { switchLangTo("en"); setIsLangOpen(false); }}
+									className={clsx(
+										"flex w-full items-center gap-3 px-4 py-3 font-black text-xs uppercase tracking-wider transition-colors hover:bg-gray-50",
+										lang === "en" ? "bg-[#ccff00]/20 text-black" : "text-gray-500",
+									)}
+								>
+									<span className="fi fi-us h-5 w-5 rounded-sm" />
+									<span>English</span>
+									{lang === "en" && <span className="ml-auto text-[#ccff00]">✓</span>}
+								</button>
+							</div>
+						)}
+					</div>
 
 					<button
 						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

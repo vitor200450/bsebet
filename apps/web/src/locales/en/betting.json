@@ -64,5 +64,16 @@
 		"waitingPreviousBets": "Waiting for your previous bets"
 	},
 	"walkoverDescription": "Walkover declared. All bettors receive winner points.",
-	"teamB": "Team B"
+	"teamB": "Team B",
+	"bracketTitle": "COMPETITIVE",
+	"bracketTitleHighlight": "BRACKETS",
+	"matchCounter": "Match {{current}} of {{total}}",
+	"pickScore": "Pick Score",
+	"viewFeed": "Feed",
+	"viewBracket": "Bracket",
+	"scoreDescription": {
+		"dominant": "Dominant",
+		"closeMatch": "Close Match",
+		"strongWin": "Strong Win"
+	}
 }
