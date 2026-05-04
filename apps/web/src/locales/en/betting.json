@@ -70,6 +70,11 @@
 		"incorrect": "Incorrect",
 		"breakdown": "Pick details"
 	},
+	"result": {
+		"correct": "Correct",
+		"incorrect": "Incorrect",
+		"scheduled": "Scheduled"
+	},
 	"perfectScore": "Perfect score!",
 	"correctWinner": "Correct winner",
 	"blocked": {

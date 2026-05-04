@@ -13,18 +13,12 @@ import {
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { CustomSelect } from "@/components/admin/CustomInputs";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
 	MedalCountSummary,
 	MiniMedalBadge,
 } from "../../components/MiniMedalBadge";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
 import { getUser } from "../../functions/get-user";
 import {
 	getLeaderboard,
@@ -77,6 +71,10 @@ function LeaderboardPage() {
 	}, [tab, urlTournamentId, tournaments, navigate]);
 
 	const activeTournament = tournaments.find((t) => t.id === tournamentId);
+	const tournamentOptions = tournaments.map((tournament) => ({
+		value: String(tournament.id),
+		label: tournament.name,
+	}));
 
 	const top3 = leaderboard.slice(0, 3);
 	const rest = leaderboard.slice(3);
@@ -146,6 +144,35 @@ function LeaderboardPage() {
 				{/* Tournament Selector - Clean */}
 				{tab === "season" && activeTournament && (
 					<div className="mb-8 flex w-full max-w-sm flex-col items-center">
+						<div className="mb-4 w-full rounded-lg border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#000]">
+							<div className="mb-2 flex items-center gap-2 text-gray-600">
+								<Calendar className="h-4 w-4" strokeWidth={2.5} />
+								<span className="font-bold text-sm uppercase tracking-wider">
+									{t("selectTournament")}
+								</span>
+							</div>
+							<CustomSelect
+								label=""
+								value={String(activeTournament.id)}
+								onChange={(value) => {
+									const scrollY = window.scrollY;
+									navigate({
+										search: {
+											tab: "season",
+											tournamentId: Number(value),
+										},
+										replace: true,
+										resetScroll: false,
+									});
+									requestAnimationFrame(() => {
+										window.scrollTo(0, scrollY);
+									});
+								}}
+								options={tournamentOptions}
+								placeholder={t("selectTournament")}
+							/>
+						</div>
+
 						{/* Tournament Logo */}
 						<div className="relative mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border-2 border-black bg-white shadow-[3px_3px_0_0_#000]">
 							{activeTournament.logoUrl ? (
@@ -166,54 +193,6 @@ function LeaderboardPage() {
 							</span>
 						</div>
 
-						{/* Selector (Only if more than 1 tournament) */}
-						{tournaments.length > 1 && (
-							<div className="w-full">
-								<DropdownMenu>
-									<DropdownMenuTrigger className="group flex h-11 w-full cursor-pointer items-center justify-between rounded-lg border-2 border-black bg-white px-4 font-bold text-[#121212] text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] outline-none transition-all hover:shadow-[2px_2px_0_0_#000]">
-										<span className="mr-2 truncate">
-											{activeTournament.name}
-										</span>
-										<ChevronDown
-											className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180"
-											strokeWidth={2.5}
-										/>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent
-										className="mt-1 min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[90vw] rounded-lg border-2 border-black bg-white p-0 text-black shadow-[4px_4px_0_0_#000]"
-										align="start"
-									>
-										<DropdownMenuRadioGroup
-											value={String(activeTournament.id)}
-											onValueChange={(val) => {
-												const scrollY = window.scrollY;
-												navigate({
-													search: {
-														tab: "season",
-														tournamentId: Number(val),
-													},
-													replace: true,
-													resetScroll: false,
-												});
-												requestAnimationFrame(() => {
-													window.scrollTo(0, scrollY);
-												});
-											}}
-										>
-											{tournaments.map((t) => (
-												<DropdownMenuRadioItem
-													key={t.id}
-													value={String(t.id)}
-													className="cursor-pointer whitespace-normal border-black/5 border-b px-4 py-3 font-bold text-sm uppercase leading-tight outline-none last:border-0 hover:bg-gray-50 focus:bg-gray-100 data-[state=checked]:bg-[#ffc700]"
-												>
-													{t.name}
-												</DropdownMenuRadioItem>
-											))}
-										</DropdownMenuRadioGroup>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
-						)}
 					</div>
 				)}
 

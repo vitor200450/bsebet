@@ -45,18 +45,18 @@ export function StandardGroupView({
 	};
 
 	return (
-		<div className="flex flex-col gap-6 rounded-xl border-2 border-black/5 bg-white/50 p-6 shadow-sm">
+		<div className="flex flex-col gap-5 rounded-lg border-2 border-black bg-white p-5 shadow-[4px_4px_0px_0px_#000]">
 			{/* Header */}
-			<div className="flex items-center justify-between border-black/10 border-b-2 pb-4">
-				<h3 className="font-black text-2xl text-black uppercase italic">
-					{groupName} -- {t("bracketView.roundRobin")}
+			<div className="flex items-center justify-between border-black/10 border-b-2 pb-3">
+				<h3 className="font-black font-display text-ink text-xl uppercase italic tracking-tight">
+					{groupName} — {t("bracketView.roundRobin")}
 				</h3>
-				<div className="bg-black px-3 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-widest">
+				<div className="rounded-sm border-2 border-black bg-ink px-2.5 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-wider shadow-[1px_1px_0px_0px_#000]">
 					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-8 xl:flex-row">
+			<div className="flex flex-col gap-6 xl:flex-row">
 				{/* STANDINGS TABLE */}
 				<StandingsTable standings={standings} />
 
@@ -70,7 +70,7 @@ export function StandardGroupView({
 						))}
 					</div>
 					{matches.length === 0 && (
-						<div className="p-8 text-center text-gray-400 text-sm italic">
+						<div className="rounded border-2 border-gray-300 border-dashed p-8 text-center text-gray-400 text-sm italic">
 							{t("bracketView.noMatches")}
 						</div>
 					)}

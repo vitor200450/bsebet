@@ -48,11 +48,9 @@ const STATUS_STYLES: Record<
 };
 
 const CARD_ICONS = [
-	<Trophy className="h-40 w-40 text-black drop-shadow-md" />,
-	<Globe className="h-40 w-40 text-black drop-shadow-md" />,
+	<Trophy className="h-32 w-32 text-black drop-shadow-md" strokeWidth={1.5} />,
+	<Globe className="h-32 w-32 text-black drop-shadow-md" strokeWidth={1.5} />,
 ];
-
-const CARD_BG_COLORS = ["bg-[#ccff00]/20", "bg-blue-100"];
 
 const CARD_PATTERNS = [
 	"radial-gradient(#000 1px, transparent 1px)",
@@ -65,21 +63,23 @@ export function TournamentSelector({
 }: TournamentSelectorProps) {
 	const { t, i18n } = useTranslation("tournament");
 	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+
 	return (
-		<div className="relative flex min-h-screen flex-col items-center justify-between overflow-x-hidden bg-paper bg-paper-texture">
-			{/* Subtle Noise Texture Overlay */}
+		<div className="relative flex min-h-screen flex-col items-center overflow-x-hidden bg-paper">
+			{/* Paper texture overlay */}
 			<div
-				className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
 				style={{
-					backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+					backgroundImage:
+						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+					backgroundRepeat: "repeat",
 				}}
 			/>
 
 			{/* Header Section */}
-			{/* Header Section */}
-			<header className="relative z-10 flex w-full justify-center px-4 pt-32 pb-8 md:pt-40 md:pb-16">
+			<header className="relative z-10 flex w-full justify-center px-4 pt-24 pb-8 md:pt-32 md:pb-12">
 				<div className="mx-auto w-full max-w-2xl -rotate-1 transform">
-					<div className="relative border-[#ccff00] border-b-4 bg-black px-4 py-3 text-center text-white shadow-[4px_4px_0px_0px_#000] md:px-8 md:py-4 md:shadow-[6px_6px_0px_0px_#000]">
+					<div className="relative border-[#ccff00] border-b-4 bg-ink px-4 py-3 text-center text-white shadow-[4px_4px_0px_0px_#000] md:px-8 md:py-4 md:shadow-[6px_6px_0px_0px_#000]">
 						<h1 className="font-black font-display text-2xl uppercase italic leading-tight tracking-tighter sm:text-3xl md:text-5xl">
 							{t("selector.chooseTitle")}
 						</h1>
@@ -91,7 +91,7 @@ export function TournamentSelector({
 			</header>
 
 			{/* Main Content: Tournament Cards */}
-			<main className="z-10 flex w-full max-w-7xl flex-grow flex-col flex-wrap items-center justify-center gap-8 px-4 py-8 md:flex-row md:items-stretch md:gap-12">
+			<main className="z-10 flex w-full max-w-7xl flex-grow flex-col flex-wrap items-center justify-center gap-6 px-4 py-8 md:flex-row md:items-stretch md:gap-8">
 				{tournaments.map((tournament, index) => {
 					const statusStyle =
 						STATUS_STYLES[tournament.status] || STATUS_STYLES.upcoming;
@@ -101,7 +101,7 @@ export function TournamentSelector({
 
 					// Dynamic Gradient Logic
 					let customStyle = {};
-					let cardBgClass = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+					let cardBgClass = "bg-tape";
 
 					if (tournament.colors) {
 						const { primary, secondary, tertiary, style } = tournament.colors;
@@ -136,14 +136,14 @@ export function TournamentSelector({
 						>
 							<div
 								className={clsx(
-									"relative flex h-full flex-col overflow-hidden rounded-xl border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_#000] transition-all duration-200",
+									"relative flex h-full flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000] transition-all duration-200",
 									!isDisabled &&
-										"group-hover:translate-x-[3px] group-hover:translate-y-[3px] group-hover:shadow-[3px_3px_0px_0px_#000]",
+										"group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-[2px_2px_0px_0px_#000]",
 								)}
 							>
 								{/* Recovery Bets Badge - Most prominent */}
 								{tournament.hasRecoveryBets && (
-									<div className="absolute top-4 left-4 z-20 flex animate-pulse items-center gap-1 rounded-full border-2 border-black bg-brawl-yellow px-2 py-1 font-black text-[10px] text-black uppercase shadow-[3px_3px_0px_0px_#000]">
+									<div className="absolute top-3 left-3 z-20 flex animate-pulse items-center gap-1 rounded-md border-2 border-black bg-brawl-yellow px-2 py-1 font-black text-[10px] text-black uppercase shadow-[2px_2px_0px_0px_#000]">
 										<span className="material-symbols-outlined text-sm">
 											sync_problem
 										</span>
@@ -153,7 +153,7 @@ export function TournamentSelector({
 
 								{/* User Bets Badge */}
 								{tournament.hasUserBets && !tournament.hasRecoveryBets && (
-									<div className="absolute top-4 left-4 z-20 flex animate-pulse items-center gap-1 rounded-full border-2 border-black bg-gradient-to-r from-purple-600 to-pink-600 px-2 py-1 font-black text-[10px] text-white uppercase shadow-[3px_3px_0px_0px_#000]">
+									<div className="absolute top-3 left-3 z-20 flex animate-pulse items-center gap-1 rounded-md border-2 border-black bg-gradient-to-r from-purple-600 to-pink-600 px-2 py-1 font-black text-[10px] text-white uppercase shadow-[2px_2px_0px_0px_#000]">
 										<span>📊</span>
 										{t("selector.yourBets")}
 									</div>
@@ -161,7 +161,7 @@ export function TournamentSelector({
 
 								{/* Status Badge */}
 								<div
-									className={`absolute top-4 right-4 ${isDisabled ? "bg-gray-400" : statusStyle.bg} z-20 flex items-center gap-1 rounded-full border-2 border-black px-3 py-1 font-bold text-black text-sm uppercase shadow-[3px_3px_0px_0px_#000]`}
+									className={`absolute top-3 right-3 ${isDisabled ? "bg-gray-400" : statusStyle.bg} z-20 flex items-center gap-1 rounded-md border-2 border-black px-2.5 py-1 font-bold text-black text-xs uppercase shadow-[2px_2px_0px_0px_#000]`}
 								>
 									{statusStyle.icon}
 									{t("selector." + statusStyle.labelKey)}
@@ -169,11 +169,11 @@ export function TournamentSelector({
 
 								{/* Card Hero */}
 								<div
-									className={`h-64 w-full ${isDisabled ? "bg-gray-200" : cardBgClass} relative mb-6 flex items-center justify-center overflow-hidden rounded-lg border-2 border-black`}
+									className={`h-56 w-full ${isDisabled ? "bg-gray-200" : cardBgClass} relative mb-5 flex items-center justify-center overflow-hidden rounded-md border-2 border-black`}
 									style={!isDisabled ? customStyle : undefined}
 								>
 									<div
-										className="absolute inset-0 opacity-20"
+										className="absolute inset-0 opacity-15"
 										style={{
 											backgroundImage: pattern,
 											backgroundSize: "12px 12px",
@@ -184,7 +184,7 @@ export function TournamentSelector({
 											src={tournament.logoUrl}
 											alt={tournament.name}
 											className={clsx(
-												"relative z-10 h-48 w-48 object-contain drop-shadow-2xl transition-transform",
+												"relative z-10 h-36 w-36 object-contain drop-shadow-2xl transition-transform",
 												!isDisabled && "hover:scale-105",
 											)}
 										/>
@@ -201,18 +201,21 @@ export function TournamentSelector({
 								</div>
 
 								{/* Content */}
-								<div className="flex-grow space-y-6">
-									<h2 className="border-black border-l-4 pl-4 font-black text-3xl text-black uppercase leading-tight">
+								<div className="flex-grow space-y-4 px-5 pb-5">
+									<h2 className="border-ink border-l-4 pl-3 font-black text-2xl text-ink uppercase leading-tight md:text-3xl">
 										{tournament.name}
 									</h2>
 
 									<div className="grid grid-cols-2 gap-3">
 										<div className="flex flex-col gap-1">
-											<span className="font-black text-[10px] text-zinc-400 uppercase tracking-tighter">
+											<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
 												{t("selector.startDate")}
 											</span>
-											<div className="flex items-center gap-2 rounded-lg border-2 border-zinc-200 bg-white px-3 py-1.5 font-bold font-display text-sm text-zinc-600">
-												<Calendar className="h-4 w-4 text-black" />
+											<div className="flex items-center gap-2 rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold font-display text-ink text-sm shadow-[2px_2px_0px_0px_#000]">
+												<Calendar
+													className="h-4 w-4 text-ink"
+													strokeWidth={2.5}
+												/>
 												<span>
 													{tournament.startDate
 														? new Date(tournament.startDate).toLocaleDateString(
@@ -229,18 +232,21 @@ export function TournamentSelector({
 										</div>
 
 										<div className="flex flex-col gap-1">
-											<span className="font-black text-[10px] text-zinc-400 uppercase tracking-tighter">
+											<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
 												{t("selector.currentPhase")}
 											</span>
 											<div
 												className={clsx(
-													"flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-lg border-2 px-3 py-1.5 font-bold font-display text-sm text-zinc-600",
+													"flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-md border-2 px-3 py-1.5 font-bold font-display text-sm shadow-[2px_2px_0px_0px_#000]",
 													isDisabled
-														? "border-gray-300 bg-gray-100"
-														: "border-[#ccff00] bg-[#ccff00]/10",
+														? "border-gray-300 bg-gray-100 text-gray-500"
+														: "border-[#ccff00] bg-[#ccff00]/10 text-ink",
 												)}
 											>
-												<Trophy className="h-4 w-4 min-w-[16px] text-black" />
+												<Trophy
+													className="h-4 w-4 min-w-[16px] text-ink"
+													strokeWidth={2.5}
+												/>
 												<span className="uppercase">
 													{tournament.activeStage || t("selector.groupStage")}
 												</span>
@@ -250,11 +256,11 @@ export function TournamentSelector({
 
 									<div
 										className={clsx(
-											"flex w-fit items-center gap-2 rounded-full border-2 border-black px-4 py-1.5 font-black font-display text-white text-xs shadow-[3px_3px_0px_0px_#ccff00]",
-											isDisabled ? "bg-gray-500 shadow-none" : "bg-black",
+											"flex w-fit items-center gap-2 rounded-md border-2 border-black px-3 py-1.5 font-black font-display text-white text-xs shadow-[2px_2px_0px_0px_#ccff00]",
+											isDisabled ? "bg-gray-500 shadow-none" : "bg-ink",
 										)}
 									>
-										<Gamepad2 className="h-4 w-4" />
+										<Gamepad2 className="h-4 w-4" strokeWidth={2.5} />
 										<span>
 											{t("selector.matchesAvailable", {
 												count: tournament.matchCount,
@@ -264,14 +270,14 @@ export function TournamentSelector({
 								</div>
 
 								{/* Action Button */}
-								<div className="mt-8">
+								<div className="mt-auto px-5 pb-5">
 									<button
 										disabled={isDisabled}
 										className={clsx(
-											"flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black px-6 py-3 font-bold text-white uppercase shadow-[3px_3px_0px_0px_#000] transition-all duration-200",
+											"flex w-full items-center justify-center gap-2 rounded-md border-2 border-black px-6 py-3 font-bold text-white uppercase shadow-[3px_3px_0px_0px_#000] transition-all duration-200",
 											isDisabled
 												? "cursor-not-allowed border-gray-500 bg-gray-400 shadow-none"
-												: "bg-black hover:bg-zinc-800 group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_#000]",
+												: "bg-ink hover:bg-black group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_#000]",
 										)}
 									>
 										{isDisabled ? (
@@ -281,7 +287,10 @@ export function TournamentSelector({
 												{tournament.hasUserBets
 													? t("selector.viewBets")
 													: t("selector.betNow")}
-												<ArrowRight className="h-5 w-5 text-[#ccff00]" />
+												<ArrowRight
+													className="h-5 w-5 text-[#ccff00]"
+													strokeWidth={3}
+												/>
 											</>
 										)}
 									</button>
@@ -294,17 +303,10 @@ export function TournamentSelector({
 
 			{/* Footer */}
 			<footer className="z-10 w-full py-8 text-center">
-				<p className="inline-block rounded bg-white/50 px-4 py-1 font-body text-sm text-zinc-500 uppercase tracking-wide backdrop-blur-sm">
+				<p className="inline-block rounded-md border border-black/10 bg-white/60 px-4 py-1.5 font-body text-gray-500 text-sm uppercase tracking-wide backdrop-blur-sm">
 					{t("selector.pickHint")}
 				</p>
 			</footer>
-
-			{/* Decorative floating elements */}
-			<div className="absolute top-1/4 left-10 z-0 hidden h-12 w-12 animate-bounce rounded-full border-4 border-black bg-[#ccff00] shadow-[3px_3px_0px_0px_#000] xl:block" />
-			<div className="absolute right-10 bottom-1/4 z-0 hidden h-8 w-8 rotate-45 transform border-4 border-black bg-[#ffc700] shadow-[3px_3px_0px_0px_#000] xl:block" />
-			<div className="pointer-events-none absolute top-1/3 right-20 z-0 rotate-12 select-none font-black text-9xl text-black italic opacity-5">
-				VS
-			</div>
 		</div>
 	);
 }

@@ -13,6 +13,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { MatchBetCard } from "@/components/MatchBetCard";
 import { MedalSummary } from "@/components/MedalSummary";
 import { TeamLogo } from "@/components/TeamLogo";
 import { getDashboardData } from "@/functions/get-dashboard-data";
@@ -304,149 +305,27 @@ function RouteComponent() {
 						) : activeBets.length > 0 ? (
 							<div className="space-y-4">
 								{activeBets.map((bet) => (
-									<div
+									<MatchBetCard
 										key={bet.id}
-										className="group relative overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:shadow-[6px_6px_0_0_#000]"
-									>
-										{/* Top accent bar */}
-										<div className="h-1.5 w-full bg-gradient-to-r from-[#2e5cff] via-[#ffc700] to-[#ff2e2e]" />
-
-										{/* Header: Tournament + Status */}
-										<div className="flex items-center justify-between border-black border-b-2 bg-[#fafafa] px-4 py-2">
-											{bet.match.tournament?.slug ? (
-												<Link
-													to={linkTo("/tournaments/$slug")}
-													params={{ slug: bet.match.tournament.slug }}
-													className="truncate font-bold text-[10px] text-gray-500 uppercase tracking-widest hover:text-[#2e5cff]"
-												>
-													{bet.match.tournament.name}
-												</Link>
-											) : (
-												<span className="truncate font-bold text-[10px] text-gray-500 uppercase tracking-widest">
-													{bet.match.tournament?.name}
-												</span>
-											)}
-											<div
-												className={clsx(
-													"rounded-sm border-2 border-black px-2 py-0.5 font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0_0_#000]",
-													bet.match.status === "live"
-														? "animate-pulse bg-[#ff2e2e] text-white"
-														: "bg-[#ccff00] text-black",
-												)}
-											>
-												{bet.match.status === "live"
-													? t("status.live")
-													: t("status.scheduled")}
-											</div>
-										</div>
-
-										{/* Teams - Broadcast panel style */}
-										<div className="flex items-stretch">
-											{/* Team A Panel */}
-											<div
-												className={clsx(
-													"flex flex-1 items-center gap-3 border-black border-r-2 px-4 py-4 transition-all",
-													bet.predictedWinnerId === bet.match.teamA?.id
-														? "bg-[#ccff00]/15"
-														: "bg-[#f8f8f8]",
-												)}
-											>
-												<TeamLogo
-													teamName={bet.match.teamA?.name || "TBD"}
-													logoUrl={bet.match.teamA?.logoUrl}
-													size="md"
-												/>
-												<div className="min-w-0 flex-1">
-													<p className="truncate font-black text-[#121212] text-sm">
-														{bet.match.teamA?.name || "TBD"}
-													</p>
-													{bet.predictedWinnerId === bet.match.teamA?.id && (
-														<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
-															<span className="material-symbols-outlined text-[10px]">
-																check_circle
-															</span>
-															{t("betLabel")}
-														</div>
-													)}
-												</div>
-											</div>
-
-											{/* VS Badge */}
-											<div className="flex shrink-0 items-center justify-center">
-												<div className="flex h-10 w-10 -rotate-6 items-center justify-center border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
-													<span className="font-black text-white text-xs italic">
-														VS
-													</span>
-												</div>
-											</div>
-
-											{/* Team B Panel */}
-											<div
-												className={clsx(
-													"flex flex-1 items-center gap-3 border-black border-l-2 px-4 py-4 transition-all",
-													bet.predictedWinnerId === bet.match.teamB?.id
-														? "bg-[#ccff00]/15"
-														: "bg-[#f8f8f8]",
-												)}
-											>
-												<div className="min-w-0 flex-1 text-right">
-													<p className="truncate font-black text-[#121212] text-sm">
-														{bet.match.teamB?.name || "TBD"}
-													</p>
-													{bet.predictedWinnerId === bet.match.teamB?.id && (
-														<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
-															<span className="material-symbols-outlined text-[10px]">
-																check_circle
-															</span>
-															{t("betLabel")}
-														</div>
-													)}
-												</div>
-												<TeamLogo
-													teamName={bet.match.teamB?.name || "TBD"}
-													logoUrl={bet.match.teamB?.logoUrl}
-													size="md"
-												/>
-											</div>
-										</div>
-
-										{/* Footer - Date & Predicted Score */}
-										<div className="flex items-center justify-between border-black border-t-2 bg-white px-4 py-3">
-											<div className="flex items-center gap-2">
-												<Calendar
-													className="h-4 w-4 text-gray-500"
-													strokeWidth={2}
-												/>
-												<span className="font-bold text-gray-600 text-xs">
-													{new Date(bet.match.startTime).toLocaleString(
-														"pt-BR",
-														{
-															day: "2-digit",
-															month: "short",
-															hour: "2-digit",
-															minute: "2-digit",
-														},
-													)}
-												</span>
-											</div>
-											<div className="flex items-center gap-2">
-												<span className="font-black text-[9px] text-gray-400 uppercase tracking-wider">
-													Palpite
-												</span>
-												<div className="flex items-center gap-1">
-													<span className="flex h-7 w-7 items-center justify-center border-2 border-black bg-[#121212] font-black text-sm text-white shadow-[1px_1px_0_0_#ccff00]">
-														{bet.predictedScoreA}
-													</span>
-													<span className="font-black text-gray-400 text-xs">
-														-
-													</span>
-													<span className="flex h-7 w-7 items-center justify-center border-2 border-black bg-[#121212] font-black text-sm text-white shadow-[1px_1px_0_0_#ccff00]">
-														{bet.predictedScoreB}
-													</span>
-												</div>
-											</div>
-										</div>
-									</div>
+										matchLabel={bet.match.tournament?.name || ""}
+										headerLogoUrl={bet.match.tournament?.logoUrl}
+										headerLogoAlt={bet.match.tournament?.name}
+										teamA={{
+											id: bet.match.teamA?.id,
+											name: bet.match.teamA?.name || "TBD",
+											logoUrl: bet.match.teamA?.logoUrl,
+										}}
+										teamB={{
+											id: bet.match.teamB?.id,
+											name: bet.match.teamB?.name || "TBD",
+											logoUrl: bet.match.teamB?.logoUrl,
+										}}
+										status={bet.match.status}
+										startTime={bet.match.startTime}
+										predictedWinnerId={bet.predictedWinnerId}
+										predictedScoreA={bet.predictedScoreA}
+										predictedScoreB={bet.predictedScoreB}
+									/>
 								))}
 							</div>
 						) : (

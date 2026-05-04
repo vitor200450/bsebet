@@ -24,71 +24,77 @@ export function MatchDaySelector({
 }: MatchDaySelectorProps) {
 	const { t, i18n } = useTranslation("tournament");
 	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+
 	const getStatusInfo = (status: string) => {
 		switch (status) {
 			case "open":
 				return {
-					color: "bg-green-500",
-					textColor: "text-white",
+					bg: "bg-[#ccff00]",
+					textColor: "text-black",
 					label: t("matchDay.betsOpen"),
 					icon: Trophy,
-					borderColor: "border-green-500",
+					borderColor: "border-[#ccff00]",
 				};
 			case "locked":
 				return {
-					color: "bg-yellow-500",
+					bg: "bg-[#ffc700]",
 					textColor: "text-black",
 					label: t("matchDay.betsClosed"),
 					icon: Lock,
-					borderColor: "border-yellow-500",
+					borderColor: "border-[#ffc700]",
 				};
 			case "finished":
 				return {
-					color: "bg-blue-500",
+					bg: "bg-brawl-blue",
 					textColor: "text-white",
 					label: t("matchDay.completed"),
 					icon: Check,
-					borderColor: "border-blue-500",
+					borderColor: "border-brawl-blue",
 				};
 			default:
 				return {
-					color: "bg-gray-300",
+					bg: "bg-tape",
 					textColor: "text-gray-600",
 					label: t("matchDay.draft"),
 					icon: Calendar,
-					borderColor: "border-gray-300",
+					borderColor: "border-tape",
 				};
 		}
 	};
 
 	// Sort: by date (earliest first), then by id if dates are the same
 	const sortedMatchDays = [...matchDays].sort((a, b) => {
-		// Parse dates safely
 		const dateA = new Date(a.date).getTime();
 		const dateB = new Date(b.date).getTime();
-
-		// Sort by date first
 		if (dateA !== dateB) {
 			return dateA - dateB;
 		}
-
-		// If dates are the same, sort by id (creation order)
 		return a.id - b.id;
 	});
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-paper bg-paper-texture p-6">
-			<div className="w-full max-w-4xl">
+		<div className="relative flex min-h-screen flex-col items-center bg-paper p-6">
+			{/* Paper texture overlay */}
+			<div
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
+				style={{
+					backgroundImage:
+						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+					backgroundRepeat: "repeat",
+				}}
+			/>
+
+			<div className="relative z-10 w-full max-w-4xl">
 				{/* Header */}
 				<div className="mb-8 text-center">
-					<div className="mb-4 inline-block border-[4px] border-black bg-white px-6 py-3 shadow-[8px_8px_0px_0px_#000]">
-						<h1 className="font-black font-display text-3xl text-black uppercase italic tracking-tighter md:text-4xl">
+					<div className="mx-auto mb-4 inline-block -rotate-1 transform border-[#ccff00] border-b-4 bg-ink px-6 py-3 shadow-[4px_4px_0px_0px_#000]">
+						<h1 className="font-black font-display text-3xl text-white uppercase italic tracking-tighter md:text-4xl">
 							{t("matchDay.selectTitle")}
 						</h1>
 					</div>
 					{tournamentName && (
 						<div className="mt-2 mb-4 flex w-full justify-center">
-							<div className="inline-flex items-center gap-2 border-[3px] border-black bg-[#ccff00] px-4 py-2 shadow-[4px_4px_0px_0px_#000]">
+							<div className="inline-flex items-center gap-2 rounded-md border-2 border-black bg-[#ccff00] px-4 py-2 shadow-[3px_3px_0px_0px_#000]">
 								<Trophy className="h-4 w-4 text-black" strokeWidth={3} />
 								<span className="font-black text-black text-xs uppercase md:text-sm">
 									{t("matchDay.tournamentLabel")}: {tournamentName}
@@ -118,23 +124,23 @@ export function MatchDaySelector({
 									onSelect(md.id);
 								}}
 								disabled={isDraft}
-								className={`relative border-[4px] border-black bg-white p-6 text-left shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 ${
+								className={`relative rounded-lg border-2 border-black bg-white p-5 text-left shadow-[4px_4px_0px_0px_#000] transition-all duration-150 ${
 									isDraft
 										? "cursor-not-allowed opacity-70"
-										: "hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-								} ${isActive ? "ring-4 ring-[#ccff00] ring-offset-4" : ""}`}
+										: "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0px_0px_#000]"
+								} ${isActive ? "ring-2 ring-[#ccff00] ring-offset-2" : ""}`}
 							>
 								{/* Active Badge */}
 								{isActive && (
-									<div className="absolute -top-3 -right-3 rotate-12 border-[3px] border-black bg-[#ccff00] px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
+									<div className="absolute -top-3 -right-3 rotate-6 border-2 border-black bg-[#ccff00] px-2.5 py-1 shadow-[3px_3px_0px_0px_#000]">
 										<span className="font-black text-black text-xs uppercase">
 											🔥 {t("matchDay.active")}
 										</span>
 									</div>
 								)}
 								{isDraft && (
-									<div className="absolute inset-0 z-10 flex items-center justify-center bg-black/35">
-										<span className="border-[2px] border-white bg-black px-2 py-1 font-black text-[10px] text-white uppercase">
+									<div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/35">
+										<span className="border-2 border-white bg-ink px-3 py-1.5 font-black text-[10px] text-white uppercase shadow-[2px_2px_0px_0px_#000]">
 											{t("matchDay.unavailable")}
 										</span>
 									</div>
@@ -144,15 +150,15 @@ export function MatchDaySelector({
 								<div className="mb-4 flex items-start justify-between">
 									<div className="flex items-center gap-3">
 										<div
-											className={`h-12 w-12 ${statusInfo.color} flex items-center justify-center border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]`}
+											className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-2 border-black ${statusInfo.bg} shadow-[2px_2px_0px_0px_#000]`}
 										>
 											<Icon
-												className={`h-6 w-6 ${statusInfo.textColor}`}
-												strokeWidth={3}
+												className={`h-5 w-5 ${statusInfo.textColor}`}
+												strokeWidth={2.5}
 											/>
 										</div>
 										<div>
-											<h3 className="font-black font-display text-2xl text-black uppercase italic tracking-tight">
+											<h3 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 												{md.label}
 											</h3>
 											<p className="font-bold text-gray-500 text-sm uppercase">
@@ -168,7 +174,7 @@ export function MatchDaySelector({
 
 								{/* Status Badge */}
 								<div
-									className={`inline-block ${statusInfo.color} ${statusInfo.textColor} mb-3 border-[2px] border-black px-3 py-1 font-black text-xs uppercase`}
+									className={`inline-block ${statusInfo.bg} ${statusInfo.textColor} mb-3 rounded-md border-2 border-black px-2.5 py-1 font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_#000]`}
 								>
 									{statusInfo.label}
 								</div>
@@ -187,10 +193,10 @@ export function MatchDaySelector({
 											</>
 										) : isDraft ? (
 											<>
-												<span className="material-symbols-outlined text-base text-red-500">
+												<span className="material-symbols-outlined text-base text-brawl-red">
 													warning
 												</span>
-												<span className="font-bold text-red-500">
+												<span className="font-bold text-brawl-red">
 													{t("matchDay.noMatches")}
 												</span>
 											</>
@@ -204,7 +210,7 @@ export function MatchDaySelector({
 
 								{/* Arrow indicator */}
 								<div className="absolute right-4 bottom-4">
-									<span className="material-symbols-outlined text-3xl text-black/20 transition-colors group-hover:text-black/40">
+									<span className="material-symbols-outlined text-2xl text-black/20 transition-colors group-hover:text-black/40">
 										arrow_forward
 									</span>
 								</div>
@@ -216,11 +222,11 @@ export function MatchDaySelector({
 				{/* No Match Days Message */}
 				{matchDays.length === 0 && (
 					<div className="py-12 text-center">
-						<div className="inline-block border-[4px] border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000]">
-							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-black bg-gray-200">
+						<div className="inline-block rounded-lg border-2 border-black bg-white p-8 shadow-[6px_6px_0px_0px_#000]">
+							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-black bg-tape">
 								<Calendar className="h-8 w-8 text-gray-400" strokeWidth={3} />
 							</div>
-							<h3 className="mb-2 font-black font-display text-black text-xl uppercase italic">
+							<h3 className="mb-2 font-black font-display text-ink text-xl uppercase italic">
 								{t("matchDay.noMatchDayTitle")}
 							</h3>
 							<p className="text-gray-600 text-sm">

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import {
-	Calendar,
 	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
@@ -15,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CustomSelect } from "@/components/admin/CustomInputs";
-import { TeamLogo } from "@/components/TeamLogo";
+import { MatchBetCard } from "@/components/MatchBetCard";
 import { getMyBets } from "@/functions/get-my-bets";
 import { getUser } from "@/functions/get-user";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -334,26 +333,7 @@ function RouteComponent() {
 											{isExpanded ? (
 												<div className="space-y-3">
 													{group.bets.map((bet) => {
-														const isFinished = bet.match.status === "finished";
-														const isLive = bet.match.status === "live";
 														const isProjected = bet.id < 0;
-														const isWalkover = bet.match.resultType === "wo";
-														const walkoverScoreA =
-															bet.match.teamA?.id &&
-															bet.match.winnerId === bet.match.teamA.id
-																? "W"
-																: "FF";
-														const walkoverScoreB =
-															bet.match.teamB?.id &&
-															bet.match.winnerId === bet.match.teamB.id
-																? "W"
-																: "FF";
-														const won =
-															!isProjected &&
-															isFinished &&
-															bet.pointsEarned !== null &&
-															bet.pointsEarned > 0;
-														const lost = !isProjected && isFinished && !won;
 														const stageLabel = (() => {
 															const side = bet.match.bracketSide;
 															const round = bet.match.roundIndex;
@@ -374,278 +354,37 @@ function RouteComponent() {
 																id: bet.match.id,
 															});
 														})();
-
-														// Status config
-														const statusConfig = isProjected
-															? {
-																	label: t("labels.projection"),
-																	color: "bg-[#ff6b00] text-black",
-																}
-															: isLive
-																? {
-																		label: "Ao Vivo",
-																		color:
-																			"animate-pulse bg-[#ff2e2e] text-white",
-																	}
-																: isWalkover
-																	? {
-																			label: "W.O.",
-																			color: "bg-black text-white",
-																		}
-																	: won
-																		? {
-																				label: "Acertou",
-																				color: "bg-[#ccff00] text-black",
-																			}
-																		: lost
-																			? {
-																					label: "Errou",
-																					color: "bg-[#ff2e2e] text-white",
-																				}
-																			: {
-																					label: "Agendado",
-																					color: "bg-[#f0f0f0] text-black",
-																				};
-
 														return (
-															<div
-																key={bet.id}
-																className={clsx(
-																	"group relative overflow-hidden border-[3px] transition-all",
-																	isProjected
-																		? "border-gray-300 border-dashed bg-[#f8f8f8]"
-																		: won
-																			? "border-[#ccff00] bg-white shadow-[4px_4px_0_0_#ccff00] hover:shadow-[6px_6px_0_0_#ccff00]"
-																			: lost
-																				? "border-[#ff2e2e] bg-white shadow-[4px_4px_0_0_#ff2e2e] hover:shadow-[6px_6px_0_0_#ff2e2e]"
-																				: "border-black bg-white shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000]",
-																)}
-															>
-																{/* Top accent bar */}
-																{isProjected ? (
-																	<div className="h-1.5 w-full bg-gray-400" />
-																) : won ? (
-																	<div className="h-1.5 w-full bg-[#ccff00]" />
-																) : lost ? (
-																	<div className="h-1.5 w-full bg-[#ff2e2e]" />
-																) : isWalkover ? (
-																	<div className="h-1.5 w-full bg-black" />
-																) : isLive ? (
-																	<div className="h-1.5 w-full animate-pulse bg-[#ff2e2e]" />
-																) : (
-																	<div className="h-1.5 w-full bg-[#ffc700]" />
-																)}
-
-																{/* Header: Stage + Status */}
-																<div className="flex items-center justify-between border-black border-b-2 bg-[#fafafa] px-4 py-2">
-																	<span className="truncate font-black text-[10px] text-gray-500 uppercase tracking-widest">
-																		{stageLabel}
-																	</span>
-																	<div
-																		className={clsx(
-																			"rounded-sm border-2 border-black px-2 py-0.5 font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0_0_#000]",
-																			statusConfig.color,
-																		)}
-																	>
-																		{statusConfig.label}
-																	</div>
-																</div>
-
-																{/* Teams - Broadcast panel style */}
-																<div className="flex items-stretch">
-																	{/* Team A Panel */}
-																	<div
-																		className={clsx(
-																			"flex flex-1 items-center gap-3 border-black border-r-2 px-4 py-4 transition-all",
-																			!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamA?.id
-																				? "bg-[#ccff00]/15"
-																				: isProjected
-																					? "bg-white"
-																					: "bg-[#f8f8f8]",
-																			isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamA?.id &&
-																				"ring-2 ring-[#ffc700] ring-inset",
-																		)}
-																	>
-																		<TeamLogo
-																			teamName={bet.match.teamA?.name || "TBD"}
-																			logoUrl={bet.match.teamA?.logoUrl}
-																			size="md"
-																		/>
-																		<div className="min-w-0 flex-1">
-																			<p className="truncate font-black text-[#121212] text-sm">
-																				{bet.match.teamA?.name || "TBD"}
-																			</p>
-																			{!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamA?.id && (
-																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
-																						<span className="material-symbols-outlined text-[10px]">
-																							check_circle
-																						</span>
-																						{t("betLabel")}
-																					</div>
-																				)}
-																			{isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamA?.id && (
-																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
-																						<span className="material-symbols-outlined text-[10px]">
-																							crown
-																						</span>
-																						Vencedor
-																					</span>
-																				)}
-																		</div>
-																	</div>
-
-																	{/* VS Badge */}
-																	<div className="flex shrink-0 items-center justify-center">
-																		<div className="flex h-10 w-10 -rotate-6 items-center justify-center border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
-																			<span className="font-black text-white text-xs italic">
-																				{t("vs")}
-																			</span>
-																		</div>
-																	</div>
-
-																	{/* Team B Panel */}
-																	<div
-																		className={clsx(
-																			"flex flex-1 items-center gap-3 border-black border-l-2 px-4 py-4 transition-all",
-																			!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamB?.id
-																				? "bg-[#ccff00]/15"
-																				: isProjected
-																					? "bg-white"
-																					: "bg-[#f8f8f8]",
-																			isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamB?.id &&
-																				"ring-2 ring-[#ffc700] ring-inset",
-																		)}
-																	>
-																		<div className="min-w-0 flex-1 text-right">
-																			<p className="truncate font-black text-[#121212] text-sm">
-																				{bet.match.teamB?.name || "TBD"}
-																			</p>
-																			{!isProjected &&
-																				bet.predictedWinnerId ===
-																					bet.match.teamB?.id && (
-																					<div className="mt-1 inline-flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0_0_#000]">
-																						<span className="material-symbols-outlined text-[10px]">
-																							check_circle
-																						</span>
-																						{t("betLabel")}
-																					</div>
-																				)}
-																			{isFinished &&
-																				bet.match.winner?.id ===
-																					bet.match.teamB?.id && (
-																					<span className="mt-1 inline-flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
-																						<span className="material-symbols-outlined text-[10px]">
-																							crown
-																						</span>
-																						Vencedor
-																					</span>
-																				)}
-																		</div>
-																		<TeamLogo
-																			teamName={bet.match.teamB?.name || "TBD"}
-																			logoUrl={bet.match.teamB?.logoUrl}
-																			size="md"
-																		/>
-																	</div>
-																</div>
-
-																{/* Footer - Scores & Points */}
-																<div className="flex items-center justify-between border-black border-t-2 bg-white px-4 py-3">
-																	<div className="flex items-center gap-3">
-																		{/* Date or Score info */}
-																		{isProjected ? (
-																			<span className="flex items-center gap-1 text-gray-500 text-xs">
-																				<span className="material-symbols-outlined text-base">
-																					auto_awesome
-																				</span>
-																				{t("labels.futureProjection")}
-																			</span>
-																		) : !isFinished ? (
-																			<span className="flex items-center gap-1 text-gray-600 text-xs">
-																				<Calendar
-																					className="h-3.5 w-3.5"
-																					strokeWidth={2}
-																				/>
-																				{new Date(
-																					bet.match.startTime,
-																				).toLocaleString(myBetsLocale, {
-																					day: "2-digit",
-																					month: "short",
-																					hour: "2-digit",
-																					minute: "2-digit",
-																				})}
-																			</span>
-																		) : (
-																			<div className="flex items-center gap-2">
-																				<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
-																					Placar:
-																				</span>
-																				<div className="flex items-center gap-1">
-																					<span className="rounded bg-black px-2 py-0.5 font-black text-sm text-white">
-																						{isWalkover
-																							? walkoverScoreA
-																							: (bet.match.scoreA ?? "—")}
-																					</span>
-																					<span className="font-bold text-gray-400">
-																						-
-																					</span>
-																					<span className="rounded bg-black px-2 py-0.5 font-black text-sm text-white">
-																						{isWalkover
-																							? walkoverScoreB
-																							: (bet.match.scoreB ?? "—")}
-																					</span>
-																				</div>
-																			</div>
-																		)}
-																	</div>
-
-																	<div className="flex items-center gap-2">
-																		{/* Prediction */}
-																		{!isProjected && (
-																			<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
-																				Palpite: {bet.predictedScoreA}-
-																				{bet.predictedScoreB}
-																			</span>
-																		)}
-
-																		{/* Points badge */}
-																		{isFinished &&
-																			bet.pointsEarned !== null &&
-																			bet.pointsEarned > 0 && (
-																				<div className="flex items-center gap-1.5">
-																					{bet.isPerfectPick && (
-																						<span className="rounded-md border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[9px] text-black uppercase">
-																							Placar Exato
-																						</span>
-																					)}
-																					<span className="rounded-md bg-[#ccff00] px-2 py-0.5 font-black text-black text-sm">
-																						+{bet.pointsEarned}
-																					</span>
-																				</div>
-																			)}
-
-																		{isFinished &&
-																			bet.isUnderdogPick &&
-																			won && (
-																				<span className="rounded-md border border-black bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 font-black text-[9px] text-white uppercase">
-																					{t("labels.underdogLabel")}
-																				</span>
-																			)}
-																	</div>
-																</div>
-															</div>
+														<MatchBetCard
+															key={bet.id}
+															matchLabel={stageLabel}
+															headerLogoUrl={group.tournament.logoUrl}
+															headerLogoAlt={group.tournament.name}
+															teamA={{
+																	id: bet.match.teamA?.id,
+																	name: bet.match.teamA?.name || "TBD",
+																	logoUrl: bet.match.teamA?.logoUrl,
+																}}
+																teamB={{
+																	id: bet.match.teamB?.id,
+																	name: bet.match.teamB?.name || "TBD",
+																	logoUrl: bet.match.teamB?.logoUrl,
+																}}
+																status={bet.match.status}
+																resultType={bet.match.resultType}
+																startTime={bet.match.startTime}
+																predictedWinnerId={bet.predictedWinnerId}
+																predictedScoreA={bet.predictedScoreA}
+																predictedScoreB={bet.predictedScoreB}
+																actualScoreA={bet.match.scoreA}
+																actualScoreB={bet.match.scoreB}
+																actualWinnerId={bet.match.winnerId}
+																pointsEarned={bet.pointsEarned}
+																isPerfectPick={bet.isPerfectPick}
+																isUnderdogPick={bet.isUnderdogPick}
+																isProjected={isProjected}
+																locale={myBetsLocale}
+															/>
 														);
 													})}
 												</div>

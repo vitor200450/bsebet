@@ -20,10 +20,10 @@ const ScorePicker = ({
 	onClear: () => void;
 	format: "bo3" | "bo5" | "bo7";
 }) => {
+	const { t } = useTranslation("betting");
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	// Close when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -57,7 +57,7 @@ const ScorePicker = ({
 					setIsOpen(!isOpen);
 				}}
 				className={clsx(
-					"flex h-6 items-center justify-center gap-1 border-2 border-black bg-white px-2 text-black shadow-[2px_2px_0px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none",
+					"flex h-7 items-center justify-center gap-1 border-2 border-black bg-white px-2 text-black shadow-[2px_2px_0px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none",
 					isOpen ? "relative z-50" : "z-10",
 				)}
 			>
@@ -70,8 +70,8 @@ const ScorePicker = ({
 			</button>
 
 			{isOpen && (
-				<div className="zoom-in-95 absolute top-full right-0 z-[100] mt-2 flex min-w-[120px] origin-top-right animate-in flex-col gap-2 border-[3px] border-black bg-white p-2 shadow-[4px_4px_0px_0px_#000] duration-100">
-					<div className="mb-1 text-center font-black text-[9px] text-gray-400 uppercase">
+				<div className="zoom-in-95 absolute top-full right-0 z-[100] mt-2 flex min-w-[130px] origin-top-right animate-in flex-col gap-2 border-[3px] border-black bg-white p-2 shadow-[4px_4px_0px_0px_#000] duration-100">
+					<div className="mb-1 text-center font-black text-[9px] text-gray-500 uppercase">
 						{t("matchCard.pickScore")}
 					</div>
 					<div className="flex flex-wrap justify-center gap-1.5">
@@ -103,7 +103,7 @@ const ScorePicker = ({
 							onClear();
 							setIsOpen(false);
 						}}
-						className="py-1 font-bold text-[9px] text-red-500 uppercase hover:bg-red-50"
+						className="py-1 font-bold text-[9px] text-brawl-red uppercase hover:bg-red-50"
 					>
 						{t("matchCard.clearPrediction")}
 					</button>
@@ -150,8 +150,6 @@ export const MatchCard = ({
 	const isLocked = isGhost || match.isLockedDependency;
 	const isBettingEnabled = match.isBettingEnabled ?? true;
 
-	// Can interact if betting is enabled AND match is not finished/live AND not readOnly AND not locked
-	// AND if matchday is locked, the match must be in editableMatchIds
 	const isMatchStarted = match.status === "live" || match.status === "finished";
 	const isWalkover = match.resultType === "wo";
 	const walkoverDisplayScore = (() => {
@@ -204,9 +202,6 @@ export const MatchCard = ({
 	})();
 	const isMatchEditable =
 		matchDayStatus !== "locked" || (editableMatchIds?.has(match.id) ?? false);
-	// In recovery mode (locked matchday), isBettingEnabled is false for all matches
-	// because match-days.ts syncs it on status change. Bypass it when the match is
-	// explicitly marked as editable for recovery.
 	const effectiveBettingEnabled =
 		isBettingEnabled ||
 		(matchDayStatus === "locked" && (editableMatchIds?.has(match.id) ?? false));
@@ -228,7 +223,7 @@ export const MatchCard = ({
 
 	if (isLocked && !isReadOnly) {
 		return (
-			<div className="group relative flex h-28 w-full flex-col items-center justify-center overflow-hidden border-[3px] border-black/10 bg-gray-100/50">
+			<div className="group relative flex h-28 w-full flex-col items-center justify-center overflow-hidden rounded-md border-2 border-gray-300 bg-gray-100/60 shadow-[2px_2px_0px_0px_#d1d5db]">
 				<div className="absolute top-0 left-0 h-1 w-full bg-black/5" />
 				<div className="flex flex-col items-center gap-1 opacity-40 grayscale">
 					<div className="flex items-center gap-6">
@@ -245,22 +240,19 @@ export const MatchCard = ({
 						</span>
 					</div>
 				</div>
-				<div className="mt-2 border border-black/10 bg-black/5 px-3 py-1">
+				<div className="mt-2 rounded border border-black/10 bg-black/5 px-3 py-1">
 					<span className="font-black text-[8px] text-black/40 uppercase italic tracking-widest">
 						{isReadOnly
 							? t("blocked.waitingResults")
 							: t("blocked.waitingPreviousBets")}
 					</span>
 				</div>
-				{/* Diagonal stripes overlay */}
-				<div className="pointer-events-none absolute inset-0 bg-[length:20px_20px] bg-[linear-gradient(45deg,black_25%,transparent_25%,transparent_50%,black_50%,black_75%,transparent_75%,transparent)] opacity-[0.03]" />
 			</div>
 		);
 	}
 
-	// Determine Visual State: Prediction vs Actual Result
-	const showResult = isMatchStarted; // Show actual result if match started
-	const winnerId = showResult ? match.winnerId : prediction?.winnerId; // Use actual winner if available, else prediction
+	const showResult = isMatchStarted;
+	const winnerId = showResult ? match.winnerId : prediction?.winnerId;
 
 	const isWinnerA = match.teamA && winnerId === match.teamA.id;
 	const isWinnerB = match.teamB && winnerId === match.teamB.id;
@@ -271,9 +263,9 @@ export const MatchCard = ({
 	return (
 		<div
 			className={clsx(
-				"group relative z-10 w-full overflow-visible border-[3px] border-black bg-white text-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200",
+				"group relative z-10 w-full overflow-visible rounded-md border-2 border-black bg-white text-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200",
 				canInteract &&
-					"cursor-pointer focus-within:z-[60] hover:z-50 hover:-translate-y-0.5 active:z-[60]",
+					"cursor-pointer focus-within:z-[60] hover:z-50 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:z-[60]",
 				!canInteract &&
 					!showResult &&
 					!isReadOnly &&
@@ -282,38 +274,38 @@ export const MatchCard = ({
 		>
 			{/* Status Badges */}
 			{!canInteract && !showResult && !isReadOnly && (
-				<div className="absolute -top-2 -right-2 z-20 border-2 border-black bg-gray-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
+				<div className="absolute -top-2 -right-2 z-20 rounded-sm border-2 border-black bg-gray-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
 					{t("badges.closed")}
 				</div>
 			)}
 			{match.status === "live" && (
-				<div className="absolute -top-2 -right-2 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
+				<div className="absolute -top-2 -right-2 z-20 animate-pulse rounded-sm border-2 border-black bg-brawl-red px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
 					{t("badges.live")}
 				</div>
 			)}
 			{match.status === "finished" && (
-				<div className="absolute -top-2 -right-2 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
+				<div className="absolute -top-2 -right-2 z-20 rounded-sm border-2 border-black bg-ink px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
 					{t("badges.final")}
 				</div>
 			)}
 			{match.status === "finished" && isWalkover && (
-				<div className="absolute -top-2 right-14 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
+				<div className="absolute -top-2 right-12 z-20 rounded-sm border-2 border-black bg-brawl-red px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
 					{t("badges.wo")}
 				</div>
 			)}
 
-			{/* Bet Result Badge - Show points earned for finished matches */}
+			{/* Bet Result Badge */}
 			{match.status === "finished" &&
 				prediction &&
 				prediction.pointsEarned !== undefined && (
 					<div
 						className={clsx(
-							"group/badge absolute -right-2 -bottom-2 z-20 flex cursor-help items-center gap-1 border-2 border-black px-1.5 py-0.5 font-black text-[7px] uppercase",
+							"group/badge absolute -right-2 -bottom-2 z-20 flex cursor-help items-center gap-1 rounded-sm border-2 border-black px-1.5 py-0.5 font-black text-[7px] uppercase shadow-[1px_1px_0px_0px_#000]",
 							isWalkover || prediction.isCorrect
 								? prediction.isUnderdogPick
-									? "animate-pulse bg-gradient-to-r from-purple-600 to-pink-600 text-white" // Special underdog style
+									? "animate-pulse bg-gradient-to-r from-purple-600 to-pink-600 text-white"
 									: "bg-green-500 text-white"
-								: "bg-red-500 text-white",
+								: "bg-brawl-red text-white",
 						)}
 					>
 						{/* Tooltip */}
@@ -393,18 +385,13 @@ export const MatchCard = ({
 							<div className="absolute top-full right-4 h-0 w-0 border-transparent border-t-4 border-t-white border-r-4 border-l-4" />
 						</div>
 
-						{/* Badge Content */}
-						{isWalkover || prediction.isCorrect ? (
-							prediction.isUnderdogPick ? (
-								<span>🔥</span>
-							) : isWalkover ? (
-								"⚠"
-							) : (
-								"✓"
-							)
-						) : (
-							"✗"
-						)}
+						{isWalkover || prediction.isCorrect
+							? prediction.isUnderdogPick
+								? "🔥"
+								: isWalkover
+									? "⚠"
+									: "✓"
+							: "✗"}
 						<span>
 							{prediction.pointsEarned > 0
 								? `+${prediction.pointsEarned}`
@@ -419,7 +406,7 @@ export const MatchCard = ({
 				)}
 
 			{/* Header */}
-			<div className="flex h-6 items-center justify-between bg-black px-2">
+			<div className="flex h-7 items-center justify-between bg-ink px-2.5">
 				<div className="flex-1 truncate font-black text-[8px] text-white uppercase tracking-wider">
 					{match.name || match.label}
 				</div>
@@ -432,7 +419,7 @@ export const MatchCard = ({
 							day: "2-digit",
 							month: "2-digit",
 						})}{" "}
-						-{" "}
+						-
 						{new Date(match.startTime).toLocaleTimeString("pt-BR", {
 							hour: "2-digit",
 							minute: "2-digit",
@@ -443,7 +430,7 @@ export const MatchCard = ({
 
 			{/* Content Container */}
 			<div className="relative">
-				{/* Helper for "Select Winner" state if nothing selected */}
+				{/* Helper for "Select Winner" state */}
 				{!prediction && canInteract && !showResult && (
 					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/5 opacity-0 transition-opacity group-hover:opacity-100">
 						<span className="rounded bg-white/80 px-2 py-1 font-bold text-[10px] text-black/50 uppercase tracking-widest">
@@ -455,7 +442,7 @@ export const MatchCard = ({
 				{/* Helper for LOCKED matches */}
 				{!canInteract && !showResult && !isReadOnly && (
 					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover:opacity-100">
-						<div className="flex -rotate-1 transform flex-col items-center gap-1 border-2 border-[#ccff00] bg-black px-3 py-2 text-white">
+						<div className="flex -rotate-1 transform flex-col items-center gap-1 border-2 border-[#ccff00] bg-black px-3 py-2 text-white shadow-[2px_2px_0px_0px_#000]">
 							<span className="material-symbols-outlined text-sm">lock</span>
 							<span className="text-center font-black text-[8px] uppercase leading-tight tracking-widest">
 								{blockedReason}
@@ -476,17 +463,16 @@ export const MatchCard = ({
 						)
 					}
 					className={clsx(
-						"relative flex h-12 items-center justify-between border-black/10 border-b px-2 py-1.5 transition-all duration-200",
+						"relative flex h-12 items-center justify-between border-black/10 border-b px-2.5 py-1.5 transition-all duration-200",
 						canInteract ? "cursor-pointer" : "",
 						isWinnerA
 							? showResult
-								? "bg-[#ccff00] text-black" // Actual winner style (Lime Green)
-								: "bg-brawl-blue" // Prediction style
+								? "bg-[#ccff00] text-black"
+								: "bg-brawl-blue"
 							: "hover:bg-gray-50",
-						showResult && !isWinnerA && "bg-gray-100 opacity-70", // Dim loser
+						showResult && !isWinnerA && "bg-gray-100 opacity-70",
 					)}
 				>
-					{/* Winner/Prediction Background Texture */}
 					{isWinnerA && (
 						<div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
 					)}
@@ -505,7 +491,7 @@ export const MatchCard = ({
 									? showResult
 										? "text-black"
 										: "text-white"
-									: "text-black",
+									: "text-ink",
 							)}
 						>
 							{match.teamA?.name || match.labelTeamA || t("matchCard.tbd")}
@@ -513,7 +499,6 @@ export const MatchCard = ({
 					</div>
 
 					<div className="flex items-center gap-2">
-						{/* Show Prediction Score Picker OR Actual Score */}
 						{showResult ? (
 							<span
 								className={clsx(
@@ -567,17 +552,16 @@ export const MatchCard = ({
 						)
 					}
 					className={clsx(
-						"relative flex h-12 items-center justify-between px-2 py-1.5 transition-all duration-200",
+						"relative flex h-12 items-center justify-between px-2.5 py-1.5 transition-all duration-200",
 						canInteract ? "cursor-pointer" : "",
 						isWinnerB
 							? showResult
-								? "bg-[#ccff00] text-black" // Actual winner style
-								: "bg-brawl-red" // Prediction style
+								? "bg-[#ccff00] text-black"
+								: "bg-brawl-red"
 							: "hover:bg-gray-50",
-						showResult && !isWinnerB && "bg-gray-100 opacity-70", // Dim loser
+						showResult && !isWinnerB && "bg-gray-100 opacity-70",
 					)}
 				>
-					{/* Winner/Prediction Background Texture */}
 					{isWinnerB && (
 						<div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
 					)}
@@ -596,7 +580,7 @@ export const MatchCard = ({
 									? showResult
 										? "text-black"
 										: "text-white"
-									: "text-black",
+									: "text-ink",
 							)}
 						>
 							{match.teamB?.name || match.labelTeamB || t("matchCard.tbd")}

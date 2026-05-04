@@ -16,6 +16,7 @@ import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { TournamentPodium } from "@/components/TournamentPodium";
+import { i18next } from "@/i18n";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
 import { extractColorsServer } from "@/server/color-extractor";
@@ -762,8 +763,9 @@ function TournamentDetailsPage() {
 
 function formatDate(date: Date | string | null, t: any) {
 	if (!date) return t("detail.tba");
+	const locale = i18next.language === "pt" ? "pt-BR" : "en-US";
 	return new Date(date)
-		.toLocaleDateString("pt-BR", {
+		.toLocaleDateString(locale, {
 			day: "2-digit",
 			month: "short",
 			timeZone: "UTC",

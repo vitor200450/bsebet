@@ -151,7 +151,10 @@ export function GlobalHeader() {
 										item.label === "Home"
 											? curPath === normalize(`/${lang}/landing`) ||
 												curPath === normalize(`/${lang}/dashboard`)
-											: curPath === linkDest;
+											: item.to === "/"
+												? curPath === linkDest
+												: curPath === linkDest ||
+													curPath.startsWith(linkDest + "/");
 
 									return (
 										<Link
@@ -381,7 +384,10 @@ export function GlobalHeader() {
 									item.label === "Home"
 										? curPath === normalize(`/${lang}/landing`) ||
 											curPath === normalize(`/${lang}/dashboard`)
-										: curPath === linkDest;
+										: item.to === "/"
+											? curPath === linkDest
+											: curPath === linkDest ||
+												curPath.startsWith(linkDest + "/");
 
 								return (
 									<Link

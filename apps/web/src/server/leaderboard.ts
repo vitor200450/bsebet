@@ -353,8 +353,6 @@ const getLeaderboardTournamentsFn = createServerFn({
 		})
 		.from(tournaments)
 		.innerJoin(matches, eq(tournaments.id, matches.tournamentId))
-		.innerJoin(bets, eq(matches.id, bets.matchId))
-		.innerJoin(user, eq(bets.userId, user.id))
 		.where(
 			or(eq(tournaments.status, "active"), eq(tournaments.status, "finished")),
 		)

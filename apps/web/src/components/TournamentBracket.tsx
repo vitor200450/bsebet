@@ -5,18 +5,8 @@ import { StandardGroupView } from "./bracket/StandardGroupView";
 import type { Match, Prediction, Team } from "./bracket/types";
 export type { Match, Prediction, Team };
 
-// --- TYPES ---
-// Team might be shared too, let's check types.ts
-// If types.ts has Team, import it.
-// Check previous view of types.ts or GSLGroupView imports.
-// GSLGroupView imports { Match, Prediction, Team } from "./types"? No, just Match, Prediction.
-// Let's check types.ts content if possible, or just keep Team if it's not in types.ts
-// Actually, types.ts usually has Team.
-// Let's assume Team is in types.ts and import it.
-
 import { MatchCard } from "./bracket/MatchCard";
 
-// --- BRACKET COMPONENT ---
 export function TournamentBracket({
 	matches,
 	predictions,
@@ -45,31 +35,16 @@ export function TournamentBracket({
 	matchDayStatus?: string | null;
 }) {
 	const { t } = useTranslation("betting");
-	// Logic to project matches based on predictions
+
 	const projectedMatches = useMemo(() => {
-		// Clone matches
 		const projected = matches.map((m) => ({
 			...m,
 			teamA: m.teamA ? { ...m.teamA } : null,
 			teamB: m.teamB ? { ...m.teamB } : null,
 		}));
 
-		// Reset teams that are dependent on previous matches to "TBD" if not decided yet
-		// Actually we can just let them be overridden from the source
-		// But we need to identify which matches are dependent
-		// Note: The `matches` prop already comes with initial DB state.
-		// We just need to apply the PREDICTIONS on top of it.
-
-		// Sort projected matches by ID or order to ensure parents are processed before children?
-		// Actually, iterating multiple times or topological sort handles this.
-		// Simple forEach with a lookup is okay if we do it enough times or if order is correct.
-		// For now, let's assume one pass is enough if we are just checking all predictions.
-		// Actually, we must process outcomes.
-
-		// Create a map for quick access
 		const matchMap = new Map(projected.map((m) => [m.id, m]));
 
-		// Apply both actual results and predictions multiple times to handle deep propagation
 		for (let i = 0; i < 5; i++) {
 			let changed = false;
 
@@ -77,7 +52,6 @@ export function TournamentBracket({
 				const match = matchMap.get(originalMatch.id);
 				if (!match) return;
 
-				// Use actual winner if finished, otherwise use prediction
 				const prediction = predictions[match.id];
 				const isFinished = match.status === "finished";
 				const winnerId = isFinished ? match.winnerId : prediction?.winnerId;
@@ -95,7 +69,6 @@ export function TournamentBracket({
 
 				if (!winnerTeam) return;
 
-				// Update Winner Path
 				if (match.nextMatchWinnerId) {
 					const nextMatch = matchMap.get(match.nextMatchWinnerId);
 					if (nextMatch) {
@@ -116,7 +89,6 @@ export function TournamentBracket({
 					}
 				}
 
-				// Update Loser Path
 				if (match.nextMatchLoserId) {
 					const nextMatch = matchMap.get(match.nextMatchLoserId);
 					if (nextMatch) {
@@ -141,11 +113,9 @@ export function TournamentBracket({
 			if (!changed) break;
 		}
 
-		// Mark dependencies - lock matches if parents are not predicted OR finished
 		projected.forEach((m) => {
 			if (m.teamAPreviousMatchId) {
 				const parent = matchMap.get(m.teamAPreviousMatchId);
-				// If parent exists, isn't finished, and has no prediction -> lock child
 				if (parent && parent.status !== "finished" && !predictions[parent.id]) {
 					m.isLockedDependency = true;
 				}
@@ -161,7 +131,6 @@ export function TournamentBracket({
 		return projected;
 	}, [matches, predictions]);
 
-	// Organize matches by bracket side and round
 	const { upperBracket, lowerBracket, grandFinal, hasGroups, hasElimination } =
 		useMemo(() => {
 			const upper: Record<number, Match[]> = {};
@@ -249,7 +218,6 @@ export function TournamentBracket({
 		return lbNames[idx] || t("rounds.lbRound", { number: idx + 1 });
 	};
 
-	// Count matches that need betting (isBettingEnabled OR recovery-editable, still scheduled)
 	const bettableMatches = useMemo(() => {
 		return matches.filter(
 			(m) =>
@@ -260,7 +228,6 @@ export function TournamentBracket({
 		);
 	}, [matches, matchDayStatus, editableMatchIds]);
 
-	// Check if all bettable matches have BOTH winner AND score
 	const allBetsComplete = bettableMatches.every(
 		(m) =>
 			predictions[m.id] &&
@@ -276,9 +243,19 @@ export function TournamentBracket({
 		<div
 			className={
 				className ||
-				"flex min-h-screen w-full flex-col items-center overflow-x-auto bg-paper bg-paper-texture p-6 font-body"
+				"relative flex min-h-screen w-full flex-col items-center overflow-x-auto bg-paper p-6 font-body"
 			}
 		>
+			{/* Paper texture overlay */}
+			<div
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
+				style={{
+					backgroundImage:
+						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+					backgroundRepeat: "repeat",
+				}}
+			/>
+
 			{/* Review Button - Fixed at bottom right */}
 			{showReviewButton && (
 				<div className="fixed right-6 bottom-24 z-[70]">
@@ -290,7 +267,7 @@ export function TournamentBracket({
 								onReview();
 							}
 						}}
-						className="slide-in-from-bottom-4 flex animate-in cursor-pointer items-center gap-2 border-[3px] border-black bg-brawl-red px-6 py-3 font-black text-sm text-white uppercase italic shadow-[6px_6px_0px_0px_#000] transition-all duration-300 hover:bg-[#d41d1d] hover:shadow-[8px_8px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						className="slide-in-from-bottom-4 flex animate-in cursor-pointer items-center gap-2 rounded-md border-2 border-black bg-brawl-red px-6 py-3 font-black text-sm text-white uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all duration-300 hover:bg-[#d41d1d] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 					>
 						<span className="material-symbols-outlined text-lg">verified</span>
 						Revisar Apostas
@@ -300,11 +277,10 @@ export function TournamentBracket({
 
 			{/* Header Container */}
 			{!hideHeader && (
-				<div className="mb-10 w-full text-center">
-					<div className="relative inline-block">
-						<div className="absolute inset-0 translate-x-2 translate-y-2 skew-x-[-12deg] transform border-2 border-black bg-[#ccff00] shadow-[2px_2px_0px_0px_#000]" />
-						<div className="relative skew-x-[-12deg] transform border-2 border-transparent bg-black px-8 py-2 text-white">
-							<h2 className="skew-x-[12deg] transform font-black text-2xl uppercase italic tracking-tighter">
+				<div className="relative z-10 mb-8 w-full text-center">
+					<div className="mx-auto inline-block -rotate-1 transform">
+						<div className="relative border-[#ccff00] border-b-4 bg-ink px-8 py-2 text-white shadow-[4px_4px_0px_0px_#000]">
+							<h2 className="font-black font-display text-2xl uppercase italic tracking-tighter">
 								{t("bracketTitle")}{" "}
 								<span className="text-[#ccff00]">
 									{t("bracketTitleHighlight")}
@@ -315,19 +291,19 @@ export function TournamentBracket({
 				</div>
 			)}
 
-			<div className="mx-auto flex w-full max-w-7xl flex-col gap-20">
+			<div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-16">
 				{/* Groups Section */}
 				{hasGroups && (
-					<div className="flex flex-col gap-8">
+					<div className="flex flex-col gap-6">
 						<div className="flex items-center gap-4">
-							<div className="h-0.5 flex-grow bg-black" />
-							<h3 className="-skew-x-12 transform border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-black text-xl uppercase italic">
+							<div className="h-0.5 flex-grow bg-black/20" />
+							<h3 className="-skew-x-6 transform rounded-md border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-ink text-lg uppercase italic shadow-[2px_2px_0px_0px_#000]">
 								{t("rounds.groupStage")}
 							</h3>
-							<div className="h-0.5 flex-grow bg-black" />
+							<div className="h-0.5 flex-grow bg-black/20" />
 						</div>
 
-						<div className="flex w-full flex-col gap-12">
+						<div className="flex w-full flex-col gap-10">
 							{Object.entries(
 								projectedMatches
 									.filter((m) => m.bracketSide === "groups")
@@ -347,7 +323,6 @@ export function TournamentBracket({
 								.sort(([a], [b]) => a.localeCompare(b))
 								.map(([groupName, groupMatches]) => {
 									const groupMatchList = groupMatches as Match[];
-									// DETECT FORMAT: GSL vs Round Robin
 									const isGSL =
 										groupMatchList.length === 5 &&
 										groupMatchList.some((m: Match) =>
@@ -386,33 +361,33 @@ export function TournamentBracket({
 
 				{/* Elimination Section */}
 				{hasElimination && (
-					<div className="flex flex-col items-center gap-8">
+					<div className="relative z-10 flex flex-col items-center gap-6">
 						{!hideHeader && (
 							<div className="flex w-full items-center gap-4">
-								<div className="h-0.5 flex-grow bg-black" />
-								<h3 className="-skew-x-12 transform border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-black text-xl uppercase italic">
+								<div className="h-0.5 flex-grow bg-black/20" />
+								<h3 className="-skew-x-6 transform rounded-md border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-ink text-lg uppercase italic shadow-[2px_2px_0px_0px_#000]">
 									{t("rounds.playoffBracket")}
 								</h3>
-								<div className="h-0.5 flex-grow bg-black" />
+								<div className="h-0.5 flex-grow bg-black/20" />
 							</div>
 						)}
 
-						<div className="scrollbar-hide flex w-full flex-col gap-12 overflow-x-auto pb-10">
+						<div className="scrollbar-hide flex w-full flex-col gap-10 overflow-x-auto pb-8">
 							{/* UPPER BRACKET */}
 							{upperRounds.length > 0 && (
 								<div className="flex flex-col gap-4">
-									<div className="flex items-stretch gap-6 text-black">
+									<div className="flex items-stretch gap-5 text-black">
 										{upperRounds.map((roundIdx) => (
 											<div
 												key={`upper-${roundIdx}`}
-												className="flex w-72 shrink-0 flex-col gap-2"
+												className="flex w-64 shrink-0 flex-col gap-2"
 											>
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-12 transform border-2 border-black bg-black px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{getRoundTitle("upper", roundIdx)}
 													</span>
 												</div>
-												<div className="flex h-full flex-col justify-around gap-4">
+												<div className="flex h-full flex-col justify-around gap-3">
 													{(upperBracket[roundIdx] || []).map((match) => (
 														<MatchCard
 															key={match.id}
@@ -431,13 +406,13 @@ export function TournamentBracket({
 
 										{/* GRAND FINAL */}
 										{grandFinal.length > 0 && (
-											<div className="flex w-72 shrink-0 flex-col gap-2">
+											<div className="flex w-64 shrink-0 flex-col gap-2">
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-12 transform border-2 border-black bg-black px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{t("rounds.grandFinal")}
 													</span>
 												</div>
-												<div className="flex h-full flex-col justify-around gap-4">
+												<div className="flex h-full flex-col justify-around gap-3">
 													{grandFinal.map((match) => (
 														<MatchCard
 															key={match.id}
@@ -459,24 +434,24 @@ export function TournamentBracket({
 
 							{/* LOWER BRACKET */}
 							{lowerRounds.length > 0 && (
-								<div className="relative mt-10 border-black/10 border-t-[3px] border-dashed pt-8">
+								<div className="relative mt-8 border-black/10 border-t-2 border-dashed pt-6">
 									<div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
-										<div className="-skew-x-12 transform border-2 border-white bg-black px-3 py-1 font-black text-[10px] text-white uppercase italic tracking-widest">
+										<div className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[10px] text-white uppercase italic tracking-widest shadow-[2px_2px_0px_0px_#000]">
 											{t("rounds.lowerBracket")}
 										</div>
 									</div>
-									<div className="flex items-center gap-6">
+									<div className="flex items-center gap-5">
 										{lowerRounds.map((roundIdx) => (
 											<div
 												key={`lower-${roundIdx}`}
-												className="flex w-72 shrink-0 flex-col gap-2"
+												className="flex w-64 shrink-0 flex-col gap-2"
 											>
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-12 transform border-2 border-black bg-white px-3 py-1 font-black text-[10px] text-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-white px-3 py-1 font-black text-[10px] text-ink uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{getRoundTitle("lower", roundIdx)}
 													</span>
 												</div>
-												<div className="flex flex-col justify-around gap-4">
+												<div className="flex flex-col justify-around gap-3">
 													{(lowerBracket[roundIdx] || []).map((match) => (
 														<MatchCard
 															key={match.id}
