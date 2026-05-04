@@ -44,5 +44,22 @@
 	"region": "Region",
 	"series": "Series",
 	"points": "points",
-	"finished": "Finished"
+	"finished": "Finished",
+	"auth": {
+		"welcomeBack": "Welcome Back",
+		"createAccount": "Create Account",
+		"email": "Email",
+		"password": "Password",
+		"name": "Name",
+		"submitting": "Submitting...",
+		"signIn": "Sign In",
+		"signUp": "Sign Up",
+		"needAccount": "Need an account? Sign Up",
+		"hasAccount": "Already have an account? Sign In",
+		"signInSuccess": "Sign in successful",
+		"signUpSuccess": "Sign up successful",
+		"invalidEmail": "Invalid email address",
+		"passwordMinLength": "Password must be at least 8 characters",
+		"nameMinLength": "Name must be at least 2 characters"
+	}
 }

@@ -1,8 +1,18 @@
 {
+	"back": "Back",
+	"vs": "VS",
+	"tournament": "Tournament",
+	"tournaments": "Tournaments",
 	"stats": {
 		"winRate": "Win Rate",
 		"wins": "Wins",
-		"currentStreak": "Current Streak"
+		"losses": "Losses",
+		"matches": "Matches",
+		"currentStreak": "Current Streak",
+		"matchCount_one": "{{count}} Match",
+		"matchCount_other": "{{count}} Matches",
+		"tournamentCount_one": "{{count}} Tournament",
+		"tournamentCount_other": "{{count}} Tournaments"
 	},
 	"sections": {
 		"upcoming": "Upcoming Matches",
@@ -10,11 +20,21 @@
 	},
 	"status": {
 		"live": "LIVE",
-		"now": "NOW"
+		"now": "NOW",
+		"win": "W",
+		"loss": "L",
+		"ff": "FF",
+		"wo": "WO",
+		"active": "Active",
+		"upcoming": "Upcoming",
+		"finished": "Finished"
 	},
 	"actions": {
 		"follow": "Follow",
 		"bet": "Bet"
+	},
+	"region": {
+		"global": "Global"
 	},
 	"empty": {
 		"noFinishedMatches": "No finished matches"

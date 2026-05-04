@@ -321,7 +321,7 @@ function formatDateRange(
 	startDate: Date | string | null,
 	endDate: Date | string | null,
 ): string {
-	if (!startDate) return "TBD";
+	if (!startDate) return i18next.t("tournament:browse.noDates");
 
 	const start = new Date(startDate);
 	const options: Intl.DateTimeFormatOptions = {

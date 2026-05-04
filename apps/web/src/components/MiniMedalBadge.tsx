@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { Award, Medal, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 
 function cn(...inputs: ClassValue[]) {
@@ -71,9 +72,13 @@ export function MiniMedalBadge({
 	size = "md",
 	className,
 }: MiniMedalBadgeProps) {
+	const { t } = useTranslation("user");
 	const config = tierConfig[tier];
 	const sizeClasses = sizeConfig[size];
 	const Icon = config.icon;
+	const tierLabel = t(
+		`medals.${tier === "1st" ? "goldLabel" : tier === "2nd" ? "silverLabel" : "bronzeLabel"}`,
+	);
 
 	return (
 		<div
@@ -85,7 +90,7 @@ export function MiniMedalBadge({
 				sizeClasses.container,
 				className,
 			)}
-			title={`${config.label}${count ? `: ${count}` : ""}`}
+			title={`${tierLabel}${count ? `: ${count}` : ""}`}
 		>
 			<Icon
 				size={sizeClasses.icon}
@@ -188,6 +193,7 @@ export function InlineMedalDisplay({
 	placement,
 	className,
 }: InlineMedalDisplayProps) {
+	const { t } = useTranslation("user");
 	const tierMap: Record<number, MedalTier> = {
 		1: "1st",
 		2: "2nd",
@@ -208,7 +214,7 @@ export function InlineMedalDisplay({
 				"shadow-[1px_1px_0_0_#000]",
 				className,
 			)}
-			title={`${placement}º Lugar`}
+			title={t("medals.placeLabel", { placement })}
 		>
 			<Icon
 				size={10}

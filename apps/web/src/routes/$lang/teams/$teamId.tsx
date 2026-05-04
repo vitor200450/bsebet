@@ -306,13 +306,13 @@ function TeamDetailsPage() {
 														<>
 															<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border-2 border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
 																<TeamLogo
-																	teamName={opponent?.name || "TBD"}
+																	teamName={opponent?.name || t("tbd")}
 																	logoUrl={opponent?.logoUrl}
 																	className="h-full w-full object-contain"
 																/>
 															</div>
 															<span className="text-center font-bold text-xs uppercase">
-																{opponent?.name || "TBD"}
+																{opponent?.name || t("tbd")}
 															</span>
 														</>
 													)}
@@ -407,13 +407,13 @@ function TeamDetailsPage() {
 														<>
 															<div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
 																<TeamLogo
-																	teamName={opponent?.name || "TBD"}
+																	teamName={opponent?.name || t("tbd")}
 																	logoUrl={opponent?.logoUrl}
 																	className="h-full w-full object-contain"
 																/>
 															</div>
 															<span className="truncate font-bold text-black text-sm uppercase">
-																{opponent?.name || "TBD"}
+																{opponent?.name || t("tbd")}
 															</span>
 														</>
 													)}
@@ -601,13 +601,13 @@ function TeamDetailsPage() {
 													<div className="flex items-center gap-3 border-[2px] border-black bg-gray-100 p-2">
 														<div className="flex h-12 w-12 items-center justify-center overflow-hidden border-[2px] border-black bg-white p-1 shadow-[2px_2px_0_0_#000]">
 															<TeamLogo
-																teamName={opponent?.name || "TBD"}
+																teamName={opponent?.name || t("tbd")}
 																logoUrl={opponent?.logoUrl}
 																className="h-full w-full object-contain"
 															/>
 														</div>
 														<span className="flex-1 font-black text-black text-sm uppercase">
-															{opponent?.name || "TBD"}
+															{opponent?.name || t("tbd")}
 														</span>
 														<span className="font-black font-body text-black text-xl">
 															{opponentScoreDisplay}
@@ -771,7 +771,7 @@ function TeamDetailsPage() {
 														) : (
 															<div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000]">
 																<TeamLogo
-																	teamName={opponent?.name || "TBD"}
+																	teamName={opponent?.name || t("tbd")}
 																	logoUrl={opponent?.logoUrl}
 																	className="h-full w-full object-contain"
 																/>
@@ -788,7 +788,7 @@ function TeamDetailsPage() {
 														</Link>
 													) : (
 														<span className="truncate font-black text-black text-sm uppercase">
-															{opponent?.name || "TBD"}
+															{opponent?.name || t("tbd")}
 														</span>
 													)}
 												</div>

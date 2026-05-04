@@ -28,7 +28,30 @@
 		"history": "Histórico",
 		"noMatches": "Nenhuma partida encontrada",
 		"round": "rodada {{number}}",
-		"elimination": "eliminação"
+		"elimination": "eliminação",
+		"back": "Voltar",
+		"bet": "Apostar",
+		"live": "AO VIVO",
+		"teamCount_one": "{{count}} time",
+		"teamCount_other": "{{count}} times",
+		"formatTbd": "Formato a definir",
+		"stageGroups": "Fase de Grupos",
+		"stagePlayoffs": "Playoffs",
+		"stagePlayoffsDouble": "Playoffs (Double)",
+		"filterAll": "Todos os Jogos",
+		"filterMyBets": "Meus Palpites",
+		"filterUpcoming": "Em Breve",
+		"filterFinished": "Finalizados",
+		"playoffBracket": "Playoff Bracket",
+		"emptyHint": "Tente mudar os filtros",
+		"tba": "TBA",
+		"groupStage": "Fase de Grupos",
+		"roundNames": {
+			"grandFinal": "GRAND FINAL",
+			"semiFinals": "SEMI-FINAIS",
+			"quarterFinals": "QUARTAS DE FINAL",
+			"round": "ROUND {{number}}"
+		}
 	},
 	"podium": {
 		"title": "Pódio Final",

@@ -223,7 +223,10 @@ export default function UserMenu({
 						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
 						onClick={() => {
 							const r = routeTo("/users/$userId");
-							navigate({ to: r.to, params: { ...r.params, userId: session.user.id } });
+							navigate({
+								to: r.to,
+								params: { ...r.params, userId: session.user.id },
+							});
 						}}
 					>
 						<span className="material-symbols-outlined mr-2 text-sm">

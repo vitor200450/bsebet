@@ -62,8 +62,14 @@ export function MatchCard({
 
 	const teamA = match.teamA;
 	const teamB = match.teamB;
-	const walkoverScoreA = teamA?.id && match.winnerId === teamA.id ? "W" : "FF";
-	const walkoverScoreB = teamB?.id && match.winnerId === teamB.id ? "W" : "FF";
+	const walkoverScoreA =
+		teamA?.id && match.winnerId === teamA.id
+			? t("walkover.win")
+			: t("walkover.forfeit");
+	const walkoverScoreB =
+		teamB?.id && match.winnerId === teamB.id
+			? t("walkover.win")
+			: t("walkover.forfeit");
 
 	// Visual highlights for user predictions
 	const userPredictedWinnerA =
@@ -140,7 +146,7 @@ export function MatchCard({
 						)}
 						{isWalkover && isFinished && (
 							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ff2e2e] px-2 py-0.5 font-black text-[8px] text-white uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
-								W.O.
+								{t("badges.wo")}
 							</div>
 						)}
 					</div>
@@ -196,7 +202,7 @@ export function MatchCard({
 												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
-									{match.labelTeamA || "TBD"}
+									{match.labelTeamA || t("matchCard.tbd")}
 								</span>
 							)}
 							{initialBet && !showPredictionScore && (
@@ -208,7 +214,7 @@ export function MatchCard({
 
 						{/* Logo */}
 						<TeamLogo
-							teamName={teamA?.name || match.labelTeamA || "TBD"}
+							teamName={teamA?.name || match.labelTeamA || t("matchCard.tbd")}
 							logoUrl={teamA?.logoUrl}
 							size="md"
 							className={clsx(
@@ -230,7 +236,7 @@ export function MatchCard({
 							<div className="relative flex h-full min-w-[60px] flex-col items-center justify-center md:min-w-[80px]">
 								{isLive ? (
 									<span className="mb-1 animate-pulse font-black text-[8px] text-red-600 uppercase tracking-tighter">
-										LIVE
+										{t("badges.live")}
 									</span>
 								) : (
 									<span
@@ -243,7 +249,9 @@ export function MatchCard({
 
 								<div className="flex items-center justify-center rounded border border-zinc-200/50 bg-zinc-100/50 px-2 py-0.5">
 									<span className="font-black text-[10px] text-zinc-500 italic leading-none md:text-xs">
-										{isWalkover && isFinished ? "FF" : "VS"}
+										{isWalkover && isFinished
+											? t("walkover.forfeit")
+											: t("matchCard.vs")}
 									</span>
 								</div>
 
@@ -272,7 +280,7 @@ export function MatchCard({
 					>
 						{/* Logo */}
 						<TeamLogo
-							teamName={teamB?.name || match.labelTeamB || "TBD"}
+							teamName={teamB?.name || match.labelTeamB || t("matchCard.tbd")}
 							logoUrl={teamB?.logoUrl}
 							size="md"
 							className={clsx(
@@ -312,7 +320,7 @@ export function MatchCard({
 												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
-									{match.labelTeamB || "TBD"}
+									{match.labelTeamB || t("matchCard.tbd")}
 								</span>
 							)}
 							{initialBet && !showPredictionScore && (
@@ -412,7 +420,7 @@ export function MatchCard({
 							{initialBet.pointsEarned > 0
 								? `+${initialBet.pointsEarned}`
 								: initialBet.pointsEarned}{" "}
-							PTS
+							{t("matchCard.pts")}
 						</span>
 						{initialBet.isUnderdogPick &&
 							match.winnerId === initialBet.predictedWinnerId && (

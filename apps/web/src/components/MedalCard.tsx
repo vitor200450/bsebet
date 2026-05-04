@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 
 function cn(...inputs: ClassValue[]) {
@@ -76,6 +77,7 @@ export function MedalCard({
 	logoUrl,
 	className,
 }: MedalCardProps) {
+	const { t } = useTranslation("user");
 	const config = tierConfig[tier];
 
 	return (
@@ -100,7 +102,11 @@ export function MedalCard({
 							config.badgeSize,
 						)}
 					>
-						{config.badgeText}
+						{tier === "1st"
+							? t("medals.champion")
+							: tier === "2nd"
+								? t("medals.secondPlace")
+								: t("medals.thirdPlace")}
 					</span>
 				</div>
 			</div>
@@ -140,7 +146,7 @@ export function MedalCard({
 						<div className="relative z-10 h-32 w-32 rotate-3 rounded-sm bg-transparent p-2 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] sm:h-40 sm:w-40 md:h-20 md:w-20 lg:h-48 lg:w-48 xl:h-28 xl:w-28">
 							<img
 								src={logoUrl || undefined}
-								alt="Tournament"
+								alt={t("medals.tournament")}
 								className="h-full w-full -rotate-3 object-contain"
 							/>
 						</div>
@@ -162,7 +168,11 @@ export function MedalCard({
 								config.tierColor,
 							)}
 						>
-							{config.tierLabel}
+							{tier === "1st"
+								? t("medals.goldTier")
+								: tier === "2nd"
+									? t("medals.silverTier")
+									: t("medals.bronzeTier")}
 						</h3>
 						<p
 							className="overflow-hidden border-black/10 border-b-2 pb-2 font-bold text-[10px] text-gray-500 uppercase tracking-widest lg:text-xs"
@@ -176,7 +186,7 @@ export function MedalCard({
 					<div className="mt-auto flex items-end justify-between pt-2 sm:pt-4">
 						<div className="flex flex-col">
 							<span className="font-bold text-[10px] text-gray-500 uppercase">
-								Total Points
+								{t("totalPoints")}
 							</span>
 							<span
 								className={cn(

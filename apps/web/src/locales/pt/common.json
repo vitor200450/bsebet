@@ -44,5 +44,22 @@
 	"region": "Região",
 	"series": "Série",
 	"points": "pontos",
-	"finished": "Concluído"
+	"finished": "Concluído",
+	"auth": {
+		"welcomeBack": "Bem-vindo de Volta",
+		"createAccount": "Criar Conta",
+		"email": "E-mail",
+		"password": "Senha",
+		"name": "Nome",
+		"submitting": "Enviando...",
+		"signIn": "Entrar",
+		"signUp": "Cadastrar",
+		"needAccount": "Não tem conta? Cadastre-se",
+		"hasAccount": "Já tem conta? Entre",
+		"signInSuccess": "Login realizado com sucesso",
+		"signUpSuccess": "Cadastro realizado com sucesso",
+		"invalidEmail": "Endereço de e-mail inválido",
+		"passwordMinLength": "A senha deve ter pelo menos 8 caracteres",
+		"nameMinLength": "O nome deve ter pelo menos 2 caracteres"
+	}
 }

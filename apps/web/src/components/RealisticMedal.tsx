@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
 import { Award, Crown, Medal, Star, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { useLangLink } from "@/i18n/useLangLink";
 
@@ -70,6 +71,7 @@ export function RealisticMedal({
 	tournamentSlug,
 	className,
 }: RealisticMedalProps) {
+	const { t } = useTranslation("user");
 	const { routeTo, lang } = useLangLink();
 	const config = tierConfig[tier];
 	const Icon = config.icon;
@@ -221,7 +223,7 @@ export function RealisticMedal({
 										: "bg-[#8B4513] text-white",
 							)}
 						>
-							{points} pts
+							{points} {t("common:points")}
 						</div>
 					</div>
 
@@ -246,7 +248,11 @@ export function RealisticMedal({
 								: "bg-[#228B22] text-white",
 					)}
 				>
-					{config.label}
+					{tier === "1st"
+						? t("medals.champion")
+						: tier === "2nd"
+							? t("medals.secondPlace")
+							: t("medals.thirdPlace")}
 				</div>
 			</div>
 
@@ -295,6 +301,7 @@ interface TrophyCaseProps {
 }
 
 export function TrophyCase({ medals, className }: TrophyCaseProps) {
+	const { t } = useTranslation("user");
 	if (medals.length === 0) return null;
 
 	return (
@@ -305,12 +312,12 @@ export function TrophyCase({ medals, className }: TrophyCaseProps) {
 					<Trophy className="h-5 w-5 text-black" strokeWidth={3} fill="black" />
 				</div>
 				<h2 className="font-black text-black text-xl uppercase italic tracking-tighter md:text-2xl">
-					TROPHY CASE
+					{t("medals.trophyCase")}
 				</h2>
 				<div className="ml-auto flex items-center gap-1 rounded-full border-2 border-black bg-black px-3 py-1">
 					<span className="font-black text-sm text-white">{medals.length}</span>
 					<span className="font-bold text-[10px] text-white/60 uppercase">
-						medalhas
+						{t("medals.medalCount")}
 					</span>
 				</div>
 			</div>

@@ -342,7 +342,7 @@ function LiveMatchControl() {
 							{/* VS Separator */}
 							<div className="mx-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-[3px] border-gray-700 bg-black md:h-12 md:w-12">
 								<span className="font-black text-[10px] text-gray-400 md:text-xs">
-									VS
+									{t("live.vs")}
 								</span>
 							</div>
 
@@ -589,7 +589,7 @@ function LiveMatchControl() {
 										<div className="flex flex-col items-center gap-1">
 											<div className="h-10 w-[2px] bg-gray-700" />
 											<span className="font-black text-gray-500 text-xs">
-												VS
+												{t("live.vs")}
 											</span>
 											<div className="h-10 w-[2px] bg-gray-700" />
 										</div>
@@ -695,7 +695,7 @@ function LiveMatchControl() {
 										{t("live.keepLive")}
 									</button>
 									<div className="font-mono text-[10px] text-gray-600 uppercase tracking-widest">
-										ou
+										{t("live.or")}
 									</div>
 									<button
 										onClick={handleDiscardMatch}

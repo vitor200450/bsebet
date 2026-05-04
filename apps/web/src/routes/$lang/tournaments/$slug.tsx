@@ -166,7 +166,9 @@ function TournamentDetailsPage() {
 						(m.label && m.label.includes("Group"))
 					) {
 						const groupName =
-							m.label?.match(/Group\s+(\w+)/i)?.[0] || m.label || "Group Stage";
+							m.label?.match(/Group\s+(\w+)/i)?.[0] ||
+							m.label ||
+							t("detail.groupStage");
 						if (!groups[groupName]) groups[groupName] = [];
 						groups[groupName].push(m);
 					}
@@ -368,10 +370,16 @@ function TournamentDetailsPage() {
 		sortedRoundIndices.forEach((rIdx) => {
 			const totalRounds = sortedRoundIndices.length;
 			const reverseIdx = totalRounds - rIdx - 1;
-			if (reverseIdx === 0) roundNamesMap[rIdx] = "GRAND FINAL";
-			else if (reverseIdx === 1) roundNamesMap[rIdx] = "SEMI-FINALS";
-			else if (reverseIdx === 2) roundNamesMap[rIdx] = "QUARTER-FINALS";
-			else roundNamesMap[rIdx] = `ROUND ${rIdx + 1}`;
+			if (reverseIdx === 0)
+				roundNamesMap[rIdx] = t("detail.roundNames.grandFinal");
+			else if (reverseIdx === 1)
+				roundNamesMap[rIdx] = t("detail.roundNames.semiFinals");
+			else if (reverseIdx === 2)
+				roundNamesMap[rIdx] = t("detail.roundNames.quarterFinals");
+			else
+				roundNamesMap[rIdx] = t("detail.roundNames.round", {
+					number: rIdx + 1,
+				});
 		});
 
 		return {
@@ -415,7 +423,7 @@ function TournamentDetailsPage() {
 							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
 							<ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
-							<span className="hidden sm:inline">Voltar</span>
+							<span className="hidden sm:inline">{t("detail.back")}</span>
 						</Link>
 
 						{matches.some(
@@ -426,7 +434,7 @@ function TournamentDetailsPage() {
 								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
 							>
 								<Sparkles className="h-4 w-4" strokeWidth={2.5} />
-								Apostar
+								{t("detail.bet")}
 							</Link>
 						)}
 					</div>
@@ -448,7 +456,7 @@ function TournamentDetailsPage() {
 							</div>
 							{isActive && (
 								<div className="absolute -right-2 -bottom-2 rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
-									AO VIVO
+									{t("detail.live")}
 								</div>
 							)}
 						</div>
@@ -464,12 +472,14 @@ function TournamentDetailsPage() {
 								)}
 								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
 									<Calendar className="h-3 w-3" strokeWidth={2.5} />
-									{formatDate(tournament.startDate)} -{" "}
-									{formatDate(tournament.endDate)}
+									{formatDate(tournament.startDate, t)} -{" "}
+									{formatDate(tournament.endDate, t)}
 								</span>
 								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
 									<Users className="h-3 w-3" strokeWidth={2.5} />
-									{tournament.participantsCount || 0} times
+									{t("detail.teamCount", {
+										count: tournament.participantsCount || 0,
+									})}
 								</span>
 							</div>
 
@@ -481,16 +491,18 @@ function TournamentDetailsPage() {
 								{tournament.format ||
 									(() => {
 										const stages = (tournament.stages as any[]) || [];
-										if (stages.length === 0) return "Formato a definir";
+										if (stages.length === 0) return t("detail.formatTbd");
 										const types = Array.from(
 											new Set(stages.map((s) => s.type)),
 										);
 										const typeMap: Record<string, string> = {
-											Groups: "Fase de Grupos",
-											"Single Elimination": "Playoffs",
-											"Double Elimination": "Playoffs (Double)",
+											Groups: t("detail.stageGroups"),
+											"Single Elimination": t("detail.stagePlayoffs"),
+											"Double Elimination": t("detail.stagePlayoffsDouble"),
 										};
-										return types.map((t) => typeMap[t] || t).join(" + ");
+										return types
+											.map((type) => typeMap[type] || type)
+											.join(" + ");
 									})()}
 							</p>
 						</div>
@@ -522,7 +534,7 @@ function TournamentDetailsPage() {
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						Todos os Jogos
+						{t("detail.filterAll")}
 					</button>
 					<button
 						type="button"
@@ -534,7 +546,7 @@ function TournamentDetailsPage() {
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						Meus Palpites
+						{t("detail.filterMyBets")}
 						{userBets.length > 0 && (
 							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-bold text-[10px] text-white">
 								{userBets.length}
@@ -551,7 +563,7 @@ function TournamentDetailsPage() {
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						Em Breve
+						{t("detail.filterUpcoming")}
 					</button>
 					<button
 						type="button"
@@ -563,7 +575,7 @@ function TournamentDetailsPage() {
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 						)}
 					>
-						Finalizados
+						{t("detail.filterFinished")}
 					</button>
 				</div>
 
@@ -611,8 +623,8 @@ function TournamentDetailsPage() {
 															...match,
 															category:
 																match.bracketSide === "groups"
-																	? "Fase de Grupos"
-																	: "Playoffs",
+																	? t("detail.stageGroups")
+																	: t("detail.stagePlayoffs"),
 															isBettingEnabled: match.isBettingEnabled ?? false,
 															status: match.status as
 																| "scheduled"
@@ -645,7 +657,7 @@ function TournamentDetailsPage() {
 													strokeWidth={2.5}
 												/>
 												<h3 className="font-black text-2xl text-[#121212] uppercase italic">
-													Playoff Bracket
+													{t("detail.playoffBracket")}
 												</h3>
 												<div className="h-0.5 flex-1 bg-black/10" />
 											</div>
@@ -736,7 +748,7 @@ function TournamentDetailsPage() {
 								{t("detail.noMatches")}
 							</h3>
 							<p className="mt-2 text-gray-600 text-sm">
-								Tente mudar os filtros
+								{t("detail.emptyHint")}
 							</p>
 						</div>
 					)}
@@ -746,8 +758,8 @@ function TournamentDetailsPage() {
 	);
 }
 
-function formatDate(date: Date | string | null) {
-	if (!date) return "TBA";
+function formatDate(date: Date | string | null, t: any) {
+	if (!date) return t("detail.tba");
 	return new Date(date)
 		.toLocaleDateString("pt-BR", {
 			day: "2-digit",

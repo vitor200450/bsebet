@@ -99,12 +99,14 @@ function AdminUsersPage() {
 				},
 			});
 			toast.success(
-				`User is now ${newRole === "admin" ? "an ADMIN" : "a MEMBER"}`,
+				t("users.toast.roleChanged", {
+					role: newRole === "admin" ? t("users.admin") : t("users.member"),
+				}),
 			);
 			setIsRoleModalOpen(false);
 			router.invalidate();
 		} catch (err) {
-			toast.error("Failed to change role");
+			toast.error(t("users.toast.roleChangeError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -146,11 +148,11 @@ function AdminUsersPage() {
 					image: imageInput || null,
 				},
 			});
-			toast.success("User details updated!");
+			toast.success(t("users.toast.detailsUpdated"));
 			setIsEditModalOpen(false);
 			router.invalidate();
 		} catch (err) {
-			toast.error("Failed to update user");
+			toast.error(t("users.toast.updateError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -178,11 +180,11 @@ function AdminUsersPage() {
 					userId: deleteTargetUser.id,
 				},
 			});
-			toast.success("User deleted successfully");
+			toast.success(t("users.toast.deleted"));
 			setIsDeleteModalOpen(false);
 			router.invalidate();
 		} catch (err) {
-			toast.error("Failed to delete user");
+			toast.error(t("users.toast.deleteError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -222,10 +224,14 @@ function AdminUsersPage() {
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header */}
 							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
-								<div className="col-span-4">User Identity</div>
-								<div className="col-span-4">Contact</div>
-								<div className="col-span-2 text-center">Role</div>
-								<div className="col-span-2 text-right">Actions</div>
+								<div className="col-span-4">{t("users.tableUserIdentity")}</div>
+								<div className="col-span-4">{t("users.tableContact")}</div>
+								<div className="col-span-2 text-center">
+									{t("users.tableRole")}
+								</div>
+								<div className="col-span-2 text-right">
+									{t("users.tableActions")}
+								</div>
 							</div>
 
 							{/* List Rows */}
@@ -235,7 +241,7 @@ function AdminUsersPage() {
 										<User className="h-8 w-8 text-gray-400" />
 									</div>
 									<span className="font-black text-gray-400 text-lg uppercase italic">
-										No users found
+										{t("users.empty")}
 									</span>
 								</div>
 							) : (
@@ -273,7 +279,7 @@ function AdminUsersPage() {
 														params={{ userId: u.id }}
 														className="font-black text-[#2e5cff] text-lg uppercase italic leading-none hover:underline"
 													>
-														{u.nickname || "No Nickname"}
+														{u.nickname || t("users.noNickname")}
 													</Link>
 													{/* Removed Google Name Display for Privacy */}
 												</div>
@@ -311,14 +317,14 @@ function AdminUsersPage() {
 												<button
 													onClick={() => openEditModal(u)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2e5cff] hover:text-white hover:shadow-none md:flex-none"
-													title="Edit Details"
+													title={t("users.editDetails")}
 												>
 													<Edit2 className="h-4 w-4" />
 												</button>
 												<button
 													onClick={() => initiateDelete(u)}
 													className="flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#ff2e2e] hover:text-white hover:shadow-none md:flex-none"
-													title="Delete User"
+													title={t("users.deleteUser")}
 												>
 													<Trash2 className="h-4 w-4" />
 												</button>
@@ -338,7 +344,7 @@ function AdminUsersPage() {
 					<div className="zoom-in-95 relative max-h-[90vh] w-full max-w-md animate-in overflow-y-auto border-[4px] border-black bg-white shadow-[10px_10px_0px_0px_#000] duration-200">
 						<div className="sticky top-0 z-10 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
 							<h2 className="font-black text-lg text-white uppercase italic">
-								EDIT USER
+								{t("users.editUser")}
 							</h2>
 							<button
 								onClick={() => setIsEditModalOpen(false)}
@@ -352,13 +358,13 @@ function AdminUsersPage() {
 							{/* Nickname Field */}
 							<div>
 								<label className="mb-1 block font-black text-black text-xs uppercase">
-									Display Name (Nickname)
+									{t("users.displayName")}
 								</label>
 								<input
 									type="text"
 									value={nicknameInput}
 									onChange={(e) => setNicknameInput(e.target.value)}
-									placeholder="Enter custom nickname..."
+									placeholder={t("users.nicknamePlaceholder")}
 									className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 								/>
 								<p className="mb-6 font-black text-black text-xl uppercase italic">
@@ -369,7 +375,7 @@ function AdminUsersPage() {
 							{/* Image Field */}
 							<div>
 								<label className="mb-1 block font-black text-black text-xs uppercase">
-									Profile Picture
+									{t("users.profilePicture")}
 								</label>
 
 								{/* Image Preview */}
@@ -397,13 +403,13 @@ function AdminUsersPage() {
 											value={imageInput}
 											onChange={(e) => setImageInput(e.target.value)}
 											className="w-full border-[3px] border-black bg-white p-2 pl-9 font-mono text-black text-xs placeholder:text-gray-400 focus:border-black focus:outline-none"
-											placeholder="Paste image URL..."
+											placeholder={t("users.imageUrlPlaceholder")}
 										/>
 									</div>
 
 									<div className="flex items-center gap-2">
 										<span className="font-bold text-[10px] text-gray-400 uppercase">
-											OR
+											{t("users.or")}
 										</span>
 										<div className="h-[1px] flex-1 bg-gray-200" />
 									</div>
@@ -421,7 +427,7 @@ function AdminUsersPage() {
 										className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white py-2 font-bold text-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-100 active:translate-y-[1px] active:shadow-none"
 									>
 										<Upload className="h-3 w-3" />
-										Upload from Device
+										{t("users.uploadFromDevice")}
 									</button>
 								</div>
 							</div>
@@ -432,7 +438,7 @@ function AdminUsersPage() {
 									onClick={() => setIsEditModalOpen(false)}
 									className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 								<button
 									type="submit"
@@ -440,7 +446,7 @@ function AdminUsersPage() {
 									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000]"
 								>
 									{isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-									SAVE CHANGES
+									{t("users.saveChanges")}
 								</button>
 							</div>
 						</form>
@@ -477,8 +483,8 @@ function AdminUsersPage() {
 								)}
 							>
 								{roleTargetUser.currentRole === "admin"
-									? "REVOKE ADMIN?"
-									: "PROMOTE USER?"}
+									? t("users.revokeAdmin")
+									: t("users.promoteUser")}
 							</h3>
 						</div>
 
@@ -501,10 +507,10 @@ function AdminUsersPage() {
 							</div>
 
 							<p className="mb-2 font-bold text-gray-800 text-lg">
-								Are you sure you want to{" "}
+								{t("users.confirmRoleChange")}{" "}
 								{roleTargetUser.currentRole === "admin"
-									? "REMOVE privileges from"
-									: "GRANT Admin power to"}
+									? t("users.removePrivileges")
+									: t("users.grantAdmin")}
 							</p>
 							<p className="mb-6 font-black text-black text-xl uppercase italic">
 								{roleTargetUser.nickname || "User"}
@@ -526,8 +532,8 @@ function AdminUsersPage() {
 									) : (
 										<>
 											{roleTargetUser.currentRole === "admin"
-												? "YES, DEMOTE USER"
-												: "YES, MAKE ADMIN"}
+												? t("users.yesDemote")
+												: t("users.yesMakeAdmin")}
 										</>
 									)}
 								</button>
@@ -535,7 +541,7 @@ function AdminUsersPage() {
 									onClick={() => setIsRoleModalOpen(false)}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 							</div>
 						</div>
@@ -553,7 +559,7 @@ function AdminUsersPage() {
 								<AlertTriangle className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
 							</div>
 							<h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
-								DELETE USER?
+								{t("users.deleteUserTitle")}
 							</h3>
 						</div>
 
@@ -576,14 +582,13 @@ function AdminUsersPage() {
 							</div>
 
 							<p className="mb-2 font-bold text-gray-800 text-lg">
-								Are you sure you want to permanently delete
+								{t("users.confirmDelete")}
 							</p>
 							<p className="mb-2 font-black text-black text-xl uppercase italic">
 								{deleteTargetUser.nickname || "User"}
 							</p>
 							<p className="mb-6 rounded border-2 border-yellow-300 bg-yellow-50 p-3 text-gray-600 text-sm">
-								⚠️ This action cannot be undone. All user data will be
-								permanently deleted.
+								{t("users.deleteWarning")}
 							</p>
 
 							<div className="flex flex-col gap-3">
@@ -595,14 +600,14 @@ function AdminUsersPage() {
 									{isSubmitting ? (
 										<Loader2 className="h-6 w-6 animate-spin" />
 									) : (
-										<>YES, DELETE USER</>
+										<>{t("users.yesDelete")}</>
 									)}
 								</button>
 								<button
 									onClick={() => setIsDeleteModalOpen(false)}
 									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
 								>
-									Cancel
+									{t("common:actions.cancel")}
 								</button>
 							</div>
 						</div>

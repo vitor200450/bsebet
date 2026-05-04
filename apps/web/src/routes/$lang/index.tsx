@@ -852,7 +852,10 @@ function ReviewScreen({
 							})}
 						</div>
 						<h2 className="-skew-x-12 transform font-black font-display text-4xl text-black uppercase italic tracking-tighter">
-							{t("review.reviewTitle")} <span className="text-brawl-red">{t("review.reviewTitleHighlight")}</span>
+							{t("review.reviewTitle")}{" "}
+							<span className="text-brawl-red">
+								{t("review.reviewTitleHighlight")}
+							</span>
 						</h2>
 						<p className="mt-2 font-bold text-gray-500 text-xs uppercase tracking-widest">
 							{t("review.reviewSubtitle")}
@@ -2126,7 +2129,9 @@ function SubmitBetsModal({
 			}
 
 			const { submitMultipleBets } = await import("../../server/bets");
-			await submitMultipleBets({ data: { bets: betsToSubmit, lang: i18n.language } });
+			await submitMultipleBets({
+				data: { bets: betsToSubmit, lang: i18n.language },
+			});
 
 			// After successful submission:
 			// 1. Update local predictions with the resolved scores so the review screen
@@ -2170,7 +2175,10 @@ function SubmitBetsModal({
 					</div>
 
 					<h3 className="mb-4 -skew-x-12 transform font-black font-display text-5xl text-black uppercase italic leading-none tracking-tighter">
-						{t("review.successTitle")} <span className="text-brawl-red">{t("review.successTitleHighlight")}</span>
+						{t("review.successTitle")}{" "}
+						<span className="text-brawl-red">
+							{t("review.successTitleHighlight")}
+						</span>
 					</h3>
 
 					<p className="mb-8 font-body font-bold text-black text-lg leading-snug">
@@ -2215,8 +2223,8 @@ function SubmitBetsModal({
 						disabled={status === "submitting"}
 						className="flex-1 border-[3px] border-black bg-gray-200 py-3 font-black text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-300 active:shadow-none"
 					>
-{t("common:actions.cancel")}
-						</button>
+						{t("common:actions.cancel")}
+					</button>
 					<button
 						onClick={handleSubmit}
 						disabled={status === "submitting" || !hasValidBetsToSubmit}

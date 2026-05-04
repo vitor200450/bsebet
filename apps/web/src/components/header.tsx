@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { useLangLink } from "@/i18n/useLangLink";
 
 import UserMenu from "./user-menu";
 
 export default function Header() {
+	const { t } = useTranslation("common");
 	const { routeTo } = useLangLink();
 	const links = [
-		{ to: "/", label: "Home" },
-		{ to: "/dashboard", label: "Dashboard" },
+		{ to: "/", label: t("nav.home") },
+		{ to: "/dashboard", label: t("nav.dashboard") },
 	] as const;
 
 	return (

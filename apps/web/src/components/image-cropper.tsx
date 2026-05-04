@@ -1,6 +1,7 @@
 import { Check, X, ZoomIn } from "lucide-react";
 import { useCallback, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
+import { useTranslation } from "react-i18next";
 
 interface ImageCropperProps {
 	imageSrc: string;
@@ -13,6 +14,7 @@ export function ImageCropper({
 	onCropComplete,
 	onCancel,
 }: ImageCropperProps) {
+	const { t } = useTranslation("admin-matches");
 	const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
 	const [zoom, setZoom] = useState(1);
 	const [minZoom, setMinZoom] = useState(1);
@@ -135,7 +137,7 @@ export function ImageCropper({
 				<div className="flex items-center justify-between border-black border-b-[3px] bg-[#ffc700] p-4">
 					<h2 className="flex items-center gap-2 font-black text-black text-xl uppercase italic tracking-tighter">
 						<span className="material-symbols-outlined">crop</span>
-						AJUSTAR FOTO
+						{t("imageCropper.cropTitle")}
 					</h2>
 					<button
 						onClick={onCancel}
@@ -191,14 +193,14 @@ export function ImageCropper({
 							onClick={onCancel}
 							className="flex-1 border-[3px] border-black bg-white px-4 py-3 font-black text-black text-sm uppercase transition-colors hover:bg-gray-100"
 						>
-							CANCELAR
+							{t("common:actions.cancel")}
 						</button>
 						<button
 							onClick={handleSave}
 							className="flex flex-1 items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] px-4 py-3 font-black text-black text-sm uppercase shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
 						>
 							<Check size={18} strokeWidth={4} />
-							CONFIRMAR
+							{t("common:actions.confirm")}
 						</button>
 					</div>
 				</div>

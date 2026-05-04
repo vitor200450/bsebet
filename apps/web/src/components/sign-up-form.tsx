@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -18,6 +19,7 @@ export default function SignUpForm({
 	const navigate = useNavigate({
 		from: "/",
 	});
+	const { t } = useTranslation("common");
 	const { isPending } = authClient.useSession();
 
 	const form = useForm({
@@ -38,7 +40,7 @@ export default function SignUpForm({
 						navigate({
 							to: "/dashboard",
 						});
-						toast.success("Sign up successful");
+						toast.success(t("auth.signUpSuccess"));
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -48,9 +50,9 @@ export default function SignUpForm({
 		},
 		validators: {
 			onSubmit: z.object({
-				name: z.string().min(2, "Name must be at least 2 characters"),
-				email: z.email("Invalid email address"),
-				password: z.string().min(8, "Password must be at least 8 characters"),
+				name: z.string().min(2, t("auth.nameMinLength")),
+				email: z.email(t("auth.invalidEmail")),
+				password: z.string().min(8, t("auth.passwordMinLength")),
 			}),
 		},
 	});
@@ -61,7 +63,9 @@ export default function SignUpForm({
 
 	return (
 		<div className="mx-auto mt-10 w-full max-w-md p-6">
-			<h1 className="mb-6 text-center font-bold text-3xl">Create Account</h1>
+			<h1 className="mb-6 text-center font-bold text-3xl">
+				{t("auth.createAccount")}
+			</h1>
 
 			<form
 				onSubmit={(e) => {
@@ -75,7 +79,7 @@ export default function SignUpForm({
 					<form.Field name="name">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Name</Label>
+								<Label htmlFor={field.name}>{t("auth.name")}</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -97,7 +101,7 @@ export default function SignUpForm({
 					<form.Field name="email">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
+								<Label htmlFor={field.name}>{t("auth.email")}</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -120,7 +124,7 @@ export default function SignUpForm({
 					<form.Field name="password">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+								<Label htmlFor={field.name}>{t("auth.password")}</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -146,7 +150,7 @@ export default function SignUpForm({
 							className="w-full"
 							disabled={!state.canSubmit || state.isSubmitting}
 						>
-							{state.isSubmitting ? "Submitting..." : "Sign Up"}
+							{state.isSubmitting ? t("auth.submitting") : t("auth.signUp")}
 						</Button>
 					)}
 				</form.Subscribe>
@@ -158,7 +162,7 @@ export default function SignUpForm({
 					onClick={onSwitchToSignIn}
 					className="text-indigo-600 hover:text-indigo-800"
 				>
-					Already have an account? Sign In
+					{t("auth.hasAccount")}
 				</Button>
 			</div>
 		</div>

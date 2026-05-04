@@ -1,8 +1,18 @@
 {
+	"back": "Voltar",
+	"vs": "VS",
+	"tournament": "Torneio",
+	"tournaments": "Torneios",
 	"stats": {
 		"winRate": "Taxa de Vitória",
 		"wins": "Vitórias",
-		"currentStreak": "Sequência Atual"
+		"losses": "Derrotas",
+		"matches": "Partidas",
+		"currentStreak": "Sequência Atual",
+		"matchCount_one": "{{count}} Partida",
+		"matchCount_other": "{{count}} Partidas",
+		"tournamentCount_one": "{{count}} Torneio",
+		"tournamentCount_other": "{{count}} Torneios"
 	},
 	"sections": {
 		"upcoming": "Próximas Partidas",
@@ -10,11 +20,21 @@
 	},
 	"status": {
 		"live": "AO VIVO",
-		"now": "AGORA"
+		"now": "AGORA",
+		"win": "W",
+		"loss": "L",
+		"ff": "FF",
+		"wo": "WO",
+		"active": "Ativo",
+		"upcoming": "Em Breve",
+		"finished": "Finalizado"
 	},
 	"actions": {
 		"follow": "Acompanhar",
 		"bet": "Apostar"
+	},
+	"region": {
+		"global": "Global"
 	},
 	"empty": {
 		"noFinishedMatches": "Nenhuma partida finalizada"

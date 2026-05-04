@@ -32,6 +32,19 @@
 		"gold": "Ouro",
 		"silver": "Prata",
 		"bronze": "Bronze",
-		"total": "Total"
+		"total": "Total",
+		"champion": "CAMPEÃO",
+		"secondPlace": "2º LUGAR",
+		"thirdPlace": "3º LUGAR",
+		"goldTier": "Nível Ouro",
+		"silverTier": "Nível Prata",
+		"bronzeTier": "Nível Bronze",
+		"tournament": "Torneio",
+		"trophyCase": "VITRINE DE TROFÉUS",
+		"medalCount": "medalhas",
+		"goldLabel": "OURO",
+		"silverLabel": "PRATA",
+		"bronzeLabel": "BRONZE",
+		"placeLabel": "{{placement}}º Lugar"
 	}
 }

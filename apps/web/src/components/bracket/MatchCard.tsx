@@ -62,7 +62,7 @@ const ScorePicker = ({
 				)}
 			>
 				<span className="font-black text-[10px] italic">
-					{currentScore || "SCORE"}
+					{currentScore || t("matchCard.score")}
 				</span>
 				<span className="material-symbols-outlined text-[10px]">
 					expand_more
@@ -72,7 +72,7 @@ const ScorePicker = ({
 			{isOpen && (
 				<div className="zoom-in-95 absolute top-full right-0 z-[100] mt-2 flex min-w-[120px] origin-top-right animate-in flex-col gap-2 border-[3px] border-black bg-white p-2 shadow-[4px_4px_0px_0px_#000] duration-100">
 					<div className="mb-1 text-center font-black text-[9px] text-gray-400 uppercase">
-						Pick Score
+						{t("matchCard.pickScore")}
 					</div>
 					<div className="flex flex-wrap justify-center gap-1.5">
 						{options.map((opt) => (
@@ -105,7 +105,7 @@ const ScorePicker = ({
 						}}
 						className="py-1 font-bold text-[9px] text-red-500 uppercase hover:bg-red-50"
 					>
-						Clear Prediction
+						{t("matchCard.clearPrediction")}
 					</button>
 				</div>
 			)}
@@ -155,39 +155,52 @@ export const MatchCard = ({
 	const isMatchStarted = match.status === "live" || match.status === "finished";
 	const isWalkover = match.resultType === "wo";
 	const walkoverDisplayScore = (() => {
-		if (!isWalkover) return { a: "FF", b: "FF" };
+		if (!isWalkover)
+			return { a: t("walkover.forfeit"), b: t("walkover.forfeit") };
 
 		if (match.winnerId && match.teamA && match.teamB) {
 			return {
-				a: match.winnerId === match.teamA.id ? "W" : "FF",
-				b: match.winnerId === match.teamB.id ? "W" : "FF",
+				a:
+					match.winnerId === match.teamA.id
+						? t("walkover.win")
+						: t("walkover.forfeit"),
+				b:
+					match.winnerId === match.teamB.id
+						? t("walkover.win")
+						: t("walkover.forfeit"),
 			};
 		}
 
 		if ((match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
 			return {
-				a: (match.scoreA ?? 0) > (match.scoreB ?? 0) ? "W" : "FF",
-				b: (match.scoreB ?? 0) > (match.scoreA ?? 0) ? "W" : "FF",
+				a:
+					(match.scoreA ?? 0) > (match.scoreB ?? 0)
+						? t("walkover.win")
+						: t("walkover.forfeit"),
+				b:
+					(match.scoreB ?? 0) > (match.scoreA ?? 0)
+						? t("walkover.win")
+						: t("walkover.forfeit"),
 			};
 		}
 
 		if (match.teamAPreviousMatchId && !match.teamBPreviousMatchId) {
-			return { a: "W", b: "FF" };
+			return { a: t("walkover.win"), b: t("walkover.forfeit") };
 		}
 
 		if (!match.teamAPreviousMatchId && match.teamBPreviousMatchId) {
-			return { a: "FF", b: "W" };
+			return { a: t("walkover.forfeit"), b: t("walkover.win") };
 		}
 
 		if (!match.teamA && match.teamB) {
-			return { a: "FF", b: "W" };
+			return { a: t("walkover.forfeit"), b: t("walkover.win") };
 		}
 
 		if (match.teamA && !match.teamB) {
-			return { a: "W", b: "FF" };
+			return { a: t("walkover.win"), b: t("walkover.forfeit") };
 		}
 
-		return { a: "FF", b: "FF" };
+		return { a: t("walkover.forfeit"), b: t("walkover.forfeit") };
 	})();
 	const isMatchEditable =
 		matchDayStatus !== "locked" || (editableMatchIds?.has(match.id) ?? false);
@@ -220,13 +233,15 @@ export const MatchCard = ({
 				<div className="flex flex-col items-center gap-1 opacity-40 grayscale">
 					<div className="flex items-center gap-6">
 						<span className="w-20 truncate px-0.5 text-center font-black text-[10px] uppercase italic tracking-tighter">
-							{match.labelTeamA || "TBD"}
+							{match.labelTeamA || t("matchCard.tbd")}
 						</span>
 						<div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-black/20 border-dashed">
-							<span className="font-black text-[8px] italic">VS</span>
+							<span className="font-black text-[8px] italic">
+								{t("matchCard.vs")}
+							</span>
 						</div>
 						<span className="w-20 truncate px-0.5 text-center font-black text-[10px] uppercase italic tracking-tighter">
-							{match.labelTeamB || "TBD"}
+							{match.labelTeamB || t("matchCard.tbd")}
 						</span>
 					</div>
 				</div>
@@ -268,22 +283,22 @@ export const MatchCard = ({
 			{/* Status Badges */}
 			{!canInteract && !showResult && !isReadOnly && (
 				<div className="absolute -top-2 -right-2 z-20 border-2 border-black bg-gray-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
-					CLOSED
+					{t("badges.closed")}
 				</div>
 			)}
 			{match.status === "live" && (
 				<div className="absolute -top-2 -right-2 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
-					LIVE
+					{t("badges.live")}
 				</div>
 			)}
 			{match.status === "finished" && (
 				<div className="absolute -top-2 -right-2 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
-					FINAL
+					{t("badges.final")}
 				</div>
 			)}
 			{match.status === "finished" && isWalkover && (
 				<div className="absolute -top-2 right-14 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase">
-					W.O.
+					{t("badges.wo")}
 				</div>
 			)}
 
@@ -394,7 +409,7 @@ export const MatchCard = ({
 							{prediction.pointsEarned > 0
 								? `+${prediction.pointsEarned}`
 								: prediction.pointsEarned}{" "}
-							PTS
+							{t("matchCard.pts")}
 						</span>
 						{prediction.isUnderdogPick &&
 							(isWalkover || prediction.isCorrect) && (
@@ -432,7 +447,7 @@ export const MatchCard = ({
 				{!prediction && canInteract && !showResult && (
 					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/5 opacity-0 transition-opacity group-hover:opacity-100">
 						<span className="rounded bg-white/80 px-2 py-1 font-bold text-[10px] text-black/50 uppercase tracking-widest">
-							Select Winner
+							{t("matchCard.selectWinner")}
 						</span>
 					</div>
 				)}
@@ -478,7 +493,7 @@ export const MatchCard = ({
 
 					<div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pr-2">
 						<TeamLogo
-							teamName={match.teamA?.name || "TBD"}
+							teamName={match.teamA?.name || t("matchCard.tbd")}
 							logoUrl={match.teamA?.logoUrl}
 							size="md"
 							className=""
@@ -493,7 +508,7 @@ export const MatchCard = ({
 									: "text-black",
 							)}
 						>
-							{match.teamA?.name || match.labelTeamA || "TBD"}
+							{match.teamA?.name || match.labelTeamA || t("matchCard.tbd")}
 						</span>
 					</div>
 
@@ -518,7 +533,7 @@ export const MatchCard = ({
 									<div className="h-2 w-2 animate-pulse rounded-full bg-[#ccff00]" />
 									{isReadOnly ? (
 										<span className="px-2 font-black text-white text-xs italic">
-											{prediction?.score || "0-0"}
+											{prediction?.score || t("matchCard.defaultScore")}
 										</span>
 									) : (
 										match.teamA && (
@@ -569,7 +584,7 @@ export const MatchCard = ({
 
 					<div className="flex min-w-0 flex-1 items-center gap-2 pr-2">
 						<TeamLogo
-							teamName={match.teamB?.name || "TBD"}
+							teamName={match.teamB?.name || t("matchCard.tbd")}
 							logoUrl={match.teamB?.logoUrl}
 							size="md"
 							className=""
@@ -584,7 +599,7 @@ export const MatchCard = ({
 									: "text-black",
 							)}
 						>
-							{match.teamB?.name || match.labelTeamB || "TBD"}
+							{match.teamB?.name || match.labelTeamB || t("matchCard.tbd")}
 						</span>
 					</div>
 
@@ -608,7 +623,7 @@ export const MatchCard = ({
 									<div className="h-2 w-2 animate-pulse rounded-full bg-[#ccff00]" />
 									{isReadOnly ? (
 										<span className="px-2 font-black text-white text-xs italic">
-											{prediction?.score || "0-0"}
+											{prediction?.score || t("matchCard.defaultScore")}
 										</span>
 									) : (
 										match.teamB && (

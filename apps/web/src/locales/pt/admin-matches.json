@@ -195,7 +195,9 @@
 		"whatToDo": "O que deseja fazer com as alterações?",
 		"control": "Controle da Partida",
 		"resetMatch": "Resetar Partida",
-		"setResult": "Definir Resultado"
+		"setResult": "Definir Resultado",
+		"vs": "VS",
+		"or": "ou"
 	},
 	"matchDays": {
 		"title": "Match Days",
@@ -323,6 +325,9 @@
 		"underdogT2": "Azarão T2 (26-50%)",
 		"underdogT2Tooltip": "Bônus para azarão com 26-50% dos votos",
 		"winnerPts": "Pts Vencedor"
+	},
+	"imageCropper": {
+		"cropTitle": "AJUSTAR FOTO"
 	},
 	"customInputs": {
 		"selectPlaceholder": "Selecionar...",

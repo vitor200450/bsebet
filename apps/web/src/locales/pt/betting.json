@@ -93,5 +93,25 @@
 		"dominant": "Dominante",
 		"closeMatch": "Disputado",
 		"strongWin": "Vitória Convincente"
+	},
+	"badges": {
+		"live": "AO VIVO",
+		"final": "FINAL",
+		"closed": "FECHADO",
+		"wo": "W.O."
+	},
+	"matchCard": {
+		"vs": "VS",
+		"tbd": "TBD",
+		"pts": "PTS",
+		"selectWinner": "Selecionar Vencedor",
+		"score": "PLACAR",
+		"pickScore": "Escolher Placar",
+		"clearPrediction": "Limpar Palpite",
+		"defaultScore": "0-0"
+	},
+	"walkover": {
+		"win": "W",
+		"forfeit": "FF"
 	}
 }

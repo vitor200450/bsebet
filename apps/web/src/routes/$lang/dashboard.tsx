@@ -171,7 +171,10 @@ function RouteComponent() {
 									{t("stats.hitRate")}
 								</div>
 								<div className="mt-1 font-medium text-[10px] text-gray-500">
-									{t("stats.correctCount", { correct: stats.correctPredictions, total: stats.totalBets })}
+									{t("stats.correctCount", {
+										correct: stats.correctPredictions,
+										total: stats.totalBets,
+									})}
 								</div>
 							</div>
 

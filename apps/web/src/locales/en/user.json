@@ -32,6 +32,19 @@
 		"gold": "Gold",
 		"silver": "Silver",
 		"bronze": "Bronze",
-		"total": "Total"
+		"total": "Total",
+		"champion": "CHAMPION",
+		"secondPlace": "2ND PLACE",
+		"thirdPlace": "3RD PLACE",
+		"goldTier": "Gold Tier",
+		"silverTier": "Silver Tier",
+		"bronzeTier": "Bronze Tier",
+		"tournament": "Tournament",
+		"trophyCase": "TROPHY CASE",
+		"medalCount": "medals",
+		"goldLabel": "GOLD",
+		"silverLabel": "SILVER",
+		"bronzeLabel": "BRONZE",
+		"placeLabel": "{{placement}}th Place"
 	}
 }

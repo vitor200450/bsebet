@@ -195,7 +195,9 @@
 		"whatToDo": "What would you like to do with the changes?",
 		"control": "Match Control",
 		"resetMatch": "Reset Match",
-		"setResult": "Set Result"
+		"setResult": "Set Result",
+		"vs": "VS",
+		"or": "or"
 	},
 	"matchDays": {
 		"title": "Match Days",
@@ -323,6 +325,9 @@
 		"underdogT2": "Underdog T2 (26-50%)",
 		"underdogT2Tooltip": "Bonus for underdog with 26-50% of votes",
 		"winnerPts": "Winner Pts"
+	},
+	"imageCropper": {
+		"cropTitle": "ADJUST PHOTO"
 	},
 	"customInputs": {
 		"selectPlaceholder": "Select...",

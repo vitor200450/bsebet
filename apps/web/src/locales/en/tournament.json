@@ -28,7 +28,30 @@
 		"history": "History",
 		"noMatches": "No matches found",
 		"round": "round {{number}}",
-		"elimination": "elimination"
+		"elimination": "elimination",
+		"back": "Back",
+		"bet": "Bet",
+		"live": "LIVE",
+		"teamCount_one": "{{count}} team",
+		"teamCount_other": "{{count}} teams",
+		"formatTbd": "Format TBD",
+		"stageGroups": "Group Stage",
+		"stagePlayoffs": "Playoffs",
+		"stagePlayoffsDouble": "Playoffs (Double)",
+		"filterAll": "All Matches",
+		"filterMyBets": "My Bets",
+		"filterUpcoming": "Upcoming",
+		"filterFinished": "Finished",
+		"playoffBracket": "Playoff Bracket",
+		"emptyHint": "Try changing the filters",
+		"tba": "TBA",
+		"groupStage": "Group Stage",
+		"roundNames": {
+			"grandFinal": "GRAND FINAL",
+			"semiFinals": "SEMI-FINALS",
+			"quarterFinals": "QUARTER-FINALS",
+			"round": "ROUND {{number}}"
+		}
 	},
 	"podium": {
 		"title": "Final Podium",

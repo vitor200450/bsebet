@@ -93,5 +93,25 @@
 		"dominant": "Dominant",
 		"closeMatch": "Close Match",
 		"strongWin": "Strong Win"
+	},
+	"badges": {
+		"live": "LIVE",
+		"final": "FINAL",
+		"closed": "CLOSED",
+		"wo": "W.O."
+	},
+	"matchCard": {
+		"vs": "VS",
+		"tbd": "TBD",
+		"pts": "PTS",
+		"selectWinner": "Select Winner",
+		"score": "SCORE",
+		"pickScore": "Pick Score",
+		"clearPrediction": "Clear Prediction",
+		"defaultScore": "0-0"
+	},
+	"walkover": {
+		"win": "W",
+		"forfeit": "FF"
 	}
 }
