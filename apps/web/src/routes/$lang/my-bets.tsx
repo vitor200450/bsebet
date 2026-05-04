@@ -358,13 +358,21 @@ function RouteComponent() {
 															const side = bet.match.bracketSide;
 															const round = bet.match.roundIndex;
 
-															if (side === "groups") return "Group Stage";
+															if (side === "groups")
+																return t("stageLabel.groups");
 															if (side === "upper")
-																return `Upper R${(round ?? 0) + 1}`;
+																return t("stageLabel.upper", {
+																	number: (round ?? 0) + 1,
+																});
 															if (side === "lower")
-																return `Lower R${(round ?? 0) + 1}`;
-															if (side === "grand_final") return "Grand Final";
-															return `Partida #${bet.match.id}`;
+																return t("stageLabel.lower", {
+																	number: (round ?? 0) + 1,
+																});
+															if (side === "grand_final")
+																return t("stageLabel.grandFinal");
+															return t("stageLabel.match", {
+																id: bet.match.id,
+															});
 														})();
 
 														// Status config
@@ -498,7 +506,7 @@ function RouteComponent() {
 																	<div className="flex shrink-0 items-center justify-center">
 																		<div className="flex h-10 w-10 -rotate-6 items-center justify-center border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
 																			<span className="font-black text-white text-xs italic">
-																				VS
+																				{t("vs")}
 																			</span>
 																		</div>
 																	</div>

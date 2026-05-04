@@ -113,5 +113,22 @@
 	"walkover": {
 		"win": "W",
 		"forfeit": "FF"
+	},
+	"rounds": {
+		"grandFinal": "GRAND FINAL",
+		"final": "FINAL",
+		"semiFinals": "SEMI-FINALS",
+		"quarterFinals": "QUARTER-FINALS",
+		"round": "ROUND {{number}}",
+		"ubFinal": "UB Final",
+		"ubRound": "UB R{{number}}",
+		"lbR1": "LB R1",
+		"lbR2": "LB R2",
+		"lbSemi": "LB Semi",
+		"lbFinal": "LB Final",
+		"lbRound": "LB R{{number}}",
+		"groupStage": "Group Stage",
+		"playoffBracket": "Playoff Bracket",
+		"lowerBracket": "Lower Bracket"
 	}
 }

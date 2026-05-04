@@ -24,7 +24,15 @@
 		"noMatches": "No matches found",
 		"cta": "Place your bets on active tournaments!"
 	},
+	"vs": "VS",
 	"betLabel": "Your pick",
+	"stageLabel": {
+		"groups": "Group Stage",
+		"upper": "Upper R{{number}}",
+		"lower": "Lower R{{number}}",
+		"grandFinal": "Grand Final",
+		"match": "Match #{{id}}"
+	},
 	"actions": {
 		"viewTournament": "View tournament",
 		"viewMatches": "View Matches",

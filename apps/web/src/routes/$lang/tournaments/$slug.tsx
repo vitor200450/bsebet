@@ -346,7 +346,9 @@ function TournamentDetailsPage() {
 				(m.label && m.label.includes("Group"))
 			) {
 				const groupName =
-					m.label?.match(/Group\s+(\w+)/i)?.[0] || m.label || "Group Stage";
+					m.label?.match(/Group\s+(\w+)/i)?.[0] ||
+					m.label ||
+					t("detail.groupStage");
 				if (!groups[groupName]) groups[groupName] = [];
 				groups[groupName].push(m);
 			} else {
@@ -719,8 +721,8 @@ function TournamentDetailsPage() {
 													...match,
 													category:
 														match.bracketSide === "groups"
-															? "Fase de Grupos"
-															: "Playoffs",
+															? t("detail.stageGroups")
+															: t("detail.stagePlayoffs"),
 													isBettingEnabled: match.isBettingEnabled ?? false,
 													status: match.status as
 														| "scheduled"

@@ -221,25 +221,32 @@ export function TournamentBracket({
 		side: "upper" | "lower" | "gf",
 		idx: number,
 	): string => {
-		if (side === "gf") return "GRAND FINAL";
+		if (side === "gf") return t("rounds.grandFinal");
 
 		if (side === "upper") {
-			// For Single Elimination, use different naming
 			const isDouble = lowerRounds.length > 0 || grandFinal.length > 0;
 			if (!isDouble) {
 				const totalRounds = upperRounds.length;
 				const reverseIdx = totalRounds - idx - 1;
-				if (reverseIdx === 0) return "FINAL";
-				if (reverseIdx === 1) return "SEMI-FINALS";
-				if (reverseIdx === 2) return "QUARTER-FINALS";
-				return `ROUND ${idx + 1}`;
+				if (reverseIdx === 0) return t("rounds.final");
+				if (reverseIdx === 1) return t("rounds.semiFinals");
+				if (reverseIdx === 2) return t("rounds.quarterFinals");
+				return t("rounds.round", { number: idx + 1 });
 			}
-			// For Double Elimination
-			return (
-				["Quarter-Finals", "Semi-Finals", "UB Final"][idx] || `UB R${idx + 1}`
-			);
+			const deNames = [
+				t("rounds.quarterFinals"),
+				t("rounds.semiFinals"),
+				t("rounds.ubFinal"),
+			];
+			return deNames[idx] || t("rounds.ubRound", { number: idx + 1 });
 		}
-		return ["LB R1", "LB R2", "LB Semi", "LB Final"][idx] || `LB R${idx + 1}`;
+		const lbNames = [
+			t("rounds.lbR1"),
+			t("rounds.lbR2"),
+			t("rounds.lbSemi"),
+			t("rounds.lbFinal"),
+		];
+		return lbNames[idx] || t("rounds.lbRound", { number: idx + 1 });
 	};
 
 	// Count matches that need betting (isBettingEnabled OR recovery-editable, still scheduled)
@@ -315,7 +322,7 @@ export function TournamentBracket({
 						<div className="flex items-center gap-4">
 							<div className="h-0.5 flex-grow bg-black" />
 							<h3 className="-skew-x-12 transform border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-black text-xl uppercase italic">
-								Group Stage
+								{t("rounds.groupStage")}
 							</h3>
 							<div className="h-0.5 flex-grow bg-black" />
 						</div>
@@ -329,7 +336,7 @@ export function TournamentBracket({
 											const groupParams = match.label?.match(/Group\s+(\w+)/i);
 											const groupName = groupParams
 												? `Group ${groupParams[1]}`
-												: match.label || "Group Stage";
+												: match.label || t("rounds.groupStage");
 											if (!acc[groupName]) acc[groupName] = [];
 											acc[groupName].push(match);
 											return acc;
@@ -384,7 +391,7 @@ export function TournamentBracket({
 							<div className="flex w-full items-center gap-4">
 								<div className="h-0.5 flex-grow bg-black" />
 								<h3 className="-skew-x-12 transform border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-black text-xl uppercase italic">
-									Playoff Bracket
+									{t("rounds.playoffBracket")}
 								</h3>
 								<div className="h-0.5 flex-grow bg-black" />
 							</div>
@@ -427,7 +434,7 @@ export function TournamentBracket({
 											<div className="flex w-72 shrink-0 flex-col gap-2">
 												<div className="mb-1 flex justify-center">
 													<span className="-skew-x-12 transform border-2 border-black bg-black px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-														GRAND FINAL
+														{t("rounds.grandFinal")}
 													</span>
 												</div>
 												<div className="flex h-full flex-col justify-around gap-4">
@@ -455,7 +462,7 @@ export function TournamentBracket({
 								<div className="relative mt-10 border-black/10 border-t-[3px] border-dashed pt-8">
 									<div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
 										<div className="-skew-x-12 transform border-2 border-white bg-black px-3 py-1 font-black text-[10px] text-white uppercase italic tracking-widest">
-											Lower Bracket
+											{t("rounds.lowerBracket")}
 										</div>
 									</div>
 									<div className="flex items-center gap-6">

@@ -243,7 +243,7 @@ function TeamDetailsPage() {
 																: "bg-[#ccff00] text-black",
 														)}
 													>
-														{isLive ? t("status.live") : "VS"}
+														{isLive ? t("status.live") : t("vs")}
 													</span>
 													{match.tournament?.name && (
 														<span className="max-w-[100px] truncate font-bold text-[10px] text-gray-700 uppercase">
@@ -281,7 +281,7 @@ function TeamDetailsPage() {
 												</div>
 
 												<span className="rounded-md bg-black px-2 py-1 font-black text-white text-xs">
-													VS
+													{t("vs")}
 												</span>
 
 												<div className="flex flex-1 flex-col items-center gap-2">
@@ -338,7 +338,7 @@ function TeamDetailsPage() {
 														: "bg-[#ccff00] text-black",
 												)}
 											>
-												{isLive ? "LIVE" : "VS"}
+												{isLive ? t("status.live") : t("vs")}
 											</div>
 
 											{/* Tournament */}
@@ -382,7 +382,7 @@ function TeamDetailsPage() {
 												</div>
 
 												<span className="rounded-md bg-black px-2 py-1 font-black text-white text-xs">
-													VS
+													{t("vs")}
 												</span>
 
 												<div className="flex min-w-0 flex-1 items-center gap-2">
@@ -747,7 +747,9 @@ function TeamDetailsPage() {
 
 												{/* VS Badge */}
 												<div className="flex-shrink-0 -skew-x-12 border-[3px] border-black bg-black px-3 py-1.5 font-black text-[#ccff00] text-xs uppercase italic shadow-[2px_2px_0_0_#000]">
-													<span className="inline-block skew-x-12">VS</span>
+													<span className="inline-block skew-x-12">
+														{t("vs")}
+													</span>
 												</div>
 
 												{/* Opponent - ENHANCED */}

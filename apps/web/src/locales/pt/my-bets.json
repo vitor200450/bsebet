@@ -24,7 +24,15 @@
 		"noMatches": "Nenhuma partida encontrada",
 		"cta": "Faça suas apostas nos torneios ativos!"
 	},
+	"vs": "VS",
 	"betLabel": "Seu palpite",
+	"stageLabel": {
+		"groups": "Fase de Grupos",
+		"upper": "Upper R{{number}}",
+		"lower": "Lower R{{number}}",
+		"grandFinal": "Grand Final",
+		"match": "Partida #{{id}}"
+	},
 	"actions": {
 		"viewTournament": "Ver torneio",
 		"viewMatches": "Ver Partidas",
