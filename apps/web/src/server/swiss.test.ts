@@ -1,8 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
 	buildSwissStandings,
-	suggestSwissRound,
 	seedSwissPlayoff,
+	selectPublicSwissMatches,
+	suggestSwissRound,
 	type SwissSettings,
 } from "./swiss";
 
@@ -73,5 +74,39 @@ describe("swiss standings", () => {
 		expect(seeded[0].teamId).toBe(8);
 		expect(seeded[1].teamId).toBe(1);
 		expect(seeded[3].teamId).toBe(5);
+	});
+
+	it("builds playoff semifinals as seed 1 vs 4 and seed 2 vs 3", () => {
+		const seeded = seedSwissPlayoff([
+			{ teamId: 10, wins: 2, losses: 0, seed: 4 },
+			{ teamId: 11, wins: 2, losses: 1, seed: 1 },
+			{ teamId: 12, wins: 2, losses: 1, seed: 2 },
+			{ teamId: 13, wins: 2, losses: 1, seed: 7 },
+		]);
+
+		expect([
+			[seeded[0].teamId, seeded[3].teamId],
+			[seeded[1].teamId, seeded[2].teamId],
+		]).toEqual([
+			[10, 13],
+			[11, 12],
+		]);
+	});
+
+	it("does not include draft swiss suggestions in public round output", () => {
+		const visible = selectPublicSwissMatches([
+			{
+				id: 1,
+				isBettingEnabled: false,
+				matchDayStatus: "draft",
+			},
+			{
+				id: 2,
+				isBettingEnabled: true,
+				matchDayStatus: "open",
+			},
+		]);
+
+		expect(visible.map((match) => match.id)).toEqual([2]);
 	});
 });
