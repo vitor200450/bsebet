@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { CustomDatePicker, CustomSelect } from "./CustomInputs";
 
 // Re-using the types from the schema/validation
-export type StageType = "Single Elimination" | "Double Elimination" | "Groups";
+export type StageType =
+	| "Single Elimination"
+	| "Double Elimination"
+	| "Groups"
+	| "Swiss";
 export type MatchType = "Bo1" | "Bo3" | "Bo5";
 
 export interface Stage {
@@ -16,6 +20,10 @@ export interface Stage {
 		advancingCount?: number;
 		matchType?: MatchType;
 		groupFormat?: "GSL" | "Round Robin";
+		participantsCount?: number;
+		winsToAdvance?: number;
+		lossesToEliminate?: number;
+		roundsMax?: number;
 	};
 	startDate?: string;
 	endDate?: string;
@@ -127,6 +135,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 										label: t("stageBuilder.doubleElimination"),
 									},
 									{ value: "Groups", label: t("stageBuilder.groups") },
+								{ value: "Swiss", label: t("stageBuilder.swiss") },
 								]}
 							/>
 						</div>
@@ -223,6 +232,86 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 												}
 												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 												placeholder={t("stageBuilder.topNAdvancePlaceholder")}
+											/>
+										</div>
+									</>
+								)}
+								{stage.type === "Swiss" && (
+									<>
+										<div>
+											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+												Participantes
+											</label>
+											<input
+												type="number"
+												min={2}
+												value={stage.settings.participantsCount || ""}
+												onChange={(e) =>
+													updateSettings(
+														index,
+														"participantsCount",
+														Number.parseInt(e.target.value) || 0,
+													)
+												}
+												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+												placeholder="8"
+											/>
+										</div>
+										<div>
+											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+												Vitórias p/ Avançar
+											</label>
+											<input
+												type="number"
+												min={1}
+												value={stage.settings.winsToAdvance || ""}
+												onChange={(e) =>
+													updateSettings(
+														index,
+														"winsToAdvance",
+														Number.parseInt(e.target.value) || 0,
+													)
+												}
+												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+												placeholder="2"
+											/>
+										</div>
+										<div>
+											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+												Derrotas p/ Eliminar
+											</label>
+											<input
+												type="number"
+												min={1}
+												value={stage.settings.lossesToEliminate || ""}
+												onChange={(e) =>
+													updateSettings(
+														index,
+														"lossesToEliminate",
+														Number.parseInt(e.target.value) || 0,
+													)
+												}
+												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+												placeholder="2"
+											/>
+										</div>
+										<div>
+											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+												Máx. Rodadas
+											</label>
+											<input
+												type="number"
+												min={1}
+												value={stage.settings.roundsMax || ""}
+												onChange={(e) =>
+													updateSettings(
+														index,
+														"roundsMax",
+														Number.parseInt(e.target.value) || 0,
+													)
+												}
+												className="w-full border-2 border-black bg-white p-1 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+												placeholder="3"
 											/>
 										</div>
 									</>

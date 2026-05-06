@@ -79,13 +79,17 @@ export const tournaments = pgTable("tournaments", {
 			{
 				id: string;
 				name: string; // e.g., "Group Stage"
-				type: "Single Elimination" | "Double Elimination" | "Groups";
+				type: "Single Elimination" | "Double Elimination" | "Groups" | "Swiss";
 				settings: {
 					groupsCount?: number;
 					teamsPerGroup?: number;
 					advancingCount?: number;
 					matchType?: "Bo1" | "Bo3" | "Bo5";
 					groupFormat?: "GSL" | "Round Robin";
+					participantsCount?: number;
+					winsToAdvance?: number;
+					lossesToEliminate?: number;
+					roundsMax?: number;
 				};
 				startDate?: string;
 				endDate?: string;

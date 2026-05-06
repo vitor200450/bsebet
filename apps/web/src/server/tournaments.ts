@@ -77,13 +77,22 @@ const createTournamentSchema = (t: (key: string) => string) =>
 				z.object({
 					id: z.string(),
 					name: z.string(),
-					type: z.enum(["Single Elimination", "Double Elimination", "Groups"]),
+					type: z.enum([
+						"Single Elimination",
+						"Double Elimination",
+						"Groups",
+						"Swiss",
+					]),
 					settings: z.object({
 						groupsCount: z.number().optional(),
 						teamsPerGroup: z.number().optional(),
 						advancingCount: z.number().optional(),
 						matchType: z.enum(["Bo1", "Bo3", "Bo5"]).optional(),
 						groupFormat: z.enum(["GSL", "Round Robin"]).optional(),
+						participantsCount: z.number().optional(),
+						winsToAdvance: z.number().optional(),
+						lossesToEliminate: z.number().optional(),
+						roundsMax: z.number().optional(),
 					}),
 					startDate: z.string().optional(),
 					endDate: z.string().optional(),
@@ -108,6 +117,28 @@ const createTournamentSchema = (t: (key: string) => string) =>
 
 const _dummyT = (key: string) => key;
 type TournamentInput = z.input<ReturnType<typeof createTournamentSchema>>;
+
+export const saveTournamentStageSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	type: z.enum([
+		"Single Elimination",
+		"Double Elimination",
+		"Groups",
+		"Swiss",
+	]),
+	settings: z.object({
+		groupsCount: z.number().optional(),
+		teamsPerGroup: z.number().optional(),
+		advancingCount: z.number().optional(),
+		matchType: z.enum(["Bo1", "Bo3", "Bo5"]).optional(),
+		groupFormat: z.enum(["GSL", "Round Robin"]).optional(),
+		participantsCount: z.number().optional(),
+		winsToAdvance: z.number().optional(),
+		lossesToEliminate: z.number().optional(),
+		roundsMax: z.number().optional(),
+	}),
+});
 
 /**
  * Fetch all tournaments ordered by created_at desc
