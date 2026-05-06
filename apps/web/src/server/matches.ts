@@ -4,6 +4,11 @@ import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
 import { assertTournamentAllowsMatchMutation } from "./tournament-status-guard";
+import {
+	buildSwissStandings,
+	seedSwissPlayoff,
+	suggestSwissRound,
+} from "./swiss";
 
 function validateWalkoverData(updateData: {
 	status?: "scheduled" | "live" | "finished";
@@ -1157,6 +1162,12 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 						});
 					}
 				}
+			} else if (stage.type === "Swiss") {
+				return generateSwissOpeningRound({
+					db,
+					tournamentId,
+					stage,
+				});
 			} else {
 				// Playoff Generation
 				const groupsStage = stages.find((s) => s.type === "Groups");
@@ -1462,6 +1473,169 @@ function generatePlaceholderLabels(
 	}
 
 	return labels;
+}
+
+async function generateSwissOpeningRound(params: {
+	db: any;
+	tournamentId: number;
+	stage: any;
+}) {
+	const seededTeams = await params.db.query.tournamentTeams.findMany({
+		where: (tt: any, { eq }: any) =>
+			eq(tt.tournamentId, params.tournamentId),
+		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
+	});
+
+	const ordered = seededTeams.filter((team: any) => team.seed !== null);
+	const pairs = [
+		[ordered[0], ordered[7]],
+		[ordered[1], ordered[6]],
+		[ordered[2], ordered[5]],
+		[ordered[3], ordered[4]],
+	];
+
+	for (const [index, [teamA, teamB]] of pairs.entries()) {
+		if (!teamA || !teamB) continue;
+		await params.db.insert(matches).values({
+			tournamentId: params.tournamentId,
+			stageId: params.stage.id,
+			bracketSide: "main",
+			roundIndex: 0,
+			name: `Swiss Round 1 - Match ${index + 1}`,
+			label: "Swiss Round 1",
+			teamAId: teamA.teamId,
+			teamBId: teamB.teamId,
+			status: "scheduled",
+			isBettingEnabled: false,
+			displayOrder: index + 1,
+			startTime: new Date(),
+		});
+	}
+
+	return { success: true };
+}
+
+async function generateSwissSuggestedRound(params: {
+	db: any;
+	tournamentId: number;
+	stage: any;
+}) {
+	const swissMatches = await params.db.query.matches.findMany({
+		where: and(
+			eq(matches.tournamentId, params.tournamentId),
+			eq(matches.stageId, params.stage.id),
+		),
+		orderBy: [asc(matches.roundIndex), asc(matches.displayOrder)],
+	});
+
+	const seededTeams = await params.db.query.tournamentTeams.findMany({
+		where: (tt: any, { eq }: any) =>
+			eq(tt.tournamentId, params.tournamentId),
+		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
+	});
+
+	const suggestion = suggestSwissRound({
+		settings: params.stage.settings,
+		seeds: seededTeams.map((team: any) => team.seed),
+		matches: swissMatches,
+	});
+
+	for (const [index, pairing] of suggestion.matches.entries()) {
+		await params.db.insert(matches).values({
+			tournamentId: params.tournamentId,
+			stageId: params.stage.id,
+			bracketSide: "main",
+			roundIndex: suggestion.roundNumber - 1,
+			name: `Swiss Round ${suggestion.roundNumber} - Match ${index + 1}`,
+			label: `Swiss ${pairing.recordBucket}`,
+			teamAId: pairing.teamAId,
+			teamBId: pairing.teamBId,
+			status: "scheduled",
+			isBettingEnabled: false,
+			displayOrder: index + 1,
+			startTime: new Date(),
+		});
+	}
+
+	return { success: true };
+}
+
+async function generateSwissPlayoffDraft(params: {
+	db: any;
+	tournamentId: number;
+	swissStage: any;
+	playoffStage: any;
+}) {
+	const swissMatches = await params.db.query.matches.findMany({
+		where: and(
+			eq(matches.tournamentId, params.tournamentId),
+			eq(matches.stageId, params.swissStage.id),
+		),
+	});
+	const tournamentTeams = await params.db.query.tournamentTeams.findMany({
+		where: (tt: any, { eq }: any) =>
+			eq(tt.tournamentId, params.tournamentId),
+	});
+	const standings = buildSwissStandings({
+		settings: params.swissStage.settings,
+		seeds: tournamentTeams.map((team: any) => team.seed),
+		matches: swissMatches,
+	});
+	const qualified = seedSwissPlayoff(
+		standings.qualified.map((q) => ({
+			teamId: q.teamId,
+			wins: q.wins,
+			losses: q.losses,
+			seed: q.seed,
+		})),
+	);
+
+	await params.db.insert(matches).values([
+		{
+			tournamentId: params.tournamentId,
+			stageId: params.playoffStage.id,
+			bracketSide: "main",
+			roundIndex: 0,
+			name: "Semi-Final #1",
+			label: "Semi-Final #1",
+			teamAId: qualified[0]?.teamId ?? null,
+			teamBId: qualified[3]?.teamId ?? null,
+			status: "scheduled",
+			isBettingEnabled: false,
+			displayOrder: 1,
+			startTime: new Date(),
+		},
+		{
+			tournamentId: params.tournamentId,
+			stageId: params.playoffStage.id,
+			bracketSide: "main",
+			roundIndex: 0,
+			name: "Semi-Final #2",
+			label: "Semi-Final #2",
+			teamAId: qualified[1]?.teamId ?? null,
+			teamBId: qualified[2]?.teamId ?? null,
+			status: "scheduled",
+			isBettingEnabled: false,
+			displayOrder: 2,
+			startTime: new Date(),
+		},
+		{
+			tournamentId: params.tournamentId,
+			stageId: params.playoffStage.id,
+			bracketSide: "main",
+			roundIndex: 1,
+			name: "Final",
+			label: "Final",
+			labelTeamA: "Winner of Semi-Final #1",
+			labelTeamB: "Winner of Semi-Final #2",
+			status: "scheduled",
+			isBettingEnabled: false,
+			displayOrder: 1,
+			startTime: new Date(),
+		},
+	]);
+
+	return { success: true };
 }
 
 export const generateFullBracket = generateFullBracketFn as unknown as (opts: {
