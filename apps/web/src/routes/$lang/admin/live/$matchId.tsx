@@ -346,7 +346,10 @@ function LiveMatchControl() {
 										}}
 										className={clsx(
 											"relative inline-block cursor-pointer font-black text-4xl text-white tabular-nums transition-transform hover:scale-105 md:text-6xl",
-											!winner && !isUpdating && !isTournamentUpcoming && "hover:text-brawl-blue",
+											!winner &&
+												!isUpdating &&
+												!isTournamentUpcoming &&
+												"hover:text-brawl-blue",
 										)}
 									>
 										{scoreA}
@@ -401,7 +404,10 @@ function LiveMatchControl() {
 										}}
 										className={clsx(
 											"relative inline-block cursor-pointer font-black text-4xl text-white tabular-nums transition-transform hover:scale-105 md:text-6xl",
-											!winner && !isUpdating && !isTournamentUpcoming && "hover:text-brawl-red",
+											!winner &&
+												!isUpdating &&
+												!isTournamentUpcoming &&
+												"hover:text-brawl-red",
 										)}
 									>
 										{scoreB}
@@ -422,10 +428,18 @@ function LiveMatchControl() {
 					{/* Team A Button */}
 					<button
 						onClick={() => handleIncrement("A")}
-						disabled={isTournamentUpcoming || isUpdating || !!winner || scoreA >= winsNeeded}
+						disabled={
+							isTournamentUpcoming ||
+							isUpdating ||
+							!!winner ||
+							scoreA >= winsNeeded
+						}
 						className={clsx(
 							"relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden border-[4px] border-black py-6 shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] md:py-0",
-							isTournamentUpcoming || isUpdating || !!winner || scoreA >= winsNeeded
+							isTournamentUpcoming ||
+								isUpdating ||
+								!!winner ||
+								scoreA >= winsNeeded
 								? "cursor-not-allowed opacity-30 grayscale"
 								: "",
 						)}
@@ -459,10 +473,18 @@ function LiveMatchControl() {
 					{/* Team B Button */}
 					<button
 						onClick={() => handleIncrement("B")}
-						disabled={isTournamentUpcoming || isUpdating || !!winner || scoreB >= winsNeeded}
+						disabled={
+							isTournamentUpcoming ||
+							isUpdating ||
+							!!winner ||
+							scoreB >= winsNeeded
+						}
 						className={clsx(
 							"relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden border-[4px] border-black py-6 shadow-[6px_6px_0px_0px_#000] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0px_0px_#000] md:py-0",
-							isTournamentUpcoming || isUpdating || !!winner || scoreB >= winsNeeded
+							isTournamentUpcoming ||
+								isUpdating ||
+								!!winner ||
+								scoreB >= winsNeeded
 								? "cursor-not-allowed opacity-30 grayscale"
 								: "",
 						)}
@@ -499,10 +521,16 @@ function LiveMatchControl() {
 					{/* Reset Button */}
 					<button
 						onClick={handleReset}
-						disabled={isTournamentUpcoming || isUpdating || (scoreA === 0 && scoreB === 0)}
+						disabled={
+							isTournamentUpcoming ||
+							isUpdating ||
+							(scoreA === 0 && scoreB === 0)
+						}
 						className={clsx(
 							"flex w-full items-center justify-center gap-2 border-[2px] border-gray-600 py-3 font-bold text-gray-400 text-sm uppercase transition-all hover:border-white hover:text-white",
-							(isTournamentUpcoming || isUpdating || (scoreA === 0 && scoreB === 0)) &&
+							(isTournamentUpcoming ||
+								isUpdating ||
+								(scoreA === 0 && scoreB === 0)) &&
 								"cursor-not-allowed opacity-50",
 						)}
 					>
@@ -519,8 +547,12 @@ function LiveMatchControl() {
 								? "cursor-not-allowed bg-gray-300 opacity-50 grayscale"
 								: "cursor-pointer bg-brawl-yellow hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[1px] active:translate-y-[1px]",
 						)}
-						onMouseDown={!winner || isTournamentUpcoming ? undefined : handleMouseDown}
-						onTouchStart={!winner || isTournamentUpcoming ? undefined : handleTouchStart}
+						onMouseDown={
+							!winner || isTournamentUpcoming ? undefined : handleMouseDown
+						}
+						onTouchStart={
+							!winner || isTournamentUpcoming ? undefined : handleTouchStart
+						}
 					>
 						{/* Progress Fill */}
 						<div
