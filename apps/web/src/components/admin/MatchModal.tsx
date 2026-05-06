@@ -59,6 +59,28 @@ export function MatchModal({
 	const isFirstRender = useRef(true);
 	const lastSavedData = useRef<string>("");
 
+	function getMatchMutationErrorMessage(
+		error: unknown,
+	): string | null {
+		if (
+			error &&
+			typeof error === "object" &&
+			"code" in error &&
+			error.code === "TOURNAMENT_UPCOMING_CANNOT_START_MATCH"
+		) {
+			return t("modal.tournamentMustBeActive");
+		}
+
+		if (
+			error instanceof Error &&
+			error.message === "TOURNAMENT_UPCOMING_CANNOT_START_MATCH"
+		) {
+			return t("modal.tournamentMustBeActive");
+		}
+
+		return null;
+	}
+
 	// Helper to determine initial state from editing match
 	const getInitialState = () => {
 		const toLocalDateString = (date: Date): string => {
@@ -532,7 +554,7 @@ export function MatchModal({
 			} catch (error) {
 				console.error("Auto-save failed:", error);
 				setSaveStatus("error");
-				toast.error(t("modal.saveError"));
+				toast.error(getMatchMutationErrorMessage(error) ?? t("modal.saveError"));
 			}
 		}, 800);
 
@@ -577,7 +599,7 @@ export function MatchModal({
 			} catch (error) {
 				console.error("Save failed:", error);
 				setSaveStatus("error");
-				toast.error(t("modal.saveError"));
+				toast.error(getMatchMutationErrorMessage(error) ?? t("modal.saveError"));
 				setIsSubmitting(false);
 				throw error;
 			}
@@ -612,7 +634,7 @@ export function MatchModal({
 			setTimeout(() => setSaveStatus("idle"), 2000);
 		} catch (error) {
 			console.error("Failed to refresh W.O. winner:", error);
-			toast.error(t("modal.woUpdateError"));
+			toast.error(getMatchMutationErrorMessage(error) ?? t("modal.woUpdateError"));
 		}
 		setIsRefreshingWalkoverWinner(false);
 	};
@@ -653,7 +675,7 @@ export function MatchModal({
 			onClose();
 		} catch (error) {
 			console.error(error);
-			toast.error(t("modal.createError"));
+			toast.error(getMatchMutationErrorMessage(error) ?? t("modal.createError"));
 		} finally {
 			setIsSubmitting(false);
 		}

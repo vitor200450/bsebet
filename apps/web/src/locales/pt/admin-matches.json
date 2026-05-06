@@ -100,6 +100,8 @@
 		"skippedAdjustments_other": "{{count}} ajustes ignorados"
 	},
 	"modal": {
+		"tournamentMustBeActive": "Defina o torneio como ativo antes de iniciar partidas ou registrar resultados.",
+		"tournamentUpcomingHint": "Torneio em breve: ative o torneio antes de registrar placar, vencedor ou resultado.",
 		"saveError": "Falha ao salvar atualização da partida",
 		"woDescription": "W.O. com um único time definido será resolvido como vitória automática do time presente.",
 		"woUpdated": "Vencedor do W.O. atualizado com sucesso",
@@ -196,6 +198,8 @@
 		"control": "Controle da Partida",
 		"resetMatch": "Resetar Partida",
 		"setResult": "Definir Resultado",
+		"tournamentMustBeActive": "Defina o torneio como ativo antes de iniciar partidas ou registrar resultados.",
+		"tournamentUpcomingHint": "Este controle fica bloqueado enquanto o torneio estiver em breve.",
 		"vs": "VS",
 		"or": "ou"
 	},

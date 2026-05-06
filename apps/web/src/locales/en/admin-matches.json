@@ -100,6 +100,8 @@
 		"skippedAdjustments_other": "{{count}} adjustments skipped"
 	},
 	"modal": {
+		"tournamentMustBeActive": "Set the tournament to active before starting matches or recording results.",
+		"tournamentUpcomingHint": "Tournament is still upcoming: activate it before saving scores, winners, or final results.",
 		"saveError": "Failed to save match update",
 		"woDescription": "Walkover with a single defined team will be resolved as an automatic win for the present team.",
 		"woUpdated": "Walkover winner updated successfully",
@@ -196,6 +198,8 @@
 		"control": "Match Control",
 		"resetMatch": "Reset Match",
 		"setResult": "Set Result",
+		"tournamentMustBeActive": "Set the tournament to active before starting matches or recording results.",
+		"tournamentUpcomingHint": "This control stays locked while the tournament is upcoming.",
 		"vs": "VS",
 		"or": "or"
 	},

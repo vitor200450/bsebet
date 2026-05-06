@@ -83,6 +83,7 @@ function TournamentMatchesPage() {
 	const { linkTo } = useLangLink();
 	const { tournament, tournamentTeams, allTeams, matches, matchDays } =
 		Route.useLoaderData();
+	const isTournamentUpcoming = tournament.status === "upcoming";
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const stages = (tournament.stages as any[]) || [];
@@ -937,7 +938,7 @@ function TournamentMatchesPage() {
 
 															{match.teamA &&
 																match.teamB &&
-																match.status === "live" && (
+																match.status === "live" && !isTournamentUpcoming && (
 																	<Link
 																		to={linkTo("/admin/live/$matchId")}
 																		params={{ matchId: String(match.id) }}
@@ -952,6 +953,8 @@ function TournamentMatchesPage() {
 																match.teamA &&
 																match.teamB && (
 																	<button
+																		disabled={isTournamentUpcoming}
+																		title={isTournamentUpcoming ? t("live.tournamentUpcomingHint") : undefined}
 																		onClick={() => {
 																			setEditingMatch({
 																				...match,
@@ -959,7 +962,12 @@ function TournamentMatchesPage() {
 																			});
 																			setIsMatchModalOpen(true);
 																		}}
-																		className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] px-3 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0px_0px_#000] transition-all hover:bg-black hover:text-[#ccff00] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+																		className={
+																			"flex w-full items-center justify-center gap-2 border-[3px] border-black px-3 py-2 font-black text-xs uppercase shadow-[3px_3px_0px_0px_#000] " +
+																			(isTournamentUpcoming
+																				? "cursor-not-allowed bg-gray-200 text-gray-500 opacity-70"
+																				: "bg-[#ccff00] text-black transition-all hover:bg-black hover:text-[#ccff00] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none")
+																		}
 																	>
 																		<CheckCircle2 className="h-4 w-4" />
 																		{t("live.setResult")}
