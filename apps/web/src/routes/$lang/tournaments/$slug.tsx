@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import {
 	ArrowLeft,
@@ -14,6 +14,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
+import { RoundRobinResultView } from "@/components/RoundRobinResultView";
+import { SwissStageView } from "@/components/SwissStageView";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { TournamentPodium } from "@/components/TournamentPodium";
 import { i18next } from "@/i18n";
@@ -336,13 +338,22 @@ function TournamentDetailsPage() {
 
 	const isActive = tournament.status === "active";
 
+	// Determine swiss stage ID for filtering
+	const swissStageId = (tournament.stages as any[])?.find(
+		(s: any) => s.type === "Swiss",
+	)?.id;
+
 	// Performance Optimization: Group matches by side and round
 	const groupedMatches = useMemo(() => {
 		const groups: Record<string, any[]> = {};
+		const swiss: any[] = [];
 		const other: any[] = [];
 
 		filteredMatches.forEach((m: any) => {
-			if (
+			// Swiss matches: belongs to a swiss stage
+			if (swissStageId && m.stageId === swissStageId) {
+				swiss.push(m);
+			} else if (
 				m.bracketSide === "groups" ||
 				(m.label && m.label.includes("Group"))
 			) {
@@ -385,8 +396,75 @@ function TournamentDetailsPage() {
 				});
 		});
 
+		// Group swiss matches by round for SwissStageView
+		const swissRounds = swiss.reduce(
+			(acc: Record<number, any[]>, m: any) => {
+				const r = m.roundIndex || 0;
+				if (!acc[r]) acc[r] = [];
+				acc[r].push(m);
+				return acc;
+			},
+			{} as Record<number, any[]>,
+		);
+		const swissRoundKeys = Object.keys(swissRounds)
+			.map(Number)
+			.sort((a, b) => a - b);
+		const swissRoundData = swissRoundKeys.map((rIdx) => ({
+			roundLabel: t("swiss.round", { number: rIdx + 1 }),
+			matches: swissRounds[rIdx].sort(
+				(mA: any, mB: any) =>
+					(mA.displayOrder || 0) - (mB.displayOrder || 0) || mA.id - mB.id,
+			),
+		}));
+
+		// Build swiss bucket data from match results
+		const swissBuckets: Record<string, Array<{ id: number; name: string; logoUrl?: string | null; status?: string }>> = {};
+		const teamCache = new Map<
+			number,
+			{ wins: number; losses: number; name: string; logoUrl?: string | null }
+		>();
+		swiss.forEach((m: any) => {
+			if (m.teamA?.id) {
+				const current = teamCache.get(m.teamA.id) ?? {
+					wins: 0,
+					losses: 0,
+					name: m.teamA.name,
+					logoUrl: m.teamA.logoUrl,
+				};
+				if (m.status === "finished" && m.winnerId) {
+					if (m.winnerId === m.teamA.id) current.wins += 1;
+					else current.losses += 1;
+				}
+				teamCache.set(m.teamA.id, current);
+			}
+			if (m.teamB?.id) {
+				const current = teamCache.get(m.teamB.id) ?? {
+					wins: 0,
+					losses: 0,
+					name: m.teamB.name,
+					logoUrl: m.teamB.logoUrl,
+				};
+				if (m.status === "finished" && m.winnerId) {
+					if (m.winnerId === m.teamB.id) current.wins += 1;
+					else current.losses += 1;
+				}
+				teamCache.set(m.teamB.id, current);
+			}
+		});
+		for (const [teamId, stats] of teamCache.entries()) {
+			const bucket = `${stats.wins}-${stats.losses}`;
+			if (!swissBuckets[bucket]) swissBuckets[bucket] = [];
+			swissBuckets[bucket].push({
+				id: teamId,
+				name: stats.name,
+				logoUrl: stats.logoUrl,
+			});
+		}
+
 		return {
 			groups: Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)),
+			swissRoundData,
+			swissBuckets,
 			otherMatchesByRound: sortedRoundIndices.map((rIdx) => ({
 				rIdx,
 				matches: rounds[rIdx].sort(
@@ -615,41 +693,33 @@ function TournamentDetailsPage() {
 										}
 
 										return (
-											<div key={groupName} className="space-y-4">
-												<h3 className="inline-flex items-center gap-2 rounded-lg border-2 border-black bg-[#121212] px-4 py-2 font-black text-lg text-white uppercase shadow-[3px_3px_0_0_#000]">
-													{groupName}
-												</h3>
-												{groupMatches.map((match) => (
-													<MatchCard
-														key={match.id}
-														match={{
-															...match,
-															category:
-																match.bracketSide === "groups"
-																	? t("detail.stageGroups")
-																	: t("detail.stagePlayoffs"),
-															isBettingEnabled: match.isBettingEnabled ?? false,
-															status: match.status as
-																| "scheduled"
-																| "live"
-																| "finished",
-															format: "bo3",
-															teamA: match.teamA as any,
-															teamB: match.teamB as any,
-														}}
-														initialBet={
-															filter === "my-bets"
-																? (userBets.find(
-																		(b: any) => b.matchId === match.id,
-																	) as any)
-																: undefined
-														}
-														showPredictionScore={filter === "my-bets"}
-													/>
-												))}
-											</div>
+											<RoundRobinResultView
+												key={groupName}
+												groupName={groupName}
+												matches={groupMatches}
+												userBets={userBets}
+												showPredictionScore={filter === "my-bets"}
+											/>
 										);
 									})}
+
+									{/* Render Swiss Stage */}
+									{groupedMatches.swissRoundData.length > 0 && (
+										<div className="rounded-xl border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
+											<div className="mb-6 flex w-full items-center gap-3">
+												<h3 className="font-black text-2xl text-[#121212] uppercase italic">
+													{t("swiss.title")}
+												</h3>
+												<div className="h-0.5 flex-1 bg-black/10" />
+											</div>
+											<SwissStageView
+												buckets={groupedMatches.swissBuckets}
+												groupedRounds={groupedMatches.swissRoundData}
+												userBets={userBets}
+												showPredictionScore={filter === "my-bets"}
+											/>
+										</div>
+									)}
 
 									{/* Render Others (Playoffs, etc.) as a Bracket */}
 									{groupedMatches.otherMatchesByRound.length > 0 && (

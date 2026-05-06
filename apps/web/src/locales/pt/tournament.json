@@ -96,5 +96,12 @@
 		"active": "Ativo",
 		"unavailable": "Indisponível",
 		"noMatchDayTitle": "Nenhum Match Day"
+	},
+	"swiss": {
+		"title": "Swiss Stage",
+		"qualified": "Classificado",
+		"eliminated": "Eliminado",
+		"alive": "Na disputa",
+		"round": "Rodada {{number}}"
 	}
 }
