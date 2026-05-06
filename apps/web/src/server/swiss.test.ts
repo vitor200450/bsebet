@@ -1,0 +1,77 @@
+import { describe, expect, it } from "bun:test";
+import {
+	buildSwissStandings,
+	suggestSwissRound,
+	seedSwissPlayoff,
+	type SwissSettings,
+} from "./swiss";
+
+const settings: SwissSettings = {
+	participantsCount: 8,
+	winsToAdvance: 2,
+	lossesToEliminate: 2,
+	roundsMax: 3,
+	matchType: "Bo3",
+};
+
+describe("swiss standings", () => {
+	it("marks teams with two wins as qualified and two losses as eliminated", () => {
+		const result = buildSwissStandings({
+			settings,
+			seeds: [1, 2, 3, 4],
+			matches: [
+				{ id: 1, teamAId: 1, teamBId: 2, winnerId: 1, status: "finished" },
+				{ id: 2, teamAId: 1, teamBId: 3, winnerId: 1, status: "finished" },
+				{ id: 3, teamAId: 2, teamBId: 4, winnerId: 4, status: "finished" },
+				{ id: 4, teamAId: 2, teamBId: 3, winnerId: 3, status: "finished" },
+			],
+		});
+
+		expect(result.byTeamId[1].status).toBe("qualified");
+		expect(result.byTeamId[2].status).toBe("eliminated");
+	});
+
+	it("suggests next round within the same record buckets", () => {
+		const pairings = suggestSwissRound({
+			settings,
+			seeds: [1, 2, 3, 4],
+			matches: [
+				{ id: 1, teamAId: 1, teamBId: 4, winnerId: 1, status: "finished" },
+				{ id: 2, teamAId: 2, teamBId: 3, winnerId: 2, status: "finished" },
+			],
+		});
+
+		expect(pairings.roundNumber).toBe(2);
+		expect(pairings.matches[0].recordBucket).toBe("1-0");
+		expect(pairings.matches[1].recordBucket).toBe("0-1");
+	});
+
+	it("avoids rematches when another valid bucket pairing exists", () => {
+		const pairings = suggestSwissRound({
+			settings,
+			seeds: [1, 2, 3, 4],
+			matches: [
+				{ id: 1, teamAId: 1, teamBId: 2, winnerId: 1, status: "finished" },
+				{ id: 2, teamAId: 3, teamBId: 4, winnerId: 3, status: "finished" },
+			],
+		});
+
+		expect(pairings.matches).toEqual([
+			{ teamAId: 1, teamBId: 3, recordBucket: "1-0" },
+			{ teamAId: 2, teamBId: 4, recordBucket: "0-1" },
+		]);
+	});
+
+	it("seeds the playoff with record first and seed as final tiebreaker", () => {
+		const seeded = seedSwissPlayoff([
+			{ teamId: 8, wins: 2, losses: 0, seed: 8 },
+			{ teamId: 1, wins: 2, losses: 1, seed: 1 },
+			{ teamId: 3, wins: 2, losses: 1, seed: 3 },
+			{ teamId: 5, wins: 2, losses: 1, seed: 5 },
+		]);
+
+		expect(seeded[0].teamId).toBe(8);
+		expect(seeded[1].teamId).toBe(1);
+		expect(seeded[3].teamId).toBe(5);
+	});
+});
