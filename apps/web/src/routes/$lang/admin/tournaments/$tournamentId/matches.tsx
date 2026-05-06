@@ -91,6 +91,11 @@ function TournamentMatchesPage() {
 	const hasBracket = stages.some(
 		(s) => s.type === "Single Elimination" || s.type === "Double Elimination",
 	);
+	const hasSwiss = stages.some((s) => s.type === "Swiss");
+	const swissStage = stages.find((s: any) => s.type === "Swiss");
+	const swissMatches = matches.filter(
+		(match: any) => match.stageId === swissStage?.id,
+	);
 
 	type TabType =
 		| "matches"
@@ -98,11 +103,12 @@ function TournamentMatchesPage() {
 		| "schedule"
 		| "bracket"
 		| "groups"
+		| "swiss"
 		| "ordering"
 		| "seeding";
 
 	const [activeTab, setActiveTab] = useState<TabType>(
-		hasBracket ? "bracket" : hasGroups ? "groups" : "matches",
+		hasBracket ? "bracket" : hasSwiss ? "swiss" : hasGroups ? "groups" : "matches",
 	);
 
 	const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
@@ -405,6 +411,20 @@ function TournamentMatchesPage() {
 							</button>
 						)}
 
+						{/* Swiss Stage */}
+						{hasSwiss && (
+							<button
+								onClick={() => setActiveTab("swiss")}
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+									activeTab === "swiss"
+										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+										: "bg-white hover:bg-gray-50"
+								}`}
+							>
+								{t("matches.tabSwiss")}
+							</button>
+						)}
+
 						{/* 6. Matches - Manage individual matches */}
 						<button
 							onClick={() => setActiveTab("matches")}
@@ -498,6 +518,14 @@ function TournamentMatchesPage() {
 						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabBracket")}
+					</button>
+				)}
+				{hasSwiss && (
+					<button
+						onClick={() => setActiveTab("swiss")}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "swiss" ? "bg-[#ccff00]" : "bg-white"}`}
+					>
+						{t("matches.tabSwiss")}
 					</button>
 				)}
 				<button
@@ -607,6 +635,132 @@ function TournamentMatchesPage() {
 								}
 							}}
 						/>
+					</div>
+				)}
+
+				{activeTab === "swiss" && (
+					<div className="space-y-6">
+						<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+							<h2 className="font-black text-2xl text-black uppercase italic">
+								{t("matches.swissStage")}
+							</h2>
+							<p className="font-bold text-gray-500 text-sm">
+								{t("matches.swissStageDescription")}
+							</p>
+						</div>
+						<div className="flex flex-wrap gap-4">
+							<button
+								onClick={async () => {
+									try {
+										const { generateFullBracket } = await import(
+											"@/server/matches"
+										);
+										await generateFullBracket({
+											data: {
+												tournamentId: tournament.id,
+												stageId: swissStage?.id,
+											},
+										});
+										toast.success(t("matches.generateSwissRoundOneSuccess"));
+										router.invalidate();
+									} catch (e) {
+										toast.error(t("matches.generateSwissRoundOneError"));
+									}
+								}}
+								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+							>
+								{t("matches.generateSwissRoundOne")}
+							</button>
+							<button
+								onClick={async () => {
+									try {
+										const swissStageEl = stages.find(
+											(s: any) => s.type === "Swiss",
+										);
+										if (!swissStageEl) return;
+										const { suggestSwissRoundServer } = await import(
+											"@/server/matches"
+										);
+										await suggestSwissRoundServer({
+											data: {
+												tournamentId: tournament.id,
+												stageId: swissStageEl.id,
+											},
+										});
+										toast.success(t("matches.suggestSwissNextRoundSuccess"));
+										router.invalidate();
+									} catch (e) {
+										toast.error(t("matches.suggestSwissNextRoundError"));
+									}
+								}}
+								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+							>
+								{t("matches.suggestSwissNextRound")}
+							</button>
+							<button
+								onClick={async () => {
+									try {
+										const swissStageEl = stages.find(
+											(s: any) => s.type === "Swiss",
+										);
+										const playoffStageEl = stages.find(
+											(s: any) =>
+												s.type === "Single Elimination" ||
+												s.type === "Double Elimination",
+										);
+										if (!swissStageEl || !playoffStageEl) return;
+										const { generatePlayoffDraftServer } = await import(
+											"@/server/matches"
+										);
+										await generatePlayoffDraftServer({
+											data: {
+												tournamentId: tournament.id,
+												swissStageId: swissStageEl.id,
+												playoffStageId: playoffStageEl.id,
+											},
+										});
+										toast.success(
+											t("matches.generateSwissPlayoffDraftSuccess"),
+										);
+										router.invalidate();
+									} catch (e) {
+										toast.error(
+											t("matches.generateSwissPlayoffDraftError"),
+										);
+									}
+								}}
+								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+							>
+								{t("matches.generateSwissPlayoffDraft")}
+							</button>
+						</div>
+						{swissMatches.length > 0 && (
+							<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+								<h3 className="mb-4 font-black text-xl text-black uppercase italic">
+									{t("matches.swissMatches")}
+								</h3>
+								<div className="flex flex-col gap-2">
+									{swissMatches.map((match: any) => (
+										<button
+											key={match.id}
+											onClick={() => {
+												setEditingMatch(match);
+												setIsMatchModalOpen(true);
+											}}
+											className="flex items-center justify-between border-2 border-black bg-[#f0f0f0] p-2 text-left hover:bg-[#ccff00]/30"
+										>
+											<span className="font-bold text-xs text-black">
+												{match.name || `Match #${match.id}`}
+											</span>
+											<span className="font-bold text-[10px] text-gray-500 uppercase">
+												{match.teamA?.name || match.labelTeamA || "TBD"} vs{" "}
+												{match.teamB?.name || match.labelTeamB || "TBD"}
+											</span>
+										</button>
+									))}
+								</div>
+							</div>
+						)}
 					</div>
 				)}
 

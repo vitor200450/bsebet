@@ -1942,3 +1942,79 @@ export const recalculateTournamentPoints =
 		adjustmentsSkippedNoMatch: number;
 		adjustmentsSkippedOutOfTournament: number;
 	}>;
+
+const suggestSwissRoundFn = createServerFn({ method: "POST" }).handler(
+	async (ctx: any) => {
+		const { db } = await import("@bsebet/db");
+		const { tournamentId, stageId } = z
+			.object({
+				tournamentId: z.number(),
+				stageId: z.string(),
+			})
+			.parse(ctx.data);
+
+		const tournament = await db.query.tournaments.findFirst({
+			where: (t, { eq }) => eq(t.id, tournamentId),
+		});
+		if (!tournament) throw new Error("Tournament not found");
+
+		const stage = (tournament.stages as any[])?.find(
+			(s: any) => s.id === stageId,
+		);
+		if (!stage) throw new Error("Stage not found");
+
+		return generateSwissSuggestedRound({
+			db,
+			tournamentId,
+			stage,
+		});
+	},
+);
+
+export const suggestSwissRoundServer =
+	suggestSwissRoundFn as unknown as (opts: {
+		data: { tournamentId: number; stageId: string };
+	}) => Promise<{ success: boolean }>;
+
+const generatePlayoffDraftFn = createServerFn({ method: "POST" }).handler(
+	async (ctx: any) => {
+		const { db } = await import("@bsebet/db");
+		const { tournamentId, swissStageId, playoffStageId } = z
+			.object({
+				tournamentId: z.number(),
+				swissStageId: z.string(),
+				playoffStageId: z.string(),
+			})
+			.parse(ctx.data);
+
+		const tournament = await db.query.tournaments.findFirst({
+			where: (t, { eq }) => eq(t.id, tournamentId),
+		});
+		if (!tournament) throw new Error("Tournament not found");
+
+		const swissStage = (tournament.stages as any[])?.find(
+			(s: any) => s.id === swissStageId,
+		);
+		const playoffStage = (tournament.stages as any[])?.find(
+			(s: any) => s.id === playoffStageId,
+		);
+		if (!swissStage || !playoffStage)
+			throw new Error("Swiss or playoff stage not found");
+
+		return generateSwissPlayoffDraft({
+			db,
+			tournamentId,
+			swissStage,
+			playoffStage,
+		});
+	},
+);
+
+export const generatePlayoffDraftServer =
+	generatePlayoffDraftFn as unknown as (opts: {
+		data: {
+			tournamentId: number;
+			swissStageId: string;
+			playoffStageId: string;
+		};
+	}) => Promise<{ success: boolean }>;

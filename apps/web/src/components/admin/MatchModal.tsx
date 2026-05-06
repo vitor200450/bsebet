@@ -213,10 +213,17 @@ export function MatchModal({
 	// Sync bracketSide with selected stage type
 	useEffect(() => {
 		const selectedStage = stages.find((s) => s.id === formData.stageId);
-		if (selectedStage?.type === "Groups" && formData.bracketSide !== "groups") {
-			setFormData((prev) => ({ ...prev, bracketSide: "groups" }));
+		if (
+			(selectedStage?.type === "Groups" || selectedStage?.type === "Swiss") &&
+			formData.bracketSide !== "groups"
+		) {
+			setFormData((prev) => ({
+				...prev,
+				bracketSide: selectedStage?.type === "Swiss" ? "main" : "groups",
+			}));
 		} else if (
 			selectedStage?.type !== "Groups" &&
+			selectedStage?.type !== "Swiss" &&
 			formData.bracketSide === "groups"
 		) {
 			// Fallback to upper for non-group stages if transitioning from groups
@@ -450,10 +457,14 @@ export function MatchModal({
 			matchDayId: formData.matchDayId || null,
 			isBettingEnabled: formData.isBettingEnabled,
 			roundIndex: Number(formData.roundIndex),
-			bracketSide:
-				stages.find((s) => s.id === formData.stageId)?.type === "Groups"
-					? "groups"
-					: formData.bracketSide,
+			bracketSide: (() => {
+				const stageType = stages.find(
+					(s) => s.id === formData.stageId,
+				)?.type;
+				if (stageType === "Groups") return "groups";
+				if (stageType === "Swiss") return "main";
+				return formData.bracketSide;
+			})(),
 			displayOrder: Number(formData.displayOrder),
 			status: formData.status,
 			resultType: formData.resultType,
