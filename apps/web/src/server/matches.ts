@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
+import { assertTournamentAllowsMatchMutation } from "./tournament-status-guard";
 
 function validateWalkoverData(updateData: {
 	status?: "scheduled" | "live" | "finished";
@@ -77,6 +78,55 @@ function validateLiveStatusByStartTime(input: {
 	if (start.getTime() > Date.now()) {
 		throw new Error("Cannot set match to live before start time");
 	}
+}
+
+async function assertTournamentStatusBeforeMatchWrite(params: {
+	db: any;
+	matchId?: number;
+	tournamentId?: number | null;
+	next: {
+		status: "scheduled" | "live" | "finished" | null;
+		winnerId: number | null;
+		scoreA: number | null;
+		scoreB: number | null;
+	};
+	current?: {
+		status: "scheduled" | "live" | "finished" | null;
+		winnerId: number | null;
+		scoreA: number | null;
+		scoreB: number | null;
+		tournamentId: number | null;
+	};
+}) {
+	const tournamentId =
+		params.current?.tournamentId ?? params.tournamentId ?? null;
+	if (!tournamentId) {
+		return;
+	}
+
+	const { eq } = await import("drizzle-orm");
+	const { tournaments } = await import("@bsebet/db/schema");
+
+	const tournament = await params.db.query.tournaments.findFirst({
+		where: eq(tournaments.id, tournamentId),
+		columns: { status: true },
+	});
+
+	if (!tournament) {
+		throw new Error("Tournament not found");
+	}
+
+	assertTournamentAllowsMatchMutation({
+		currentTournamentStatus: tournament.status,
+		currentMatchStatus: params.current?.status ?? null,
+		nextMatchStatus: params.next.status,
+		currentWinnerId: params.current?.winnerId ?? null,
+		nextWinnerId: params.next.winnerId,
+		currentScoreA: params.current?.scoreA ?? null,
+		nextScoreA: params.next.scoreA,
+		currentScoreB: params.current?.scoreB ?? null,
+		nextScoreB: params.next.scoreB,
+	});
 }
 
 function getBracketMatchName(
@@ -411,6 +461,24 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			startTime: updateData.startTime ?? currentMatch.startTime,
 		});
 
+		await assertTournamentStatusBeforeMatchWrite({
+			db,
+			matchId,
+			current: {
+				status: currentMatch.status,
+				winnerId: currentMatch.winnerId,
+				scoreA: currentMatch.scoreA,
+				scoreB: currentMatch.scoreB,
+				tournamentId: currentMatch.tournamentId,
+			},
+			next: {
+				status: nextStatus ?? null,
+				winnerId: nextWinnerId ?? null,
+				scoreA: normalizedWalkoverState.scoreA ?? null,
+				scoreB: normalizedWalkoverState.scoreB ?? null,
+			},
+		});
+
 		const [updated] = await db
 			.update(matches)
 			.set(updateData)
@@ -534,6 +602,23 @@ const refreshWalkoverWinnerFn = createServerFn({ method: "POST" }).handler(
 			);
 		}
 
+		await assertTournamentStatusBeforeMatchWrite({
+			db,
+			current: {
+				status: match.status,
+				winnerId: match.winnerId,
+				scoreA: match.scoreA,
+				scoreB: match.scoreB,
+				tournamentId: match.tournamentId,
+			},
+			next: {
+				status: match.status,
+				winnerId: nextWinnerId,
+				scoreA: nextWinnerId === match.teamAId ? 3 : 0,
+				scoreB: nextWinnerId === match.teamBId ? 3 : 0,
+			},
+		});
+
 		const [updated] = await db
 			.update(matches)
 			.set({
@@ -572,6 +657,17 @@ const createMatchFn = createServerFn({ method: "POST" }).handler(
 			winnerId: insertData.winnerId ?? null,
 			teamAId: insertData.teamAId ?? null,
 			teamBId: insertData.teamBId ?? null,
+		});
+
+		await assertTournamentStatusBeforeMatchWrite({
+			db,
+			tournamentId: insertData.tournamentId ?? null,
+			next: {
+				status: insertData.status ?? "scheduled",
+				winnerId: insertData.winnerId ?? null,
+				scoreA: insertData.scoreA ?? null,
+				scoreB: insertData.scoreB ?? null,
+			},
 		});
 
 		const [created] = await db.insert(matches).values(insertData).returning();
@@ -617,6 +713,23 @@ const incrementScoreFn = createServerFn({ method: "POST" }).handler(
 			startTime: match.startTime,
 		});
 
+		await assertTournamentStatusBeforeMatchWrite({
+			db,
+			current: {
+				status: match.status,
+				winnerId: match.winnerId,
+				scoreA: match.scoreA,
+				scoreB: match.scoreB,
+				tournamentId: match.tournamentId,
+			},
+			next: {
+				status: "live",
+				winnerId: match.winnerId ?? null,
+				scoreA: team === "A" ? (match.scoreA || 0) + 1 : (match.scoreA ?? 0),
+				scoreB: team === "B" ? (match.scoreB || 0) + 1 : (match.scoreB ?? 0),
+			},
+		});
+
 		const update: any = { status: "live" };
 		if (team === "A") update.scoreA = (match.scoreA || 0) + 1;
 		else update.scoreB = (match.scoreB || 0) + 1;
@@ -644,6 +757,29 @@ const finalizeMatchFn = createServerFn({ method: "POST" }).handler(
 				winnerId: z.number(),
 			})
 			.parse(ctx.data);
+
+		const match = await db.query.matches.findFirst({
+			where: eq(matches.id, matchId),
+		});
+
+		if (!match) throw new Error("Match not found");
+
+		await assertTournamentStatusBeforeMatchWrite({
+			db,
+			current: {
+				status: match.status,
+				winnerId: match.winnerId,
+				scoreA: match.scoreA,
+				scoreB: match.scoreB,
+				tournamentId: match.tournamentId,
+			},
+			next: {
+				status: "finished",
+				winnerId,
+				scoreA: match.scoreA ?? 0,
+				scoreB: match.scoreB ?? 0,
+			},
+		});
 
 		const [updated] = await db
 			.update(matches)

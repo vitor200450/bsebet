@@ -56,6 +56,28 @@ describe("tournament status guard", () => {
 		).not.toThrow();
 	});
 
+	it("treats finished status plus winner as competitive state", () => {
+		expect(() =>
+			assertTournamentAllowsMatchMutation({
+				...baseState,
+				nextMatchStatus: "finished",
+				nextWinnerId: 99,
+				nextScoreA: 3,
+				nextScoreB: 1,
+			}),
+		).toThrow(TOURNAMENT_UPCOMING_CANNOT_START_MATCH);
+	});
+
+	it("treats live score increments as competitive state", () => {
+		expect(() =>
+			assertTournamentAllowsMatchMutation({
+				...baseState,
+				nextMatchStatus: "live",
+				nextScoreA: 1,
+			}),
+		).toThrow(TOURNAMENT_UPCOMING_CANNOT_START_MATCH);
+	});
+
 	it("allows competitive changes when tournament is active", () => {
 		expect(() =>
 			assertTournamentAllowsMatchMutation({
