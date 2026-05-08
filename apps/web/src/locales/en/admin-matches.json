@@ -99,7 +99,7 @@
 		"tournamentReset": "All matches have been reset!",
 		"tournamentResetError": "Error resetting tournament matches",
 		"tournamentTitle": "Reset Tournament",
-		"tournamentConfirm": "Are you sure you want to reset ALL matches?",
+		"tournamentConfirm": "Reset All",
 		"tournamentDescription": "This will remove all matches and associated bets. This action cannot be undone."
 	},
 	"recalc": {

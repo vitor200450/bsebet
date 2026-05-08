@@ -99,7 +99,7 @@
 		"tournamentReset": "Todas as partidas foram resetadas!",
 		"tournamentResetError": "Erro ao resetar partidas do torneio",
 		"tournamentTitle": "Resetar Torneio",
-		"tournamentConfirm": "Tem certeza que deseja resetar TODAS as partidas?",
+		"tournamentConfirm": "Resetar Tudo",
 		"tournamentDescription": "Isso irá remover todas as partidas e apostas associadas. Esta ação não pode ser desfeita."
 	},
 	"recalc": {
