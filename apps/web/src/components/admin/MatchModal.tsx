@@ -4,11 +4,12 @@ import { AlertCircle, Check, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import {
-	createMatch,
-	refreshWalkoverWinner,
-	updateMatch,
-} from "@/server/matches";
+	import {
+		createMatch,
+		refreshWalkoverWinner,
+		updateMatch,
+	} from "@/server/matches";
+import { buildSwissStandings } from "@/server/swiss";
 import {
 	CustomDatePicker,
 	CustomSelect,
@@ -246,6 +247,68 @@ export function MatchModal({
 		}
 		return null;
 	}, [matchToEdit?.teamBId, formData.teamBType, formData.teamB]);
+
+	// Swiss stage team filtering: compute record buckets and filter available teams
+	const isSwissStage = stages.some(
+		(s) => s.id === formData.stageId && s.type === "Swiss",
+	);
+	const swissSettings = stages.find(
+		(s) => s.id === formData.stageId && s.type === "Swiss",
+	) as
+		| {
+				settings?: {
+					winsToAdvance?: number;
+					lossesToEliminate?: number;
+					roundsMax?: number;
+				};
+		  }
+		| undefined;
+	const swissTeamRecords = useMemo(() => {
+		if (!isSwissStage || !swissSettings?.settings) return null;
+		const swissMatches = matches.filter(
+			(m: any) => m.stageId === formData.stageId,
+		);
+		const teamIdSet = new Set<number>();
+		swissMatches.forEach((m: any) => {
+			if (m.teamAId) teamIdSet.add(m.teamAId);
+			if (m.teamBId) teamIdSet.add(m.teamBId);
+		});
+		const seeds = Array.from(teamIdSet);
+		try {
+			return buildSwissStandings({
+				settings: swissSettings.settings as any,
+				seeds,
+				matches: swissMatches,
+			});
+		} catch {
+			return null;
+		}
+	}, [isSwissStage, swissSettings, matches, formData.stageId]);
+
+	// Determine the expected record bucket for the match being edited
+	const expectedSwissBucket = useMemo(() => {
+		if (!isSwissStage || !swissTeamRecords) return null;
+		const matchLabel = matchToEdit?.label || formData.name || "";
+		const bucketMatch = matchLabel.match(/Swiss\s+(\d+-\d+)/i);
+		if (bucketMatch) return bucketMatch[1];
+
+		if (matchToEdit?.roundIndex === 0) return "0-0";
+		return null;
+	}, [isSwissStage, swissTeamRecords, matchToEdit, formData.name]);
+
+	// Filter teams to only those in the expected record bucket
+	const swissFilteredTeams = useMemo(() => {
+		if (!isSwissStage || !swissTeamRecords || !expectedSwissBucket) {
+			return teams;
+		}
+		const aliveTeamIds = new Set(
+			swissTeamRecords.ordered
+				.filter((team) => team.record === expectedSwissBucket)
+				.map((team) => team.teamId),
+		);
+		if (aliveTeamIds.size === 0) return teams;
+		return teams.filter((t) => aliveTeamIds.has(t.id));
+	}, [isSwissStage, swissTeamRecords, expectedSwissBucket, teams]);
 
 	const canAutoResolveOneSidedWalkover =
 		formData.resultType === "wo" &&
@@ -1207,7 +1270,9 @@ export function MatchModal({
 								{t("modal.teamASource")}
 							</label>
 							<div className="mb-2 flex gap-2">
-								{(["team", "match", "group"] as const).map((type) => (
+								{(["team", "match", "group"] as const)
+									.filter((type) => !(isSwissStage && type !== "team"))
+									.map((type) => (
 									<button
 										key={type}
 										type="button"
@@ -1230,9 +1295,13 @@ export function MatchModal({
 									label=""
 									value={formData.teamA}
 									onChange={(val) => setFormData({ ...formData, teamA: val })}
-									options={teams.map((t) => ({
+									options={swissFilteredTeams.map((t) => ({
 										value: String(t.id),
-										label: t.name,
+										label:
+											t.name +
+											(isSwissStage && swissTeamRecords
+												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
+												: ""),
 									}))}
 								/>
 							)}
@@ -1324,7 +1393,9 @@ export function MatchModal({
 								{t("modal.teamBSource")}
 							</label>
 							<div className="mb-2 flex gap-2">
-								{(["team", "match", "group"] as const).map((type) => (
+								{(["team", "match", "group"] as const)
+									.filter((type) => !(isSwissStage && type !== "team"))
+									.map((type) => (
 									<button
 										key={type}
 										type="button"
@@ -1347,9 +1418,13 @@ export function MatchModal({
 									label=""
 									value={formData.teamB}
 									onChange={(val) => setFormData({ ...formData, teamB: val })}
-									options={teams.map((t) => ({
+									options={swissFilteredTeams.map((t) => ({
 										value: String(t.id),
-										label: t.name,
+										label:
+											t.name +
+											(isSwissStage && swissTeamRecords
+												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
+												: ""),
 									}))}
 								/>
 							)}
