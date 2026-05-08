@@ -127,87 +127,89 @@ export function useStandings(
 export function StandingsTable({ standings }: { standings: Standing[] }) {
 	const { t } = useTranslation("admin-matches");
 	return (
-		<div className="w-[420px] flex-shrink-0">
-			<table className="w-full table-fixed border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-				<thead className="bg-black font-black text-[10px] text-white uppercase italic tracking-wider">
-					<tr>
-						<th className="w-48 p-2 text-left">{t("bracketView.colTeam")}</th>
-						<th className="w-12 p-2 text-center">{t("bracketView.colWL")}</th>
-						<th className="w-12 p-2 text-center">{t("bracketView.colMaps")}</th>
-						<th className="w-12 p-2 text-center">{t("bracketView.colDiff")}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{standings.map((s, i) => (
-						<tr
-							key={s.team.id}
-							className={clsx(
-								"relative overflow-hidden border-black/10 border-b font-bold text-xs transition-all",
-								i < 2 ? "bg-[#ccff00]/20" : "bg-white",
-								i < 2 ? "border-l-[#ccff00] border-l-[4px]" : "",
-							)}
-						>
-							<td className="relative flex items-center gap-2 overflow-hidden p-2">
-								{/* Qualification Indicator */}
-								{i < 2 && (
-									<div className="absolute top-0 bottom-0 left-0 w-1 bg-[#ccff00] shadow-[0_0_10px_#ccff00]" />
+		<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
+			<div className="overflow-x-auto">
+				<table className="w-full text-left">
+					<thead className="border-black border-b-2 bg-[#121212] text-white">
+						<tr className="border-transparent border-l-4">
+							<th className="px-4 py-3 font-black text-[10px] uppercase tracking-wider">
+								{t("bracketView.colTeam")}
+							</th>
+							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+								{t("bracketView.colWL")}
+							</th>
+							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+								{t("bracketView.colMaps")}
+							</th>
+							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+								{t("bracketView.colDiff")}
+							</th>
+						</tr>
+					</thead>
+					<tbody className="divide-y-2 divide-black/10">
+						{standings.map((s, i) => (
+							<tr
+								key={s.team.id}
+								className={clsx(
+									"relative overflow-hidden border-black/10 border-b font-bold text-xs transition-all",
+									i < 2 ? "bg-[#ccff00]/30" : "bg-white",
+									i < 2
+										? "border-[#ccff00] border-l-4"
+										: "border-transparent border-l-4",
 								)}
-
-								<TeamLogo
-									teamName={s.team.name}
-									logoUrl={s.team.logoUrl}
-									size="xs"
-									className="relative z-10 flex-shrink-0"
-								/>
-								<span
+							>
+								<td className="relative flex items-center gap-2 overflow-hidden p-2">
+									<TeamLogo
+										teamName={s.team.name}
+										logoUrl={s.team.logoUrl}
+										size="sm"
+										className="drop-shadow-sm"
+									/>
+									<div className="flex flex-col">
+										<span
+											className={clsx(
+												"font-black text-sm uppercase leading-none",
+												i < 2 ? "text-black" : "text-zinc-700",
+											)}
+										>
+											{s.team.name}
+										</span>
+									</div>
+								</td>
+								<td className="px-4 py-3 text-center font-black text-[#121212]">
+									{s.wins}-{s.losses}
+								</td>
+								<td className="px-4 py-3 text-center font-bold text-gray-500">
+									{s.mapWins}-{s.mapLosses}
+								</td>
+								<td
 									className={clsx(
-										"relative z-10 block uppercase",
-										i < 2 ? "font-black" : "",
+										"px-4 py-3 text-center font-black",
+										s.mapDiff > 0
+											? "text-green-600"
+											: s.mapDiff < 0
+												? "text-red-500"
+												: "text-gray-400",
 									)}
 								>
-									{s.team.name}
-								</span>
-
-								{/* Qualifying label */}
-								{i < 2 && (
-									<span className="ml-auto flex-shrink-0 border-black/20 bg-[#ccff00] px-1 py-0.5 font-black text-[6px] text-black/60 uppercase">
-										{t("bracketView.qualified")}
-									</span>
-								)}
-							</td>
-							<td className="p-2 text-center">
-								{s.wins}-{s.losses}
-							</td>
-							<td className="p-2 text-center text-gray-500">
-								{s.mapWins}-{s.mapLosses}
-							</td>
-							<td
-								className={clsx(
-									"p-2 text-center",
-									s.mapDiff > 0
-										? "text-green-600"
-										: s.mapDiff < 0
-											? "text-red-500"
-											: "text-gray-400",
-								)}
-							>
-								{s.mapDiff > 0 ? "+" : ""}
-								{s.mapDiff}
-							</td>
-						</tr>
-					))}
-					{standings.length === 0 && (
-						<tr>
-							<td
-								colSpan={4}
-								className="p-4 text-center text-[10px] text-gray-400 italic"
-							>
-								{t("bracketView.noMatches")}
-							</td>
-						</tr>
-					)}
-				</tbody>
-			</table>
+									{s.mapDiff > 0 ? "+" : ""}
+									{s.mapDiff}
+								</td>
+							</tr>
+						))}
+						{standings.length === 0 && (
+							<tr>
+								<td
+									colSpan={4}
+									className="p-4 text-center text-[10px] text-gray-400 italic"
+								>
+									{t("bracketView.noMatches")}
+								</td>
+							</tr>
+						)}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	);
 }

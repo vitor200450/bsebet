@@ -354,7 +354,11 @@ const getLeaderboardTournamentsFn = createServerFn({
 		.from(tournaments)
 		.innerJoin(matches, eq(tournaments.id, matches.tournamentId))
 		.where(
-			or(eq(tournaments.status, "active"), eq(tournaments.status, "finished")),
+			or(
+				eq(tournaments.status, "active"),
+				eq(tournaments.status, "finished"),
+				eq(tournaments.status, "upcoming"),
+			),
 		)
 		.groupBy(tournaments.id, tournaments.createdAt)
 		.orderBy(desc(tournaments.createdAt));

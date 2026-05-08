@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import {
 	buildSwissStandings,
+	type SwissSettings,
 	seedSwissPlayoff,
 	selectPublicSwissMatches,
 	suggestSwissRound,
-	type SwissSettings,
 } from "./swiss";
 
 const settings: SwissSettings = {

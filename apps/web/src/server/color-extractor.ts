@@ -2,21 +2,46 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 /**
+ * In-memory cache for extracted colors to avoid redundant fetches
+ */
+const colorCache = new Map<
+	string,
+	{
+		primary: string;
+		secondary: string;
+		tertiary: string;
+		style: "linear" | "radial";
+	}
+>();
+
+/**
  * Reusable function to extract colors from an image URL (Server-side)
  */
 export async function extractColorsFromImage(imageUrl: string) {
+	// Check cache first
+	if (colorCache.has(imageUrl)) {
+		return colorCache.get(imageUrl)!;
+	}
+
 	try {
 		// Dynamically import sharp (server-side only)
 		const sharp = (await import("sharp")).default;
 
-		// Fetch the image
-		const response = await fetch(imageUrl);
-		if (!response.ok) {
-			throw new Error(`Failed to fetch image: ${response.statusText}`);
-		}
+		// Fetch the image with a timeout
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
 
-		const arrayBuffer = await response.arrayBuffer();
-		const buffer = Buffer.from(arrayBuffer);
+		let buffer: Buffer;
+		try {
+			const response = await fetch(imageUrl, { signal: controller.signal });
+			if (!response.ok) {
+				throw new Error(`Failed to fetch image: ${response.statusText}`);
+			}
+			const arrayBuffer = await response.arrayBuffer();
+			buffer = Buffer.from(arrayBuffer);
+		} finally {
+			clearTimeout(timeoutId);
+		}
 
 		// Process with sharp to get pixel data
 		const image = sharp(buffer);
@@ -403,20 +428,32 @@ export async function extractColorsFromImage(imageUrl: string) {
 		const resultTertiary =
 			spatialColors.length > 2 ? spatialColors[1].hex : resultSecondary;
 
-		return {
+		const result = {
 			primary: resultPrimary,
 			secondary: resultSecondary,
 			tertiary: resultTertiary,
 			style,
 		};
-	} catch (error) {
-		console.error("Error extracting colors:", error);
-		return {
+
+		// Store in cache
+		colorCache.set(imageUrl, result);
+
+		return result;
+	} catch (error: any) {
+		if (error.name === "AbortError") {
+			console.warn(`[Color Extractor] Timeout fetching image: ${imageUrl}`);
+		} else {
+			console.error("[Color Extractor] Failed to extract colors:", error);
+		}
+
+		const defaultResult = {
 			primary: "#2e5cff",
 			secondary: "#ff2e2e",
 			tertiary: "#7f46d6",
-			style: "linear",
+			style: "linear" as const,
 		};
+
+		return defaultResult;
 	}
 }
 

@@ -101,10 +101,10 @@ function UserProfilePage() {
 		.toUpperCase();
 
 	return (
-		<div className="relative min-h-screen bg-[#e6e6e6] pb-12 font-display">
-			{/* Subtle paper texture overlay */}
+		<div className="relative min-h-screen bg-[#f0f0f0] pb-12 font-display">
+			{/* Paper texture overlay */}
 			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.15] mix-blend-multiply"
+				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
 				style={{
 					backgroundImage:
 						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
@@ -113,30 +113,24 @@ function UserProfilePage() {
 			/>
 
 			{/* Page Header */}
-			<div className="relative z-10 mx-auto max-w-[1600px] px-4 py-6 md:px-6 md:py-10">
-				<div className="mb-8 flex flex-col justify-between gap-4 md:mb-12 md:flex-row md:items-center">
-					<div className="flex flex-col gap-4 md:flex-row md:items-center">
-						{/* Title Badge md:flex-row */}
-						<div className="inline-block w-fit -skew-x-12 transform border-[3px] border-black bg-black px-6 py-3 text-white shadow-[4px_4px_0_0_#000] md:px-8 md:py-4">
-							<h1 className="skew-x-12 transform font-black text-3xl text-[#ccff00] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
-								{t("profile")}
-							</h1>
-						</div>
+			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
+				<div className="mb-8 flex flex-col justify-between gap-4 md:mb-10 md:flex-row md:items-end">
+					<div>
+						<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+							{t("profile")}
+						</h1>
 					</div>
 
-					{/* Action Button */}
 					<Link
 						to={linkTo("/leaderboard")}
 						search={{ page: 1, pageSize: 20 } as any}
-						className="group w-fit -skew-x-12 transform border-[3px] border-black bg-white px-6 py-3 font-black text-black text-sm uppercase italic tracking-wider shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+						className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
 					>
-						<span className="flex skew-x-12 transform items-center gap-2">
-							<ArrowLeft
-								className="h-5 w-5 transition-transform group-hover:-translate-x-1"
-								strokeWidth={3}
-							/>
-							{t("back")}
-						</span>
+						<ArrowLeft
+							className="h-4 w-4 transition-transform group-hover:-translate-x-1"
+							strokeWidth={3}
+						/>
+						{t("back")}
 					</Link>
 				</div>
 
@@ -189,94 +183,100 @@ function UserProfilePage() {
 					<div className="flex flex-col gap-10 md:gap-14 lg:col-span-8">
 						{/* Statistics Section */}
 						<section>
-							<div className="mb-5 flex items-center gap-3">
-								<div className="rotate-3 transform border-2 border-black bg-[#2e5cff] p-2 shadow-[2px_2px_0_0_#000]">
-									<span className="material-symbols-outlined text-white text-xl md:text-2xl">
+							<div className="mb-6 flex items-center gap-3">
+								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2e5cff]">
+									<span className="material-symbols-outlined text-lg text-white">
 										query_stats
 									</span>
 								</div>
-								<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
+								<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
 									{t("stats.general")}
 								</h2>
 							</div>
 
 							<div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
 								{/* Total Points */}
-								<div className="group border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]">
+								<div className="group rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
 									<div className="mb-3 flex items-center justify-between">
-										<span className="material-symbols-outlined text-3xl text-[#ffc700]">
-											star
-										</span>
-										<div className="h-2 w-2 rounded-full bg-[#ffc700]" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ffc700]">
+											<span className="material-symbols-outlined text-black text-xl">
+												star
+											</span>
+										</div>
 									</div>
-									<div className="mb-1 font-black text-4xl text-black">
+									<div className="font-black text-3xl text-[#121212] md:text-4xl">
 										{stats.totalPoints}
 									</div>
-									<div className="font-black text-[10px] text-black uppercase tracking-wider">
+									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 										{t("totalPoints")}
 									</div>
 								</div>
 
 								{/* Accuracy */}
-								<div className="group border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]">
+								<div className="group rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
 									<div className="mb-3 flex items-center justify-between">
-										<span className="material-symbols-outlined text-3xl text-[#2e5cff]">
-											target
-										</span>
-										<div className="h-2 w-2 rounded-full bg-[#2e5cff]" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#2e5cff]">
+											<span className="material-symbols-outlined text-white text-xl">
+												target
+											</span>
+										</div>
 									</div>
-									<div className="mb-1 font-black text-4xl text-black">
-										{stats.accuracy}%
+									<div className="font-black text-3xl text-[#121212] md:text-4xl">
+										{stats.accuracy}
+										<span className="text-xl">%</span>
 									</div>
-									<div className="font-black text-[10px] text-black uppercase tracking-wider">
+									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 										{t("hitRate")}
 									</div>
 								</div>
 
 								{/* Perfect Picks */}
-								<div className="group border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]">
+								<div className="group rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
 									<div className="mb-3 flex items-center justify-between">
-										<span className="material-symbols-outlined text-3xl text-[#ccff00]">
-											grade
-										</span>
-										<div className="h-2 w-2 rounded-full bg-[#ccff00]" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ccff00]">
+											<span className="material-symbols-outlined text-black text-xl">
+												grade
+											</span>
+										</div>
 									</div>
-									<div className="mb-1 font-black text-4xl text-black">
+									<div className="font-black text-3xl text-[#121212] md:text-4xl">
 										{stats.perfectPicks}
 									</div>
-									<div className="font-black text-[10px] text-black uppercase tracking-wider">
+									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 										{t("exactScores")}
 									</div>
 								</div>
 
 								{/* Underdog Wins */}
-								<div className="group border-[3px] border-black bg-gradient-to-r from-purple-600 to-pink-600 p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]">
+								<div className="group rounded-lg border-2 border-black bg-gradient-to-r from-purple-500 to-pink-500 p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
 									<div className="mb-3 flex items-center justify-between">
-										<span className="material-symbols-outlined text-3xl text-white">
-											bolt
-										</span>
-										<div className="h-2 w-2 rounded-full bg-white opacity-50" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-md bg-white/20">
+											<span className="material-symbols-outlined text-white text-xl">
+												bolt
+											</span>
+										</div>
 									</div>
-									<div className="mb-1 font-black text-4xl text-white">
+									<div className="mb-1 font-black text-3xl text-white md:text-4xl">
 										{stats.underdogWins}
 									</div>
-									<div className="font-black text-[10px] text-white uppercase tracking-wider">
+									<div className="mt-1 font-bold text-[10px] text-white/80 uppercase tracking-wider">
 										{t("stats.underdogs")}
 									</div>
 								</div>
 
 								{/* Total Bets */}
-								<div className="group border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]">
+								<div className="group rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
 									<div className="mb-3 flex items-center justify-between">
-										<span className="material-symbols-outlined text-3xl text-[#ff2e2e]">
-											casino
-										</span>
-										<div className="h-2 w-2 rounded-full bg-[#ff2e2e]" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ff2e2e]">
+											<span className="material-symbols-outlined text-white text-xl">
+												casino
+											</span>
+										</div>
 									</div>
-									<div className="mb-1 font-black text-4xl text-black">
+									<div className="font-black text-3xl text-[#121212] md:text-4xl">
 										{stats.totalBets}
 									</div>
-									<div className="font-black text-[10px] text-black uppercase tracking-wider">
+									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 										{t("totalBets")}
 									</div>
 								</div>
@@ -287,12 +287,12 @@ function UserProfilePage() {
 						{recentBets.length > 0 && (
 							<section>
 								<div className="mb-5 flex flex-wrap items-center gap-3">
-									<div className="-rotate-3 transform border-2 border-black bg-[#ff2e2e] p-2 shadow-[2px_2px_0_0_#000]">
-										<span className="material-symbols-outlined text-white text-xl md:text-2xl">
+									<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ff2e2e]">
+										<span className="material-symbols-outlined text-lg text-white">
 											sports_esports
 										</span>
 									</div>
-									<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
+									<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
 										{t("recentBets")}
 									</h2>
 									{betsByTournament.length > 1 && (
@@ -363,12 +363,12 @@ function UserProfilePage() {
 													return (
 														<div
 															key={bet.id}
-															className="group relative cursor-pointer border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#000]"
+															className="group relative cursor-pointer rounded-lg border-2 border-black bg-white p-5 shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#000]"
 														>
 															{/* Status Badge */}
 															<div
 																className={clsx(
-																	"absolute -top-3 -right-3 rotate-6 transform border-[3px] border-black px-3 py-1 font-black text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_#000]",
+																	"absolute -top-3 -right-3 rotate-6 transform border-2 border-black px-3 py-1 font-black text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_#000]",
 																	statusBadgeClass,
 																)}
 															>
@@ -561,12 +561,12 @@ function UserProfilePage() {
 						{tourneyHistory.length > 0 && (
 							<section className="mt-4 mb-8">
 								<div className="mb-5 flex items-center gap-3">
-									<div className="rotate-2 transform border-2 border-black bg-[#2e5cff] p-2 shadow-[2px_2px_0_0_#000]">
-										<span className="material-symbols-outlined text-white text-xl md:text-2xl">
+									<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2e5cff]">
+										<span className="material-symbols-outlined text-lg text-white">
 											emoji_events
 										</span>
 									</div>
-									<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
+									<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
 										{t("stats.tournamentHistory")}
 									</h2>
 								</div>
@@ -578,7 +578,7 @@ function UserProfilePage() {
 										return (
 											<div
 												key={history.tournamentId}
-												className="group relative flex flex-col border-[3px] border-black bg-white p-5 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]"
+												className="group relative flex flex-col rounded-lg border-2 border-black bg-white p-5 shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#000]"
 											>
 												<div className="mb-4 flex items-center justify-between gap-3 border-black/10 border-b-2 border-dashed pb-4">
 													<div className="flex items-center gap-2 overflow-hidden">

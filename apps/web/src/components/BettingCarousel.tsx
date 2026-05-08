@@ -462,7 +462,7 @@ export function BettingCarousel({
 														/>
 													</div>
 													<div className="flex min-h-[34px] w-full items-center justify-center bg-black/10 px-2 py-1.5 text-center">
-														<span className="font-bold text-[10px] leading-none text-white uppercase tracking-wider">
+														<span className="font-bold text-[10px] text-white uppercase leading-none tracking-wider">
 															WR: {currentMatch.stats.winRateA}
 														</span>
 													</div>
@@ -506,7 +506,7 @@ export function BettingCarousel({
 														/>
 													</div>
 													<div className="flex min-h-[34px] w-full items-center justify-center bg-black/10 px-2 py-1.5 text-center">
-														<span className="font-bold text-[10px] leading-none text-white uppercase tracking-wider">
+														<span className="font-bold text-[10px] text-white uppercase leading-none tracking-wider">
 															WR: {currentMatch.stats.winRateB}
 														</span>
 													</div>
@@ -666,7 +666,7 @@ export function BettingCarousel({
 															<div className="truncate font-black text-[11px] uppercase">
 																{currentMatch.teamA?.name || "TBD"}
 															</div>
-															<div className="text-[9px] uppercase tracking-wider text-white/80">
+															<div className="text-[9px] text-white/80 uppercase tracking-wider">
 																{t("common:nav.profile")}
 															</div>
 														</div>
@@ -702,7 +702,7 @@ export function BettingCarousel({
 															<div className="truncate font-black text-[11px] uppercase">
 																{currentMatch.teamB?.name || "TBD"}
 															</div>
-															<div className="text-[9px] uppercase tracking-wider text-white/80">
+															<div className="text-[9px] text-white/80 uppercase tracking-wider">
 																{t("common:nav.profile")}
 															</div>
 														</div>

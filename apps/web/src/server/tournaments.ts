@@ -121,12 +121,7 @@ type TournamentInput = z.input<ReturnType<typeof createTournamentSchema>>;
 export const saveTournamentStageSchema = z.object({
 	id: z.string(),
 	name: z.string(),
-	type: z.enum([
-		"Single Elimination",
-		"Double Elimination",
-		"Groups",
-		"Swiss",
-	]),
+	type: z.enum(["Single Elimination", "Double Elimination", "Groups", "Swiss"]),
 	settings: z.object({
 		groupsCount: z.number().optional(),
 		teamsPerGroup: z.number().optional(),

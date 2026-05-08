@@ -3,11 +3,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { clsx } from "clsx";
 import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
+import { SwissStageView } from "../../components/SwissStageView";
 import {
 	type Match,
 	type Prediction,
@@ -2349,6 +2350,24 @@ function Home() {
 
 	const [viewMode, setViewMode] = useState<"list" | "bracket">("list");
 	const [showReview, setShowReview] = useState(false);
+	const userRequestedReview = useRef(false);
+
+	const handleOpenReview = useCallback(() => {
+		userRequestedReview.current = true;
+		setShowReview(true);
+	}, []);
+
+	const handleCloseReview = useCallback(() => {
+		userRequestedReview.current = false;
+		setShowReview(false);
+	}, []);
+
+	// Reset userRequestedReview ref when review closes for any reason
+	useEffect(() => {
+		if (!showReview) {
+			userRequestedReview.current = false;
+		}
+	}, [showReview]);
 
 	// Clear state when user changes
 	useEffect(() => {
@@ -2496,6 +2515,18 @@ function Home() {
 		return matchDayMatches;
 	}, [allBracketMatches, selectedMatchDayId, matchDays]);
 
+	// Swiss stage: detect and filter matches with roundIndex (excluding group/Round Robin matches)
+	const swissMatches = useMemo(() => {
+		return bracketMatches.filter(
+			(m: any) =>
+				m.roundIndex != null &&
+				m.roundIndex >= 0 &&
+				m.bracketSide !== "groups",
+		);
+	}, [bracketMatches]);
+
+	const hasSwissStage = swissMatches.length > 0;
+
 	// Get selected match day info
 	const selectedMatchDay = useMemo(() => {
 		return matchDays.find(
@@ -2520,15 +2551,40 @@ function Home() {
 			return true;
 		}
 
-		// Open status: Read only if user HAS bets (strict lock)
+		// Open status: Read only only if ALL eligible matches already have bets
 		if (selectedMatchDay?.status === "open") {
 			const matchIdsInSelectedDay = allCarouselMatches
 				.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
 				.map((m: any) => m.id);
 
-			return userBets.some((bet: any) =>
+			const hasAnyBet = userBets.some((bet: any) =>
 				matchIdsInSelectedDay.includes(bet.matchId),
 			);
+
+			if (!hasAnyBet) return false;
+
+			// If there are eligible matches without bets → allow betting
+			const eligibleMatches = allCarouselMatches
+				.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
+				.filter((m: any) => {
+					const hasTeamA = Boolean(m.teamA?.id ?? m.teamAId);
+					const hasTeamB = Boolean(m.teamB?.id ?? m.teamBId);
+					return m.status === "scheduled" && hasTeamA && hasTeamB;
+				});
+
+			const betIds = new Set(
+				userBets
+					.filter((bet: any) => matchIdsInSelectedDay.includes(bet.matchId))
+					.map((bet: any) => Number(bet.matchId)),
+			);
+
+			const hasUnbetEligible = eligibleMatches.some(
+				(m: any) => !betIds.has(Number(m.id)),
+			);
+
+			if (hasUnbetEligible) return false;
+
+			return true;
 		}
 
 		// Locked status: Read only is FALSE (Recovery Mode)
@@ -3024,6 +3080,32 @@ function Home() {
 		stalePredictionMatchIds,
 	]);
 
+	// Derive eligible matches and pending bets for auto-review decision
+	const matchesInSelectedDay = allCarouselMatches.filter(
+		(m: any) => Number(m.matchDayId) === Number(selectedMatchDayId),
+	);
+
+	const eligibleMatchesInSelectedDay = matchesInSelectedDay.filter((m: any) => {
+		const hasTeamA = Boolean(m.teamA?.id ?? m.teamAId);
+		const hasTeamB = Boolean(m.teamB?.id ?? m.teamBId);
+		return m.status === "scheduled" && hasTeamA && hasTeamB;
+	});
+
+	const betMatchIdsInSelectedDay = new Set(
+		userBets
+			.filter((bet: any) =>
+				matchesInSelectedDay.some(
+					(m: any) => Number(m.id) === Number(bet.matchId),
+				),
+			)
+			.map((bet: any) => Number(bet.matchId)),
+	);
+
+	const hasUnbetEligibleMatchesInSelectedDay =
+		eligibleMatchesInSelectedDay.some(
+			(m: any) => !betMatchIdsInSelectedDay.has(Number(m.id)),
+		);
+
 	// Auto-redirect to review if user has bets but no matches available to bet on FOR THE SELECTED MATCH DAY
 	useEffect(() => {
 		if (!tournamentData || !selectedMatchDayId) return;
@@ -3032,6 +3114,16 @@ function Home() {
 			(md: any) => Number(md.id) === Number(selectedMatchDayId),
 		);
 
+		// Priority gate: if there are eligible matches without bets, stay in betting mode
+		// Skip if user manually clicked "Review"
+		if (hasUnbetEligibleMatchesInSelectedDay && !userRequestedReview.current) {
+			if (showReview) {
+				setShowReview(false);
+			}
+			return;
+		}
+
+		// Fallback: auto-enter review when no bets are pending
 		const matchIdsInSelectedDay = allCarouselMatches
 			.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
 			.map((m: any) => m.id);
@@ -3040,13 +3132,11 @@ function Home() {
 			matchIdsInSelectedDay.includes(bet.matchId),
 		);
 
-		// If the match day is locked/finished or user has server bets, auto-enter review
-		// We EXCLUDE "draft" status here because we want users to see the "Coming Soon" empty state
 		if (
 			selectedMatchDay?.status === "finished" ||
-			hasBetsInSelectedDay ||
 			(selectedMatchDay?.status === "locked" &&
-				editableRecoveryMatchIdsForSelectedDay.size > 0)
+				editableRecoveryMatchIdsForSelectedDay.size > 0) ||
+			hasBetsInSelectedDay
 		) {
 			if (!showReview) {
 				setShowReview(true);
@@ -3068,6 +3158,7 @@ function Home() {
 		allCarouselMatches,
 		predictions,
 		showReview,
+		hasUnbetEligibleMatchesInSelectedDay,
 		editableRecoveryMatchIdsForSelectedDay.size,
 	]);
 
@@ -3343,7 +3434,7 @@ function Home() {
 					{/* View Results Button - Only show if user has bets */}
 					{isReadOnly && (
 						<button
-							onClick={() => setShowReview(true)}
+							onClick={handleOpenReview}
 							className="flex animate-pulse items-center gap-2 whitespace-nowrap border-[3px] border-black bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 font-black text-[10px] text-white uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:from-purple-700 hover:to-pink-700 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none md:px-6 md:py-3 md:text-sm md:shadow-[6px_6px_0px_0px_#000]"
 						>
 							<span className="material-symbols-outlined text-base">
@@ -3455,7 +3546,7 @@ function Home() {
 						}
 						predictions={predictions}
 						onUpdatePrediction={updatePrediction}
-						onBack={() => setShowReview(false)}
+						onBack={handleCloseReview}
 						isReadOnly={isReadOnly}
 						tournamentId={selectedTournamentId!}
 						userId={userId}
@@ -3489,7 +3580,7 @@ function Home() {
 						)}
 						predictions={predictions}
 						onUpdatePrediction={updatePrediction}
-						onShowReview={() => setShowReview(true)}
+						onShowReview={handleOpenReview}
 						hasUserBets={
 							!!selectedMatchDayId &&
 							userBets.some((bet: any) =>
@@ -3507,17 +3598,36 @@ function Home() {
 						matchDayStatus={selectedMatchDay?.status}
 					/>
 				) : (
-					<div className="pt-48 md:pt-4">
-						<TournamentBracket
-							matches={bracketMatches}
-							predictions={predictions}
-							onUpdatePrediction={updatePrediction}
-							onRemovePrediction={removePrediction}
-							onReview={() => setShowReview(true)}
-							isReadOnly={isReadOnly}
-							editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
-							matchDayStatus={selectedMatchDay?.status}
-						/>
+					<div
+						className={
+							hasSwissStage
+								? "mx-auto w-full max-w-6xl pt-48 md:pt-4"
+								: "pt-48 md:pt-4"
+						}
+					>
+						{hasSwissStage ? (
+							<SwissStageView
+								matches={swissMatches}
+								predictions={predictions}
+								onUpdatePrediction={updatePrediction}
+								onRemovePrediction={removePrediction}
+								onShowReview={handleOpenReview}
+								isReadOnly={isReadOnly}
+								editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
+								matchDayStatus={selectedMatchDay?.status}
+							/>
+						) : (
+							<TournamentBracket
+								matches={bracketMatches}
+								predictions={predictions}
+								onUpdatePrediction={updatePrediction}
+								onRemovePrediction={removePrediction}
+								onReview={handleOpenReview}
+								isReadOnly={isReadOnly}
+								editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
+								matchDayStatus={selectedMatchDay?.status}
+							/>
+						)}
 					</div>
 				)}
 			</div>

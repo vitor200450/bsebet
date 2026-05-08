@@ -109,10 +109,8 @@ export function MatchCard({
 			? initialBet.predictedScoreB
 			: (match.scoreB ?? 0);
 
-	// Calculate max length for dynamic sizing consistency
-	const lenA = (teamA?.name || match.labelTeamA || "").length;
-	const lenB = (teamB?.name || match.labelTeamB || "").length;
-	const maxLen = Math.max(lenA, lenB);
+	// Remove dynamic sizing to keep text consistent across different cards
+	// We'll use truncate to handle long names instead
 
 	return (
 		<div
@@ -177,14 +175,8 @@ export function MatchCard({
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamA.slug, lang }}
 									className={clsx(
-										"block w-full break-normal text-right font-black uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline",
+										"block w-full truncate text-right font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
-										// Dynamic sizing based on JOINT MAX length to keep text consistent
-										maxLen > 16
-											? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-											: maxLen > 8
-												? "text-[10px] md:text-xs lg:text-[13px]" // Long
-												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
 									{teamA.name}
@@ -192,14 +184,8 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full break-normal text-right font-black uppercase tracking-tighter transition-colors",
+										"block w-full truncate text-right font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
-										// Dynamic sizing based on JOINT MAX length to keep text consistent
-										maxLen > 16
-											? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-											: maxLen > 8
-												? "text-[10px] md:text-xs lg:text-[13px]" // Long
-												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
 									{match.labelTeamA || t("matchCard.tbd")}
@@ -295,14 +281,8 @@ export function MatchCard({
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamB.slug, lang }}
 									className={clsx(
-										"block w-full break-normal text-left font-black uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline",
+										"block w-full truncate text-left font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
-										// Dynamic sizing based on JOINT MAX length to keep text consistent
-										maxLen > 16
-											? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-											: maxLen > 8
-												? "text-[10px] md:text-xs lg:text-[13px]" // Long
-												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
 									{teamB.name}
@@ -310,14 +290,8 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full break-normal text-left font-black uppercase tracking-tighter transition-colors",
+										"block w-full truncate text-left font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
-										// Dynamic sizing based on JOINT MAX length to keep text consistent
-										maxLen > 16
-											? "text-[9px] md:text-[10px] lg:text-[11px]" // Very Long
-											: maxLen > 8
-												? "text-[10px] md:text-xs lg:text-[13px]" // Long
-												: "text-xs md:text-sm lg:text-base", // Normal
 									)}
 								>
 									{match.labelTeamB || t("matchCard.tbd")}

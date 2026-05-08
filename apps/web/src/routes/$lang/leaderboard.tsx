@@ -91,7 +91,7 @@ function LeaderboardPage() {
 				}}
 			/>
 
-			<div className="relative z-10 mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-8 md:py-12">
+			<div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-8 md:py-12">
 				{/* Clean Header */}
 				<header className="mb-8 text-center">
 					<div className="mb-4 flex justify-center">
@@ -192,7 +192,6 @@ function LeaderboardPage() {
 								{activeTournament.name}
 							</span>
 						</div>
-
 					</div>
 				)}
 
@@ -439,13 +438,52 @@ function PodiumSection({
 	const second = entries[1];
 	const third = entries[2];
 
-	const podiumColors = {
-		1: { bg: "bg-gradient-to-b from-[#FFD700] to-[#DAA520]", height: "h-28" },
-		2: { bg: "bg-gradient-to-b from-[#C0C0C0] to-[#808080]", height: "h-20" },
-		3: { bg: "bg-gradient-to-b from-[#CD7F32] to-[#8B4513]", height: "h-16" },
+	const podiumConfig = {
+		1: {
+			bg: "bg-[#ffc700]",
+			border: "border-[#ffc700]",
+			shadow: "shadow-[6px_6px_0_0_#000]",
+			height: "h-56",
+			avatar: "h-24 w-24",
+			avatarBorder: "border-[#ffc700]",
+			crown: true,
+			z: "z-20",
+			scale: "scale-105",
+			rankColor: "text-[#d4a800]",
+			rankSize: "text-7xl",
+			medal: { gold: true, silver: false, bronze: false },
+		},
+		2: {
+			bg: "bg-[#c0c0c0]",
+			border: "border-[#c0c0c0]",
+			shadow: "shadow-[4px_4px_0_0_#000]",
+			height: "h-44",
+			avatar: "h-20 w-20",
+			avatarBorder: "border-[#a8a8a8]",
+			crown: false,
+			z: "z-10",
+			scale: "",
+			rankColor: "text-[#909090]",
+			rankSize: "text-6xl",
+			medal: { gold: false, silver: true, bronze: false },
+		},
+		3: {
+			bg: "bg-[#cd7f32]",
+			border: "border-[#cd7f32]",
+			shadow: "shadow-[4px_4px_0_0_#000]",
+			height: "h-38",
+			avatar: "h-20 w-20",
+			avatarBorder: "border-[#a0622e]",
+			crown: false,
+			z: "z-10",
+			scale: "",
+			rankColor: "text-[#8b5e2a]",
+			rankSize: "text-5xl",
+			medal: { gold: false, silver: false, bronze: true },
+		},
 	};
 
-	const PodiumBlock = ({
+	const PodiumColumn = ({
 		entry,
 		rank,
 		tiebreakerReason,
@@ -455,23 +493,42 @@ function PodiumSection({
 		tiebreakerReason?: string | null;
 	}) => {
 		const { linkTo } = useLangLink();
-		if (!entry) return <div />;
-		const colors = podiumColors[rank];
+		if (!entry) return <div className="flex flex-1 flex-col items-center" />;
+		const cfg = podiumConfig[rank];
 		const isMe = entry.userId === currentUserId;
 		const accuracyRate =
 			entry.totalBets > 0
 				? Math.round((entry.correctPredictions / entry.totalBets) * 100)
 				: 0;
 
+		const rankLabel = rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd";
+		const medalKind = cfg.medal.gold
+			? "gold"
+			: cfg.medal.silver
+				? "silver"
+				: "bronze";
+
 		return (
-			<div className="flex flex-col items-center">
+			<div
+				className={clsx("flex flex-1 flex-col items-center", cfg.z, cfg.scale)}
+			>
 				{/* Crown for 1st */}
-				{rank === 1 && (
-					<div className="mb-2">
+				{cfg.crown && (
+					<div className="mb-1">
 						<Crown
 							className="h-8 w-8 text-[#ffc700]"
 							fill="#ffc700"
 							strokeWidth={2}
+						/>
+					</div>
+				)}
+
+				{/* Medal badge for 2nd/3rd */}
+				{!cfg.crown && (
+					<div className="mb-1">
+						<MiniMedalBadge
+							tier={rankLabel as "1st" | "2nd" | "3rd"}
+							size="sm"
 						/>
 					</div>
 				)}
@@ -484,11 +541,11 @@ function PodiumSection({
 				>
 					<div
 						className={clsx(
-							"mb-2 overflow-hidden rounded-lg border-2 border-black bg-white transition-transform group-hover:scale-105",
-							rank === 1
-								? "h-16 w-16 shadow-[3px_3px_0_0_#000]"
-								: "h-12 w-12 shadow-[2px_2px_0_0_#000]",
-							isMe && "ring-2 ring-[#ccff00]",
+							"mb-1 overflow-hidden rounded-lg border-2 bg-white transition-transform group-hover:scale-105",
+							cfg.avatar,
+							cfg.avatarBorder,
+							cfg.shadow,
+							isMe && "ring-[#ccff00] ring-[3px]",
 						)}
 					>
 						{entry.image ? (
@@ -506,7 +563,10 @@ function PodiumSection({
 					{/* Rank badge */}
 					<div
 						className={clsx(
-							"absolute -right-1.5 -bottom-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-black font-black text-white text-xs shadow-sm",
+							"absolute -right-1.5 -bottom-1.5 flex h-6 w-6 items-center justify-center rounded-lg border-2 border-black font-black text-xs shadow-sm",
+							rank === 1
+								? "bg-[#ffc700] text-black"
+								: "bg-[#121212] text-white",
 						)}
 					>
 						{rank}
@@ -517,73 +577,85 @@ function PodiumSection({
 				<Link
 					to={linkTo("/users/$userId")}
 					params={{ userId: entry.userId }}
-					className="mb-2"
+					className="mb-1"
 				>
 					<span
 						className={clsx(
-							"block text-center font-bold text-xs uppercase",
+							"block max-w-[140px] truncate text-center font-black text-sm uppercase tracking-tight",
 							isMe ? "text-[#2e5cff]" : "text-[#121212]",
+							rank === 1 && "text-base",
 						)}
 					>
 						{entry.name}
 					</span>
 				</Link>
 
+				{/* Points */}
+				<div className="mb-2 text-center">
+					<span
+						className={clsx(
+							"block font-black leading-none",
+							rank === 1 ? "text-4xl" : "text-3xl",
+							rank === 1 ? "text-black" : "text-[#121212]",
+						)}
+					>
+						{entry.totalPoints}
+					</span>
+					<span className="block font-bold text-[10px] text-gray-500 uppercase tracking-[0.2em]">
+						PTS
+					</span>
+				</div>
+
 				{/* Medals */}
-				{entry.medals.total > 0 && (
-					<div className="mb-2">
+				<div className="mb-1.5 h-6">
+					{entry.medals.total > 0 && (
 						<MedalCountSummary
 							gold={entry.medals.gold}
 							silver={entry.medals.silver}
 							bronze={entry.medals.bronze}
 							size="sm"
 						/>
-					</div>
-				)}
-
-				{/* Points */}
-				<div className="mb-2 text-center">
-					<span className="block font-black text-[#121212] text-lg">
-						{entry.totalPoints}
-					</span>
-					<span className="font-bold text-[9px] text-gray-500 uppercase tracking-wider">
-						PTS
-					</span>
+					)}
 				</div>
 
 				{/* Tiebreaker */}
-				{tiebreakerReason && (
-					<div className="mb-2 rounded-md bg-[#ccff00] px-2 py-0.5 text-center">
-						<span className="font-black text-[9px] text-black uppercase">
-							{tiebreakerReason}
-						</span>
-					</div>
-				)}
-
-				{/* Stats */}
-				<div className="mb-3 flex flex-wrap items-center justify-center gap-1">
-					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
-						<Star className="h-2.5 w-2.5 text-black" fill="black" />
-						<span className="font-black text-[10px] text-black">
-							{entry.perfectPicks}
-						</span>
-					</div>
-					<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1.5 py-0.5">
-						<span className="font-black text-[10px] text-green-600">✓</span>
-						<span className="font-black text-[10px] text-black">
-							{entry.correctPredictions}
-						</span>
-					</div>
-					{entry.underdogPicks > 0 && (
-						<div className="flex items-center gap-0.5 rounded bg-purple-400 px-1.5 py-0.5">
-							<span className="font-black text-[10px] text-black">
-								⚡{entry.underdogPicks}
+				<div className="mb-2 h-6">
+					{tiebreakerReason && (
+						<div className="inline-flex items-center rounded border border-black bg-[#ccff00] px-2 py-0.5 shadow-[2px_2px_0_0_#000]">
+							<span className="font-black text-[9px] text-black uppercase">
+								{tiebreakerReason}
 							</span>
 						</div>
 					)}
+				</div>
+
+				{/* Stats */}
+				<div className="mb-4 flex flex-col items-center gap-1.5">
+					<div className="flex items-center gap-1">
+						<div className="flex items-center gap-0.5 rounded border border-black bg-[#ffc700] px-1.5 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+							<Star className="h-3 w-3 text-black" fill="black" />
+							<span className="font-black text-[10px] text-black">
+								{entry.perfectPicks}
+							</span>
+						</div>
+						<div className="flex items-center gap-0.5 rounded border border-black bg-white px-1.5 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+							<span className="font-black text-[10px] text-green-600">✓</span>
+							<span className="font-black text-[10px] text-black">
+								{entry.correctPredictions}
+							</span>
+						</div>
+						{entry.underdogPicks > 0 && (
+							<div className="flex items-center gap-0.5 rounded border border-black bg-purple-400 px-1.5 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+								<Zap className="h-3 w-3 text-black" strokeWidth={3} />
+								<span className="font-black text-[10px] text-black">
+									{entry.underdogPicks}
+								</span>
+							</div>
+						)}
+					</div>
 					<div
 						className={clsx(
-							"rounded px-1.5 py-0.5",
+							"rounded border border-black px-2 py-0.5 shadow-[2px_2px_0_0_#000]",
 							accuracyRate >= 70
 								? "bg-green-500"
 								: accuracyRate >= 40
@@ -602,15 +674,24 @@ function PodiumSection({
 					</div>
 				</div>
 
-				{/* Platform */}
+				{/* Base */}
 				<div
 					className={clsx(
-						"relative w-full rounded-t-lg border-black border-x-2 border-t-2",
-						colors.bg,
-						colors.height,
+						"relative mt-auto w-full rounded-t-xl border-[3px] border-black transition-all",
+						rank === 1 ? "-skew-x-1" : rank === 2 ? "-skew-x-1" : "skew-x-1",
+						cfg.bg,
+						cfg.height,
+						cfg.shadow,
 					)}
 				>
-					<span className="absolute bottom-2 left-1/2 -translate-x-1/2 font-black text-4xl text-black/10 italic">
+					<span
+						className={clsx(
+							"absolute bottom-2 left-1/2 -translate-x-1/2 select-none font-black italic tracking-tighter",
+							rank === 1 ? "skew-x-1" : rank === 2 ? "skew-x-1" : "-skew-x-1",
+							cfg.rankSize,
+							cfg.rankColor,
+						)}
+					>
 						{rank}
 					</span>
 				</div>
@@ -627,20 +708,20 @@ function PodiumSection({
 		: null;
 
 	return (
-		<div className="relative grid w-full grid-cols-3 items-end px-2 pt-8">
+		<div className="relative flex w-full items-end gap-3 px-2 pt-8 md:gap-6 lg:gap-8">
 			{/* Floor Line */}
-			<div className="absolute right-0 bottom-0 left-0 h-0.5 bg-black" />
+			<div className="absolute right-0 bottom-0 left-0 h-1.5 bg-black" />
 
-			{/* 2nd Place (left) */}
-			<PodiumBlock
+			{/* 2nd Place */}
+			<PodiumColumn
 				entry={second}
 				rank={2}
 				tiebreakerReason={secondTiebreaker}
 			/>
-			{/* 1st Place (center) */}
-			<PodiumBlock entry={first} rank={1} />
-			{/* 3rd Place (right) */}
-			<PodiumBlock entry={third} rank={3} tiebreakerReason={thirdTiebreaker} />
+			{/* 1st Place */}
+			<PodiumColumn entry={first} rank={1} />
+			{/* 3rd Place */}
+			<PodiumColumn entry={third} rank={3} tiebreakerReason={thirdTiebreaker} />
 		</div>
 	);
 }
@@ -661,13 +742,13 @@ function LeaderboardCard({
 	return (
 		<div
 			className={clsx(
-				"group relative flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]",
+				"group relative flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-2.5 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]",
 				isCurrentUser && "ring-2 ring-[#ccff00]",
 			)}
 		>
 			{/* Rank Badge */}
-			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#121212]">
-				<span className="font-black text-lg text-white italic">
+			<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-black/10 bg-[#121212]">
+				<span className="font-black text-white text-xl italic">
 					{entry.rank}
 				</span>
 			</div>
@@ -676,7 +757,7 @@ function LeaderboardCard({
 			<Link
 				to={linkTo("/users/$userId")}
 				params={{ userId: entry.userId }}
-				className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#f0f0f0]"
+				className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#f0f0f0]"
 			>
 				{entry.image ? (
 					<img
@@ -692,7 +773,7 @@ function LeaderboardCard({
 			</Link>
 
 			{/* Name + Stats */}
-			<div className="min-w-0 flex-1">
+			<div className="flex min-w-0 flex-1 flex-col justify-center">
 				<Link
 					to={linkTo("/users/$userId")}
 					params={{ userId: entry.userId }}
@@ -703,7 +784,13 @@ function LeaderboardCard({
 				>
 					{entry.name}
 				</Link>
-				<div className="mt-1.5 flex flex-wrap items-center gap-1">
+				<div className="mt-1 flex flex-wrap items-center gap-1">
+					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
+						<Star className="h-2.5 w-2.5 text-black" fill="black" />
+						<span className="font-black text-[10px] text-black">
+							{entry.perfectPicks}
+						</span>
+					</div>
 					<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1.5 py-0.5">
 						<span className="font-black text-[10px] text-green-600">✓</span>
 						<span className="font-black text-[10px] text-black">
@@ -748,8 +835,8 @@ function LeaderboardCard({
 			</div>
 
 			{/* Points */}
-			<div className="shrink-0 rounded-md border border-black bg-white px-2 py-1 text-right shadow-[2px_2px_0_0_#ccc]">
-				<span className="block font-black text-[#121212] text-lg leading-none">
+			<div className="shrink-0 rounded-md border-2 border-black bg-white px-3 py-1.5 text-center shadow-[2px_2px_0_0_#000]">
+				<span className="block font-black text-[#121212] text-xl leading-none">
 					{entry.totalPoints}
 				</span>
 				<span className="block font-bold text-[9px] text-gray-500 uppercase tracking-wider">

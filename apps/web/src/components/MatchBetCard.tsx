@@ -118,6 +118,14 @@ export function MatchBetCard({
 					? "bg-brawl-red animate-pulse"
 					: "bg-[#ffc700]";
 
+	const pickedTeamBgA =
+		pickedA && !isProjected ? "ring-4 ring-inset ring-[#ccff00]" : "";
+	const pickedWinnerBgA = pickedA && aWon && isFinished ? "bg-[#f0f0f0]" : "";
+
+	const pickedTeamBgB =
+		pickedB && !isProjected ? "ring-4 ring-inset ring-[#ccff00]" : "";
+	const pickedWinnerBgB = pickedB && bWon && isFinished ? "bg-[#f0f0f0]" : "";
+
 	return (
 		<div
 			className={clsx(
@@ -160,9 +168,9 @@ export function MatchBetCard({
 				{/* Team A */}
 				<div
 					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black/10 border-r px-3 py-4 transition-colors",
-						pickedA && !isProjected && "bg-[#2e5cff]/28",
-						aWon && isFinished && "bg-[#ccff00]/5",
+						"flex flex-1 flex-col items-center gap-2 border-black border-r-2 px-3 py-4 transition-colors",
+						pickedTeamBgA,
+						pickedWinnerBgA,
 					)}
 				>
 					<TeamLogo
@@ -183,15 +191,15 @@ export function MatchBetCard({
 						</div>
 					)}
 					{aWon && isFinished && (
-						<div className="flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
-							<Crown className="h-3 w-3" strokeWidth={2.5} />
+						<div className="flex items-center gap-1 font-black text-[#121212] text-[9px] uppercase">
+							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
 					)}
 				</div>
 
 				{/* Center: Scores */}
-				<div className="flex min-w-[128px] shrink-0 flex-col items-center justify-center gap-2 px-3 py-3">
+				<div className="flex min-w-[120px] shrink-0 flex-col items-center justify-center gap-2 px-2 py-3">
 					{/* VS or Score */}
 					{!isFinished ? (
 						<div className="flex flex-col items-center gap-2">
@@ -201,18 +209,20 @@ export function MatchBetCard({
 										{t("betPredictionPrefix")}
 									</span>
 									<div className="flex items-center gap-2">
-										<span className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-black bg-ink font-black text-lg text-white shadow-[2px_2px_0_0_#ccff00]">
+										<span className="font-black font-display text-3xl text-ink">
 											{predictedScoreA}
 										</span>
-										<span className="font-black text-gray-400 text-sm">-</span>
-										<span className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-black bg-ink font-black text-lg text-white shadow-[2px_2px_0_0_#ccff00]">
+										<span className="font-black text-gray-300 text-xl">-</span>
+										<span className="font-black font-display text-3xl text-ink">
 											{predictedScoreB}
 										</span>
 									</div>
 								</>
 							) : (
-								<div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
-									<span className="font-black text-white text-xs italic">VS</span>
+								<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
+									<span className="font-black text-white text-xs italic">
+										VS
+									</span>
 								</div>
 							)}
 							{!isProjected && startTime && (
@@ -254,12 +264,12 @@ export function MatchBetCard({
 							</div>
 							{/* Predicted Score */}
 							{hasPredictedScore && !isProjected && (
-								<div className="flex flex-col items-center gap-1 rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5">
+								<div className="mt-1 flex flex-col items-center gap-0.5">
 									<span className="font-bold text-[9px] text-gray-500 uppercase tracking-[0.18em]">
 										{t("betPredictionPrefix")}
 									</span>
-									<span className="font-black text-ink text-base">
-										{predictedScoreA}-{predictedScoreB}
+									<span className="font-black font-display text-gray-400 text-xl">
+										{predictedScoreA} - {predictedScoreB}
 									</span>
 								</div>
 							)}
@@ -270,9 +280,9 @@ export function MatchBetCard({
 				{/* Team B */}
 				<div
 					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black/10 border-l px-3 py-4 transition-colors",
-						pickedB && !isProjected && "bg-[#ff2e2e]/28",
-						bWon && isFinished && "bg-[#ccff00]/5",
+						"flex flex-1 flex-col items-center gap-2 border-black border-l-2 px-3 py-4 transition-colors",
+						pickedTeamBgB,
+						pickedWinnerBgB,
 					)}
 				>
 					<TeamLogo
@@ -293,8 +303,8 @@ export function MatchBetCard({
 						</div>
 					)}
 					{bWon && isFinished && (
-						<div className="flex items-center gap-1 font-black text-[#ffc700] text-[9px] uppercase">
-							<Crown className="h-3 w-3" strokeWidth={2.5} />
+						<div className="flex items-center gap-1 font-black text-[#121212] text-[9px] uppercase">
+							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
 					)}
@@ -303,7 +313,7 @@ export function MatchBetCard({
 
 			{/* Footer - Points & Badges */}
 			{isFinished && !isProjected && (
-				<div className="flex items-center justify-between border-black border-t-2 bg-white px-3 py-2">
+				<div className="flex items-center justify-between border-black border-t-2 bg-[#fafafa] px-3 py-2">
 					<div className="flex items-center gap-2">
 						{isPerfectPick && (
 							<span className="rounded-sm border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[9px] text-black uppercase">
@@ -315,10 +325,15 @@ export function MatchBetCard({
 								{t("labels.underdogLabel")}
 							</span>
 						)}
+						{isFinished && (pointsEarned == null || pointsEarned === 0) && (
+							<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
+								{t("result.noPoints")}
+							</span>
+						)}
 					</div>
 
-					{pointsEarned !== null && pointsEarned > 0 && (
-						<span className="rounded-md bg-[#ccff00] px-2 py-0.5 font-black text-black text-sm">
+					{typeof pointsEarned === "number" && pointsEarned > 0 && (
+						<span className="rounded-md border border-black bg-[#ccff00] px-2.5 py-0.5 font-black text-black text-sm shadow-[1px_1px_0_0_#000]">
 							+{pointsEarned}
 						</span>
 					)}

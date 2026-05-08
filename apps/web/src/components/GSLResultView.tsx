@@ -180,7 +180,7 @@ export function GSLResultView({
 
 			<div className="flex flex-col gap-8 xl:flex-row">
 				{/* STANDINGS TABLE - Left Side */}
-				<div className="xl:min-w-[400px]">
+				<div className="w-full shrink-0 xl:w-[450px]">
 					<h4 className="mb-4 font-black text-black/80 text-xl uppercase italic">
 						Standings
 					</h4>

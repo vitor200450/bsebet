@@ -108,7 +108,13 @@ function TournamentMatchesPage() {
 		| "seeding";
 
 	const [activeTab, setActiveTab] = useState<TabType>(
-		hasBracket ? "bracket" : hasSwiss ? "swiss" : hasGroups ? "groups" : "matches",
+		hasBracket
+			? "bracket"
+			: hasSwiss
+				? "swiss"
+				: hasGroups
+					? "groups"
+					: "matches",
 	);
 
 	const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
@@ -689,7 +695,7 @@ function TournamentMatchesPage() {
 										toast.error(t("matches.generateSwissRoundOneError"));
 									}
 								}}
-								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+								className="border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
 							>
 								{t("matches.generateSwissRoundOne")}
 							</button>
@@ -713,12 +719,11 @@ function TournamentMatchesPage() {
 										router.invalidate();
 									} catch (e: any) {
 										toast.error(
-											e?.message ||
-												t("matches.suggestSwissNextRoundError"),
+											e?.message || t("matches.suggestSwissNextRoundError"),
 										);
 									}
 								}}
-								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+								className="border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
 							>
 								{t("matches.suggestSwissNextRound")}
 							</button>
@@ -740,28 +745,35 @@ function TournamentMatchesPage() {
 
 							return (
 								<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-									<h3 className="mb-4 font-black text-xl text-black uppercase italic">
+									<h3 className="mb-4 font-black text-black text-xl uppercase italic">
 										{t("matches.swissMatches")}
 									</h3>
 									{sortedRounds.map((roundIdx) => (
 										<div key={roundIdx} className="mb-8 last:mb-0">
 											<div className="mb-3 flex items-center gap-3">
-												<div className="-skew-x-6 inline-block border-2 border-black bg-black px-3 py-1">
+												<div className="inline-block -skew-x-6 border-2 border-black bg-black px-3 py-1">
 													<span className="block skew-x-6 font-black text-[#ccff00] text-xs uppercase tracking-widest">
 														Rodada {roundIdx + 1}
 													</span>
 												</div>
 												<div className="h-0.5 flex-1 bg-black/10" />
 												<span className="font-bold text-[10px] text-gray-400 uppercase">
-													{rounds[roundIdx].filter((m: any) => m.status === "finished").length}/{rounds[roundIdx].length} finalizados
+													{
+														rounds[roundIdx].filter(
+															(m: any) => m.status === "finished",
+														).length
+													}
+													/{rounds[roundIdx].length} finalizados
 												</span>
 											</div>
 											<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 												{rounds[roundIdx].map((match: any) => {
 													const isLive = match.status === "live";
 													const isFinished = match.status === "finished";
-													const teamAWon = isFinished && match.winnerId === match.teamAId;
-													const teamBWon = isFinished && match.winnerId === match.teamBId;
+													const teamAWon =
+														isFinished && match.winnerId === match.teamAId;
+													const teamBWon =
+														isFinished && match.winnerId === match.teamBId;
 
 													return (
 														<div
@@ -795,13 +807,17 @@ function TournamentMatchesPage() {
 																</div>
 																{match.startTime && (
 																	<div className="font-bold text-[7px] text-gray-600">
-																		{new Date(match.startTime).toLocaleDateString("pt-BR", {
+																		{new Date(
+																			match.startTime,
+																		).toLocaleDateString("pt-BR", {
 																			day: "2-digit",
 																			month: "2-digit",
 																			year: "numeric",
 																		})}{" "}
 																		•{" "}
-																		{new Date(match.startTime).toLocaleTimeString("pt-BR", {
+																		{new Date(
+																			match.startTime,
+																		).toLocaleTimeString("pt-BR", {
 																			hour: "2-digit",
 																			minute: "2-digit",
 																		})}
@@ -812,34 +828,50 @@ function TournamentMatchesPage() {
 																<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
 																	<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
 																		{match.teamA?.logoUrl ? (
-																			<img src={match.teamA.logoUrl} alt="" className="h-6 w-6 object-contain" />
+																			<img
+																				src={match.teamA.logoUrl}
+																				alt=""
+																				className="h-6 w-6 object-contain"
+																			/>
 																		) : (
 																			<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
 																		)}
 																	</div>
 																	<div className="flex h-full items-center overflow-hidden px-1.5">
 																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
-																			{match.teamA?.name || match.labelTeamA || "TBD"}
+																			{match.teamA?.name ||
+																				match.labelTeamA ||
+																				"TBD"}
 																		</span>
 																	</div>
-																	<div className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamAWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}>
+																	<div
+																		className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamAWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}
+																	>
 																		{match.scoreA ?? "-"}
 																	</div>
 																</div>
 																<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
 																	<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
 																		{match.teamB?.logoUrl ? (
-																			<img src={match.teamB.logoUrl} alt="" className="h-6 w-6 object-contain" />
+																			<img
+																				src={match.teamB.logoUrl}
+																				alt=""
+																				className="h-6 w-6 object-contain"
+																			/>
 																		) : (
 																			<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
 																		)}
 																	</div>
 																	<div className="flex h-full items-center overflow-hidden px-1.5">
 																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
-																			{match.teamB?.name || match.labelTeamB || "TBD"}
+																			{match.teamB?.name ||
+																				match.labelTeamB ||
+																				"TBD"}
 																		</span>
 																	</div>
-																	<div className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamBWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}>
+																	<div
+																		className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamBWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}
+																	>
 																		{match.scoreB ?? "-"}
 																	</div>
 																</div>

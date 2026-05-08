@@ -135,7 +135,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 										label: t("stageBuilder.doubleElimination"),
 									},
 									{ value: "Groups", label: t("stageBuilder.groups") },
-								{ value: "Swiss", label: t("stageBuilder.swiss") },
+									{ value: "Swiss", label: t("stageBuilder.swiss") },
 								]}
 							/>
 						</div>

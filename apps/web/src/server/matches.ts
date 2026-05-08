@@ -3,12 +3,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
-import { assertTournamentAllowsMatchMutation } from "./tournament-status-guard";
 import {
 	buildSwissStandings,
 	seedSwissPlayoff,
 	suggestSwissRound,
 } from "./swiss";
+import { assertTournamentAllowsMatchMutation } from "./tournament-status-guard";
 
 function validateWalkoverData(updateData: {
 	status?: "scheduled" | "live" | "finished";
@@ -500,14 +500,12 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 		// Works for Swiss stage and playoff-after-Swiss matches.
 		if (currentMatch.tournamentId) {
 			const tournament = await db.query.tournaments.findFirst({
-				where: (t: any, { eq }: any) =>
-					eq(t.id, currentMatch.tournamentId),
+				where: (t: any, { eq }: any) => eq(t.id, currentMatch.tournamentId),
 				columns: { stages: true },
 			});
 			const stages = (tournament?.stages as any[]) ?? [];
 			const isSwiss = stages.some(
-				(s: any) =>
-					s.id === currentMatch.stageId && s.type === "Swiss",
+				(s: any) => s.id === currentMatch.stageId && s.type === "Swiss",
 			);
 			const isPlayoffAfterSwiss =
 				!isSwiss &&
@@ -1591,8 +1589,7 @@ async function generateSwissOpeningRound(params: {
 	});
 
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
-		where: (tt: any, { eq }: any) =>
-			eq(tt.tournamentId, params.tournamentId),
+		where: (tt: any, { eq }: any) => eq(tt.tournamentId, params.tournamentId),
 		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
 	});
 
@@ -1667,8 +1664,7 @@ async function generateSwissSuggestedRound(params: {
 	});
 
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
-		where: (tt: any, { eq }: any) =>
-			eq(tt.tournamentId, params.tournamentId),
+		where: (tt: any, { eq }: any) => eq(tt.tournamentId, params.tournamentId),
 		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
 	});
 
@@ -1679,9 +1675,7 @@ async function generateSwissSuggestedRound(params: {
 	});
 
 	if (suggestion.matches.length === 0) {
-		throw new Error(
-			"Swiss stage is complete. No more matches to generate.",
-		);
+		throw new Error("Swiss stage is complete. No more matches to generate.");
 	}
 
 	// Find next available display order
@@ -1702,12 +1696,12 @@ async function generateSwissSuggestedRound(params: {
 			label: `Swiss ${pairing.recordBucket}`,
 			teamAId: pairing.teamAId,
 			teamBId: pairing.teamBId,
-		status: "scheduled",
-		isBettingEnabled: true,
-		displayOrder: nextOrder++,
-		startTime: swissMatchDay?.date ?? new Date(),
-		matchDayId: swissMatchDay?.id ?? null,
-	});
+			status: "scheduled",
+			isBettingEnabled: true,
+			displayOrder: nextOrder++,
+			startTime: swissMatchDay?.date ?? new Date(),
+			matchDayId: swissMatchDay?.id ?? null,
+		});
 	}
 
 	return { success: true };
@@ -1740,14 +1734,13 @@ async function generateSwissPlayoffDraft(params: {
 		),
 	});
 	const tournamentTeams = await params.db.query.tournamentTeams.findMany({
-		where: (tt: any, { eq }: any) =>
-			eq(tt.tournamentId, params.tournamentId),
+		where: (tt: any, { eq }: any) => eq(tt.tournamentId, params.tournamentId),
 	});
 	const standings = buildSwissStandings({
-			settings: params.swissStage.settings,
-			seeds: tournamentTeams.map((team: any) => team.teamId),
-			matches: swissMatches,
-		});
+		settings: params.swissStage.settings,
+		seeds: tournamentTeams.map((team: any) => team.teamId),
+		matches: swissMatches,
+	});
 	const qualified = seedSwissPlayoff(
 		standings.qualified.map((q) => ({
 			teamId: q.teamId,
@@ -1954,81 +1947,81 @@ const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
 			.object({ tournamentId: z.number() })
 			.parse(ctx.data);
 
-	const tournament = await db.query.tournaments.findFirst({
-		where: (t: any, { eq }: any) => eq(t.id, tournamentId),
-		columns: { stages: true },
-	});
-	const stages = (tournament?.stages as any[]) ?? [];
-	const swissStageIds = stages
-		.filter((s: any) => s.type === "Swiss")
-		.map((s: any) => s.id);
-	const playoffStageIds = stages
-		.filter(
-			(s: any) =>
-				s.type === "Single Elimination" || s.type === "Double Elimination",
-		)
-		.map((s: any) => s.id);
+		const tournament = await db.query.tournaments.findFirst({
+			where: (t: any, { eq }: any) => eq(t.id, tournamentId),
+			columns: { stages: true },
+		});
+		const stages = (tournament?.stages as any[]) ?? [];
+		const swissStageIds = stages
+			.filter((s: any) => s.type === "Swiss")
+			.map((s: any) => s.id);
+		const playoffStageIds = stages
+			.filter(
+				(s: any) =>
+					s.type === "Single Elimination" || s.type === "Double Elimination",
+			)
+			.map((s: any) => s.id);
 
-	const tournamentMatches = await db.query.matches.findMany({
-		where: eq(matches.tournamentId, tournamentId),
-	});
+		const tournamentMatches = await db.query.matches.findMany({
+			where: eq(matches.tournamentId, tournamentId),
+		});
 
-	const matchIds = tournamentMatches.map((m) => m.id);
+		const matchIds = tournamentMatches.map((m) => m.id);
 
-	// Separate matches to delete (generated/derived) vs keep (seeded)
-	const deleteMatchIds: number[] = [];
-	const resetMatchIds: number[] = [];
+		// Separate matches to delete (generated/derived) vs keep (seeded)
+		const deleteMatchIds: number[] = [];
+		const resetMatchIds: number[] = [];
 
-	for (const match of tournamentMatches) {
-		const isLaterSwissRound =
-			match.stageId &&
-			swissStageIds.includes(match.stageId) &&
-			(match.roundIndex ?? 0) > 0;
-		const isPlayoffMatch =
-			match.stageId && playoffStageIds.includes(match.stageId);
+		for (const match of tournamentMatches) {
+			const isLaterSwissRound =
+				match.stageId &&
+				swissStageIds.includes(match.stageId) &&
+				(match.roundIndex ?? 0) > 0;
+			const isPlayoffMatch =
+				match.stageId && playoffStageIds.includes(match.stageId);
 
-		if (isLaterSwissRound || isPlayoffMatch) {
-			deleteMatchIds.push(match.id);
-		} else {
-			resetMatchIds.push(match.id);
+			if (isLaterSwissRound || isPlayoffMatch) {
+				deleteMatchIds.push(match.id);
+			} else {
+				resetMatchIds.push(match.id);
+			}
 		}
-	}
 
-	// Delete derived matches (Swiss Round 2+, playoffs) and their bets
-	if (deleteMatchIds.length > 0) {
-		await db.delete(bets).where(inArray(bets.matchId, deleteMatchIds));
-		await db.delete(matches).where(inArray(matches.id, deleteMatchIds));
-	}
+		// Delete derived matches (Swiss Round 2+, playoffs) and their bets
+		if (deleteMatchIds.length > 0) {
+			await db.delete(bets).where(inArray(bets.matchId, deleteMatchIds));
+			await db.delete(matches).where(inArray(matches.id, deleteMatchIds));
+		}
 
-	// Reset seeded matches (Swiss Round 1) — clear scores but keep teams
-	for (const matchId of resetMatchIds) {
-		await db
-			.update(matches)
-			.set({
-				winnerId: null,
-				scoreA: null,
-				scoreB: null,
-				status: "scheduled",
-				resultType: "normal",
-				underdogTeamId: null,
-			})
-			.where(eq(matches.id, matchId));
-	}
+		// Reset seeded matches (Swiss Round 1) — clear scores but keep teams
+		for (const matchId of resetMatchIds) {
+			await db
+				.update(matches)
+				.set({
+					winnerId: null,
+					scoreA: null,
+					scoreB: null,
+					status: "scheduled",
+					resultType: "normal",
+					underdogTeamId: null,
+				})
+				.where(eq(matches.id, matchId));
+		}
 
-	// Reset bet settlement fields (keep the predictions, clear the scores)
-	if (matchIds.length > 0) {
-		await db
-			.update(bets)
-			.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
-			.where(inArray(bets.matchId, matchIds));
-	}
+		// Reset bet settlement fields (keep the predictions, clear the scores)
+		if (matchIds.length > 0) {
+			await db
+				.update(bets)
+				.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
+				.where(inArray(bets.matchId, matchIds));
+		}
 
-	return {
-		success: true,
-		resetCount: resetMatchIds.length,
-		deletedCount: deleteMatchIds.length,
-	};
-},
+		return {
+			success: true,
+			resetCount: resetMatchIds.length,
+			deletedCount: deleteMatchIds.length,
+		};
+	},
 );
 
 export const resetTournamentResults =

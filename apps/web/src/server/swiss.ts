@@ -137,8 +137,7 @@ export function suggestSwissRound(input: {
 	}
 
 	const playedRounds = input.matches.reduce(
-		(maxRound, match: any) =>
-			Math.max(maxRound, (match.roundIndex ?? 0) + 1),
+		(maxRound, match: any) => Math.max(maxRound, (match.roundIndex ?? 0) + 1),
 		0,
 	);
 	return { roundNumber: playedRounds + 1, matches };

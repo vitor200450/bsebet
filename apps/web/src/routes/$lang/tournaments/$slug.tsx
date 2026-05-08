@@ -418,7 +418,15 @@ function TournamentDetailsPage() {
 		}));
 
 		// Build swiss bucket data from match results
-		const swissBuckets: Record<string, Array<{ id: number; name: string; logoUrl?: string | null; status?: string }>> = {};
+		const swissBuckets: Record<
+			string,
+			Array<{
+				id: number;
+				name: string;
+				logoUrl?: string | null;
+				status?: string;
+			}>
+		> = {};
 		const teamCache = new Map<
 			number,
 			{ wins: number; losses: number; name: string; logoUrl?: string | null }

@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { authMiddleware } from "@/middleware/auth";
 
 export const getDashboardData = createServerFn({ method: "GET" })
@@ -89,7 +89,10 @@ export const getDashboardData = createServerFn({ method: "GET" })
 		// 3. Get Active Tournaments
 		const activeTournaments = await db.query.tournaments.findMany({
 			where: and(
-				eq(tournaments.status, "active"),
+				or(
+					eq(tournaments.status, "active"),
+					eq(tournaments.status, "upcoming"),
+				),
 				eq(tournaments.isActive, true),
 			),
 			orderBy: (tournaments, { desc }) => [desc(tournaments.startDate)],

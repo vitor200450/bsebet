@@ -4,11 +4,11 @@ import { AlertCircle, Check, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-	import {
-		createMatch,
-		refreshWalkoverWinner,
-		updateMatch,
-	} from "@/server/matches";
+import {
+	createMatch,
+	refreshWalkoverWinner,
+	updateMatch,
+} from "@/server/matches";
 import { buildSwissStandings } from "@/server/swiss";
 import {
 	CustomDatePicker,
@@ -293,13 +293,13 @@ export function MatchModal({
 	}, [isSwissStage, swissTeamRecords, teams]);
 
 	// Playoff-after-Swiss: when editing a playoff match, only show qualified teams
-	const isPlayoffAfterSwiss = stages.some(
-		(s) => s.type === "Swiss",
-	) && stages.some(
-		(s) =>
-			s.id === formData.stageId &&
-			(s.type === "Single Elimination" || s.type === "Double Elimination"),
-	);
+	const isPlayoffAfterSwiss =
+		stages.some((s) => s.type === "Swiss") &&
+		stages.some(
+			(s) =>
+				s.id === formData.stageId &&
+				(s.type === "Single Elimination" || s.type === "Double Elimination"),
+		);
 	const swissStageData = useMemo(() => {
 		if (!isPlayoffAfterSwiss) return null;
 		const swissStage = stages.find((s: any) => s.type === "Swiss");
@@ -355,7 +355,7 @@ export function MatchModal({
 	const canRefreshWalkoverWinner =
 		canShowRefreshWalkoverWinner && !!resolvedTeamAId && !!resolvedTeamBId;
 
-		// Auto-determine winner based on score and validate max score
+	// Auto-determine winner based on score and validate max score
 	useEffect(() => {
 		if (formData.resultType === "wo") return;
 
@@ -423,8 +423,7 @@ export function MatchModal({
 		}
 
 		// Auto-set status to finished when a winner is determined
-		const shouldAutoFinish =
-			hasWinner && formData.status !== "finished";
+		const shouldAutoFinish = hasWinner && formData.status !== "finished";
 
 		if (needsUpdate || shouldAutoFinish) {
 			setFormData((prev) => ({
@@ -557,9 +556,7 @@ export function MatchModal({
 			isBettingEnabled: formData.isBettingEnabled,
 			roundIndex: Number(formData.roundIndex),
 			bracketSide: (() => {
-				const stageType = stages.find(
-					(s) => s.id === formData.stageId,
-				)?.type;
+				const stageType = stages.find((s) => s.id === formData.stageId)?.type;
 				if (stageType === "Groups") return "groups";
 				if (stageType === "Swiss") return "main";
 				return formData.bracketSide;
@@ -1307,23 +1304,29 @@ export function MatchModal({
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const)
-									.filter((type) => !((isSwissStage || isPlayoffAfterSwiss) && type !== "team"))
+									.filter(
+										(type) =>
+											!(
+												(isSwissStage || isPlayoffAfterSwiss) &&
+												type !== "team"
+											),
+									)
 									.map((type) => (
-									<button
-										key={type}
-										type="button"
-										onClick={() =>
-											setFormData({ ...formData, teamAType: type })
-										}
-										className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
-											formData.teamAType === type
-												? "bg-black text-white"
-												: "bg-white text-gray-500 hover:bg-gray-100"
-										}`}
-									>
-										{type}
-									</button>
-								))}
+										<button
+											key={type}
+											type="button"
+											onClick={() =>
+												setFormData({ ...formData, teamAType: type })
+											}
+											className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
+												formData.teamAType === type
+													? "bg-black text-white"
+													: "bg-white text-gray-500 hover:bg-gray-100"
+											}`}
+										>
+											{type}
+										</button>
+									))}
 							</div>
 
 							{formData.teamAType === "team" && (
@@ -1432,23 +1435,29 @@ export function MatchModal({
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const)
-									.filter((type) => !((isSwissStage || isPlayoffAfterSwiss) && type !== "team"))
+									.filter(
+										(type) =>
+											!(
+												(isSwissStage || isPlayoffAfterSwiss) &&
+												type !== "team"
+											),
+									)
 									.map((type) => (
-									<button
-										key={type}
-										type="button"
-										onClick={() =>
-											setFormData({ ...formData, teamBType: type })
-										}
-										className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
-											formData.teamBType === type
-												? "bg-black text-white"
-												: "bg-white text-gray-500 hover:bg-gray-100"
-										}`}
-									>
-										{type}
-									</button>
-								))}
+										<button
+											key={type}
+											type="button"
+											onClick={() =>
+												setFormData({ ...formData, teamBType: type })
+											}
+											className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
+												formData.teamBType === type
+													? "bg-black text-white"
+													: "bg-white text-gray-500 hover:bg-gray-100"
+											}`}
+										>
+											{type}
+										</button>
+									))}
 							</div>
 
 							{formData.teamBType === "team" && (

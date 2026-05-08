@@ -355,12 +355,12 @@ function RouteComponent() {
 															});
 														})();
 														return (
-														<MatchBetCard
-															key={bet.id}
-															matchLabel={stageLabel}
-															headerLogoUrl={group.tournament.logoUrl}
-															headerLogoAlt={group.tournament.name}
-															teamA={{
+															<MatchBetCard
+																key={bet.id}
+																matchLabel={stageLabel}
+																headerLogoUrl={group.tournament.logoUrl}
+																headerLogoAlt={group.tournament.name}
+																teamA={{
 																	id: bet.match.teamA?.id,
 																	name: bet.match.teamA?.name || "TBD",
 																	logoUrl: bet.match.teamA?.logoUrl,
