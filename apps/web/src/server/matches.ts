@@ -1042,7 +1042,10 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 					await db.delete(matches).where(inArray(matches.id, matchIds));
 				}
 			} else {
-				// Find matches to be deleted
+				// Find matches to be deleted - exclude Swiss and Groups stage matches
+				const swissStageIds = stages
+					.filter((s: any) => s.type === "Swiss" || s.type === "Groups")
+					.map((s: any) => s.id);
 				const matchesToDelete = await db.query.matches.findMany({
 					where: and(
 						eq(matches.tournamentId, tournamentId),
@@ -1052,6 +1055,9 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 							"main",
 							"grand_final",
 						]),
+						swissStageIds.length > 0
+							? not(inArray(matches.stageId, swissStageIds))
+							: undefined,
 					),
 					columns: { id: true },
 				});
