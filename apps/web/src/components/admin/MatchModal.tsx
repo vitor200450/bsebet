@@ -325,7 +325,7 @@ export function MatchModal({
 	const canRefreshWalkoverWinner =
 		canShowRefreshWalkoverWinner && !!resolvedTeamAId && !!resolvedTeamBId;
 
-	// Auto-determine winner based on score and validate max score
+		// Auto-determine winner based on score and validate max score
 	useEffect(() => {
 		if (formData.resultType === "wo") return;
 
@@ -358,47 +358,51 @@ export function MatchModal({
 
 		// Auto-determine winner based on higher score
 		let autoWinnerId = formData.winnerId;
+		let hasWinner = false;
 
 		if (
 			updatedScoreA > updatedScoreB &&
 			updatedScoreA >= winsNeeded &&
 			resolvedTeamAId
 		) {
-			// Team A wins if they have more points and reached winning threshold
 			if (autoWinnerId !== resolvedTeamAId) {
 				autoWinnerId = resolvedTeamAId;
 				needsUpdate = true;
 			}
+			hasWinner = true;
 		} else if (
 			updatedScoreB > updatedScoreA &&
 			updatedScoreB >= winsNeeded &&
 			resolvedTeamBId
 		) {
-			// Team B wins if they have more points and reached winning threshold
 			if (autoWinnerId !== resolvedTeamBId) {
 				autoWinnerId = resolvedTeamBId;
 				needsUpdate = true;
 			}
+			hasWinner = true;
 		} else if (updatedScoreA < winsNeeded && updatedScoreB < winsNeeded) {
-			// Clear winner if neither team reached winning threshold
 			if (formData.winnerId) {
 				autoWinnerId = null;
 				needsUpdate = true;
 			}
 		} else if (updatedScoreA === updatedScoreB && updatedScoreA < winsNeeded) {
-			// Clear winner if scores are tied below winning threshold
 			if (formData.winnerId) {
 				autoWinnerId = null;
 				needsUpdate = true;
 			}
 		}
 
-		if (needsUpdate) {
+		// Auto-set status to finished when a winner is determined
+		const shouldAutoFinish =
+			hasWinner && formData.status !== "finished";
+
+		if (needsUpdate || shouldAutoFinish) {
 			setFormData((prev) => ({
 				...prev,
 				scoreA: updatedScoreA,
 				scoreB: updatedScoreB,
 				winnerId: autoWinnerId,
+				...(shouldAutoFinish ? { status: "finished" as const } : {}),
 			}));
 		}
 	}, [
