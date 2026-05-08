@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { MatchOrdering } from "@/components/admin/MatchOrdering";
+import { TeamLogo } from "@/components/TeamLogo";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getMatchDays } from "@/server/match-days";
 import {
@@ -739,25 +740,116 @@ function TournamentMatchesPage() {
 								<h3 className="mb-4 font-black text-xl text-black uppercase italic">
 									{t("matches.swissMatches")}
 								</h3>
-								<div className="flex flex-col gap-2">
-									{swissMatches.map((match: any) => (
-										<button
-											key={match.id}
-											onClick={() => {
-												setEditingMatch(match);
-												setIsMatchModalOpen(true);
-											}}
-											className="flex items-center justify-between border-2 border-black bg-[#f0f0f0] p-2 text-left hover:bg-[#ccff00]/30"
-										>
-											<span className="font-bold text-xs text-black">
-												{match.name || `Match #${match.id}`}
-											</span>
-											<span className="font-bold text-[10px] text-gray-500 uppercase">
-												{match.teamA?.name || match.labelTeamA || "TBD"} vs{" "}
-												{match.teamB?.name || match.labelTeamB || "TBD"}
-											</span>
-										</button>
-									))}
+								<div className="flex flex-col gap-3">
+									{swissMatches.map((match: any) => {
+										const isFinished = match.status === "finished";
+										const isLive = match.status === "live";
+										const teamAWon =
+											isFinished && match.winnerId === match.teamAId;
+										const teamBWon =
+											isFinished && match.winnerId === match.teamBId;
+
+										return (
+											<button
+												key={match.id}
+												onClick={() => {
+													setEditingMatch(match);
+													setIsMatchModalOpen(true);
+												}}
+												className="group w-full text-left transition-all hover:z-10 hover:-translate-y-0.5"
+											>
+												<div className="relative overflow-hidden border-[3px] border-black bg-white shadow-[3px_3px_0_0_#000] transition-all group-hover:shadow-[4px_4px_0_0_#000]">
+													{/* Top bar: round label + status */}
+													<div className="flex items-center justify-between border-black/10 border-b-2 bg-[#121212] px-3 py-1">
+														<span className="font-black text-[9px] uppercase tracking-widest text-white">
+															{match.name || `Match #${match.id}`}
+														</span>
+														<span
+															className={`rounded-sm px-2 py-0.5 font-black text-[9px] uppercase tracking-wider ${
+																isLive
+																	? "bg-[#ccff00] text-black"
+																	: isFinished
+																		? "bg-gray-200 text-gray-700"
+																		: "bg-white/10 text-white/60"
+															}`}
+														>
+															{isLive
+																? "AO VIVO"
+																: isFinished
+																	? "FINALIZADO"
+																	: "AGENDADO"}
+														</span>
+													</div>
+
+													{/* Team A */}
+													<div className="flex items-center gap-3 border-black/5 border-b px-3 py-2.5 transition-colors hover:bg-[#f5f5f5]">
+														<TeamLogo
+															teamName={
+																match.teamA?.name ||
+																match.labelTeamA ||
+																"TBD"
+															}
+															logoUrl={match.teamA?.logoUrl}
+															size="sm"
+															className="h-8 w-8 shrink-0"
+														/>
+														<span className="flex-1 font-black text-sm uppercase text-black">
+															{match.teamA?.name ||
+																match.labelTeamA ||
+																"TBD"}
+														</span>
+														<span
+															className={`font-black text-lg tabular-nums ${
+																teamAWon
+																	? "text-black"
+																	: isFinished
+																		? "text-gray-400"
+																		: "text-gray-300"
+															}`}
+														>
+															{match.scoreA ?? "-"}
+														</span>
+														{teamAWon && (
+															<CheckCircle2 className="h-4 w-4 text-[#ccff00]" />
+														)}
+													</div>
+
+													{/* Team B */}
+													<div className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-[#f5f5f5]">
+														<TeamLogo
+															teamName={
+																match.teamB?.name ||
+																match.labelTeamB ||
+																"TBD"
+															}
+															logoUrl={match.teamB?.logoUrl}
+															size="sm"
+															className="h-8 w-8 shrink-0"
+														/>
+														<span className="flex-1 font-black text-sm uppercase text-black">
+															{match.teamB?.name ||
+																match.labelTeamB ||
+																"TBD"}
+														</span>
+														<span
+															className={`font-black text-lg tabular-nums ${
+																teamBWon
+																	? "text-black"
+																	: isFinished
+																		? "text-gray-400"
+																		: "text-gray-300"
+															}`}
+														>
+															{match.scoreB ?? "-"}
+														</span>
+														{teamBWon && (
+															<CheckCircle2 className="h-4 w-4 text-[#ccff00]" />
+														)}
+													</div>
+												</div>
+											</button>
+										);
+									})}
 								</div>
 							</div>
 						)}
