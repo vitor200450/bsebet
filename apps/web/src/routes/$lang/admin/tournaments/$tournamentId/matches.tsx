@@ -267,14 +267,36 @@ function TournamentMatchesPage() {
 				});
 				toast.success(t("matches.groupGenerateSuccess"));
 			} else if (pendingGeneration === "bracket") {
-				const { generateFullBracket } = await import("@/server/matches");
-				await generateFullBracket({
-					data: {
-						tournamentId: tournament.id,
-						stageId:
-							selectedStageFilter !== "all" ? selectedStageFilter : undefined,
-					},
-				});
+				// For Swiss tournaments, generate playoff from qualified teams
+				const swissStageEl = stages.find((s: any) => s.type === "Swiss");
+				if (swissStageEl) {
+					const playoffStageEl = stages.find(
+						(s: any) =>
+							s.type === "Single Elimination" ||
+							s.type === "Double Elimination",
+					);
+					if (swissStageEl && playoffStageEl) {
+						const { generatePlayoffDraftServer } = await import(
+							"@/server/matches"
+						);
+						await generatePlayoffDraftServer({
+							data: {
+								tournamentId: tournament.id,
+								swissStageId: swissStageEl.id,
+								playoffStageId: playoffStageEl.id,
+							},
+						});
+					}
+				} else {
+					const { generateFullBracket } = await import("@/server/matches");
+					await generateFullBracket({
+						data: {
+							tournamentId: tournament.id,
+							stageId:
+								selectedStageFilter !== "all" ? selectedStageFilter : undefined,
+						},
+					});
+				}
 				toast.success(t("matches.bracketGenerateSuccess"));
 			}
 
@@ -930,23 +952,44 @@ function TournamentMatchesPage() {
 								}
 
 								try {
-									const { generateFullBracket } = await import(
-										"@/server/matches"
-									);
-									const playoffStage = stages.find(
-										(s: any) =>
-											s.type === "Single Elimination" ||
-											s.type === "Double Elimination",
-									);
-									await generateFullBracket({
-										data: {
-											tournamentId: tournament.id,
-											stageId:
-												selectedStageFilter !== "all"
-													? selectedStageFilter
-													: playoffStage?.id,
-										},
-									});
+									// For Swiss tournaments, generate playoff from qualified teams
+									if (swissStage) {
+										const playoffStage = stages.find(
+											(s: any) =>
+												s.type === "Single Elimination" ||
+												s.type === "Double Elimination",
+										);
+										if (playoffStage) {
+											const { generatePlayoffDraftServer } = await import(
+												"@/server/matches"
+											);
+											await generatePlayoffDraftServer({
+												data: {
+													tournamentId: tournament.id,
+													swissStageId: swissStage.id,
+													playoffStageId: playoffStage.id,
+												},
+											});
+										}
+									} else {
+										const { generateFullBracket } = await import(
+											"@/server/matches"
+										);
+										const playoffStage = stages.find(
+											(s: any) =>
+												s.type === "Single Elimination" ||
+												s.type === "Double Elimination",
+										);
+										await generateFullBracket({
+											data: {
+												tournamentId: tournament.id,
+												stageId:
+													selectedStageFilter !== "all"
+														? selectedStageFilter
+														: playoffStage?.id,
+											},
+										});
+									}
 									toast.success(t("matches.bracketGenerateSuccess"));
 									router.invalidate();
 								} catch (e) {
