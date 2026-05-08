@@ -1975,48 +1975,60 @@ const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
 
 	const matchIds = tournamentMatches.map((m) => m.id);
 
-	// Reset each match
+	// Separate matches to delete (generated/derived) vs keep (seeded)
+	const deleteMatchIds: number[] = [];
+	const resetMatchIds: number[] = [];
+
 	for (const match of tournamentMatches) {
-		const updates: any = {
-			winnerId: null,
-			scoreA: null,
-			scoreB: null,
-			status: "scheduled",
-			resultType: "normal",
-			underdogTeamId: null,
-		};
-
-		// Clear teams derived from previous matches (bracket progression)
-		if (match.teamAPreviousMatchId) updates.teamAId = null;
-		if (match.teamBPreviousMatchId) updates.teamBId = null;
-
-		// Clear teams for Swiss rounds beyond Round 1 (suggested by record)
 		const isLaterSwissRound =
 			match.stageId &&
 			swissStageIds.includes(match.stageId) &&
 			(match.roundIndex ?? 0) > 0;
-		// Clear teams for playoff matches (derived from Swiss standings)
 		const isPlayoffMatch =
 			match.stageId && playoffStageIds.includes(match.stageId);
 
 		if (isLaterSwissRound || isPlayoffMatch) {
-			updates.teamAId = null;
-			updates.teamBId = null;
+			deleteMatchIds.push(match.id);
+		} else {
+			resetMatchIds.push(match.id);
 		}
-
-		await db.update(matches).set(updates).where(eq(matches.id, match.id));
 	}
 
-		// Reset bet settlement fields (keep the predictions, clear the scores)
-		if (matchIds.length > 0) {
-			await db
-				.update(bets)
-				.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
-				.where(inArray(bets.matchId, matchIds));
-		}
+	// Delete derived matches (Swiss Round 2+, playoffs) and their bets
+	if (deleteMatchIds.length > 0) {
+		await db.delete(bets).where(inArray(bets.matchId, deleteMatchIds));
+		await db.delete(matches).where(inArray(matches.id, deleteMatchIds));
+	}
 
-		return { success: true, resetCount: tournamentMatches.length };
-	},
+	// Reset seeded matches (Swiss Round 1) — clear scores but keep teams
+	for (const matchId of resetMatchIds) {
+		await db
+			.update(matches)
+			.set({
+				winnerId: null,
+				scoreA: null,
+				scoreB: null,
+				status: "scheduled",
+				resultType: "normal",
+				underdogTeamId: null,
+			})
+			.where(eq(matches.id, matchId));
+	}
+
+	// Reset bet settlement fields (keep the predictions, clear the scores)
+	if (matchIds.length > 0) {
+		await db
+			.update(bets)
+			.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
+			.where(inArray(bets.matchId, matchIds));
+	}
+
+	return {
+		success: true,
+		resetCount: resetMatchIds.length,
+		deletedCount: deleteMatchIds.length,
+	};
+},
 );
 
 export const resetTournamentResults =
