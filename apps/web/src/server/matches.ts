@@ -1679,6 +1679,20 @@ async function generateSwissPlayoffDraft(params: {
 	swissStage: any;
 	playoffStage: any;
 }) {
+	// Clear existing playoff matches for this stage before generating
+	const existingPlayoffMatches = await params.db.query.matches.findMany({
+		where: and(
+			eq(matches.tournamentId, params.tournamentId),
+			eq(matches.stageId, params.playoffStage.id),
+		),
+		columns: { id: true },
+	});
+	if (existingPlayoffMatches.length > 0) {
+		const matchIds = existingPlayoffMatches.map((m: any) => m.id);
+		await params.db.delete(bets).where(inArray(bets.matchId, matchIds));
+		await params.db.delete(matches).where(inArray(matches.id, matchIds));
+	}
+
 	const swissMatches = await params.db.query.matches.findMany({
 		where: and(
 			eq(matches.tournamentId, params.tournamentId),
