@@ -387,6 +387,7 @@ function EditorMatchCard({
 	match: Match;
 	onClick?: () => void;
 }) {
+	const { t } = useTranslation("admin-matches");
 	const isWalkover = match.status === "finished" && match.resultType === "wo";
 	const walkoverScore = (() => {
 		if (!isWalkover) return { a: null, b: null };
