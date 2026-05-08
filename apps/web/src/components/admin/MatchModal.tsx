@@ -296,7 +296,7 @@ export function MatchModal({
 		return null;
 	}, [isSwissStage, swissTeamRecords, matchToEdit, formData.name]);
 
-	// Filter teams to only those in the expected record bucket
+	// Filter teams to only those in the expected record bucket, excluding teams already assigned to other matches in the same round
 	const swissFilteredTeams = useMemo(() => {
 		if (!isSwissStage || !swissTeamRecords || !expectedSwissBucket) {
 			return teams;
@@ -307,8 +307,27 @@ export function MatchModal({
 				.map((team) => team.teamId),
 		);
 		if (aliveTeamIds.size === 0) return teams;
-		return teams.filter((t) => aliveTeamIds.has(t.id));
-	}, [isSwissStage, swissTeamRecords, expectedSwissBucket, teams]);
+
+		// Exclude teams already assigned to other matches in the same round
+		const currentRound = matchToEdit?.roundIndex ?? -1;
+		const currentMatchId = matchToEdit?.id;
+		const takenTeamIds = new Set<number>();
+		matches
+			.filter(
+				(m: any) =>
+					m.stageId === formData.stageId &&
+					m.roundIndex === currentRound &&
+					m.id !== currentMatchId,
+			)
+			.forEach((m: any) => {
+				if (m.teamAId) takenTeamIds.add(m.teamAId);
+				if (m.teamBId) takenTeamIds.add(m.teamBId);
+			});
+
+		return teams.filter(
+			(t) => aliveTeamIds.has(t.id) && !takenTeamIds.has(t.id),
+		);
+	}, [isSwissStage, swissTeamRecords, expectedSwissBucket, teams, matches, matchToEdit, formData.stageId]);
 
 	const canAutoResolveOneSidedWalkover =
 		formData.resultType === "wo" &&
