@@ -829,6 +829,20 @@ function TournamentMatchesPage() {
 																		#{match.displayOrder ?? "-"}
 																	</span>
 																</div>
+																{match.startTime && (
+																	<div className="font-bold text-[7px] text-gray-600">
+																		{new Date(match.startTime).toLocaleDateString("pt-BR", {
+																			day: "2-digit",
+																			month: "2-digit",
+																			year: "numeric",
+																		})}{" "}
+																		•{" "}
+																		{new Date(match.startTime).toLocaleTimeString("pt-BR", {
+																			hour: "2-digit",
+																			minute: "2-digit",
+																		})}
+																	</div>
+																)}
 															</div>
 															<div className="flex flex-grow flex-col justify-center gap-1 p-1">
 																<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
