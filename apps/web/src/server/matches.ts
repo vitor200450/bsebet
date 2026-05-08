@@ -1257,6 +1257,7 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 				let playoffMatchDay = await db.query.matchDays.findFirst({
 					where: and(
 						eq(matchDays.tournamentId, tournamentId),
+						not(ilike(matchDays.label, "%Swiss%")),
 						not(ilike(matchDays.label, "%Group%")),
 					),
 					orderBy: (md, { asc }) => [asc(md.date)],
@@ -1548,6 +1549,15 @@ async function generateSwissOpeningRound(params: {
 	tournamentId: number;
 	stage: any;
 }) {
+	// Find a match day associated with the Swiss stage
+	const swissMatchDay = await params.db.query.matchDays.findFirst({
+		where: and(
+			eq(matchDays.tournamentId, params.tournamentId),
+			ilike(matchDays.label, "%Swiss%"),
+		),
+		orderBy: (md: any, { asc }: any) => [asc(md.date)],
+	});
+
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
 		where: (tt: any, { eq }: any) =>
 			eq(tt.tournamentId, params.tournamentId),
@@ -1577,6 +1587,7 @@ async function generateSwissOpeningRound(params: {
 			isBettingEnabled: false,
 			displayOrder: index + 1,
 			startTime: new Date(),
+			matchDayId: swissMatchDay?.id ?? null,
 		});
 	}
 
@@ -1614,6 +1625,15 @@ async function generateSwissSuggestedRound(params: {
 		}
 	}
 
+	// Find a match day associated with the Swiss stage
+	const swissMatchDay = await params.db.query.matchDays.findFirst({
+		where: and(
+			eq(matchDays.tournamentId, params.tournamentId),
+			ilike(matchDays.label, "%Swiss%"),
+		),
+		orderBy: (md: any, { asc }: any) => [asc(md.date)],
+	});
+
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
 		where: (tt: any, { eq }: any) =>
 			eq(tt.tournamentId, params.tournamentId),
@@ -1646,6 +1666,7 @@ async function generateSwissSuggestedRound(params: {
 			isBettingEnabled: false,
 			displayOrder: index + 1,
 			startTime: new Date(),
+			matchDayId: swissMatchDay?.id ?? null,
 		});
 	}
 
@@ -1682,6 +1703,17 @@ async function generateSwissPlayoffDraft(params: {
 		})),
 	);
 
+	// Find a match day for the playoff stage (exclude Swiss and Group days)
+	const playoffMatchDay = await params.db.query.matchDays.findFirst({
+		where: and(
+			eq(matchDays.tournamentId, params.tournamentId),
+			not(ilike(matchDays.label, "%Swiss%")),
+			not(ilike(matchDays.label, "%Group%")),
+		),
+		orderBy: (md: any, { asc }: any) => [asc(md.date)],
+	});
+	const mdId = playoffMatchDay?.id ?? null;
+
 	await params.db.insert(matches).values([
 		{
 			tournamentId: params.tournamentId,
@@ -1696,6 +1728,7 @@ async function generateSwissPlayoffDraft(params: {
 			isBettingEnabled: false,
 			displayOrder: 1,
 			startTime: new Date(),
+			matchDayId: mdId,
 		},
 		{
 			tournamentId: params.tournamentId,
@@ -1710,6 +1743,7 @@ async function generateSwissPlayoffDraft(params: {
 			isBettingEnabled: false,
 			displayOrder: 2,
 			startTime: new Date(),
+			matchDayId: mdId,
 		},
 		{
 			tournamentId: params.tournamentId,
@@ -1724,6 +1758,7 @@ async function generateSwissPlayoffDraft(params: {
 			isBettingEnabled: false,
 			displayOrder: 1,
 			startTime: new Date(),
+			matchDayId: mdId,
 		},
 	]);
 
