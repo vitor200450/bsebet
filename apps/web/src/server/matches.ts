@@ -484,21 +484,35 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			},
 		});
 
-		// Auto-swap teams in swiss stage: if a team is reassigned and the new team
-		// already plays in another match of the same round, swap the displaced team
-		// into that other match's vacated slot.
+		// Auto-swap teams: if a team is reassigned and the new team
+		// already plays in another match of the same stage/round, swap the
+		// displaced team into that other match's vacated slot.
+		// Works for Swiss stage and playoff-after-Swiss matches.
 		if (currentMatch.tournamentId) {
 			const tournament = await db.query.tournaments.findFirst({
 				where: (t: any, { eq }: any) =>
 					eq(t.id, currentMatch.tournamentId),
 				columns: { stages: true },
 			});
-			const isSwiss = (tournament?.stages as any[])?.some(
+			const stages = (tournament?.stages as any[]) ?? [];
+			const isSwiss = stages.some(
 				(s: any) =>
 					s.id === currentMatch.stageId && s.type === "Swiss",
 			);
+			const isPlayoffAfterSwiss =
+				!isSwiss &&
+				stages.some((s: any) => s.type === "Swiss") &&
+				stages.some(
+					(s: any) =>
+						s.id === currentMatch.stageId &&
+						(s.type === "Single Elimination" ||
+							s.type === "Double Elimination"),
+				);
 
-			if (isSwiss && (hasField("teamAId") || hasField("teamBId"))) {
+			if (
+				(isSwiss || isPlayoffAfterSwiss) &&
+				(hasField("teamAId") || hasField("teamBId"))
+			) {
 				const conflictingMatches = await db.query.matches.findMany({
 					where: and(
 						eq(matches.tournamentId, currentMatch.tournamentId),
