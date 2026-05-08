@@ -1549,6 +1549,14 @@ async function generateSwissOpeningRound(params: {
 	tournamentId: number;
 	stage: any;
 }) {
+	// Find next available display order for this tournament
+	const maxDisplayOrderResult = await params.db.query.matches.findFirst({
+		where: eq(matches.tournamentId, params.tournamentId),
+		orderBy: (m: any, { desc: descFn }: any) => [descFn(m.displayOrder)],
+		columns: { displayOrder: true },
+	});
+	let nextOrder = (maxDisplayOrderResult?.displayOrder ?? 0) + 1;
+
 	// Find a match day associated with the Swiss stage
 	const swissMatchDay = await params.db.query.matchDays.findFirst({
 		where: and(
@@ -1585,7 +1593,7 @@ async function generateSwissOpeningRound(params: {
 			teamBId: teamB.teamId,
 			status: "scheduled",
 			isBettingEnabled: false,
-			displayOrder: index + 1,
+			displayOrder: nextOrder++,
 			startTime: swissMatchDay?.date ?? new Date(),
 			matchDayId: swissMatchDay?.id ?? null,
 		});
@@ -1652,6 +1660,14 @@ async function generateSwissSuggestedRound(params: {
 		);
 	}
 
+	// Find next available display order
+	const maxDisplayOrderResult = await params.db.query.matches.findFirst({
+		where: eq(matches.tournamentId, params.tournamentId),
+		orderBy: (m: any, { desc: descFn }: any) => [descFn(m.displayOrder)],
+		columns: { displayOrder: true },
+	});
+	let nextOrder = (maxDisplayOrderResult?.displayOrder ?? 0) + 1;
+
 	for (const [index, pairing] of suggestion.matches.entries()) {
 		await params.db.insert(matches).values({
 			tournamentId: params.tournamentId,
@@ -1664,7 +1680,7 @@ async function generateSwissSuggestedRound(params: {
 			teamBId: pairing.teamBId,
 			status: "scheduled",
 			isBettingEnabled: false,
-			displayOrder: index + 1,
+			displayOrder: nextOrder++,
 			startTime: swissMatchDay?.date ?? new Date(),
 			matchDayId: swissMatchDay?.id ?? null,
 		});
@@ -1728,6 +1744,14 @@ async function generateSwissPlayoffDraft(params: {
 	});
 	const mdId = playoffMatchDay?.id ?? null;
 
+	// Find next available display order
+	const maxDisplayOrderResult = await params.db.query.matches.findFirst({
+		where: eq(matches.tournamentId, params.tournamentId),
+		orderBy: (m: any, { desc: descFn }: any) => [descFn(m.displayOrder)],
+		columns: { displayOrder: true },
+	});
+	let nextOrder = (maxDisplayOrderResult?.displayOrder ?? 0) + 1;
+
 	await params.db.insert(matches).values([
 		{
 			tournamentId: params.tournamentId,
@@ -1740,7 +1764,7 @@ async function generateSwissPlayoffDraft(params: {
 			teamBId: qualified[3]?.teamId ?? null,
 			status: "scheduled",
 			isBettingEnabled: false,
-			displayOrder: 1,
+			displayOrder: nextOrder++,
 			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
@@ -1755,7 +1779,7 @@ async function generateSwissPlayoffDraft(params: {
 			teamBId: qualified[2]?.teamId ?? null,
 			status: "scheduled",
 			isBettingEnabled: false,
-			displayOrder: 2,
+			displayOrder: nextOrder++,
 			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
@@ -1770,7 +1794,7 @@ async function generateSwissPlayoffDraft(params: {
 			labelTeamB: "Winner of Semi-Final #2",
 			status: "scheduled",
 			isBettingEnabled: false,
-			displayOrder: 1,
+			displayOrder: nextOrder++,
 			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
