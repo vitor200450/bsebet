@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { MatchOrdering } from "@/components/admin/MatchOrdering";
-import { TeamLogo } from "@/components/TeamLogo";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getMatchDays } from "@/server/match-days";
 import {
@@ -735,124 +734,122 @@ function TournamentMatchesPage() {
 								{t("matches.generateSwissPlayoffDraft")}
 							</button>
 						</div>
-						{swissMatches.length > 0 && (
-							<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-								<h3 className="mb-4 font-black text-xl text-black uppercase italic">
-									{t("matches.swissMatches")}
-								</h3>
-								<div className="flex flex-col gap-3">
-									{swissMatches.map((match: any) => {
-										const isFinished = match.status === "finished";
-										const isLive = match.status === "live";
-										const teamAWon =
-											isFinished && match.winnerId === match.teamAId;
-										const teamBWon =
-											isFinished && match.winnerId === match.teamBId;
+						{(() => {
+							if (swissMatches.length === 0) return null;
+							const rounds = swissMatches.reduce(
+								(acc: Record<number, any[]>, m: any) => {
+									const r = m.roundIndex ?? 0;
+									if (!acc[r]) acc[r] = [];
+									acc[r].push(m);
+									return acc;
+								},
+								{} as Record<number, any[]>,
+							);
+							const sortedRounds = Object.keys(rounds)
+								.map(Number)
+								.sort((a, b) => a - b);
 
-										return (
-											<button
-												key={match.id}
-												onClick={() => {
-													setEditingMatch(match);
-													setIsMatchModalOpen(true);
-												}}
-												className="group w-full text-left transition-all hover:z-10 hover:-translate-y-0.5"
-											>
-												<div className="relative overflow-hidden border-[3px] border-black bg-white shadow-[3px_3px_0_0_#000] transition-all group-hover:shadow-[4px_4px_0_0_#000]">
-													{/* Top bar: round label + status */}
-													<div className="flex items-center justify-between border-black/10 border-b-2 bg-[#121212] px-3 py-1">
-														<span className="font-black text-[9px] uppercase tracking-widest text-white">
-															{match.name || `Match #${match.id}`}
-														</span>
-														<span
-															className={`rounded-sm px-2 py-0.5 font-black text-[9px] uppercase tracking-wider ${
-																isLive
-																	? "bg-[#ccff00] text-black"
-																	: isFinished
-																		? "bg-gray-200 text-gray-700"
-																		: "bg-white/10 text-white/60"
-															}`}
-														>
-															{isLive
-																? "AO VIVO"
-																: isFinished
-																	? "FINALIZADO"
-																	: "AGENDADO"}
-														</span>
-													</div>
-
-													{/* Team A */}
-													<div className="flex items-center gap-3 border-black/5 border-b px-3 py-2.5 transition-colors hover:bg-[#f5f5f5]">
-														<TeamLogo
-															teamName={
-																match.teamA?.name ||
-																match.labelTeamA ||
-																"TBD"
-															}
-															logoUrl={match.teamA?.logoUrl}
-															size="sm"
-															className="h-8 w-8 shrink-0"
-														/>
-														<span className="flex-1 font-black text-sm uppercase text-black">
-															{match.teamA?.name ||
-																match.labelTeamA ||
-																"TBD"}
-														</span>
-														<span
-															className={`font-black text-lg tabular-nums ${
-																teamAWon
-																	? "text-black"
-																	: isFinished
-																		? "text-gray-400"
-																		: "text-gray-300"
-															}`}
-														>
-															{match.scoreA ?? "-"}
-														</span>
-														{teamAWon && (
-															<CheckCircle2 className="h-4 w-4 text-[#ccff00]" />
-														)}
-													</div>
-
-													{/* Team B */}
-													<div className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-[#f5f5f5]">
-														<TeamLogo
-															teamName={
-																match.teamB?.name ||
-																match.labelTeamB ||
-																"TBD"
-															}
-															logoUrl={match.teamB?.logoUrl}
-															size="sm"
-															className="h-8 w-8 shrink-0"
-														/>
-														<span className="flex-1 font-black text-sm uppercase text-black">
-															{match.teamB?.name ||
-																match.labelTeamB ||
-																"TBD"}
-														</span>
-														<span
-															className={`font-black text-lg tabular-nums ${
-																teamBWon
-																	? "text-black"
-																	: isFinished
-																		? "text-gray-400"
-																		: "text-gray-300"
-															}`}
-														>
-															{match.scoreB ?? "-"}
-														</span>
-														{teamBWon && (
-															<CheckCircle2 className="h-4 w-4 text-[#ccff00]" />
-														)}
-													</div>
+							return (
+								<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+									<h3 className="mb-4 font-black text-xl text-black uppercase italic">
+										{t("matches.swissMatches")}
+									</h3>
+									{sortedRounds.map((roundIdx) => (
+										<div key={roundIdx} className="mb-8 last:mb-0">
+											<div className="mb-3 flex items-center gap-3">
+												<div className="-skew-x-6 inline-block border-2 border-black bg-black px-3 py-1">
+													<span className="block skew-x-6 font-black text-[#ccff00] text-xs uppercase tracking-widest">
+														Rodada {roundIdx + 1}
+													</span>
 												</div>
-											</button>
-										);
-									})}
+												<div className="h-0.5 flex-1 bg-black/10" />
+												<span className="font-bold text-[10px] text-gray-400 uppercase">
+													{rounds[roundIdx].filter((m: any) => m.status === "finished").length}/{rounds[roundIdx].length} finalizados
+												</span>
+											</div>
+											<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+												{rounds[roundIdx].map((match: any) => {
+													const isLive = match.status === "live";
+													const isFinished = match.status === "finished";
+													const teamAWon = isFinished && match.winnerId === match.teamAId;
+													const teamBWon = isFinished && match.winnerId === match.teamBId;
+
+													return (
+														<div
+															key={match.id}
+															onClick={() => {
+																setEditingMatch(match);
+																setIsMatchModalOpen(true);
+															}}
+															className="group relative flex cursor-pointer flex-col border-[2px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5"
+														>
+															{isLive && (
+																<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-brawl-red px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																	AO VIVO
+																</div>
+															)}
+															{isFinished && (
+																<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																	FINAL
+																</div>
+															)}
+															<div className="relative -mx-0 -mt-0 box-border flex min-h-7 flex-shrink-0 flex-col justify-center gap-0.5 border-black border-b-2 bg-gray-50/50 px-1.5 py-0.5">
+																<div className="flex w-full items-center justify-between">
+																	<div className="min-w-0 flex-grow pr-1">
+																		<span className="line-clamp-2 block text-left font-black text-[10px] text-black uppercase italic leading-tight antialiased">
+																			{match.name || `Match #${match.id}`}
+																		</span>
+																	</div>
+																	<span className="flex-shrink-0 font-bold font-mono text-[9px] text-gray-400">
+																		#{match.displayOrder ?? "-"}
+																	</span>
+																</div>
+															</div>
+															<div className="flex flex-grow flex-col justify-center gap-1 p-1">
+																<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
+																	<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
+																		{match.teamA?.logoUrl ? (
+																			<img src={match.teamA.logoUrl} alt="" className="h-6 w-6 object-contain" />
+																		) : (
+																			<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
+																		)}
+																	</div>
+																	<div className="flex h-full items-center overflow-hidden px-1.5">
+																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+																			{match.teamA?.name || match.labelTeamA || "TBD"}
+																		</span>
+																	</div>
+																	<div className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamAWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}>
+																		{match.scoreA ?? "-"}
+																	</div>
+																</div>
+																<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
+																	<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
+																		{match.teamB?.logoUrl ? (
+																			<img src={match.teamB.logoUrl} alt="" className="h-6 w-6 object-contain" />
+																		) : (
+																			<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
+																		)}
+																	</div>
+																	<div className="flex h-full items-center overflow-hidden px-1.5">
+																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+																			{match.teamB?.name || match.labelTeamB || "TBD"}
+																		</span>
+																	</div>
+																	<div className={`flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic ${teamBWon ? "bg-black text-[#ccff00]" : isFinished ? "bg-gray-200 text-gray-400" : "bg-gray-100 text-gray-300"}`}>
+																		{match.scoreB ?? "-"}
+																	</div>
+																</div>
+															</div>
+														</div>
+													);
+												})}
+											</div>
+										</div>
+									))}
 								</div>
-							</div>
-						)}
+							);
+						})()}
 					</div>
 				)}
 
