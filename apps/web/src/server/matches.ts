@@ -1766,8 +1766,10 @@ async function generateSwissPlayoffDraft(params: {
 	});
 	let nextOrder = (maxDisplayOrderResult?.displayOrder ?? 0) + 1;
 
-	await params.db.insert(matches).values([
-		{
+	// Insert semi-finals first, capturing their IDs for bracket progression
+	const [sf1] = await params.db
+		.insert(matches)
+		.values({
 			tournamentId: params.tournamentId,
 			stageId: params.playoffStage.id,
 			bracketSide: "main",
@@ -1781,8 +1783,12 @@ async function generateSwissPlayoffDraft(params: {
 			displayOrder: nextOrder++,
 			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
-		},
-		{
+		})
+		.returning();
+
+	const [sf2] = await params.db
+		.insert(matches)
+		.values({
 			tournamentId: params.tournamentId,
 			stageId: params.playoffStage.id,
 			bracketSide: "main",
@@ -1796,23 +1802,28 @@ async function generateSwissPlayoffDraft(params: {
 			displayOrder: nextOrder++,
 			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
-		},
-		{
-			tournamentId: params.tournamentId,
-			stageId: params.playoffStage.id,
-			bracketSide: "main",
-			roundIndex: 1,
-			name: "Final",
-			label: "Final",
-			labelTeamA: "Winner of Semi-Final #1",
-			labelTeamB: "Winner of Semi-Final #2",
-			status: "scheduled",
-			isBettingEnabled: false,
-			displayOrder: nextOrder++,
-			startTime: playoffMatchDay?.date ?? new Date(),
-			matchDayId: mdId,
-		},
-	]);
+		})
+		.returning();
+
+	await params.db.insert(matches).values({
+		tournamentId: params.tournamentId,
+		stageId: params.playoffStage.id,
+		bracketSide: "main",
+		roundIndex: 1,
+		name: "Final",
+		label: "Final",
+		labelTeamA: "Winner of Semi-Final #1",
+		labelTeamB: "Winner of Semi-Final #2",
+		teamAPreviousMatchId: sf1?.id ?? null,
+		teamBPreviousMatchId: sf2?.id ?? null,
+		teamAPreviousMatchResult: "winner",
+		teamBPreviousMatchResult: "winner",
+		status: "scheduled",
+		isBettingEnabled: false,
+		displayOrder: nextOrder++,
+		startTime: playoffMatchDay?.date ?? new Date(),
+		matchDayId: mdId,
+	});
 
 	return { success: true };
 }
