@@ -877,6 +877,7 @@ function TournamentMatchesPage() {
 								matches.filter((m: any) => {
 									const isBracketMatch = m.bracketSide !== "groups";
 									if (!isBracketMatch) return false;
+									if (swissStage && m.stageId === swissStage.id) return false;
 									if (selectedStageFilter === "all") return true;
 									return m.stageId === selectedStageFilter;
 								}) as any
@@ -915,7 +916,9 @@ function TournamentMatchesPage() {
 							onGenerateFullBracket={async (_roundIndex, _side) => {
 								// Check if matches already exist
 								const existingMatches = matches.filter(
-									(m: any) => m.bracketSide !== "groups",
+									(m: any) =>
+										m.bracketSide !== "groups" &&
+										!(swissStage && m.stageId === swissStage.id),
 								);
 								if (existingMatches.length > 0) {
 									setPendingGeneration("bracket");
