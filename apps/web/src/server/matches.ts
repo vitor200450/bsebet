@@ -1228,19 +1228,24 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 			} else {
 				// Playoff Generation
 				const groupsStage = stages.find((s) => s.type === "Groups");
-				// Use advancingCount from Groups stage, fallback to advancingPerGroup from playoff stage, then default to 2
-				const advancingPerGroup =
+				const swissStage = stages.find((s) => s.type === "Swiss");
+				// Use advancingCount from Groups stage, fallback to advancingCount from Swiss stage, then to advancingPerGroup from playoff stage, then default to 2
+				const advancingCount =
 					groupsStage?.settings?.advancingCount ||
+					swissStage?.settings?.advancingCount ||
 					stage.settings?.advancingPerGroup ||
 					2;
-				const groupsCount = groupsStage?.settings?.groupsCount || 4;
-				const totalTeams = advancingPerGroup * groupsCount;
+				// For Swiss, the groupsCount is 1 (single pool); for Groups, use configured count
+				const groupsCount = swissStage
+					? 1
+					: groupsStage?.settings?.groupsCount || 4;
+				const totalTeams = advancingCount * groupsCount;
 				const firstRoundMatchesCount = totalTeams / 2;
 				const side = stage.type === "Double Elimination" ? "upper" : "main";
 
 				const placeholders = generatePlaceholderLabels(
 					groupsCount,
-					advancingPerGroup,
+					advancingCount,
 				);
 
 				let playoffMatchDay = await db.query.matchDays.findFirst({
