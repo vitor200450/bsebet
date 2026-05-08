@@ -722,42 +722,6 @@ function TournamentMatchesPage() {
 							>
 								{t("matches.suggestSwissNextRound")}
 							</button>
-							<button
-								onClick={async () => {
-									try {
-										const swissStageEl = stages.find(
-											(s: any) => s.type === "Swiss",
-										);
-										const playoffStageEl = stages.find(
-											(s: any) =>
-												s.type === "Single Elimination" ||
-												s.type === "Double Elimination",
-										);
-										if (!swissStageEl || !playoffStageEl) return;
-										const { generatePlayoffDraftServer } = await import(
-											"@/server/matches"
-										);
-										await generatePlayoffDraftServer({
-											data: {
-												tournamentId: tournament.id,
-												swissStageId: swissStageEl.id,
-												playoffStageId: playoffStageEl.id,
-											},
-										});
-										toast.success(
-											t("matches.generateSwissPlayoffDraftSuccess"),
-										);
-										router.invalidate();
-									} catch (e) {
-										toast.error(
-											t("matches.generateSwissPlayoffDraftError"),
-										);
-									}
-								}}
-								className="border-[3px] border-black bg-white px-4 py-2 font-black text-xs text-black uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
-							>
-								{t("matches.generateSwissPlayoffDraft")}
-							</button>
 						</div>
 						{(() => {
 							if (swissMatches.length === 0) return null;
