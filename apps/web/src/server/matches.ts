@@ -176,6 +176,16 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 			),
 	});
 
+	console.log(
+		`[bracket-progression] match ${finishedMatch.id} (winner=${finishedMatch.winnerId}) found ${dependentMatches.length} dependents:`,
+		dependentMatches.map((m: any) => ({
+			id: m.id,
+			name: m.name,
+			aPrev: m.teamAPreviousMatchId,
+			bPrev: m.teamBPreviousMatchId,
+		})),
+	);
+
 	// Update each dependent match
 	for (const depMatch of dependentMatches) {
 		const updates: any = {};
