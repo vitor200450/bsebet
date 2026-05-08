@@ -85,7 +85,7 @@
 		"cancel": "Cancel",
 		"playoffWarning": "This will generate the entire bracket. Existing matches will be removed and recreated.",
 		"regenerateTitle": "Regenerate Bracket",
-		"regenerateConfirm": "Are you sure you want to regenerate the bracket? All existing matches and bets will be removed."
+		"regenerateConfirm": "Regenerate"
 	},
 	"reset": {
 		"button": "Reset",

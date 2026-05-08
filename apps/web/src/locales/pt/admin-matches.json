@@ -85,7 +85,7 @@
 		"cancel": "Cancelar",
 		"playoffWarning": "Isto irá gerar todo o chaveamento. As partidas existentes serão removidas e recriadas.",
 		"regenerateTitle": "Regenerar Chaveamento",
-		"regenerateConfirm": "Tem certeza que deseja regenerar o chaveamento? Todas as partidas e apostas existentes serão removidas."
+		"regenerateConfirm": "Regenerar"
 	},
 	"reset": {
 		"button": "Resetar",
