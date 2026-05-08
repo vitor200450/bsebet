@@ -1586,7 +1586,7 @@ async function generateSwissOpeningRound(params: {
 			status: "scheduled",
 			isBettingEnabled: false,
 			displayOrder: index + 1,
-			startTime: new Date(),
+			startTime: swissMatchDay?.date ?? new Date(),
 			matchDayId: swissMatchDay?.id ?? null,
 		});
 	}
@@ -1665,7 +1665,7 @@ async function generateSwissSuggestedRound(params: {
 			status: "scheduled",
 			isBettingEnabled: false,
 			displayOrder: index + 1,
-			startTime: new Date(),
+			startTime: swissMatchDay?.date ?? new Date(),
 			matchDayId: swissMatchDay?.id ?? null,
 		});
 	}
@@ -1741,7 +1741,7 @@ async function generateSwissPlayoffDraft(params: {
 			status: "scheduled",
 			isBettingEnabled: false,
 			displayOrder: 1,
-			startTime: new Date(),
+			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
 		{
@@ -1756,7 +1756,7 @@ async function generateSwissPlayoffDraft(params: {
 			status: "scheduled",
 			isBettingEnabled: false,
 			displayOrder: 2,
-			startTime: new Date(),
+			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
 		{
@@ -1771,7 +1771,7 @@ async function generateSwissPlayoffDraft(params: {
 			status: "scheduled",
 			isBettingEnabled: false,
 			displayOrder: 1,
-			startTime: new Date(),
+			startTime: playoffMatchDay?.date ?? new Date(),
 			matchDayId: mdId,
 		},
 	]);
