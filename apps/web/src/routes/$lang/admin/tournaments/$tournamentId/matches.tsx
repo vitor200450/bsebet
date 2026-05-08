@@ -397,21 +397,7 @@ function TournamentMatchesPage() {
 							</button>
 						)}
 
-						{/* 5. Bracket - View and generate playoff bracket */}
-						{hasBracket && (
-							<button
-								onClick={() => setActiveTab("bracket")}
-								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
-									activeTab === "bracket"
-										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-										: "bg-white hover:bg-gray-50"
-								}`}
-							>
-								{t("matches.tabBracket")}
-							</button>
-						)}
-
-						{/* Swiss Stage */}
+						{/* 5. Swiss Stage - Manage swiss rounds */}
 						{hasSwiss && (
 							<button
 								onClick={() => setActiveTab("swiss")}
@@ -422,6 +408,20 @@ function TournamentMatchesPage() {
 								}`}
 							>
 								{t("matches.tabSwiss")}
+							</button>
+						)}
+
+						{/* 6. Bracket - View and generate playoff bracket */}
+						{hasBracket && (
+							<button
+								onClick={() => setActiveTab("bracket")}
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+									activeTab === "bracket"
+										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+										: "bg-white hover:bg-gray-50"
+								}`}
+							>
+								{t("matches.tabBracket")}
 							</button>
 						)}
 
@@ -512,20 +512,20 @@ function TournamentMatchesPage() {
 						{t("matches.tabGroups")}
 					</button>
 				)}
-				{hasBracket && (
-					<button
-						onClick={() => setActiveTab("bracket")}
-						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
-					>
-						{t("matches.tabBracket")}
-					</button>
-				)}
 				{hasSwiss && (
 					<button
 						onClick={() => setActiveTab("swiss")}
 						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "swiss" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabSwiss")}
+					</button>
+				)}
+				{hasBracket && (
+					<button
+						onClick={() => setActiveTab("bracket")}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
+					>
+						{t("matches.tabBracket")}
 					</button>
 				)}
 				<button
