@@ -1954,28 +1954,58 @@ const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
 			.object({ tournamentId: z.number() })
 			.parse(ctx.data);
 
-		const tournamentMatches = await db.query.matches.findMany({
-			where: eq(matches.tournamentId, tournamentId),
-		});
+	const tournament = await db.query.tournaments.findFirst({
+		where: (t: any, { eq }: any) => eq(t.id, tournamentId),
+		columns: { stages: true },
+	});
+	const stages = (tournament?.stages as any[]) ?? [];
+	const swissStageIds = stages
+		.filter((s: any) => s.type === "Swiss")
+		.map((s: any) => s.id);
+	const playoffStageIds = stages
+		.filter(
+			(s: any) =>
+				s.type === "Single Elimination" || s.type === "Double Elimination",
+		)
+		.map((s: any) => s.id);
 
-		const matchIds = tournamentMatches.map((m) => m.id);
+	const tournamentMatches = await db.query.matches.findMany({
+		where: eq(matches.tournamentId, tournamentId),
+	});
 
-		// Reset each match
-		for (const match of tournamentMatches) {
-			const updates: any = {
-				winnerId: null,
-				scoreA: null,
-				scoreB: null,
-				status: "scheduled",
-				resultType: "normal",
-				underdogTeamId: null,
-			};
+	const matchIds = tournamentMatches.map((m) => m.id);
 
-			if (match.teamAPreviousMatchId) updates.teamAId = null;
-			if (match.teamBPreviousMatchId) updates.teamBId = null;
+	// Reset each match
+	for (const match of tournamentMatches) {
+		const updates: any = {
+			winnerId: null,
+			scoreA: null,
+			scoreB: null,
+			status: "scheduled",
+			resultType: "normal",
+			underdogTeamId: null,
+		};
 
-			await db.update(matches).set(updates).where(eq(matches.id, match.id));
+		// Clear teams derived from previous matches (bracket progression)
+		if (match.teamAPreviousMatchId) updates.teamAId = null;
+		if (match.teamBPreviousMatchId) updates.teamBId = null;
+
+		// Clear teams for Swiss rounds beyond Round 1 (suggested by record)
+		const isLaterSwissRound =
+			match.stageId &&
+			swissStageIds.includes(match.stageId) &&
+			(match.roundIndex ?? 0) > 0;
+		// Clear teams for playoff matches (derived from Swiss standings)
+		const isPlayoffMatch =
+			match.stageId && playoffStageIds.includes(match.stageId);
+
+		if (isLaterSwissRound || isPlayoffMatch) {
+			updates.teamAId = null;
+			updates.teamBId = null;
 		}
+
+		await db.update(matches).set(updates).where(eq(matches.id, match.id));
+	}
 
 		// Reset bet settlement fields (keep the predictions, clear the scores)
 		if (matchIds.length > 0) {
