@@ -484,6 +484,63 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			},
 		});
 
+		// Auto-swap teams in swiss stage: if a team is reassigned and the new team
+		// already plays in another match of the same round, swap the displaced team
+		// into that other match's vacated slot.
+		if (currentMatch.tournamentId) {
+			const tournament = await db.query.tournaments.findFirst({
+				where: (t: any, { eq }: any) =>
+					eq(t.id, currentMatch.tournamentId),
+				columns: { stages: true },
+			});
+			const isSwiss = (tournament?.stages as any[])?.some(
+				(s: any) =>
+					s.id === currentMatch.stageId && s.type === "Swiss",
+			);
+
+			if (isSwiss && (hasField("teamAId") || hasField("teamBId"))) {
+				const conflictingMatches = await db.query.matches.findMany({
+					where: and(
+						eq(matches.tournamentId, currentMatch.tournamentId),
+						currentMatch.stageId
+							? eq(matches.stageId, currentMatch.stageId)
+							: undefined,
+						currentMatch.roundIndex !== null
+							? eq(matches.roundIndex, currentMatch.roundIndex)
+							: undefined,
+						not(eq(matches.id, matchId)),
+					),
+				});
+
+				const updatedTeamAId = hasField("teamAId")
+					? updateData.teamAId
+					: currentMatch.teamAId;
+				const updatedTeamBId = hasField("teamBId")
+					? updateData.teamBId
+					: currentMatch.teamBId;
+
+				for (const other of conflictingMatches) {
+					let swapSlot: "teamAId" | "teamBId" | null = null;
+					if (other.teamAId === updatedTeamAId) swapSlot = "teamAId";
+					else if (other.teamBId === updatedTeamAId) swapSlot = "teamBId";
+					if (other.teamAId === updatedTeamBId) swapSlot = "teamAId";
+					else if (other.teamBId === updatedTeamBId) swapSlot = "teamBId";
+
+					if (swapSlot) {
+						const displacedOldTeamId =
+							swapSlot === "teamAId"
+								? currentMatch.teamAId
+								: currentMatch.teamBId;
+
+						await db
+							.update(matches)
+							.set({ [swapSlot]: displacedOldTeamId })
+							.where(eq(matches.id, other.id));
+					}
+				}
+			}
+		}
+
 		const [updated] = await db
 			.update(matches)
 			.set(updateData)
