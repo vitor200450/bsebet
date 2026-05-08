@@ -1585,6 +1585,24 @@ async function generateSwissSuggestedRound(params: {
 		orderBy: [asc(matches.roundIndex), asc(matches.displayOrder)],
 	});
 
+	// Guard: block suggestion if the latest round has unfinished matches
+	if (swissMatches.length > 0) {
+		const maxRound = Math.max(
+			...swissMatches.map((m: any) => m.roundIndex ?? 0),
+		);
+		const currentRoundMatches = swissMatches.filter(
+			(m: any) => m.roundIndex === maxRound,
+		);
+		const allFinished = currentRoundMatches.every(
+			(m: any) => m.status === "finished",
+		);
+		if (!allFinished) {
+			throw new Error(
+				"All matches in the current round must be finished before suggesting the next round.",
+			);
+		}
+	}
+
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
 		where: (tt: any, { eq }: any) =>
 			eq(tt.tournamentId, params.tournamentId),
