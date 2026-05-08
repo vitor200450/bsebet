@@ -285,32 +285,12 @@ export function MatchModal({
 		}
 	}, [isSwissStage, swissSettings, matches, formData.stageId]);
 
-	// Determine the expected record bucket for the match being edited
-	const expectedSwissBucket = useMemo(() => {
-		if (!isSwissStage || !swissTeamRecords) return null;
-		const matchLabel = matchToEdit?.label || formData.name || "";
-		const bucketMatch = matchLabel.match(/Swiss\s+(\d+-\d+)/i);
-		if (bucketMatch) return bucketMatch[1];
-
-		if (matchToEdit?.roundIndex === 0) return "0-0";
-		return null;
-	}, [isSwissStage, swissTeamRecords, matchToEdit, formData.name]);
-
-	// Filter teams to only those in the expected record bucket
+	// Show all tournament teams in Swiss stage editing
 	// (the backend auto-swap handles conflicts when a team is reassigned)
 	const swissFilteredTeams = useMemo(() => {
-		if (!isSwissStage || !swissTeamRecords || !expectedSwissBucket) {
-			return teams;
-		}
-		const aliveTeamIds = new Set(
-			swissTeamRecords.ordered
-				.filter((team) => team.record === expectedSwissBucket)
-				.map((team) => team.teamId),
-		);
-		if (aliveTeamIds.size === 0) return teams;
-
-		return teams.filter((t) => aliveTeamIds.has(t.id));
-	}, [isSwissStage, swissTeamRecords, expectedSwissBucket, teams]);
+		if (!isSwissStage || !swissTeamRecords) return teams;
+		return teams;
+	}, [isSwissStage, swissTeamRecords, teams]);
 
 	// Playoff-after-Swiss: when editing a playoff match, only show qualified teams
 	const isPlayoffAfterSwiss = stages.some(
