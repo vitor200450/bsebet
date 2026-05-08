@@ -1609,11 +1609,17 @@ async function generateSwissSuggestedRound(params: {
 		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
 	});
 
-		const suggestion = suggestSwissRound({
-			settings: params.stage.settings,
-			seeds: seededTeams.map((team: any) => team.teamId),
-			matches: swissMatches,
-		});
+	const suggestion = suggestSwissRound({
+		settings: params.stage.settings,
+		seeds: seededTeams.map((team: any) => team.teamId),
+		matches: swissMatches,
+	});
+
+	if (suggestion.matches.length === 0) {
+		throw new Error(
+			"Swiss stage is complete. No more matches to generate.",
+		);
+	}
 
 	for (const [index, pairing] of suggestion.matches.entries()) {
 		await params.db.insert(matches).values({
