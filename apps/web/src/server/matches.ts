@@ -1534,11 +1534,11 @@ async function generateSwissSuggestedRound(params: {
 		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
 	});
 
-	const suggestion = suggestSwissRound({
-		settings: params.stage.settings,
-		seeds: seededTeams.map((team: any) => team.seed),
-		matches: swissMatches,
-	});
+		const suggestion = suggestSwissRound({
+			settings: params.stage.settings,
+			seeds: seededTeams.map((team: any) => team.teamId),
+			matches: swissMatches,
+		});
 
 	for (const [index, pairing] of suggestion.matches.entries()) {
 		await params.db.insert(matches).values({
@@ -1577,10 +1577,10 @@ async function generateSwissPlayoffDraft(params: {
 			eq(tt.tournamentId, params.tournamentId),
 	});
 	const standings = buildSwissStandings({
-		settings: params.swissStage.settings,
-		seeds: tournamentTeams.map((team: any) => team.seed),
-		matches: swissMatches,
-	});
+			settings: params.swissStage.settings,
+			seeds: tournamentTeams.map((team: any) => team.teamId),
+			matches: swissMatches,
+		});
 	const qualified = seedSwissPlayoff(
 		standings.qualified.map((q) => ({
 			teamId: q.teamId,
@@ -1963,11 +1963,16 @@ const suggestSwissRoundFn = createServerFn({ method: "POST" }).handler(
 		);
 		if (!stage) throw new Error("Stage not found");
 
-		return generateSwissSuggestedRound({
-			db,
-			tournamentId,
-			stage,
-		});
+		try {
+			return await generateSwissSuggestedRound({
+				db,
+				tournamentId,
+				stage,
+			});
+		} catch (error) {
+			console.error("generateSwissSuggestedRound error:", error);
+			throw error;
+		}
 	},
 );
 
