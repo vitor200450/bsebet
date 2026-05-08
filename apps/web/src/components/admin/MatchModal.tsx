@@ -312,6 +312,56 @@ export function MatchModal({
 		return teams.filter((t) => aliveTeamIds.has(t.id));
 	}, [isSwissStage, swissTeamRecords, expectedSwissBucket, teams]);
 
+	// Playoff-after-Swiss: when editing a playoff match, only show qualified teams
+	const isPlayoffAfterSwiss = stages.some(
+		(s) => s.type === "Swiss",
+	) && stages.some(
+		(s) =>
+			s.id === formData.stageId &&
+			(s.type === "Single Elimination" || s.type === "Double Elimination"),
+	);
+	const swissStageData = useMemo(() => {
+		if (!isPlayoffAfterSwiss) return null;
+		const swissStage = stages.find((s: any) => s.type === "Swiss");
+		if (!swissStage) return null;
+		const swissStageSettings = (swissStage as any)?.settings;
+		if (!swissStageSettings) return null;
+		const swissMatches = matches.filter(
+			(m: any) => m.stageId === swissStage.id,
+		);
+		const teamIdSet = new Set<number>();
+		swissMatches.forEach((m: any) => {
+			if (m.teamAId) teamIdSet.add(m.teamAId);
+			if (m.teamBId) teamIdSet.add(m.teamBId);
+		});
+		const seeds = Array.from(teamIdSet);
+		if (seeds.length === 0) return null;
+		try {
+			return buildSwissStandings({
+				settings: swissStageSettings as any,
+				seeds,
+				matches: swissMatches,
+			});
+		} catch {
+			return null;
+		}
+	}, [isPlayoffAfterSwiss, stages, matches]);
+	const playoffFilteredTeams = useMemo(() => {
+		if (!isPlayoffAfterSwiss || !swissStageData) return teams;
+		const qualifiedIds = new Set(
+			swissStageData.qualified.map((team) => team.teamId),
+		);
+		if (qualifiedIds.size === 0) return teams;
+		return teams.filter((t) => qualifiedIds.has(t.id));
+	}, [isPlayoffAfterSwiss, swissStageData, teams]);
+
+	// Final filtered teams: use swissFilteredTeams for swiss stage, playoffFilteredTeams for playoff, full list otherwise
+	const filteredTeams = isSwissStage
+		? swissFilteredTeams
+		: isPlayoffAfterSwiss
+			? playoffFilteredTeams
+			: teams;
+
 	const canAutoResolveOneSidedWalkover =
 		formData.resultType === "wo" &&
 		((!!resolvedTeamAId && !resolvedTeamBId) ||
@@ -1277,7 +1327,7 @@ export function MatchModal({
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const)
-									.filter((type) => !(isSwissStage && type !== "team"))
+									.filter((type) => !((isSwissStage || isPlayoffAfterSwiss) && type !== "team"))
 									.map((type) => (
 									<button
 										key={type}
@@ -1301,13 +1351,15 @@ export function MatchModal({
 									label=""
 									value={formData.teamA}
 									onChange={(val) => setFormData({ ...formData, teamA: val })}
-									options={swissFilteredTeams.map((t) => ({
+									options={filteredTeams.map((t) => ({
 										value: String(t.id),
 										label:
 											t.name +
 											(isSwissStage && swissTeamRecords
 												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
-												: ""),
+												: isPlayoffAfterSwiss && swissStageData
+													? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
+													: ""),
 									}))}
 								/>
 							)}
@@ -1400,7 +1452,7 @@ export function MatchModal({
 							</label>
 							<div className="mb-2 flex gap-2">
 								{(["team", "match", "group"] as const)
-									.filter((type) => !(isSwissStage && type !== "team"))
+									.filter((type) => !((isSwissStage || isPlayoffAfterSwiss) && type !== "team"))
 									.map((type) => (
 									<button
 										key={type}
@@ -1424,13 +1476,15 @@ export function MatchModal({
 									label=""
 									value={formData.teamB}
 									onChange={(val) => setFormData({ ...formData, teamB: val })}
-									options={swissFilteredTeams.map((t) => ({
+									options={filteredTeams.map((t) => ({
 										value: String(t.id),
 										label:
 											t.name +
 											(isSwissStage && swissTeamRecords
 												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
-												: ""),
+												: isPlayoffAfterSwiss && swissStageData
+													? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
+													: ""),
 									}))}
 								/>
 							)}
