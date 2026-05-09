@@ -730,7 +730,9 @@ export function BettingCarousel({
 											{t("pickScore")}
 										</span>
 									</div>
-									<div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
+									<div
+										className={`grid gap-2 md:gap-3 ${scoreOptions.length === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 justify-center"}`}
+									>
 										{scoreOptions.map((option) => {
 											const isOptionSelected = selectedScore === option.label;
 											const isDisabled = !selectedWinnerId || isReadOnly;

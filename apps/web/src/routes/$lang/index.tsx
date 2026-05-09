@@ -17,6 +17,7 @@ import {
 import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
 import { isBracketMatchLike } from "../../utils/recovery";
+import { deriveMatchFormat } from "@/lib/utils";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -527,7 +528,7 @@ function formatMatches(
 			matchDayId: m.matchDay?.id ?? m.matchDayId ?? null,
 			matchDayLabel: m.matchDay?.label ?? null,
 			matchDayStatus: m.matchDay?.status ?? null,
-			format: "bo5" as const,
+			format: deriveMatchFormat(m.stageId, tournament?.stages),
 			stats: {
 				regionA: m.teamA?.region || "SA",
 				regionB: m.teamB?.region || "SA",
@@ -2519,9 +2520,7 @@ function Home() {
 	const swissMatches = useMemo(() => {
 		return bracketMatches.filter(
 			(m: any) =>
-				m.roundIndex != null &&
-				m.roundIndex >= 0 &&
-				m.bracketSide !== "groups",
+				m.roundIndex != null && m.roundIndex >= 0 && m.bracketSide !== "groups",
 		);
 	}, [bracketMatches]);
 

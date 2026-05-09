@@ -1,4 +1,10 @@
-import { bets, matchDays, matches, pointAdjustments } from "@bsebet/db/schema";
+import {
+	bets,
+	matchDays,
+	matches,
+	pointAdjustments,
+	tournamentTeams,
+} from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -1590,10 +1596,32 @@ async function generateSwissOpeningRound(params: {
 
 	const seededTeams = await params.db.query.tournamentTeams.findMany({
 		where: (tt: any, { eq }: any) => eq(tt.tournamentId, params.tournamentId),
-		orderBy: (tt: any, { asc }: any) => [asc(tt.seed)],
+		orderBy: (tt: any, { asc }: any) => [asc(tt.seed), asc(tt.teamId)],
 	});
 
-	const ordered = seededTeams.filter((team: any) => team.seed !== null);
+	// Auto-assign seeds to teams that don't have them
+	const teamsMissingSeeds = seededTeams.filter(
+		(team: any) => team.seed === null,
+	);
+	if (teamsMissingSeeds.length > 0) {
+		for (let i = 0; i < seededTeams.length; i++) {
+			if (seededTeams[i].seed === null) {
+				const newSeed = i + 1;
+				await params.db
+					.update(tournamentTeams)
+					.set({ seed: newSeed })
+					.where(
+						and(
+							eq(tournamentTeams.tournamentId, params.tournamentId),
+							eq(tournamentTeams.teamId, seededTeams[i].teamId),
+						),
+					);
+				seededTeams[i].seed = newSeed;
+			}
+		}
+	}
+
+	const ordered = seededTeams;
 	const pairs = [
 		[ordered[0], ordered[7]],
 		[ordered[1], ordered[6]],

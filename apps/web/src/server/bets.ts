@@ -127,13 +127,14 @@ const submitBetFn = createServerFn({
 		throw new Error(t("errors:winnerMustHaveMorePoints"));
 	}
 
-	// Determine Best Of X (default to Bo5)
+	// Determine Best Of X from stage settings (default to Bo5)
 	let bestOf = 5;
-	const format = match.tournament?.format?.toLowerCase() || "";
-	if (format.includes("bo1")) bestOf = 1;
-	else if (format.includes("bo3")) bestOf = 3;
-	else if (format.includes("bo5")) bestOf = 5;
-	else if (format.includes("bo7")) bestOf = 7;
+	const stage = ((match.tournament?.stages as any[]) ?? []).find(
+		(s: any) => s.id === match.stageId,
+	);
+	const matchType = stage?.settings?.matchType;
+	if (matchType === "Bo3") bestOf = 3;
+	else if (matchType === "Bo5") bestOf = 5;
 
 	const winsNeeded = Math.ceil(bestOf / 2);
 
@@ -399,13 +400,14 @@ const submitMultipleBetsFn = createServerFn({
 			continue;
 		}
 
-		// Determine Best Of X (default to Bo5)
+		// Determine Best Of X from stage settings (default to Bo5)
 		let bestOf = 5;
-		const format = match.tournament?.format?.toLowerCase() || "";
-		if (format.includes("bo1")) bestOf = 1;
-		else if (format.includes("bo3")) bestOf = 3;
-		else if (format.includes("bo5")) bestOf = 5;
-		else if (format.includes("bo7")) bestOf = 7;
+		const stage = ((match.tournament?.stages as any[]) ?? []).find(
+			(s: any) => s.id === match.stageId,
+		);
+		const matchType = stage?.settings?.matchType;
+		if (matchType === "Bo3") bestOf = 3;
+		else if (matchType === "Bo5") bestOf = 5;
 
 		const winsNeeded = Math.ceil(bestOf / 2);
 

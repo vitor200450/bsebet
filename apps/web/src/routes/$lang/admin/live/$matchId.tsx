@@ -47,11 +47,13 @@ function LiveMatchControl() {
 		alert(t("live.tournamentMustBeActive"));
 	}
 
-	const matchFormat = match.tournament?.format?.toLowerCase() || "";
 	let bestOf = 5;
-	if (matchFormat.includes("bo3")) bestOf = 3;
-	else if (matchFormat.includes("bo5")) bestOf = 5;
-	else if (matchFormat.includes("bo7")) bestOf = 7;
+	const stage = ((match.tournament?.stages as any[]) ?? []).find(
+		(s: any) => s.id === match.stageId,
+	);
+	const matchType = stage?.settings?.matchType;
+	if (matchType === "Bo3") bestOf = 3;
+	else if (matchType === "Bo5") bestOf = 5;
 
 	const winsNeeded = Math.ceil(bestOf / 2);
 	const isMatchPointA = scoreA === winsNeeded - 1;
