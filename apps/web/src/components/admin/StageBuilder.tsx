@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Plus, Settings, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CustomDatePicker, CustomSelect } from "./CustomInputs";
@@ -335,6 +336,43 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 									</>
+								)}
+								{stage.type === "Single Elimination" && (
+									<div className="col-span-2 flex items-center gap-3 md:col-span-4">
+										<button
+											type="button"
+											onClick={() =>
+												updateSettings(
+													index,
+													"enableThirdPlaceMatch",
+													!stage.settings.enableThirdPlaceMatch,
+												)
+											}
+											className={clsx(
+												"h-6 w-12 rounded-full border-2 border-black transition-colors",
+												stage.settings.enableThirdPlaceMatch
+													? "bg-[#ccff00]"
+													: "bg-white",
+											)}
+										>
+											<div
+												className={clsx(
+													"h-4 w-4 rounded-full border-2 border-black bg-white transition-transform",
+													stage.settings.enableThirdPlaceMatch
+														? "translate-x-6"
+														: "translate-x-0.5",
+												)}
+											/>
+										</button>
+										<div>
+											<label className="block font-black text-[10px] text-gray-500 uppercase">
+												{t("stageBuilder.thirdPlaceMatch")}
+											</label>
+											<p className="text-[9px] text-gray-400">
+												{t("stageBuilder.thirdPlaceMatchHelp")}
+											</p>
+										</div>
+									</div>
 								)}
 							</div>
 						</div>
