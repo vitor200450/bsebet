@@ -157,41 +157,38 @@ export function SwissStageView({
 		<div className="flex w-full flex-col gap-8">
 			{/* Standings Buckets */}
 			{Object.keys(buckets).length > 0 && (
-				<section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+				<section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
 					{Object.entries(buckets).map(([bucket, teams]) => (
 						<div
 							key={bucket}
-							className="border-[3px] border-black bg-white p-4 shadow-[3px_3px_0_0_#000]"
+							className="border-2 border-black bg-white p-3"
 						>
-							<div className="mb-3 flex items-center justify-between">
-								<h3 className="font-black text-black text-lg uppercase italic">
-									{bucket}
-								</h3>
-								<span className="border-2 border-black bg-[#ccff00] px-2 py-1 font-black text-[10px] text-black uppercase">
+							<div className="mb-2 flex items-center gap-2">
+								<span className="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-[#ccff00] font-black text-[10px] text-black">
 									{teams.length}
 								</span>
+								<h3 className="font-black text-black text-sm uppercase tracking-tight">
+									{bucket}
+								</h3>
 							</div>
-							<div className="flex flex-col gap-2">
+							<div className="flex flex-col gap-1">
 								{teams.map((team) => (
 									<div
 										key={team.id}
-										className="flex min-w-0 items-center gap-2 border-2 border-black bg-[#f0f0f0] px-2 py-1.5"
+										className="flex items-center gap-2 rounded-sm bg-[#f0f0f0] px-2 py-1"
 									>
 										<TeamLogo
 											teamName={team.name}
 											logoUrl={team.logoUrl}
 											size="sm"
+											className="h-5 w-5 shrink-0"
 										/>
-										<span className="min-w-0 truncate font-black text-black text-xs uppercase">
+										<span
+											className="overflow-hidden text-ellipsis font-bold text-black text-xs uppercase"
+											title={team.name}
+										>
 											{team.name}
 										</span>
-										{team.status && (
-											<span className="ml-auto shrink-0 font-bold text-[10px] text-gray-600 uppercase">
-												{t(`swiss.${team.status}`, {
-													defaultValue: team.status,
-												})}
-											</span>
-										)}
 									</div>
 								))}
 							</div>
@@ -205,11 +202,11 @@ export function SwissStageView({
 				{groupedRounds.map((round) => (
 					<div
 						key={round.roundLabel}
-						className="rounded-xl border-[3px] border-black bg-white p-4 shadow-[3px_3px_0_0_#000]"
+						className="rounded-lg border-2 border-black bg-white p-4"
 					>
-						<h3 className="mb-4 font-black text-black text-xl uppercase italic">
+						<div className="mb-3 inline-block rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-xs uppercase tracking-wider">
 							{round.roundLabel}
-						</h3>
+						</div>
 						<div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
 							{round.matches.map((match: any) =>
 								isInteractive && onUpdatePrediction ? (
