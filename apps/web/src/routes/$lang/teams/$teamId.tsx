@@ -89,7 +89,7 @@ function TeamDetailsPage() {
 		);
 
 	return (
-		<div className="min-h-screen bg-[#f0f0f0] pb-20 font-sans">
+		<div className="min-h-screen bg-paper pb-20 font-sans">
 			{/* Paper texture overlay */}
 			<div
 				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
@@ -116,7 +116,7 @@ function TeamDetailsPage() {
 							className="flex w-fit items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
 							<ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
-							<span className="hidden sm:inline">Voltar</span>
+							<span className="hidden sm:inline">{t("back")}</span>
 						</Link>
 					</div>
 
@@ -143,16 +143,16 @@ function TeamDetailsPage() {
 								</div>
 							)}
 
-							<h1 className="mb-2 font-black text-3xl text-white uppercase italic tracking-tighter md:text-5xl">
+							<h1 className="mb-2 font-black text-3xl text-white uppercase italic tracking-tighter [text-wrap:balance] md:text-5xl">
 								{team.name}
 							</h1>
 
 							<div className="flex flex-wrap items-center justify-center gap-3 font-bold text-sm text-white/80 uppercase md:justify-start">
-								<span className="rounded-md bg-white/10 px-2 py-1">
-									{finishedMatches.length} Partidas
+								<span className="rounded-md bg-white/10 px-2 py-1 tabular-nums">
+									{t("stats.matchCount", { count: finishedMatches.length })}
 								</span>
-								<span className="rounded-md bg-white/10 px-2 py-1">
-									{tournaments.length} Torneios
+								<span className="rounded-md bg-white/10 px-2 py-1 tabular-nums">
+									{t("stats.tournamentCount", { count: tournaments.length })}
 								</span>
 							</div>
 						</div>
@@ -165,39 +165,30 @@ function TeamDetailsPage() {
 				<div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-5">
 					<StatCard
 						icon={<Trophy className="h-5 w-5" />}
-						label="Partidas"
+						label={t("stats.matches")}
 						value={finishedMatches.length.toString()}
-						color="bg-white"
 					/>
 					<StatCard
 						icon={<Target className="h-5 w-5" />}
 						label={t("stats.winRate")}
 						value={`${winRate}%`}
-						color="bg-brawl-yellow"
+						highlight
 					/>
 					<StatCard
 						icon={<TrendingUp className="h-5 w-5 text-green-600" />}
 						label={t("stats.wins")}
 						value={wins.toString()}
-						color="bg-white"
 					/>
 					<StatCard
 						icon={<TrendingUp className="h-5 w-5 rotate-180 text-red-600" />}
-						label="Derrotas"
+						label={t("stats.losses")}
 						value={losses.toString()}
-						color="bg-white"
 					/>
 					<StatCard
 						icon={<Award className="h-5 w-5" />}
 						label={t("stats.currentStreak")}
 						value={currentStreak > 0 ? `${currentStreak}${streakType}` : "—"}
-						color={
-							streakType === "W"
-								? "bg-green-100 border-green-500"
-								: streakType === "L"
-									? "bg-red-100 border-red-500"
-									: "bg-white"
-						}
+						streakType={streakType}
 					/>
 				</div>
 
@@ -206,7 +197,7 @@ function TeamDetailsPage() {
 					<div className="mb-12">
 						<div className="mb-6 flex items-center gap-3">
 							<div className="h-8 w-1 rounded-full bg-[#2e5cff]" />
-							<h2 className="font-black text-2xl text-[#121212] uppercase italic">
+							<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
 								{t("sections.upcoming")}
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
@@ -459,7 +450,7 @@ function TeamDetailsPage() {
 				<div className="mb-12">
 					<div className="mb-6 flex items-center gap-3">
 						<div className="h-8 w-1 rounded-full bg-[#121212]" />
-						<h2 className="font-black text-2xl text-[#121212] uppercase italic">
+						<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
 							{t("sections.recentHistory")}
 						</h2>
 					</div>
@@ -517,7 +508,7 @@ function TeamDetailsPage() {
 													<div className="flex items-center gap-1 border-[3px] border-black bg-tape px-3 py-1.5 shadow-[2px_2px_0_0_#000]">
 														<span
 															className={clsx(
-																"font-black font-body text-xl",
+																"font-black font-body text-xl tabular-nums",
 																isWin ? "text-brawl-blue" : "text-black",
 															)}
 														>
@@ -526,7 +517,7 @@ function TeamDetailsPage() {
 														<span className="font-black text-black">:</span>
 														<span
 															className={clsx(
-																"font-black font-body text-xl",
+																"font-black font-body text-xl tabular-nums",
 																!isWin ? "text-brawl-red" : "text-black",
 															)}
 														>
@@ -650,7 +641,7 @@ function TeamDetailsPage() {
 															<Trophy className="h-4 w-4 text-gray-900" />
 														</div>
 														<span className="font-bold text-[#121212] uppercase">
-															{match.tournament?.name || "Torneio"}
+															{match.tournament?.name || t("tournament")}
 														</span>
 													</div>
 												)}
@@ -860,8 +851,8 @@ function TeamDetailsPage() {
 					<div>
 						<div className="mb-6 flex items-center gap-3">
 							<div className="h-8 w-1 rounded-full bg-[#121212]" />
-							<h2 className="font-black text-2xl text-[#121212] uppercase italic">
-								Torneios
+							<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
+								{t("tournaments")}
 							</h2>
 						</div>
 
@@ -893,7 +884,7 @@ function TeamDetailsPage() {
 											{tournament.name}
 										</h3>
 										<p className="font-bold text-[10px] text-gray-600 uppercase">
-											{tournament.region || "Global"}
+											{tournament.region || t("region.global")}
 										</p>
 									</div>
 
@@ -927,22 +918,30 @@ function StatCard({
 	icon,
 	label,
 	value,
-	color,
+	highlight,
+	streakType,
 }: {
 	icon: React.ReactNode;
 	label: string;
 	value: string;
-	color: string;
+	highlight?: boolean;
+	streakType?: "W" | "L" | null;
 }) {
 	return (
 		<div
 			className={clsx(
-				"flex flex-col items-center justify-center rounded-lg border-2 border-black p-3 text-center shadow-[3px_3px_0_0_#000]",
-				color,
+				"flex flex-col items-center justify-center rounded-lg border-2 border-black p-3 text-center shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]",
+				highlight
+					? "bg-brawl-yellow"
+					: streakType === "W"
+						? "bg-green-100 border-green-500"
+						: streakType === "L"
+							? "bg-red-100 border-red-500"
+							: "bg-white",
 			)}
 		>
 			<div className="mb-1 text-black">{icon}</div>
-			<div className="font-black text-2xl text-black">{value}</div>
+			<div className="font-black text-2xl text-black tabular-nums">{value}</div>
 			<div className="font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 				{label}
 			</div>
