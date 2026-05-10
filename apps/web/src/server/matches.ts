@@ -1133,6 +1133,7 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 							"lower",
 							"main",
 							"grand_final",
+							"third_place",
 						]),
 						swissStageIds.length > 0
 							? not(inArray(matches.stageId, swissStageIds))
@@ -1423,6 +1424,46 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 					}
 					currentRoundMatches = nextRoundMatches;
 					roundIdx++;
+				}
+
+				// Create third place match if enabled and there were semifinals
+				if (
+					stage.type === "Single Elimination" &&
+					stage.settings?.enableThirdPlaceMatch &&
+					firstRoundMatchesCount >= 2
+				) {
+					const semifinalRoundIndex = roundIdx - 2;
+					const semifinalMatches = await db.query.matches.findMany({
+						where: and(
+							eq(matches.tournamentId, tournamentId),
+							eq(matches.stageId, stage.id),
+							eq(matches.roundIndex, semifinalRoundIndex),
+							eq(matches.bracketSide, side),
+						),
+						orderBy: [asc(matches.displayOrder)],
+						limit: 2,
+					});
+
+					if (semifinalMatches.length === 2) {
+						const [semiA, semiB] = semifinalMatches;
+						await db.insert(matches).values({
+							tournamentId,
+							stageId: stage.id,
+							bracketSide: "third_place",
+							roundIndex: semifinalRoundIndex + 1,
+							name: "Third Place Match",
+							label: "Third Place Match",
+							teamAPreviousMatchId: semiA.id,
+							teamBPreviousMatchId: semiB.id,
+							teamAPreviousMatchResult: "loser",
+							teamBPreviousMatchResult: "loser",
+							displayOrder: 1,
+							startTime: playoffStartTime,
+							matchDayId: playoffMatchDay.id,
+							status: "scheduled",
+							isBettingEnabled: false,
+						});
+					}
 				}
 
 				if (stage.type === "Double Elimination") {
