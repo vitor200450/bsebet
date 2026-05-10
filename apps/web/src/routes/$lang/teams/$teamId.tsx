@@ -464,7 +464,7 @@ function TeamDetailsPage() {
 
 					{recentMatches.length > 0 ? (
 						<div className="space-y-4">
-							{recentMatches.map((match, index) => {
+							{recentMatches.map((match) => {
 								const isTeamA = match.teamAId === team.id;
 								const opponent = isTeamA ? match.teamB : match.teamA;
 								const isWin = match.winnerId === team.id;
@@ -673,9 +673,23 @@ function TeamDetailsPage() {
 														{isWin ? "W" : "L"}
 													</span>
 												</div>
-												{/* Small match number badge */}
-												<div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-[3px] border-black bg-brawl-red font-black text-[11px] text-white shadow-[2px_2px_0_0_#000]">
-													{index + 1}
+												{/* Round/stage badge */}
+												<div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-sm border-[3px] border-black bg-ink font-black text-[9px] text-[#ccff00] shadow-[2px_2px_0_0_#000]">
+													{match.label?.includes("Semi")
+														? "SF"
+														: match.label?.includes("Final")
+															? "F"
+															: match.label?.includes("Third")
+																? "3rd"
+																: match.label?.includes("Quarter")
+																	? "QF"
+																	: match.label?.includes("Swiss")
+																		? `R${(match.roundIndex ?? 0) + 1}`
+																		: match.label?.includes("Group")
+																			? "GR"
+																			: match.label?.includes("Opening")
+																				? "OP"
+																				: "—"}
 												</div>
 											</div>
 
