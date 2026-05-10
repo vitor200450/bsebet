@@ -4,11 +4,13 @@ import {
 	matches,
 	pointAdjustments,
 	tournamentTeams,
+	tournaments,
 } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
 import { settleBets } from "./scoring";
+import { deriveMatchFormat } from "@/lib/utils";
 import {
 	buildSwissStandings,
 	seedSwissPlayoff,
@@ -43,23 +45,26 @@ function validateWalkoverData(updateData: {
 	}
 }
 
-function applyWalkoverDefaults(updateData: {
-	status?: "scheduled" | "live" | "finished";
-	resultType?: "normal" | "wo";
-	winnerId?: number | null;
-	teamAId?: number | null;
-	teamBId?: number | null;
-	scoreA?: number | null;
-	scoreB?: number | null;
-}): void {
+function applyWalkoverDefaults(
+	updateData: {
+		status?: "scheduled" | "live" | "finished";
+		resultType?: "normal" | "wo";
+		winnerId?: number | null;
+		teamAId?: number | null;
+		teamBId?: number | null;
+		scoreA?: number | null;
+		scoreB?: number | null;
+	},
+	winsNeeded: number = 3,
+): void {
 	if (updateData.resultType !== "wo" || updateData.status !== "finished") {
 		return;
 	}
 
 	if (updateData.winnerId) {
 		if (updateData.teamAId || updateData.teamBId) {
-			updateData.scoreA = updateData.winnerId === updateData.teamAId ? 3 : 0;
-			updateData.scoreB = updateData.winnerId === updateData.teamBId ? 3 : 0;
+			updateData.scoreA = updateData.winnerId === updateData.teamAId ? winsNeeded : 0;
+			updateData.scoreB = updateData.winnerId === updateData.teamBId ? winsNeeded : 0;
 		}
 		return;
 	}
@@ -182,6 +187,18 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 			),
 	});
 
+	// Load tournament stages for walkover score format detection
+	const progTournament = finishedMatch.tournamentId
+		? await db.query.tournaments.findFirst({
+				where: eq(tournaments.id, finishedMatch.tournamentId),
+				columns: { stages: true },
+			})
+		: null;
+	const progStages = (progTournament?.stages ?? []) as Array<{
+		id: string;
+		settings?: { matchType?: string };
+	}>;
+
 	console.log(
 		`[bracket-progression] match ${finishedMatch.id} (winner=${finishedMatch.winnerId}) found ${dependentMatches.length} dependents:`,
 		dependentMatches.map((m: any) => ({
@@ -240,12 +257,18 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 				}
 
 				if (autoWinnerId) {
+					const depFormat = deriveMatchFormat(
+						depMatch.stageId,
+						progStages,
+					);
+					const depWinsNeeded = depFormat === "bo3" ? 2 : 3;
+
 					await db
 						.update(matches)
 						.set({
 							winnerId: autoWinnerId,
-							scoreA: autoWinnerId === nextTeamAId ? 3 : 0,
-							scoreB: autoWinnerId === nextTeamBId ? 3 : 0,
+							scoreA: autoWinnerId === nextTeamAId ? depWinsNeeded : 0,
+							scoreB: autoWinnerId === nextTeamBId ? depWinsNeeded : 0,
 						})
 						.where(eq(matches.id, depMatch.id));
 
@@ -421,6 +444,20 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			? updateData.scoreB
 			: currentMatch.scoreB;
 
+		// Determine match format for walkover score defaulting
+		const tournament = currentMatch.tournamentId
+			? await db.query.tournaments.findFirst({
+					where: eq(tournaments.id, currentMatch.tournamentId),
+					columns: { stages: true },
+				})
+			: null;
+		const stages = (tournament?.stages ?? []) as Array<{
+			id: string;
+			settings?: { matchType?: string };
+		}>;
+		const format = deriveMatchFormat(currentMatch.stageId, stages);
+		const winsNeeded = format === "bo3" ? 2 : 3;
+
 		const normalizedWalkoverState = {
 			status: nextStatus,
 			resultType: nextResultType,
@@ -431,7 +468,7 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			scoreB: nextScoreB,
 		};
 
-		applyWalkoverDefaults(normalizedWalkoverState);
+		applyWalkoverDefaults(normalizedWalkoverState, winsNeeded);
 
 		if (
 			normalizedWalkoverState.resultType === "wo" &&
@@ -460,11 +497,11 @@ const updateMatchFn = createServerFn({ method: "POST" }).handler(
 			if (updateData.winnerId) {
 				updateData.scoreA =
 					updateData.winnerId === (updateData.teamAId ?? currentMatch.teamAId)
-						? 3
+						? winsNeeded
 						: 0;
 				updateData.scoreB =
 					updateData.winnerId === (updateData.teamBId ?? currentMatch.teamBId)
-						? 3
+						? winsNeeded
 						: 0;
 			}
 		}
@@ -692,6 +729,20 @@ const refreshWalkoverWinnerFn = createServerFn({ method: "POST" }).handler(
 			);
 		}
 
+		// Determine match format for walkover score
+		const tournamentForRefresh = match.tournamentId
+			? await db.query.tournaments.findFirst({
+					where: eq(tournaments.id, match.tournamentId),
+					columns: { stages: true },
+				})
+			: null;
+		const refreshStages = (tournamentForRefresh?.stages ?? []) as Array<{
+			id: string;
+			settings?: { matchType?: string };
+		}>;
+		const refreshFormat = deriveMatchFormat(match.stageId, refreshStages);
+		const refreshWinsNeeded = refreshFormat === "bo3" ? 2 : 3;
+
 		await assertTournamentStatusBeforeMatchWrite({
 			db,
 			current: {
@@ -704,8 +755,8 @@ const refreshWalkoverWinnerFn = createServerFn({ method: "POST" }).handler(
 			next: {
 				status: match.status,
 				winnerId: nextWinnerId,
-				scoreA: nextWinnerId === match.teamAId ? 3 : 0,
-				scoreB: nextWinnerId === match.teamBId ? 3 : 0,
+				scoreA: nextWinnerId === match.teamAId ? refreshWinsNeeded : 0,
+				scoreB: nextWinnerId === match.teamBId ? refreshWinsNeeded : 0,
 			},
 		});
 
@@ -713,8 +764,8 @@ const refreshWalkoverWinnerFn = createServerFn({ method: "POST" }).handler(
 			.update(matches)
 			.set({
 				winnerId: nextWinnerId,
-				scoreA: nextWinnerId === match.teamAId ? 3 : 0,
-				scoreB: nextWinnerId === match.teamBId ? 3 : 0,
+				scoreA: nextWinnerId === match.teamAId ? refreshWinsNeeded : 0,
+				scoreB: nextWinnerId === match.teamBId ? refreshWinsNeeded : 0,
 			})
 			.where(eq(matches.id, matchId))
 			.returning();
@@ -2036,13 +2087,16 @@ const resetTournamentResultsFn = createServerFn({ method: "POST" }).handler(
 				.where(eq(matches.id, matchId));
 		}
 
-		// Reset bet settlement fields (keep the predictions, clear the scores)
+		// Delete all bets for the tournament (predictions are no longer valid after reset)
 		if (matchIds.length > 0) {
-			await db
-				.update(bets)
-				.set({ pointsEarned: 0, isPerfectPick: false, isUnderdogPick: false })
-				.where(inArray(bets.matchId, matchIds));
+			await db.delete(bets).where(inArray(bets.matchId, matchIds));
 		}
+
+		// Reset all match days to "open" so users can place fresh bets
+		await db
+			.update(matchDays)
+			.set({ status: "open" })
+			.where(eq(matchDays.tournamentId, tournamentId));
 
 		return {
 			success: true,

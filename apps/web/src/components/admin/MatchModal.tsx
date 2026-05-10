@@ -10,6 +10,7 @@ import {
 	updateMatch,
 } from "@/server/matches";
 import { buildSwissStandings } from "@/server/swiss";
+import { deriveMatchFormat } from "@/lib/utils";
 import {
 	CustomDatePicker,
 	CustomSelect,
@@ -359,12 +360,12 @@ export function MatchModal({
 	useEffect(() => {
 		if (formData.resultType === "wo") return;
 
-		// Determine format from tournament or default to BO5
-		const matchFormat = matchToEdit?.tournament?.format?.toLowerCase() || "bo5";
-		let bestOf = 5;
-		if (matchFormat.includes("bo3")) bestOf = 3;
-		else if (matchFormat.includes("bo5")) bestOf = 5;
-		else if (matchFormat.includes("bo7")) bestOf = 7;
+		// Determine format from stage config or default to BO5
+		const matchFormat = deriveMatchFormat(
+			matchToEdit?.stageId ?? null,
+			stages,
+		);
+		const bestOf = matchFormat === "bo3" ? 3 : 5;
 
 		const winsNeeded = Math.ceil(bestOf / 2);
 		const { scoreA, scoreB } = formData;
@@ -445,7 +446,8 @@ export function MatchModal({
 		formData.status,
 		matchToEdit?.teamAId,
 		matchToEdit?.teamBId,
-		matchToEdit?.tournament?.format,
+		matchToEdit?.stageId,
+		stages,
 	]);
 
 	// Build payload helper

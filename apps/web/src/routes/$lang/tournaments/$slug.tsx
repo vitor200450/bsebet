@@ -21,8 +21,8 @@ import { TournamentPodium } from "@/components/TournamentPodium";
 import { i18next } from "@/i18n";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
-import { extractColorsServer } from "@/server/color-extractor";
 import { deriveMatchFormat } from "@/lib/utils";
+import { extractColorsServer } from "@/server/color-extractor";
 import { getTournamentBySlug } from "@/server/tournaments";
 
 export const Route = createFileRoute("/$lang/tournaments/$slug")({
@@ -808,7 +808,10 @@ function TournamentDetailsPage() {
 														| "scheduled"
 														| "live"
 														| "finished",
-													format: deriveMatchFormat(match.stageId, (tournament.stages as any[]) ?? null),
+													format: deriveMatchFormat(
+														match.stageId,
+														(tournament.stages as any[]) ?? null,
+													),
 													teamA: match.teamA as any,
 													teamB: match.teamB as any,
 												}}

@@ -5,6 +5,7 @@ import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { deriveMatchFormat } from "@/lib/utils";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
@@ -17,7 +18,6 @@ import {
 import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
 import { isBracketMatchLike } from "../../utils/recovery";
-import { deriveMatchFormat } from "@/lib/utils";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -3181,7 +3181,7 @@ function Home() {
 		} else {
 			const key = `bse-predictions-${selectedTournamentId}-${userId}`;
 			const saved = localStorage.getItem(key);
-			if (saved) {
+				if (saved) {
 				try {
 					const parsed = JSON.parse(saved);
 
@@ -3196,6 +3196,20 @@ function Home() {
 						});
 					}
 
+					// Validate predicted winners still belong to current match rosters.
+					// Admin may have swapped teams after predictions were saved.
+					for (const match of allCarouselMatches) {
+						const mid = Number(match.id);
+						const pred = parsed[mid];
+						if (!pred?.winnerId) continue;
+						const tA = match.teamA?.id ? Number(match.teamA.id) : null;
+						const tB = match.teamB?.id ? Number(match.teamB.id) : null;
+						const predictedId = Number(pred.winnerId);
+						if (predictedId !== tA && predictedId !== tB) {
+							delete parsed[mid];
+						}
+					}
+
 					setPredictions(parsed);
 				} catch (e) {
 					console.error("Failed to load predictions", e);
@@ -3205,8 +3219,18 @@ function Home() {
 				// We now pre-fill the actual score as well to avoid the "?-?" display issue.
 				const initial: Record<number, Prediction> = {};
 				userBets.forEach((bet: any) => {
+					// Skip bets where the predicted team is no longer in the match
+					// (admin may have swapped teams after the bet was placed)
+					const match = allCarouselMatches.find(
+						(m: any) => Number(m.id) === Number(bet.matchId),
+					);
+					const predictedId = Number(bet.predictedWinnerId);
+					const teamAId = match?.teamA?.id ? Number(match.teamA.id) : null;
+					const teamBId = match?.teamB?.id ? Number(match.teamB.id) : null;
+					if (predictedId !== teamAId && predictedId !== teamBId) return;
+
 					initial[bet.matchId] = {
-						winnerId: bet.predictedWinnerId ?? 0,
+						winnerId: predictedId,
 						score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
 					};
 				});
