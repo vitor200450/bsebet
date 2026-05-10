@@ -423,6 +423,10 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 			userBets: userBetsData,
 			matchDays: allMatchDays,
 			activeMatchDayId: activeMatchDay?.id || null,
+			tournamentStages: (tournament?.stages ?? []) as Array<{
+				id: string;
+				type: string;
+			}>,
 		};
 	},
 );
@@ -434,6 +438,7 @@ const getHomeTournamentData = getHomeTournamentDataFn as unknown as (opts: {
 	userBets: any[];
 	matchDays: any[];
 	activeMatchDayId: number | null;
+	tournamentStages: Array<{ id: string; type: string }>;
 }>;
 
 // Helper function to format matches for the frontend
@@ -2342,6 +2347,7 @@ function Home() {
 		userBets: any[];
 		matchDays: any[];
 		activeMatchDayId: number | null;
+		tournamentStages: Array<{ id: string; type: string }>;
 	} | null>(null);
 	const [selectedMatchDayId, setSelectedMatchDayId] = useState<number | null>(
 		null,
@@ -2437,16 +2443,17 @@ function Home() {
 			setTournamentData({
 				// Show all matches in carousel, not just betting-enabled ones
 				// The match day status controls whether betting is allowed
-			carouselMatches: data.matches.sort((a, b) => {
-				const roundA = a.roundIndex ?? 0;
-				const roundB = b.roundIndex ?? 0;
-				if (roundA !== roundB) return roundA - roundB;
-				return (a.displayOrder || 0) - (b.displayOrder || 0);
-			}),
+				carouselMatches: data.matches.sort((a, b) => {
+					const roundA = a.roundIndex ?? 0;
+					const roundB = b.roundIndex ?? 0;
+					if (roundA !== roundB) return roundA - roundB;
+					return (a.displayOrder || 0) - (b.displayOrder || 0);
+				}),
 				bracketMatches: data.matches,
 				userBets: data.userBets,
 				matchDays: data.matchDays,
 				activeMatchDayId: data.activeMatchDayId,
+				tournamentStages: data.tournamentStages,
 			});
 
 			// Keep match day unselected so user always goes through Match Day selector.
@@ -2515,13 +2522,16 @@ function Home() {
 		return matchDayMatches;
 	}, [allBracketMatches, selectedMatchDayId, matchDays]);
 
-	// Swiss stage: detect and filter matches with roundIndex (excluding group/Round Robin matches)
+	// Swiss stage: detect and filter matches belonging to the Swiss stage
 	const swissMatches = useMemo(() => {
-		return bracketMatches.filter(
-			(m: any) =>
-				m.roundIndex != null && m.roundIndex >= 0 && m.bracketSide !== "groups",
+		const swissStage = tournamentData?.tournamentStages?.find(
+			(s: any) => s.type === "Swiss",
 		);
-	}, [bracketMatches]);
+		if (!swissStage) return [];
+		return bracketMatches.filter(
+			(m: any) => String(m.stageId) === String(swissStage.id),
+		);
+	}, [bracketMatches, tournamentData?.tournamentStages]);
 
 	const hasSwissStage = swissMatches.length > 0;
 
