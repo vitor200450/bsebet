@@ -1948,6 +1948,27 @@ async function generateSwissPlayoffDraft(params: {
 		matchDayId: mdId,
 	});
 
+	// Create third place match if enabled
+	if (params.playoffStage.settings?.enableThirdPlaceMatch) {
+		await params.db.insert(matches).values({
+			tournamentId: params.tournamentId,
+			stageId: params.playoffStage.id,
+			bracketSide: "third_place",
+			roundIndex: 1,
+			name: "Third Place Match",
+			label: "Third Place Match",
+			teamAPreviousMatchId: sf1?.id ?? null,
+			teamBPreviousMatchId: sf2?.id ?? null,
+			teamAPreviousMatchResult: "loser",
+			teamBPreviousMatchResult: "loser",
+			displayOrder: nextOrder++,
+			startTime: playoffMatchDay?.date ?? new Date(),
+			matchDayId: mdId,
+			status: "scheduled",
+			isBettingEnabled: true,
+		});
+	}
+
 	return { success: true };
 }
 
