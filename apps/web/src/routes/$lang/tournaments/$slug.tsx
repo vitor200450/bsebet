@@ -482,6 +482,7 @@ function TournamentDetailsPage() {
 				),
 			})),
 			roundNames: roundNamesMap,
+			other,
 		};
 	}, [filteredMatches]);
 
@@ -748,11 +749,7 @@ function TournamentDetailsPage() {
 												<TournamentBracket
 													className="flex w-full min-w-max flex-col items-center"
 													hideHeader={true}
-													matches={filteredMatches.filter(
-														(m: any) =>
-															m.bracketSide !== "groups" &&
-															!m.label?.includes("Group"),
-													)}
+													matches={groupedMatches.other}
 													predictions={
 														filter === "my-bets"
 															? userBets.reduce(
