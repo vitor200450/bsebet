@@ -76,6 +76,10 @@
 		"scheduled": "Scheduled",
 		"noPoints": "No points"
 	},
+	"labels": {
+		"projection": "Projection",
+		"underdogLabel": "Underdog"
+	},
 	"perfectScore": "Perfect score!",
 	"correctWinner": "Correct winner",
 	"blocked": {
