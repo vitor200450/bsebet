@@ -2560,6 +2560,7 @@ function Home() {
 		}
 
 		// Open status: Read only only if ALL eligible matches already have bets
+		// and no existing bet has a stale prediction (predicted team no longer in match)
 		if (selectedMatchDay?.status === "open") {
 			const matchIdsInSelectedDay = allCarouselMatches
 				.filter((m: any) => Number(m.matchDayId) === Number(selectedMatchDayId))
@@ -2591,6 +2592,27 @@ function Home() {
 			);
 
 			if (hasUnbetEligible) return false;
+
+			// Check if any existing bet has a stale prediction
+			// (predicted team no longer part of the current match lineup)
+			const hasStalePrediction = userBets.some((bet: any) => {
+				if (!matchIdsInSelectedDay.includes(bet.matchId)) return false;
+				const match = allCarouselMatches.find(
+					(m: any) => Number(m.id) === Number(bet.matchId),
+				);
+				if (!match) return false;
+				if (match.status !== "scheduled") return false;
+				const predictedId = Number(bet.predictedWinnerId);
+				const teamAId = match.teamA?.id ? Number(match.teamA.id) : null;
+				const teamBId = match.teamB?.id ? Number(match.teamB.id) : null;
+				return (
+					predictedId !== teamAId &&
+					predictedId !== teamBId &&
+					predictedId !== 0
+				);
+			});
+
+			if (hasStalePrediction) return false;
 
 			return true;
 		}

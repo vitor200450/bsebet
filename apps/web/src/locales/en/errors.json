@@ -13,6 +13,7 @@
 	"betsSaved": "bet(s) saved successfully",
 	"recoveryUnavailable": "Match unavailable for recovery in current state",
 	"recoveryAlreadyPlaced": "Recovery bet has already been placed and cannot be changed.",
+	"betAlreadyPlaced": "Bet already submitted for this match and locked for editing",
 	"cannotDeleteTeam": "Cannot delete this team because it is linked to tournaments: {{tournaments}}",
 	"googleAccountNotFound": "Google account not found",
 	"googleAvatarError": "Could not get Google avatar. Try signing out and back in.",

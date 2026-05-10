@@ -9,6 +9,7 @@ import {
 	buildRecoveryDependencySet,
 	isRecoverySubmissionAllowed,
 } from "../utils/recovery";
+import { canEditExistingOpenBet } from "../utils/bet-lock";
 
 // Schema for Bet Submission
 const createBetSubmissionSchema = (t: (key: string) => string) =>
@@ -290,7 +291,9 @@ const submitMultipleBetsFn = createServerFn({
 		}
 
 		// Allow recovery bets if user already has a bet for this match
-		let existingBet = null;
+		let existingBet = await db.query.bets.findFirst({
+			where: and(eq(bets.userId, userId), eq(bets.matchId, betData.matchId)),
+		});
 		if (!match.isBettingEnabled) {
 			if (!match.tournamentId) {
 				errors.push(
@@ -303,11 +306,6 @@ const submitMultipleBetsFn = createServerFn({
 				match.tournamentId,
 			);
 			const dependencyEligible = recoveryDependencySet.has(Number(match.id));
-
-			// Check if user has an existing bet (recovery mode)
-			existingBet = await db.query.bets.findFirst({
-				where: and(eq(bets.userId, userId), eq(bets.matchId, betData.matchId)),
-			});
 
 			const recoveryAllowed = isRecoverySubmissionAllowed({
 				match: {
@@ -355,6 +353,21 @@ const submitMultipleBetsFn = createServerFn({
 
 			// Mark as recovery bet (for new recovery submissions or re-submissions when matchup changed)
 			recoveryMatchIds.add(betData.matchId);
+		} else if (existingBet) {
+			const canEdit = canEditExistingOpenBet({
+				existingPredictedWinnerId: existingBet.predictedWinnerId
+					? Number(existingBet.predictedWinnerId)
+					: null,
+				teamAId: match.teamAId ? Number(match.teamAId) : null,
+				teamBId: match.teamBId ? Number(match.teamBId) : null,
+			});
+
+			if (!canEdit) {
+				errors.push(
+					`${t("errors:betAlreadyPlaced")}: ${betData.matchId}`,
+				);
+				continue;
+			}
 		}
 
 		// RELAXED CHECK: Allow betting if status is 'scheduled', even if time passed.

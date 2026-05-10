@@ -13,6 +13,7 @@
 	"betsSaved": "aposta(s) salva(s) com sucesso",
 	"recoveryUnavailable": "Partida indisponível para recovery no estado atual",
 	"recoveryAlreadyPlaced": "Aposta de recuperação já foi realizada e não pode ser alterada.",
+	"betAlreadyPlaced": "Aposta já enviada para a partida e bloqueada para edição",
 	"cannotDeleteTeam": "Não é possível excluir este time porque ele está vinculado aos torneios: {{tournaments}}",
 	"googleAccountNotFound": "Conta Google não encontrada",
 	"googleAvatarError": "Não foi possível obter o avatar do Google. Tente sair e entrar novamente.",
