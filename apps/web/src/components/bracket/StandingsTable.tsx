@@ -130,45 +130,45 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
 		<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
 			<div className="overflow-x-auto">
 				<table className="w-full text-left">
-					<thead className="border-black border-b-2 bg-[#121212] text-white">
-						<tr className="border-transparent border-l-4">
-							<th className="px-4 py-3 font-black text-[10px] uppercase tracking-wider">
+					<thead>
+						<tr className="border-black border-b-2 bg-[#121212]">
+							<th className="px-3 py-2.5 font-black text-[10px] text-white uppercase tracking-wider">
 								{t("bracketView.colTeam")}
 							</th>
-							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+							<th className="px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
 								{t("bracketView.colWL")}
 							</th>
-							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+							<th className="hidden px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider sm:table-cell">
 								{t("bracketView.colMaps")}
 							</th>
-							<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+							<th className="px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
 								{t("bracketView.colDiff")}
 							</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y-2 divide-black/10">
+					<tbody className="divide-y divide-black/10">
 						{standings.map((s, i) => (
 							<tr
 								key={s.team.id}
 								className={clsx(
-									"relative overflow-hidden border-black/10 border-b font-bold text-xs transition-all",
-									i < 2 ? "bg-[#ccff00]/30" : "bg-white",
-									i < 2
-										? "border-[#ccff00] border-l-4"
-										: "border-transparent border-l-4",
+									"relative font-bold text-xs transition-colors",
+									i < 2 ? "bg-[#ccff00]/20" : "bg-white",
 								)}
 							>
-								<td className="relative flex items-center gap-2 overflow-hidden p-2">
-									<TeamLogo
-										teamName={s.team.name}
-										logoUrl={s.team.logoUrl}
-										size="sm"
-										className="drop-shadow-sm"
-									/>
-									<div className="flex flex-col">
+								<td className="relative px-3 py-2">
+									<div className="flex items-center gap-2">
+										{i < 2 && (
+											<div className="h-2 w-2 shrink-0 rounded-full bg-[#ccff00] shadow-[0_0_0_2px_rgba(204,255,0,0.3)]" />
+										)}
+										<TeamLogo
+											teamName={s.team.name}
+											logoUrl={s.team.logoUrl}
+											size="sm"
+											className="h-6 w-6 shrink-0 drop-shadow-sm"
+										/>
 										<span
 											className={clsx(
-												"font-black text-sm uppercase leading-none",
+												"truncate font-black text-sm uppercase leading-none",
 												i < 2 ? "text-black" : "text-zinc-700",
 											)}
 										>
@@ -176,15 +176,15 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
 										</span>
 									</div>
 								</td>
-								<td className="px-4 py-3 text-center font-black text-[#121212]">
+								<td className="px-3 py-2 text-center font-black text-[#121212]">
 									{s.wins}-{s.losses}
 								</td>
-								<td className="px-4 py-3 text-center font-bold text-gray-500">
+								<td className="hidden px-3 py-2 text-center font-bold text-gray-500 sm:table-cell">
 									{s.mapWins}-{s.mapLosses}
 								</td>
 								<td
 									className={clsx(
-										"px-4 py-3 text-center font-black",
+										"px-3 py-2 text-center font-black",
 										s.mapDiff > 0
 											? "text-green-600"
 											: s.mapDiff < 0

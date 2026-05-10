@@ -45,23 +45,25 @@ export function StandardGroupView({
 	};
 
 	return (
-		<div className="flex flex-col gap-5 rounded-lg border-2 border-black bg-white p-5 shadow-[4px_4px_0px_0px_#000]">
+		<div className="flex flex-col gap-5 rounded-lg border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_#000] md:p-5">
 			{/* Header */}
 			<div className="flex items-center justify-between border-black/10 border-b-2 pb-3">
-				<h3 className="font-black font-display text-ink text-xl uppercase italic tracking-tight">
+				<h3 className="font-black font-display text-ink text-lg uppercase italic tracking-tight md:text-xl">
 					{groupName} — {t("bracketView.roundRobin")}
 				</h3>
-				<div className="rounded-sm border-2 border-black bg-ink px-2.5 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-wider shadow-[1px_1px_0px_0px_#000]">
+				<div className="rounded-sm border-2 border-black bg-ink px-2 py-1 font-bold text-[#ccff00] text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_0px_#000] md:px-2.5 md:text-[10px]">
 					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-6 xl:flex-row">
+			<div className="flex flex-col gap-6 md:flex-row">
 				{/* STANDINGS TABLE */}
-				<StandingsTable standings={standings} />
+				<div className="w-full min-w-0 md:w-auto md:min-w-56">
+					<StandingsTable standings={standings} />
+				</div>
 
 				{/* MATCH LIST */}
-				<div className="flex flex-grow flex-col gap-4">
+				<div className="flex min-w-0 flex-1 flex-col gap-4">
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 						{matches.map((m) => (
 							<div key={m.id} className="w-full">
