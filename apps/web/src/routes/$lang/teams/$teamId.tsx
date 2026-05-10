@@ -195,14 +195,14 @@ function TeamDetailsPage() {
 				{/* Upcoming Matches */}
 				{upcomingMatches.length > 0 && (
 					<div className="mb-12">
-						<div className="mb-6 flex items-center gap-3">
-							<div className="h-8 w-1 rounded-full bg-[#2e5cff]" />
-							<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
+						<div className="mb-6 flex items-center gap-4">
+							<div className="h-10 w-1.5 rounded-full bg-gradient-to-b from-[#2e5cff] to-[#2e5cff]/40" />
+							<h2 className="font-black text-3xl text-[#121212] uppercase italic tracking-tight [text-wrap:pretty]">
 								{t("sections.upcoming")}
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
-								<span className="rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
-									{t("status.live")}
+								<span className="-skew-x-6 rounded-sm border-[3px] border-black bg-[#ff2e2e] px-3 py-1 font-black text-xs text-white uppercase shadow-[3px_3px_0_0_#000]">
+									<span className="inline-block skew-x-6">{t("status.live")}</span>
 								</span>
 							)}
 						</div>
@@ -483,8 +483,10 @@ function TeamDetailsPage() {
 										{/* Colored Stripe */}
 										<div
 											className={clsx(
-												"absolute top-0 bottom-0 left-0 w-2",
-												isWin ? "bg-brawl-yellow" : "bg-gray-300",
+												"absolute top-0 bottom-0 left-0 w-3 skew-y-6",
+												isWin
+													? "bg-gradient-to-b from-brawl-yellow to-brawl-yellow/60"
+													: "bg-gradient-to-b from-gray-400 to-gray-300",
 											)}
 										/>
 
@@ -654,16 +656,18 @@ function TeamDetailsPage() {
 											<div className="relative flex-shrink-0">
 												<div
 													className={clsx(
-														"flex h-16 w-16 items-center justify-center border-[3px] border-black font-black text-2xl uppercase italic shadow-[3px_3px_0_0_#000]",
+														"flex h-16 w-16 items-center justify-center -skew-x-12 border-[3px] border-black font-black text-2xl uppercase italic shadow-[3px_3px_0_0_#000]",
 														isWin
 															? "bg-[#ccff00] text-black"
 															: "bg-black text-white",
 													)}
 												>
-													{isWin ? "W" : "L"}
+													<span className="inline-block skew-x-12">
+														{isWin ? "W" : "L"}
+													</span>
 												</div>
 												{/* Small match number badge */}
-												<div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-black bg-brawl-red font-black text-[10px] text-white">
+												<div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-[3px] border-black bg-brawl-red font-black text-[11px] text-white shadow-[2px_2px_0_0_#000]">
 													{index + 1}
 												</div>
 											</div>
@@ -737,7 +741,7 @@ function TeamDetailsPage() {
 												</div>
 
 												{/* VS Badge */}
-												<div className="flex-shrink-0 -skew-x-12 border-[3px] border-black bg-black px-3 py-1.5 font-black text-[#ccff00] text-xs uppercase italic shadow-[2px_2px_0_0_#000]">
+												<div className="flex-shrink-0 -skew-x-12 border-[3px] border-black bg-black px-4 py-2 font-black text-[#ccff00] text-sm uppercase italic shadow-[3px_3px_0_0_#000]">
 													<span className="inline-block skew-x-12">
 														{t("vs")}
 													</span>
@@ -856,15 +860,27 @@ function TeamDetailsPage() {
 							</h2>
 						</div>
 
-						<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 							{tournaments.map((tournament) => (
 								<Link
 									key={tournament.id}
 									to={linkTo("/tournaments/$slug")}
 									params={{ slug: tournament.slug }}
-									className="group flex items-center gap-3 rounded-lg border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
+									className="group relative flex items-center gap-4 overflow-hidden rounded-lg border-[3px] border-black bg-white p-4 shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]"
 								>
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-black bg-white p-1">
+									{/* Left accent */}
+									<div
+										className={clsx(
+											"absolute top-0 bottom-0 left-0 w-1.5",
+											tournament.status === "active"
+												? "bg-green-500"
+												: tournament.status === "upcoming"
+													? "bg-blue-500"
+													: "bg-gray-400",
+										)}
+									/>
+
+									<div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
 										{tournament.logoUrl ? (
 											<img
 												src={tournament.logoUrl}
@@ -873,36 +889,36 @@ function TeamDetailsPage() {
 											/>
 										) : (
 											<Trophy
-												className="h-8 w-8 text-gray-600"
+												className="h-7 w-7 text-gray-600"
 												strokeWidth={2}
 											/>
 										)}
 									</div>
 
 									<div className="min-w-0 flex-1">
-										<h3 className="truncate font-bold text-black text-sm uppercase transition-colors group-hover:text-[#2e5cff]">
+										<h3 className="truncate font-black text-black text-sm uppercase transition-colors group-hover:text-[#2e5cff]">
 											{tournament.name}
 										</h3>
-										<p className="font-bold text-[10px] text-gray-600 uppercase">
+										<p className="mt-0.5 font-bold text-[10px] text-gray-500 uppercase tracking-wider">
 											{tournament.region || t("region.global")}
 										</p>
 									</div>
 
 									<div
 										className={clsx(
-											"rounded-md px-2 py-1 font-black text-[10px] uppercase",
+											"-skew-x-6 rounded-sm border-2 border-black px-2.5 py-1 font-black text-[9px] uppercase shadow-[2px_2px_0_0_#000]",
 											tournament.status === "active"
-												? "bg-green-100 text-green-700"
+												? "border-green-700 bg-green-100 text-green-800"
 												: tournament.status === "upcoming"
-													? "bg-blue-100 text-blue-700"
-													: "bg-gray-100 text-gray-700",
+													? "border-blue-700 bg-blue-100 text-blue-800"
+													: "border-gray-400 bg-gray-100 text-gray-600",
 										)}
 									>
 										{tournament.status === "active"
-											? "Ativo"
+											? t("status.active")
 											: tournament.status === "upcoming"
-												? "Em Breve"
-												: "Finalizado"}
+												? t("status.upcoming")
+												: t("status.finished")}
 									</div>
 								</Link>
 							))}
@@ -930,19 +946,34 @@ function StatCard({
 	return (
 		<div
 			className={clsx(
-				"flex flex-col items-center justify-center rounded-lg border-2 border-black p-3 text-center shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]",
+				"relative flex flex-col items-center justify-center overflow-hidden rounded-lg border-[3px] border-black p-3 text-center shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#000]",
 				highlight
 					? "bg-brawl-yellow"
 					: streakType === "W"
-						? "bg-green-100 border-green-500"
+						? "bg-green-100"
 						: streakType === "L"
-							? "bg-red-100 border-red-500"
+							? "bg-red-100"
 							: "bg-white",
 			)}
 		>
-			<div className="mb-1 text-black">{icon}</div>
-			<div className="font-black text-2xl text-black tabular-nums">{value}</div>
-			<div className="font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+			{/* Diagonal stripe accent */}
+			<div
+				className={clsx(
+					"absolute top-0 right-0 h-16 w-16 -translate-y-1/2 translate-x-1/2 rotate-45 border-l-[3px]",
+					highlight
+						? "border-black/20"
+						: streakType === "W"
+							? "border-green-500"
+							: streakType === "L"
+								? "border-red-500"
+								: "border-black/10",
+				)}
+			/>
+			<div className="relative mb-1 text-black">{icon}</div>
+			<div className="relative font-black text-2xl text-black tabular-nums">
+				{value}
+			</div>
+			<div className="relative font-bold text-[10px] text-gray-600 uppercase tracking-wider">
 				{label}
 			</div>
 		</div>
