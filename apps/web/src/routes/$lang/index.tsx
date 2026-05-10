@@ -2134,7 +2134,7 @@ function SubmitBetsModal({
 				throw new Error("No valid bets to submit (matches may have started).");
 			}
 
-			const { submitMultipleBets } = await import("../../server/bets");
+			const { submitMultipleBets } = await import("@/server/bets");
 			await submitMultipleBets({
 				data: { bets: betsToSubmit, lang: i18n.language },
 			});
