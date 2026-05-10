@@ -31,6 +31,7 @@
 		"upper": "Upper R{{number}}",
 		"lower": "Lower R{{number}}",
 		"grandFinal": "Grand Final",
+		"thirdPlace": "Disputa de 3º Lugar",
 		"match": "Partida #{{id}}"
 	},
 	"actions": {

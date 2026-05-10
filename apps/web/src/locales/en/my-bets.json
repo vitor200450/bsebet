@@ -31,6 +31,7 @@
 		"upper": "Upper R{{number}}",
 		"lower": "Lower R{{number}}",
 		"grandFinal": "Grand Final",
+		"thirdPlace": "Third Place Match",
 		"match": "Match #{{id}}"
 	},
 	"actions": {

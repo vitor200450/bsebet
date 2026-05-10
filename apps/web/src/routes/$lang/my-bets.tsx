@@ -350,6 +350,8 @@ function RouteComponent() {
 																});
 															if (side === "grand_final")
 																return t("stageLabel.grandFinal");
+															if (side === "third_place")
+																return t("stageLabel.thirdPlace");
 															return t("stageLabel.match", {
 																id: bet.match.id,
 															});
