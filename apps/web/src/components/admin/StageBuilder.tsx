@@ -24,6 +24,7 @@ export interface Stage {
 		winsToAdvance?: number;
 		lossesToEliminate?: number;
 		roundsMax?: number;
+		enableThirdPlaceMatch?: boolean;
 	};
 	startDate?: string;
 	endDate?: string;

@@ -339,6 +339,8 @@
 		"topNAdvance": "Top N Advance",
 		"topNAdvancePlaceholder": "e.g. 2",
 		"type": "Type",
+		"thirdPlaceMatch": "Third Place Match",
+		"thirdPlaceMatchHelp": "Creates a match between the semifinal losers",
 		"underdogT1": "Underdog T1 (≤25%)",
 		"underdogT1Tooltip": "Bonus for underdog with ≤25% of votes",
 		"underdogT2": "Underdog T2 (26-50%)",

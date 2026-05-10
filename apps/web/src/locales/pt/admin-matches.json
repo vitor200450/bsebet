@@ -339,6 +339,8 @@
 		"topNAdvance": "Top N Avançam",
 		"topNAdvancePlaceholder": "ex: 2",
 		"type": "Tipo",
+		"thirdPlaceMatch": "Disputa de 3º Lugar",
+		"thirdPlaceMatchHelp": "Cria automaticamente partida entre os perdedores das semifinais",
 		"underdogT1": "Azarão T1 (≤25%)",
 		"underdogT1Tooltip": "Bônus para azarão com ≤25% dos votos",
 		"underdogT2": "Azarão T2 (26-50%)",

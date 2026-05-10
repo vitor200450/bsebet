@@ -93,6 +93,7 @@ const createTournamentSchema = (t: (key: string) => string) =>
 						winsToAdvance: z.number().optional(),
 						lossesToEliminate: z.number().optional(),
 						roundsMax: z.number().optional(),
+						enableThirdPlaceMatch: z.boolean().optional(),
 					}),
 					startDate: z.string().optional(),
 					endDate: z.string().optional(),
@@ -132,6 +133,7 @@ export const saveTournamentStageSchema = z.object({
 		winsToAdvance: z.number().optional(),
 		lossesToEliminate: z.number().optional(),
 		roundsMax: z.number().optional(),
+		enableThirdPlaceMatch: z.boolean().optional(),
 	}),
 });
 
