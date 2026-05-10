@@ -782,10 +782,9 @@ function ReviewScreen({
 						match.teamB?.id), // Both teams are now known via projection
 			)
 			.sort((a: any, b: any) => {
-				// Sort by startTime if available, otherwise by displayOrder/roundIndex
-				const timeA = new Date(a.startTime).getTime();
-				const timeB = new Date(b.startTime).getTime();
-				if (timeA !== timeB) return timeA - timeB;
+				const roundA = a.roundIndex ?? 0;
+				const roundB = b.roundIndex ?? 0;
+				if (roundA !== roundB) return roundA - roundB;
 
 				return (a.displayOrder || 0) - (b.displayOrder || 0);
 			});
@@ -2438,12 +2437,12 @@ function Home() {
 			setTournamentData({
 				// Show all matches in carousel, not just betting-enabled ones
 				// The match day status controls whether betting is allowed
-				carouselMatches: data.matches.sort((a, b) => {
-					const timeA = new Date(a.startTime).getTime();
-					const timeB = new Date(b.startTime).getTime();
-					if (timeA !== timeB) return timeA - timeB;
-					return (a.displayOrder || 0) - (b.displayOrder || 0);
-				}),
+			carouselMatches: data.matches.sort((a, b) => {
+				const roundA = a.roundIndex ?? 0;
+				const roundB = b.roundIndex ?? 0;
+				if (roundA !== roundB) return roundA - roundB;
+				return (a.displayOrder || 0) - (b.displayOrder || 0);
+			}),
 				bracketMatches: data.matches,
 				userBets: data.userBets,
 				matchDays: data.matchDays,

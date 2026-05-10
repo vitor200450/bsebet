@@ -119,7 +119,9 @@ function groupMatchesByRound(input: Match[]) {
 		.sort(([a], [b]) => a - b)
 		.map(([roundIdx, roundMatches]) => ({
 			roundLabel: `Round ${roundIdx + 1}`,
-			matches: roundMatches,
+			matches: roundMatches.sort(
+				(a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+			),
 		}));
 }
 
