@@ -786,11 +786,12 @@ function TournamentDetailsPage() {
 								/* Simple List View for Status Filtering */
 								<div className="flex flex-col gap-4">
 									{filteredMatches
-										.sort(
-											(a, b) =>
-												new Date(a.startTime).getTime() -
-												new Date(b.startTime).getTime(),
-										)
+										.sort((a, b) => {
+											const roundA = a.roundIndex ?? 0;
+											const roundB = b.roundIndex ?? 0;
+											if (roundA !== roundB) return roundA - roundB;
+											return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+										})
 										.map((match) => (
 											<MatchCard
 												key={match.id}
