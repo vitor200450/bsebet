@@ -290,7 +290,8 @@
 		"lbSemi": "LB Semi",
 		"lbFinal": "LB Final",
 		"ubRound": "UB R{{round}}",
-		"lbRound": "LB R{{round}}"
+		"lbRound": "LB R{{round}}",
+		"thirdPlace": "3rd Place"
 	},
 	"bracketView": {
 		"roundRobin": "Round Robin",

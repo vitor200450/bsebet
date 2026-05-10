@@ -134,6 +134,7 @@
 		"lbRound": "LB R{{number}}",
 		"groupStage": "Group Stage",
 		"playoffBracket": "Playoff Bracket",
-		"lowerBracket": "Lower Bracket"
+		"lowerBracket": "Lower Bracket",
+		"thirdPlace": "Third Place"
 	}
 }

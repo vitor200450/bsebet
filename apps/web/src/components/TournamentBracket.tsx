@@ -131,53 +131,63 @@ export function TournamentBracket({
 		return projected;
 	}, [matches, predictions]);
 
-	const { upperBracket, lowerBracket, grandFinal, hasGroups, hasElimination } =
-		useMemo(() => {
-			const upper: Record<number, Match[]> = {};
-			const lower: Record<number, Match[]> = {};
-			const gf: Match[] = [];
-			let foundGroups = false;
+	const {
+		upperBracket,
+		lowerBracket,
+		grandFinal,
+		thirdPlace,
+		hasGroups,
+		hasElimination,
+	} = useMemo(() => {
+		const upper: Record<number, Match[]> = {};
+		const lower: Record<number, Match[]> = {};
+		const gf: Match[] = [];
+		const tp: Match[] = [];
+		let foundGroups = false;
 
-			projectedMatches.forEach((m) => {
-				const side = m.bracketSide || "upper";
-				const round = m.roundIndex ?? 0;
+		projectedMatches.forEach((m) => {
+			const side = m.bracketSide || "upper";
+			const round = m.roundIndex ?? 0;
 
-				if (side === "groups") {
-					foundGroups = true;
-					return;
-				}
+			if (side === "groups") {
+				foundGroups = true;
+				return;
+			}
 
-				if (side === "grand_final") {
-					gf.push(m);
-				} else if (side === "lower") {
-					if (!lower[round]) lower[round] = [];
-					lower[round].push(m);
-				} else {
-					if (!upper[round]) upper[round] = [];
-					upper[round].push(m);
-				}
-			});
+			if (side === "grand_final") {
+				gf.push(m);
+			} else if (side === "third_place") {
+				tp.push(m);
+			} else if (side === "lower") {
+				if (!lower[round]) lower[round] = [];
+				lower[round].push(m);
+			} else {
+				if (!upper[round]) upper[round] = [];
+				upper[round].push(m);
+			}
+		});
 
-			const sortMatches = (a: Match, b: Match) =>
-				(a.displayOrder ?? 999) - (b.displayOrder ?? 999) || a.id - b.id;
+		const sortMatches = (a: Match, b: Match) =>
+			(a.displayOrder ?? 999) - (b.displayOrder ?? 999) || a.id - b.id;
 
-			Object.values(upper).forEach((rm) => rm.sort(sortMatches));
-			Object.values(lower).forEach((rm) => rm.sort(sortMatches));
-			gf.sort(sortMatches);
+		Object.values(upper).forEach((rm) => rm.sort(sortMatches));
+		Object.values(lower).forEach((rm) => rm.sort(sortMatches));
+		gf.sort(sortMatches);
 
-			const foundElimination =
-				Object.keys(upper).length > 0 ||
-				Object.keys(lower).length > 0 ||
-				gf.length > 0;
+		const foundElimination =
+			Object.keys(upper).length > 0 ||
+			Object.keys(lower).length > 0 ||
+			gf.length > 0;
 
-			return {
-				upperBracket: upper,
-				lowerBracket: lower,
-				grandFinal: gf,
-				hasGroups: foundGroups,
-				hasElimination: foundElimination,
-			};
-		}, [projectedMatches]);
+		return {
+			upperBracket: upper,
+			lowerBracket: lower,
+			grandFinal: gf,
+			thirdPlace: tp,
+			hasGroups: foundGroups,
+			hasElimination: foundElimination,
+		};
+	}, [projectedMatches]);
 
 	const upperRounds = Object.keys(upperBracket)
 		.map(Number)
@@ -466,6 +476,29 @@ export function TournamentBracket({
 													))}
 												</div>
 											</div>
+										))}
+									</div>
+								</div>
+							)}
+
+							{/* THIRD PLACE — smaller, less prominent */}
+							{thirdPlace.length > 0 && (
+								<div className="relative mt-6 border-black/5 border-t pt-5">
+									<div className="mx-auto flex max-w-sm flex-col items-center gap-3">
+										<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-black text-[9px] text-gray-400 uppercase tracking-wider">
+											{t("rounds.thirdPlace")}
+										</span>
+										{thirdPlace.map((match) => (
+											<MatchCard
+												key={match.id}
+												match={match}
+												prediction={predictions[match.id]}
+												onUpdatePrediction={onUpdatePrediction}
+												onRemovePrediction={onRemovePrediction}
+												isReadOnly={isReadOnly}
+												editableMatchIds={editableMatchIds}
+												matchDayStatus={matchDayStatus}
+											/>
 										))}
 									</div>
 								</div>

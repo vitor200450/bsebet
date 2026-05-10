@@ -61,10 +61,11 @@ export function BracketEditor({
 }: BracketEditorProps) {
 	const { t } = useTranslation("admin-matches");
 	// Group matches by Side > Round
-	const { upper, lower, final, bracketType } = useMemo(() => {
+	const { upper, lower, final, thirdPlace, bracketType } = useMemo(() => {
 		const upp: Record<number, Match[]> = {};
 		const low: Record<number, Match[]> = {};
 		const fin: Match[] = [];
+		const tp: Match[] = [];
 
 		matches.forEach((m) => {
 			// Use the explicit DB fields if available, otherwise fallback (or ignore)
@@ -73,6 +74,8 @@ export function BracketEditor({
 
 			if (side === "grand_final") {
 				fin.push(m);
+			} else if (side === "third_place") {
+				tp.push(m);
 			} else if (side === "lower") {
 				if (!low[round]) low[round] = [];
 				low[round].push(m);
@@ -103,6 +106,7 @@ export function BracketEditor({
 			upper: upp,
 			lower: low,
 			final: fin,
+			thirdPlace: tp,
 			bracketType: matches.some((m) => m.bracketSide === "groups")
 				? "groups"
 				: "elimination",
@@ -321,6 +325,25 @@ export function BracketEditor({
 								)}
 							</div>
 						</div>
+
+						{/* THIRD PLACE — small, less prominent */}
+						{thirdPlace.length > 0 && (
+							<div className="relative mt-6 border-black/5 border-t pt-5">
+								<div className="mx-auto flex max-w-xs flex-col items-center gap-3">
+									<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-bold text-[9px] text-gray-400 uppercase tracking-wider">
+										{t("bracketEditor.thirdPlace")}
+									</span>
+									{thirdPlace.map((match) => (
+										<div key={match.id} className="w-64">
+											<EditorMatchCard
+												match={match}
+												onClick={() => onEditMatch?.(match)}
+											/>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 
 						{/* LOWER BRACKET */}
 						{lowerRounds.length > 0 && (
