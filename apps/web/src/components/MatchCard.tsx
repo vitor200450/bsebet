@@ -169,13 +169,13 @@ export function MatchCard({
 							userPredictedWinnerA ? "bg-[#ccff00]/40" : "",
 						)}
 					>
-						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-end leading-tight">
+						<div className="z-10 flex min-w-0 max-w-full flex-col items-end leading-tight">
 							{teamA?.slug ? (
 								<Link
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamA.slug, lang }}
 									className={clsx(
-										"block w-full truncate text-right font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
+										"block w-full text-right font-black text-xs uppercase tracking-tighter break-words transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -184,7 +184,7 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full truncate text-right font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
+										"block w-full text-right font-black text-xs uppercase tracking-tighter break-words transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -275,13 +275,13 @@ export function MatchCard({
 							)}
 						/>
 
-						<div className="z-10 flex min-w-0 max-w-full shrink flex-col items-start leading-tight">
+						<div className="z-10 flex min-w-0 max-w-full flex-col items-start leading-tight">
 							{teamB?.slug ? (
 								<Link
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamB.slug, lang }}
 									className={clsx(
-										"block w-full truncate text-left font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
+										"block w-full text-left font-black text-xs uppercase tracking-tighter break-words transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -290,7 +290,7 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full truncate text-left font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
+										"block w-full text-left font-black text-xs uppercase tracking-tighter break-words transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
 									)}
 								>
