@@ -73,7 +73,8 @@
 	"result": {
 		"correct": "Acertou",
 		"incorrect": "Errou",
-		"scheduled": "Agendado"
+		"scheduled": "Agendado",
+		"noPoints": "Sem pontos"
 	},
 	"perfectScore": "Placar exato!",
 	"correctWinner": "Vencedor correto",

@@ -126,7 +126,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="relative min-h-screen bg-[#f0f0f0] pb-12">
+		<div className="relative min-h-screen bg-paper pb-12">
 			{/* Paper texture overlay */}
 			<div
 				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
@@ -337,6 +337,7 @@ function RouteComponent() {
 														const stageLabel = (() => {
 															const side = bet.match.bracketSide;
 															const round = bet.match.roundIndex;
+															const label = (bet.match as any).label || (bet.match as any).name;
 
 															if (side === "groups")
 																return t("stageLabel.groups");
@@ -352,7 +353,9 @@ function RouteComponent() {
 																return t("stageLabel.grandFinal");
 															if (side === "third_place")
 																return t("stageLabel.thirdPlace");
-															return t("stageLabel.match", {
+															if (side === "main" && label)
+																return label;
+															return label || t("stageLabel.match", {
 																id: bet.match.id,
 															});
 														})();

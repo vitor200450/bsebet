@@ -73,7 +73,8 @@
 	"result": {
 		"correct": "Correct",
 		"incorrect": "Incorrect",
-		"scheduled": "Scheduled"
+		"scheduled": "Scheduled",
+		"noPoints": "No points"
 	},
 	"perfectScore": "Perfect score!",
 	"correctWinner": "Correct winner",
