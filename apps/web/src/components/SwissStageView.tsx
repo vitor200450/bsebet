@@ -159,10 +159,7 @@ export function SwissStageView({
 			{Object.keys(buckets).length > 0 && (
 				<section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
 					{Object.entries(buckets).map(([bucket, teams]) => (
-						<div
-							key={bucket}
-							className="border-2 border-black bg-white p-3"
-						>
+						<div key={bucket} className="border-2 border-black bg-white p-3">
 							<div className="mb-2 flex items-center gap-2">
 								<span className="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-[#ccff00] font-black text-[10px] text-black">
 									{teams.length}

@@ -201,8 +201,10 @@ function TeamDetailsPage() {
 								{t("sections.upcoming")}
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
-								<span className="-skew-x-6 rounded-sm border-[3px] border-black bg-[#ff2e2e] px-3 py-1 font-black text-xs text-white uppercase shadow-[3px_3px_0_0_#000]">
-									<span className="inline-block skew-x-6">{t("status.live")}</span>
+								<span className="-skew-x-6 rounded-sm border-[3px] border-black bg-[#ff2e2e] px-3 py-1 font-black text-white text-xs uppercase shadow-[3px_3px_0_0_#000]">
+									<span className="inline-block skew-x-6">
+										{t("status.live")}
+									</span>
 								</span>
 							)}
 						</div>
@@ -214,239 +216,241 @@ function TeamDetailsPage() {
 								const isLive = match.status === "live";
 
 								return (
-								<div
-									key={match.id}
-									className={clsx(
-										"relative overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]",
-										isLive && "ring-2 ring-[#ff2e2e]",
-									)}
-								>
-									{/* Live stripe */}
-									{isLive && (
-										<div className="absolute top-0 bottom-0 left-0 w-3 skew-y-6 bg-gradient-to-b from-[#ff2e2e] to-[#ff2e2e]/60" />
-									)}
+									<div
+										key={match.id}
+										className={clsx(
+											"relative overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000]",
+											isLive && "ring-2 ring-[#ff2e2e]",
+										)}
+									>
+										{/* Live stripe */}
+										{isLive && (
+											<div className="absolute top-0 bottom-0 left-0 w-3 skew-y-6 bg-gradient-to-b from-[#ff2e2e] to-[#ff2e2e]/60" />
+										)}
 
-									{/* Mobile Layout */}
-									<div className="p-4 md:hidden">
-										<div className="mb-4 flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<span
-													className={clsx(
-														"rounded-sm border-[3px] border-black px-2 py-1 font-black text-[10px] uppercase shadow-[2px_2px_0_0_#000]",
-														isLive
-															? "bg-[#ff2e2e] text-white"
-															: "bg-[#ccff00] text-black",
-													)}
-												>
-													{isLive ? t("status.live") : t("vs")}
-												</span>
-												{match.tournament?.name && (
-													<span className="max-w-[100px] truncate font-bold text-[10px] text-gray-700 uppercase">
-														{match.tournament.name}
-													</span>
-												)}
-											</div>
-											<span className="font-bold text-[10px] text-gray-700 uppercase tabular-nums">
-												{isLive
-													? t("status.now")
-													: new Date(match.startTime).toLocaleDateString(
-															"pt-BR",
-															{
-																day: "2-digit",
-																month: "short",
-																timeZone: "UTC",
-															},
+										{/* Mobile Layout */}
+										<div className="p-4 md:hidden">
+											<div className="mb-4 flex items-center justify-between">
+												<div className="flex items-center gap-2">
+													<span
+														className={clsx(
+															"rounded-sm border-[3px] border-black px-2 py-1 font-black text-[10px] uppercase shadow-[2px_2px_0_0_#000]",
+															isLive
+																? "bg-[#ff2e2e] text-white"
+																: "bg-[#ccff00] text-black",
 														)}
-											</span>
-										</div>
-
-										<div className="mb-4 flex items-center justify-center gap-4">
-											<div className="flex flex-1 flex-col items-center gap-2">
-												<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
-													<TeamLogo
-														teamName={team.name}
-														logoUrl={team.logoUrl}
-														className="h-full w-full object-contain"
-													/>
+													>
+														{isLive ? t("status.live") : t("vs")}
+													</span>
+													{match.tournament?.name && (
+														<span className="max-w-[100px] truncate font-bold text-[10px] text-gray-700 uppercase">
+															{match.tournament.name}
+														</span>
+													)}
 												</div>
-												<span className="text-center font-black text-black text-xs uppercase">
-													{team.name}
+												<span className="font-bold text-[10px] text-gray-700 uppercase tabular-nums">
+													{isLive
+														? t("status.now")
+														: new Date(match.startTime).toLocaleDateString(
+																"pt-BR",
+																{
+																	day: "2-digit",
+																	month: "short",
+																	timeZone: "UTC",
+																},
+															)}
 												</span>
 											</div>
 
-											<div className="-skew-x-12 border-[3px] border-black bg-black px-2 py-1 font-black text-[#ccff00] text-xs uppercase italic shadow-[2px_2px_0_0_#000]">
-												<span className="inline-block skew-x-12">{t("vs")}</span>
-											</div>
-
-											<div className="flex flex-1 flex-col items-center gap-2">
-												{opponent?.id ? (
-													<Link
-														to={linkTo("/teams/$teamId")}
-														params={{ teamId: opponent.slug }}
-														className="flex flex-col items-center gap-2"
-													>
-														<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
-															<TeamLogo
-																teamName={opponent.name}
-																logoUrl={opponent.logoUrl}
-																className="h-full w-full object-contain"
-															/>
-														</div>
-														<span className="text-center font-black text-black text-xs uppercase hover:text-[#2e5cff]">
-															{opponent.name}
-														</span>
-													</Link>
-												) : (
-													<>
-														<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
-															<TeamLogo
-																teamName={opponent?.name || t("tbd")}
-																logoUrl={opponent?.logoUrl}
-																className="h-full w-full object-contain"
-															/>
-														</div>
-														<span className="text-center font-black text-xs uppercase">
-															{opponent?.name || t("tbd")}
-														</span>
-													</>
-												)}
-											</div>
-										</div>
-
-										<Link
-											to={linkTo("/")}
-											className="block w-full rounded-sm border-[3px] border-black bg-[#ffc700] py-2.5 text-center font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
-										>
-											{isLive ? t("actions.follow") : t("actions.bet")}
-										</Link>
-									</div>
-
-									{/* Desktop Layout */}
-									<div className="hidden items-center gap-4 p-5 md:flex">
-										{/* Status */}
-										<div
-											className={clsx(
-												"flex h-16 w-16 shrink-0 items-center justify-center -skew-x-12 border-[3px] border-black font-black text-xs uppercase italic shadow-[3px_3px_0_0_#000]",
-												isLive
-													? "bg-[#ff2e2e] text-white"
-													: "bg-[#ccff00] text-black",
-											)}
-										>
-											<span className="inline-block skew-x-12">
-												{isLive ? t("status.live") : t("vs")}
-											</span>
-										</div>
-
-										{/* Tournament */}
-										<div className="shrink-0">
-											{match.tournament?.slug ? (
-												<Link
-													to={linkTo("/tournaments/$slug")}
-													params={{ slug: match.tournament.slug }}
-													className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]"
-												>
-													{match.tournament.logoUrl ? (
-														<img
-															src={match.tournament.logoUrl}
-															alt={match.tournament.name}
+											<div className="mb-4 flex items-center justify-center gap-4">
+												<div className="flex flex-1 flex-col items-center gap-2">
+													<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
+														<TeamLogo
+															teamName={team.name}
+															logoUrl={team.logoUrl}
 															className="h-full w-full object-contain"
 														/>
-													) : (
-														<Trophy className="h-6 w-6 text-gray-900" />
-													)}
-												</Link>
-											) : (
-												<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
-													<Trophy className="h-6 w-6 text-gray-900" />
+													</div>
+													<span className="text-center font-black text-black text-xs uppercase">
+														{team.name}
+													</span>
 												</div>
-											)}
+
+												<div className="-skew-x-12 border-[3px] border-black bg-black px-2 py-1 font-black text-[#ccff00] text-xs uppercase italic shadow-[2px_2px_0_0_#000]">
+													<span className="inline-block skew-x-12">
+														{t("vs")}
+													</span>
+												</div>
+
+												<div className="flex flex-1 flex-col items-center gap-2">
+													{opponent?.id ? (
+														<Link
+															to={linkTo("/teams/$teamId")}
+															params={{ teamId: opponent.slug }}
+															className="flex flex-col items-center gap-2"
+														>
+															<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
+																<TeamLogo
+																	teamName={opponent.name}
+																	logoUrl={opponent.logoUrl}
+																	className="h-full w-full object-contain"
+																/>
+															</div>
+															<span className="text-center font-black text-black text-xs uppercase hover:text-[#2e5cff]">
+																{opponent.name}
+															</span>
+														</Link>
+													) : (
+														<>
+															<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
+																<TeamLogo
+																	teamName={opponent?.name || t("tbd")}
+																	logoUrl={opponent?.logoUrl}
+																	className="h-full w-full object-contain"
+																/>
+															</div>
+															<span className="text-center font-black text-xs uppercase">
+																{opponent?.name || t("tbd")}
+															</span>
+														</>
+													)}
+												</div>
+											</div>
+
+											<Link
+												to={linkTo("/")}
+												className="block w-full rounded-sm border-[3px] border-black bg-[#ffc700] py-2.5 text-center font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
+											>
+												{isLive ? t("actions.follow") : t("actions.bet")}
+											</Link>
 										</div>
 
-										{/* VS Section */}
-										<div className="flex min-w-0 flex-1 items-center gap-4">
-											<div className="flex shrink-0 items-center gap-3">
-												<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000]">
-													<TeamLogo
-														teamName={team.name}
-														logoUrl={team.logoUrl}
-														className="h-full w-full object-contain"
-													/>
-												</div>
-												<span className="hidden font-black text-black text-sm uppercase lg:inline-block">
-													{team.name}
-												</span>
-											</div>
-
-											<div className="flex-shrink-0 -skew-x-12 border-[3px] border-black bg-black px-3 py-1.5 font-black text-[#ccff00] text-xs uppercase italic shadow-[3px_3px_0_0_#000]">
+										{/* Desktop Layout */}
+										<div className="hidden items-center gap-4 p-5 md:flex">
+											{/* Status */}
+											<div
+												className={clsx(
+													"flex h-16 w-16 shrink-0 -skew-x-12 items-center justify-center border-[3px] border-black font-black text-xs uppercase italic shadow-[3px_3px_0_0_#000]",
+													isLive
+														? "bg-[#ff2e2e] text-white"
+														: "bg-[#ccff00] text-black",
+												)}
+											>
 												<span className="inline-block skew-x-12">
-													{t("vs")}
+													{isLive ? t("status.live") : t("vs")}
 												</span>
 											</div>
 
-											<div className="flex min-w-0 flex-1 items-center gap-3">
-												{opponent?.id ? (
+											{/* Tournament */}
+											<div className="shrink-0">
+												{match.tournament?.slug ? (
 													<Link
-														to={linkTo("/teams/$teamId")}
-														params={{ teamId: opponent.slug }}
-														className="flex items-center gap-3"
+														to={linkTo("/tournaments/$slug")}
+														params={{ slug: match.tournament.slug }}
+														className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]"
 													>
-														<div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#000]">
-															<TeamLogo
-																teamName={opponent.name}
-																logoUrl={opponent.logoUrl}
+														{match.tournament.logoUrl ? (
+															<img
+																src={match.tournament.logoUrl}
+																alt={match.tournament.name}
 																className="h-full w-full object-contain"
 															/>
-														</div>
-														<span className="truncate font-black text-black text-sm uppercase hover:text-brawl-red hover:underline">
-															{opponent.name}
-														</span>
+														) : (
+															<Trophy className="h-6 w-6 text-gray-900" />
+														)}
 													</Link>
 												) : (
-													<>
-														<div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000]">
-															<TeamLogo
-																teamName={opponent?.name || t("tbd")}
-																logoUrl={opponent?.logoUrl}
-																className="h-full w-full object-contain"
-															/>
-														</div>
-														<span className="truncate font-black text-black text-sm uppercase">
-															{opponent?.name || t("tbd")}
-														</span>
-													</>
+													<div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[2px_2px_0_0_#000]">
+														<Trophy className="h-6 w-6 text-gray-900" />
+													</div>
 												)}
 											</div>
-										</div>
 
-										{/* Date */}
-										<div className="hidden shrink-0 rounded-sm border-[3px] border-black bg-white px-4 py-2 text-center shadow-[3px_3px_0_0_#000] xl:block">
-											<div className="font-black text-[10px] text-gray-900 uppercase tracking-widest">
-												{isLive
-													? t("status.now")
-													: new Date(match.startTime)
-															.toLocaleDateString("pt-BR", {
-																month: "short",
-																timeZone: "UTC",
-															})
-															.toUpperCase()
-															.replace(".", "")}
-											</div>
-											<div className="font-black text-black text-lg tabular-nums">
-												{isLive
-													? "●"
-													: new Date(match.startTime).getUTCDate()}
-											</div>
-										</div>
+											{/* VS Section */}
+											<div className="flex min-w-0 flex-1 items-center gap-4">
+												<div className="flex shrink-0 items-center gap-3">
+													<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000]">
+														<TeamLogo
+															teamName={team.name}
+															logoUrl={team.logoUrl}
+															className="h-full w-full object-contain"
+														/>
+													</div>
+													<span className="hidden font-black text-black text-sm uppercase lg:inline-block">
+														{team.name}
+													</span>
+												</div>
 
-										{/* Button */}
-										<Link
-											to={linkTo("/")}
-											className="shrink-0 rounded-sm border-[3px] border-black bg-[#ffc700] px-5 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
-										>
-											{isLive ? t("actions.follow") : t("actions.bet")}
-										</Link>
+												<div className="flex-shrink-0 -skew-x-12 border-[3px] border-black bg-black px-3 py-1.5 font-black text-[#ccff00] text-xs uppercase italic shadow-[3px_3px_0_0_#000]">
+													<span className="inline-block skew-x-12">
+														{t("vs")}
+													</span>
+												</div>
+
+												<div className="flex min-w-0 flex-1 items-center gap-3">
+													{opponent?.id ? (
+														<Link
+															to={linkTo("/teams/$teamId")}
+															params={{ teamId: opponent.slug }}
+															className="flex items-center gap-3"
+														>
+															<div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#000]">
+																<TeamLogo
+																	teamName={opponent.name}
+																	logoUrl={opponent.logoUrl}
+																	className="h-full w-full object-contain"
+																/>
+															</div>
+															<span className="truncate font-black text-black text-sm uppercase hover:text-brawl-red hover:underline">
+																{opponent.name}
+															</span>
+														</Link>
+													) : (
+														<>
+															<div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border-[3px] border-black bg-white p-2 shadow-[3px_3px_0_0_#000]">
+																<TeamLogo
+																	teamName={opponent?.name || t("tbd")}
+																	logoUrl={opponent?.logoUrl}
+																	className="h-full w-full object-contain"
+																/>
+															</div>
+															<span className="truncate font-black text-black text-sm uppercase">
+																{opponent?.name || t("tbd")}
+															</span>
+														</>
+													)}
+												</div>
+											</div>
+
+											{/* Date */}
+											<div className="hidden shrink-0 rounded-sm border-[3px] border-black bg-white px-4 py-2 text-center shadow-[3px_3px_0_0_#000] xl:block">
+												<div className="font-black text-[10px] text-gray-900 uppercase tracking-widest">
+													{isLive
+														? t("status.now")
+														: new Date(match.startTime)
+																.toLocaleDateString("pt-BR", {
+																	month: "short",
+																	timeZone: "UTC",
+																})
+																.toUpperCase()
+																.replace(".", "")}
+												</div>
+												<div className="font-black text-black text-lg tabular-nums">
+													{isLive
+														? "●"
+														: new Date(match.startTime).getUTCDate()}
+												</div>
+											</div>
+
+											{/* Button */}
+											<Link
+												to={linkTo("/")}
+												className="shrink-0 rounded-sm border-[3px] border-black bg-[#ffc700] px-5 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]"
+											>
+												{isLive ? t("actions.follow") : t("actions.bet")}
+											</Link>
+										</div>
 									</div>
-								</div>
 								);
 							})}
 						</div>
@@ -663,7 +667,7 @@ function TeamDetailsPage() {
 											<div className="relative flex-shrink-0">
 												<div
 													className={clsx(
-														"flex h-16 w-16 items-center justify-center -skew-x-12 border-[3px] border-black font-black text-2xl uppercase italic shadow-[3px_3px_0_0_#000]",
+														"flex h-16 w-16 -skew-x-12 items-center justify-center border-[3px] border-black font-black text-2xl uppercase italic shadow-[3px_3px_0_0_#000]",
 														isWin
 															? "bg-[#ccff00] text-black"
 															: "bg-black text-white",
@@ -674,7 +678,7 @@ function TeamDetailsPage() {
 													</span>
 												</div>
 												{/* Round/stage badge */}
-												<div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-sm border-[3px] border-black bg-ink font-black text-[9px] text-[#ccff00] shadow-[2px_2px_0_0_#000]">
+												<div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-sm border-[3px] border-black bg-ink font-black text-[#ccff00] text-[9px] shadow-[2px_2px_0_0_#000]">
 													{match.label?.includes("Semi")
 														? "SF"
 														: match.label?.includes("Final")
@@ -980,7 +984,7 @@ function StatCard({
 			{/* Diagonal stripe accent */}
 			<div
 				className={clsx(
-					"absolute top-0 right-0 h-16 w-16 -translate-y-1/2 translate-x-1/2 rotate-45 border-l-[3px]",
+					"absolute top-0 right-0 h-16 w-16 translate-x-1/2 -translate-y-1/2 rotate-45 border-l-[3px]",
 					highlight
 						? "border-black/20"
 						: streakType === "W"

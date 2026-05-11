@@ -3,14 +3,14 @@ import {
 	matchDays,
 	matches,
 	pointAdjustments,
-	tournamentTeams,
 	tournaments,
+	tournamentTeams,
 } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import { z } from "zod";
-import { settleBets } from "./scoring";
 import { deriveMatchFormat } from "@/lib/utils";
+import { settleBets } from "./scoring";
 import {
 	buildSwissStandings,
 	seedSwissPlayoff,
@@ -55,7 +55,7 @@ function applyWalkoverDefaults(
 		scoreA?: number | null;
 		scoreB?: number | null;
 	},
-	winsNeeded: number = 3,
+	winsNeeded = 3,
 ): void {
 	if (updateData.resultType !== "wo" || updateData.status !== "finished") {
 		return;
@@ -63,8 +63,10 @@ function applyWalkoverDefaults(
 
 	if (updateData.winnerId) {
 		if (updateData.teamAId || updateData.teamBId) {
-			updateData.scoreA = updateData.winnerId === updateData.teamAId ? winsNeeded : 0;
-			updateData.scoreB = updateData.winnerId === updateData.teamBId ? winsNeeded : 0;
+			updateData.scoreA =
+				updateData.winnerId === updateData.teamAId ? winsNeeded : 0;
+			updateData.scoreB =
+				updateData.winnerId === updateData.teamBId ? winsNeeded : 0;
 		}
 		return;
 	}
@@ -257,10 +259,7 @@ async function updateBracketProgression(db: any, finishedMatch: any) {
 				}
 
 				if (autoWinnerId) {
-					const depFormat = deriveMatchFormat(
-						depMatch.stageId,
-						progStages,
-					);
+					const depFormat = deriveMatchFormat(depMatch.stageId, progStages);
 					const depWinsNeeded = depFormat === "bo3" ? 2 : 3;
 
 					await db
@@ -1325,14 +1324,22 @@ const generateFullBracketFn = createServerFn({ method: "POST" }).handler(
 				const groupsCount = swissStage
 					? 1
 					: groupsStage?.settings?.groupsCount || 4;
-				const totalTeams = advancingCount * groupsCount;
+				let totalTeams = advancingCount * groupsCount;
+				if (!groupsStage && !swissStage) {
+					const registeredTeams = await db.query.tournamentTeams.findMany({
+						where: eq(tournamentTeams.tournamentId, tournamentId),
+						columns: { teamId: true },
+					});
+					const teamCount = Math.max(registeredTeams.length, 2);
+					totalTeams = 2 ** Math.ceil(Math.log2(teamCount));
+				}
 				const firstRoundMatchesCount = totalTeams / 2;
 				const side = stage.type === "Double Elimination" ? "upper" : "main";
 
-				const placeholders = generatePlaceholderLabels(
-					groupsCount,
-					advancingCount,
-				);
+				const placeholders =
+					groupsStage || swissStage
+						? generatePlaceholderLabels(groupsCount, advancingCount)
+						: Array.from({ length: totalTeams }, (_, i) => `Slot ${i + 1}`);
 
 				let playoffMatchDay = await db.query.matchDays.findFirst({
 					where: and(

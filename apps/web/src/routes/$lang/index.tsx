@@ -3212,7 +3212,7 @@ function Home() {
 		} else {
 			const key = `bse-predictions-${selectedTournamentId}-${userId}`;
 			const saved = localStorage.getItem(key);
-				if (saved) {
+			if (saved) {
 				try {
 					const parsed = JSON.parse(saved);
 

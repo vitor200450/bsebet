@@ -12,7 +12,7 @@ export default function Loader() {
 					</div>
 				</div>
 				<div className="-skew-x-6 transform rounded-md border-[3px] border-black bg-ink px-5 py-2.5 shadow-[4px_4px_0_0_#000]">
-					<span className="font-black font-display text-xs text-[#ccff00] uppercase italic tracking-[0.15em] animate-pulse">
+					<span className="animate-pulse font-black font-display text-[#ccff00] text-xs uppercase italic tracking-[0.15em]">
 						CARREGANDO...
 					</span>
 				</div>

@@ -5,11 +5,11 @@ import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { createServerT } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
+import { canEditExistingOpenBet } from "../utils/bet-lock";
 import {
 	buildRecoveryDependencySet,
 	isRecoverySubmissionAllowed,
 } from "../utils/recovery";
-import { canEditExistingOpenBet } from "../utils/bet-lock";
 
 // Schema for Bet Submission
 const createBetSubmissionSchema = (t: (key: string) => string) =>
@@ -291,7 +291,7 @@ const submitMultipleBetsFn = createServerFn({
 		}
 
 		// Allow recovery bets if user already has a bet for this match
-		let existingBet = await db.query.bets.findFirst({
+		const existingBet = await db.query.bets.findFirst({
 			where: and(eq(bets.userId, userId), eq(bets.matchId, betData.matchId)),
 		});
 		if (!match.isBettingEnabled) {
@@ -363,9 +363,7 @@ const submitMultipleBetsFn = createServerFn({
 			});
 
 			if (!canEdit) {
-				errors.push(
-					`${t("errors:betAlreadyPlaced")}: ${betData.matchId}`,
-				);
+				errors.push(`${t("errors:betAlreadyPlaced")}: ${betData.matchId}`);
 				continue;
 			}
 		}

@@ -337,7 +337,9 @@ function RouteComponent() {
 														const stageLabel = (() => {
 															const side = bet.match.bracketSide;
 															const round = bet.match.roundIndex;
-															const label = (bet.match as any).label || (bet.match as any).name;
+															const label =
+																(bet.match as any).label ||
+																(bet.match as any).name;
 
 															if (side === "groups")
 																return t("stageLabel.groups");
@@ -353,11 +355,13 @@ function RouteComponent() {
 																return t("stageLabel.grandFinal");
 															if (side === "third_place")
 																return t("stageLabel.thirdPlace");
-															if (side === "main" && label)
-																return label;
-															return label || t("stageLabel.match", {
-																id: bet.match.id,
-															});
+															if (side === "main" && label) return label;
+															return (
+																label ||
+																t("stageLabel.match", {
+																	id: bet.match.id,
+																})
+															);
 														})();
 														return (
 															<MatchBetCard

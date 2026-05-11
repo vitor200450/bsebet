@@ -4,13 +4,13 @@ import { AlertCircle, Check, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { deriveMatchFormat } from "@/lib/utils";
 import {
 	createMatch,
 	refreshWalkoverWinner,
 	updateMatch,
 } from "@/server/matches";
 import { buildSwissStandings } from "@/server/swiss";
-import { deriveMatchFormat } from "@/lib/utils";
 import {
 	CustomDatePicker,
 	CustomSelect,
@@ -361,10 +361,7 @@ export function MatchModal({
 		if (formData.resultType === "wo") return;
 
 		// Determine format from stage config or default to BO5
-		const matchFormat = deriveMatchFormat(
-			matchToEdit?.stageId ?? null,
-			stages,
-		);
+		const matchFormat = deriveMatchFormat(matchToEdit?.stageId ?? null, stages);
 		const bestOf = matchFormat === "bo3" ? 3 : 5;
 
 		const winsNeeded = Math.ceil(bestOf / 2);
