@@ -29,7 +29,7 @@ export async function runQuery(
 		return {
 			rows: result.rows,
 			rowCount: result.rowCount ?? 0,
-			fields: result.fields.map((f) => f.name),
+			fields: result.fields.map((f: { name: string }) => f.name),
 			durationMs: Date.now() - started,
 		};
 	} catch (error) {

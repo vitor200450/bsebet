@@ -1,9 +1,8 @@
 import { Type } from "typebox";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { runQuery } from "./executor";
 import { buildListTablesSql, LIST_SCHEMAS_SQL } from "./introspect";
 import { createRegistry } from "./registry";
-import { normalizeDbError } from "./errors";
 import { parseEnvText } from "./discovery/env";
 import { extractPostgresServices } from "./discovery/compose";
 import { mergeConnections } from "./discovery/index";
