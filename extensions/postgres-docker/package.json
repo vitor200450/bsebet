@@ -1,0 +1,9 @@
+{
+	"name": "@bsebet/ext-postgres-docker",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	}
+}
