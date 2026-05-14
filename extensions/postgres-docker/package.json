@@ -3,9 +3,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"test": "bun test --ignore=**/integration/**",
-		"test:watch": "bun test --watch",
-		"test:all": "bun test",
+		"test": "bun test tests/ --filter='*' --timeout=10000",
+		"test:quick": "bun test tests/*.test.ts",
+		"test:all": "bun test tests/",
 		"test:integration": "bun test tests/integration/"
 	},
 	"dependencies": {
