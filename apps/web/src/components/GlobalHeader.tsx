@@ -55,7 +55,7 @@ export function GlobalHeader() {
 
 	const navItems = [
 		{ label: t("nav.home"), to: isAuthenticated ? "/dashboard" : "/landing" },
-		{ label: t("nav.bet"), to: "/" },
+		...(isAuthenticated ? [{ label: t("nav.bet"), to: "/" }] : []),
 		{ label: t("nav.tournaments"), to: "/tournaments" },
 		{ label: t("nav.leaderboard"), to: "/leaderboard" },
 		...(isAuthenticated ? [{ label: t("nav.myBets"), to: "/my-bets" }] : []),

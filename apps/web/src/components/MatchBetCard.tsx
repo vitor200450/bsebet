@@ -164,11 +164,11 @@ export function MatchBetCard({
 			</div>
 
 			{/* Main: Teams & Score */}
-			<div className="flex items-stretch">
+			<div className="flex flex-col items-stretch md:flex-row">
 				{/* Team A */}
 				<div
 					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black border-r-2 px-3 py-4 transition-colors",
+						"flex flex-1 flex-col items-center gap-2 border-black px-3 py-4 transition-colors md:border-r-2",
 						pickedTeamBgA,
 						pickedWinnerBgA,
 					)}
@@ -179,7 +179,7 @@ export function MatchBetCard({
 						size="xl"
 						className="drop-shadow-sm"
 					/>
-					<p className="max-w-full truncate text-center font-black text-ink text-sm uppercase">
+					<p className="max-w-full text-center font-black text-ink text-sm uppercase leading-tight">
 						{teamA.name}
 					</p>
 					{pickedA && !isProjected && (
@@ -199,7 +199,7 @@ export function MatchBetCard({
 				</div>
 
 				{/* Center: Scores */}
-				<div className="flex min-w-[120px] shrink-0 flex-col items-center justify-center gap-2 px-2 py-3">
+				<div className="flex flex-col items-center justify-center gap-2 border-black border-y-2 px-2 py-3 md:min-w-[120px] md:shrink-0 md:border-y-0">
 					{/* VS or Score */}
 					{!isFinished ? (
 						<div className="flex flex-col items-center gap-2">
@@ -280,7 +280,7 @@ export function MatchBetCard({
 				{/* Team B */}
 				<div
 					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black border-l-2 px-3 py-4 transition-colors",
+						"flex flex-1 flex-col items-center gap-2 border-black px-3 py-4 transition-colors md:border-l-2",
 						pickedTeamBgB,
 						pickedWinnerBgB,
 					)}
@@ -291,7 +291,7 @@ export function MatchBetCard({
 						size="xl"
 						className="drop-shadow-sm"
 					/>
-					<p className="max-w-full truncate text-center font-black text-ink text-sm uppercase">
+					<p className="max-w-full text-center font-black text-ink text-sm uppercase leading-tight">
 						{teamB.name}
 					</p>
 					{pickedB && !isProjected && (

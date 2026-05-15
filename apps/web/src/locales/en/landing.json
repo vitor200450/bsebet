@@ -2,26 +2,36 @@
 	"loginWithGoogle": "Sign in with Google",
 	"beta": "BETA",
 	"welcome": "WELCOME",
+	"heroSubtitle": "Sign in to start betting",
 	"hero": {
 		"arenaTitle": "THE ARENA OF",
 		"picksTitle": "PICKS",
-		"title": "Make your picks and climb the leaderboard",
-		"badge": "🏆 Brawl Stars Competitive",
-		"cta": "ENTER NOW",
-		"loginCta": "Sign in to start betting"
+		"subtitle": "You follow Brawl Stars competitive? Then prove it. Analyze the matches, pick your winners, and climb the leaderboard.",
+		"cta": "ENTER THE ARENA",
+		"secondaryCta": "Already have an account"
 	},
 	"features": {
-		"predictTitle": "MAKE YOUR",
-		"predictTitleSub": "PICKS",
-		"predictDesc": "Predict Brawl Stars match results and prove you know the competitive scene.",
-		"scoreTitle": "CLIMB THE",
-		"scoreTitleSub": "RANKINGS",
-		"scoreDesc": "Earn points with your winning picks and climb to the top of the bettor leaderboard.",
-		"prizesTitle": "WIN",
-		"prizesTitleSub": "PRIZES",
-		"prizesDesc": "Top bettors win exclusive rewards and community recognition."
+		"predictTitle": "PICK YOUR",
+		"predictTitleSub": "WINNERS",
+		"predictDesc": "Study the competitive scene, analyze the teams, and make your predictions for every match of the championship.",
+		"scoreTitle": "OWN THE",
+		"scoreTitleSub": "RANKING",
+		"scoreDesc": "Every correct pick earns points. The higher you climb, the more you prove you know the game.",
+		"prizesTitle": "COMMUNITY",
+		"prizesTitleSub": "RECOGNITION",
+		"prizesDesc": "Top predictors earn community recognition and prove they know the competitive scene."
+	},
+	"howItWorks": {
+		"title": "HOW IT WORKS",
+		"step1Title": "Pick a tournament",
+		"step1Desc": "Choose the Brawl Stars championship you want to follow",
+		"step2Title": "Make your predictions",
+		"step2Desc": "Analyze the matches and pick who you believe will win",
+		"step3Title": "Climb the ranks",
+		"step3Desc": "Track your predictions in real-time and see your position on the leaderboard"
 	},
 	"footer": {
+		"disclaimer": "BSEBET is not endorsed by Supercell or any of its affiliates.",
 		"copyright": "© 2026 BSEBET. All rights reserved."
 	}
 }

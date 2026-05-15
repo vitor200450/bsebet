@@ -3421,7 +3421,7 @@ function Home() {
 							setPredictions({});
 							setShowReview(false);
 						}}
-						className="fixed top-28 left-4 z-[60] flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+						className="mb-3 flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:fixed md:top-28 md:left-4 md:z-[60]"
 					>
 						<span className="material-symbols-outlined text-base">
 							arrow_back
@@ -3448,7 +3448,7 @@ function Home() {
 	const hasMatches = carouselMatches.length > 0;
 
 	return (
-		<div className="flex min-h-screen w-full flex-col bg-paper bg-paper-texture">
+		<div className="flex min-h-screen w-full flex-col bg-paper bg-paper-texture pt-14 md:pt-0">
 			{/* Recovery Bets Toast — only when no tournament is selected yet */}
 			{recoveryToast?.show && !selectedTournamentId && (
 				<RecoveryBetsToast
@@ -3473,7 +3473,7 @@ function Home() {
 						setSelectedMatchDayId(null);
 						setShowReview(false);
 					}}
-					className="fixed top-28 left-4 z-[90] flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black text-[10px] text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:text-xs"
+					className="mb-3 flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black text-[10px] text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:fixed md:top-28 md:left-4 md:z-[90] md:text-xs"
 				>
 					<span className="material-symbols-outlined text-base">
 						arrow_back
@@ -3484,7 +3484,7 @@ function Home() {
 
 			{/* VIEW SWITCHER & ACTIONS */}
 			{hasMatches && !showReview && (
-				<div className="fixed top-28 right-4 z-[90] flex w-auto flex-col items-end gap-3 md:top-auto md:right-6 md:bottom-8 md:items-end">
+				<div className="mx-4 mt-3 mb-4 flex flex-col items-end gap-3 md:fixed md:right-6 md:bottom-8 md:z-[90] md:mx-0 md:w-auto">
 					{/* View Results Button - Only show if user has bets */}
 					{isReadOnly && (
 						<button
@@ -3546,7 +3546,7 @@ function Home() {
 				hasMatches &&
 				(selectedMatchDay.status === "finished" ||
 					selectedMatchDay.status === "locked") && (
-					<div className="mx-auto w-full max-w-4xl px-4 pt-48 pb-4 md:pt-24">
+					<div className="mx-auto w-full max-w-4xl px-4 pt-4 pb-4 md:pt-24">
 						{selectedMatchDay.status === "finished" && (
 							<div className="slide-in-from-top-4 mb-4 animate-in border-[3px] border-black bg-blue-500 p-4 shadow-[6px_6px_0px_0px_#000] duration-300">
 								<div className="flex items-start gap-3">

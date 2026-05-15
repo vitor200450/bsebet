@@ -110,7 +110,7 @@ export default function UserMenu({
 				nativeButton={false}
 				render={
 					<div className="group flex cursor-pointer items-center gap-3">
-						<div className="flex flex-col items-end leading-none">
+						<div className="hidden flex-col items-end leading-none sm:flex">
 							<span
 								className={clsx(
 									"whitespace-nowrap font-black font-display text-sm uppercase italic tracking-tighter",

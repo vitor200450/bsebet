@@ -2,26 +2,36 @@
 	"loginWithGoogle": "Entrar com Google",
 	"beta": "BETA",
 	"welcome": "BEM-VINDO",
+	"heroSubtitle": "Faça login para começar a apostar",
 	"hero": {
 		"arenaTitle": "A ARENA DOS",
 		"picksTitle": "PALPITES",
-		"title": "Faça seus palpites e suba no ranking",
-		"badge": "🏆 Competitivo de Brawl Stars",
-		"cta": "ENTRAR AGORA",
-		"loginCta": "Faça login para começar a apostar"
+		"subtitle": "Você acompanha o competitivo de Brawl Stars? Então mostre seu conhecimento. Analise as partidas, escolha os vencedores e dispute o topo do ranking.",
+		"cta": "ENTRAR NA ARENA",
+		"secondaryCta": "Já tenho conta"
 	},
 	"features": {
-		"predictTitle": "FAÇA SEUS",
-		"predictTitleSub": "PALPITES",
-		"predictDesc": "Preveja os resultados das partidas de Brawl Stars e mostre que você entende do competitivo.",
-		"scoreTitle": "SUBA NO",
-		"scoreTitleSub": "RANKING",
-		"scoreDesc": "Acumule pontos com seus palpites certeiros e escale até o topo do ranking de apostadores.",
-		"prizesTitle": "GANHE",
-		"prizesTitleSub": "PRÊMIOS",
-		"prizesDesc": "Os melhores apostadores ganham recompensas exclusivas e reconhecimento na comunidade."
+		"predictTitle": "ESCOLHA SEUS",
+		"predictTitleSub": "VENCEDORES",
+		"predictDesc": "Estude o cenário competitivo, analise as equipes e faça suas previsões para cada partida do campeonato.",
+		"scoreTitle": "DISPUTE O",
+		"scoreTitleSub": "TOPO",
+		"scoreDesc": "Cada acerto soma pontos. Quem chega mais longe no ranking prova que realmente entende do competitivo.",
+		"prizesTitle": "RECONHECIMENTO",
+		"prizesTitleSub": "NA COMUNIDADE",
+		"prizesDesc": "Os melhores colocados ganham destaque na comunidade e provam que entendem do competitivo."
+	},
+	"howItWorks": {
+		"title": "COMO FUNCIONA",
+		"step1Title": "Escolha um torneio",
+		"step1Desc": "Selecione o campeonato de Brawl Stars que você quer acompanhar",
+		"step2Title": "Faça suas previsões",
+		"step2Desc": "Analise as partidas e escolha quem você acredita que vai vencer",
+		"step3Title": "Subiu no ranking",
+		"step3Desc": "Acompanhe seus palpites em tempo real e veja sua posição na tabela"
 	},
 	"footer": {
+		"disclaimer": "BSEBET não é endossado pela Supercell ou qualquer uma de suas afiliadas.",
 		"copyright": "© 2026 BSEBET. Todos os direitos reservados."
 	}
 }
