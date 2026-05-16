@@ -346,7 +346,7 @@ export function MatchBetCard({
 
 			{/* Community bet stats — shown whenever betStats is provided */}
 			{betStats && !isProjected && (
-				<div className="border-black border-t-2 bg-[#fafafa] px-3 py-2">
+				<div className="w-full">
 					<BetSplitBar
 						teamAName={teamA.name}
 						teamBName={teamB.name}

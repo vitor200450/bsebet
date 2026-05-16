@@ -1914,7 +1914,7 @@ function ReviewScreen({
 										const stats = matchBetStats[match.id];
 										if (!stats) return null;
 										return (
-											<div className="mt-3 border-black border-t-2 bg-[#fafafa] px-3 py-2">
+											<div className="w-full">
 												<BetSplitBar
 													teamAName={match.teamA?.name ?? "Team A"}
 													teamBName={match.teamB?.name ?? "Team B"}
