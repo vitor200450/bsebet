@@ -1,7 +1,7 @@
 import { auth } from "@bsebet/auth";
 import { bets, matches } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createServerT } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
@@ -10,6 +10,16 @@ import {
 	buildRecoveryDependencySet,
 	isRecoverySubmissionAllowed,
 } from "../utils/recovery";
+
+export type BetStats = {
+	teamAId: number | null;
+	teamBId: number | null;
+	teamACount: number;
+	teamBCount: number;
+	teamAPercent: number;
+	teamBPercent: number;
+	totalCount: number;
+};
 
 // Schema for Bet Submission
 const createBetSubmissionSchema = (t: (key: string) => string) =>
@@ -486,3 +496,62 @@ export const submitMultipleBets = submitMultipleBetsFn as unknown as (opts: {
 	bets: (typeof bets.$inferSelect)[];
 	message: string;
 }>;
+
+const getMatchBetStatsFn = createServerFn({ method: "GET" }).handler(
+	async (ctx: any) => {
+		const { db } = await import("@bsebet/db");
+		const { matchId } = z.object({ matchId: z.number() }).parse(ctx.data);
+
+		const match = await db.query.matches.findFirst({
+			where: eq(matches.id, matchId),
+			columns: { teamAId: true, teamBId: true },
+		});
+
+		const empty: BetStats = {
+			teamAId: match?.teamAId ?? null,
+			teamBId: match?.teamBId ?? null,
+			teamACount: 0,
+			teamBCount: 0,
+			teamAPercent: 0,
+			teamBPercent: 0,
+			totalCount: 0,
+		};
+
+		if (!match?.teamAId || !match?.teamBId) return empty;
+
+		const counts = await db
+			.select({
+				predictedWinnerId: bets.predictedWinnerId,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(bets)
+			.where(eq(bets.matchId, matchId))
+			.groupBy(bets.predictedWinnerId);
+
+		let teamACount = 0;
+		let teamBCount = 0;
+		for (const row of counts) {
+			if (row.predictedWinnerId === match.teamAId) teamACount = row.count;
+			else if (row.predictedWinnerId === match.teamBId) teamBCount = row.count;
+		}
+
+		const totalCount = teamACount + teamBCount;
+		const teamAPercent =
+			totalCount > 0 ? Math.round((teamACount / totalCount) * 100) : 0;
+		const teamBPercent = totalCount > 0 ? 100 - teamAPercent : 0;
+
+		return {
+			teamAId: match.teamAId,
+			teamBId: match.teamBId,
+			teamACount,
+			teamBCount,
+			teamAPercent,
+			teamBPercent,
+			totalCount,
+		} satisfies BetStats;
+	},
+);
+
+export const getMatchBetStats = getMatchBetStatsFn as unknown as (opts: {
+	data: { matchId: number };
+}) => Promise<BetStats>;
