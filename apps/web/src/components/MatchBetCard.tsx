@@ -1,6 +1,8 @@
 import { clsx } from "clsx";
 import { Calendar, Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import type { BetStats } from "@/server/bets";
+import { BetSplitBar } from "./BetSplitBar";
 import { TeamLogo } from "./TeamLogo";
 
 interface TeamInfo {
@@ -30,6 +32,7 @@ interface MatchBetCardProps {
 	isProjected?: boolean;
 	locale?: string;
 	className?: string;
+	betStats?: BetStats;
 }
 
 export function MatchBetCard({
@@ -53,6 +56,7 @@ export function MatchBetCard({
 	isProjected = false,
 	locale = "pt-BR",
 	className,
+	betStats,
 }: MatchBetCardProps) {
 	const { t } = useTranslation("betting");
 
@@ -337,6 +341,17 @@ export function MatchBetCard({
 							+{pointsEarned}
 						</span>
 					)}
+				</div>
+			)}
+
+			{/* Community bet stats — shown whenever betStats is provided */}
+			{betStats && !isProjected && (
+				<div className="border-black border-t-2 bg-[#fafafa] px-3 py-2">
+					<BetSplitBar
+						teamAName={teamA.name}
+						teamBName={teamB.name}
+						stats={betStats}
+					/>
 				</div>
 			)}
 		</div>
