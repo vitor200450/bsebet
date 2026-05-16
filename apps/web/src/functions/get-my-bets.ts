@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq, inArray, sql } from "drizzle-orm";
 import { authMiddleware } from "@/middleware/auth";
+import type { BetStats } from "@/server/bets";
 
 export const getMyBets = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
@@ -301,10 +302,74 @@ export const getMyBets = createServerFn({ method: "GET" })
 			bets: BetWithRelations[];
 		};
 
-		// Update bets with projected matches
+		// Batch-fetch community bet stats for all real bet matchIds (not synthetics)
+		const realBetMatchIds = rawUserBets.map((b) => b.matchId);
+		const betStatsMap = new Map<number, BetStats>();
+
+		if (realBetMatchIds.length > 0) {
+			try {
+				const { bets: betsTable } = await import("@bsebet/db/schema");
+				const allBetCounts = await db
+					.select({
+						matchId: betsTable.matchId,
+						predictedWinnerId: betsTable.predictedWinnerId,
+						count: sql<number>`count(*)::int`,
+					})
+					.from(betsTable)
+					.where(inArray(betsTable.matchId, realBetMatchIds))
+					.groupBy(betsTable.matchId, betsTable.predictedWinnerId);
+
+				const countsByMatch = new Map<
+					number,
+					{ teamACount: number; teamBCount: number }
+				>();
+
+				for (const row of allBetCounts) {
+					if (!row.matchId) continue;
+					const matchRaw = betMatchesRaw.find((m) => m.id === row.matchId);
+					if (!matchRaw) continue;
+
+					if (!countsByMatch.has(row.matchId)) {
+						countsByMatch.set(row.matchId, { teamACount: 0, teamBCount: 0 });
+					}
+					const entry = countsByMatch.get(row.matchId)!;
+					if (row.predictedWinnerId === matchRaw.teamAId) {
+						entry.teamACount = row.count;
+					} else if (row.predictedWinnerId === matchRaw.teamBId) {
+						entry.teamBCount = row.count;
+					}
+				}
+
+				for (const matchRaw of betMatchesRaw) {
+					const counts = countsByMatch.get(matchRaw.id) ?? {
+						teamACount: 0,
+						teamBCount: 0,
+					};
+					const totalCount = counts.teamACount + counts.teamBCount;
+					const teamAPercent =
+						totalCount > 0
+							? Math.round((counts.teamACount / totalCount) * 100)
+							: 0;
+					betStatsMap.set(matchRaw.id, {
+						teamAId: matchRaw.teamAId ?? null,
+						teamBId: matchRaw.teamBId ?? null,
+						teamACount: counts.teamACount,
+						teamBCount: counts.teamBCount,
+						teamAPercent,
+						teamBPercent: totalCount > 0 ? 100 - teamAPercent : 0,
+						totalCount,
+					});
+				}
+			} catch (e) {
+				console.error("[getMyBets] Failed to fetch bet stats", e);
+			}
+		}
+
+		// Update bets with projected matches and attach betStats
 		const betsWithProjection = userBets.map((bet) => ({
 			...bet,
 			match: allMatchesMap.get(bet.matchId) || bet.match,
+			betStats: betStatsMap.get(bet.matchId),
 		}));
 
 		// 5. Find all projected future matches that user hasn't bet on yet
