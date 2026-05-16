@@ -53,7 +53,6 @@
 		"generateSwissPlayoffDraft": "Generate Playoff Draft",
 		"generateSwissPlayoffDraftSuccess": "Playoff draft generated!",
 		"generateSwissPlayoffDraftError": "Failed to generate playoff draft.",
-		"tabDays": "Days",
 		"groupStage": "Group Stage",
 		"playoffs": "Playoffs Bracket",
 		"filterStage": "Filter Stage",
@@ -112,6 +111,15 @@
 		"cancelLabel": "Cancel",
 		"skippedAdjustments": "{{count}} adjustment skipped",
 		"skippedAdjustments_other": "{{count}} adjustments skipped"
+	},
+	"resetBets": {
+		"button": "Reset Bets",
+		"title": "Reset All Bets",
+		"description": "This will delete all user bets for this tournament and reset all match days to open. Match results will be preserved. This action cannot be undone.",
+		"confirmLabel": "Reset Bets",
+		"cancelLabel": "Cancel",
+		"success": "All bets have been reset! {{count}} bets deleted.",
+		"error": "Error resetting tournament bets"
 	},
 	"modal": {
 		"tournamentMustBeActive": "Set the tournament to active before starting matches or recording results.",

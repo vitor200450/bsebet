@@ -395,10 +395,10 @@ export function BettingCarousel({
 								className="w-full"
 							>
 								<div className="relative w-full overflow-visible bg-paper shadow-none">
-									<div className="pointer-events-none absolute top-[-80px] -left-[120px] z-0 h-[280px] w-[280px] -rotate-12 transform opacity-80 md:h-[450px] md:w-[450px]">
+									<div className="pointer-events-none absolute -top-5 -left-[60px] z-0 h-[300px] w-[300px] -rotate-12 transform opacity-60 md:top-[-80px] md:-left-[120px] md:h-[450px] md:w-[450px] md:opacity-80">
 										<PaintSplatterBlue className="h-full w-full" />
 									</div>
-									<div className="pointer-events-none absolute top-[-80px] -right-[120px] z-0 h-[280px] w-[280px] rotate-12 transform opacity-80 md:h-[450px] md:w-[450px]">
+									<div className="pointer-events-none absolute -top-5 -right-[60px] z-0 h-[300px] w-[300px] rotate-12 transform opacity-60 md:top-[-80px] md:-right-[120px] md:h-[450px] md:w-[450px] md:opacity-80">
 										<PaintSplatterRed className="h-full w-full" />
 									</div>
 

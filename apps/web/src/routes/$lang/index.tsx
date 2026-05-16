@@ -1268,23 +1268,6 @@ function ReviewScreen({
 													)}
 											</div>
 											<div className="flex items-center gap-2">
-												{/* Predicted score badge — moved to header to avoid overlap with BetSplitBar */}
-												{betData && (
-													<div
-														className={clsx(
-															"rotate-1 border-[2px] border-black px-1.5 py-0.5 shadow-[2px_2px_0px_0px_#000]",
-															betData.isPerfectPick && match.winnerId !== null
-																? "border-black bg-[#ccff00] text-black"
-																: betData.predictedWinnerId === match.winnerId
-																	? "bg-green-100 text-green-700"
-																	: "bg-red-100 text-red-600",
-														)}
-													>
-														<span className="font-black font-display text-[9px] italic">
-															{betData.predictedScoreA}-{betData.predictedScoreB}
-														</span>
-													</div>
-												)}
 												<div
 													className={clsx(
 														"flex shrink-0 items-center gap-1 font-black text-[10px] italic",
@@ -1546,7 +1529,7 @@ function ReviewScreen({
 												</div>
 											)}
 
-											{(isEditingScore || (showResult && betData)) && (
+											{(isEditingScore || betData) && (
 												<div
 													className={clsx(
 														"absolute left-1/2 z-50 -translate-x-1/2 transition-all duration-300",
@@ -1582,7 +1565,7 @@ function ReviewScreen({
 																</button>
 															))}
 														</div>
-													) : (
+													) : showResult && betData ? (
 														// Show comparison: predicted vs actual
 														<div className="flex flex-row items-center gap-2">
 															{/* Actual Score (Left) */}
@@ -1613,7 +1596,26 @@ function ReviewScreen({
 																</div>
 															</div>
 														</div>
-													)}
+													) : betData ? (
+														// Review mode: show bet badge in center between teams
+														<div
+															className={clsx(
+																"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
+																matchActiveColor === "brawl-blue"
+																	? "bg-brawl-blue"
+																	: "bg-brawl-red",
+															)}
+														>
+															<div className="flex flex-col items-center leading-none">
+																<span className="mb-0.5 font-bold text-[6px] text-white uppercase md:text-[7px]">
+																	PALPITE
+																</span>
+																<span className="font-black font-display text-[10px] text-white italic md:text-sm">
+																	{betData.predictedScoreA}-{betData.predictedScoreB}
+																</span>
+															</div>
+														</div>
+													) : null}
 												</div>
 											)}
 

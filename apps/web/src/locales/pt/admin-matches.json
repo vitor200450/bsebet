@@ -53,7 +53,6 @@
 		"generateSwissPlayoffDraft": "Gerar Playoff Rascunho",
 		"generateSwissPlayoffDraftSuccess": "Playoff rascunho gerado!",
 		"generateSwissPlayoffDraftError": "Erro ao gerar playoff rascunho.",
-		"tabDays": "Dias",
 		"groupStage": "Fase de Grupos",
 		"playoffs": "Chaveamento Final",
 		"filterStage": "Filtrar Fase",
@@ -112,6 +111,15 @@
 		"cancelLabel": "Cancelar",
 		"skippedAdjustments": "{{count}} ajuste ignorado",
 		"skippedAdjustments_other": "{{count}} ajustes ignorados"
+	},
+	"resetBets": {
+		"button": "Resetar Apostas",
+		"title": "Resetar Todas as Apostas",
+		"description": "Isso irá deletar todas as apostas dos usuários deste torneio e resetar todos os dias de partida para aberto. Os resultados das partidas serão preservados. Esta ação não pode ser desfeita.",
+		"confirmLabel": "Resetar Apostas",
+		"cancelLabel": "Cancelar",
+		"success": "Todas as apostas foram resetadas! {{count}} apostas deletadas.",
+		"error": "Erro ao resetar apostas do torneio"
 	},
 	"modal": {
 		"tournamentMustBeActive": "Defina o torneio como ativo antes de iniciar partidas ou registrar resultados.",

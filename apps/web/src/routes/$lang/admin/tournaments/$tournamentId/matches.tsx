@@ -21,6 +21,7 @@ import {
 	deleteMatch,
 	getMatches,
 	recalculateTournamentPoints,
+	resetTournamentBets,
 	resetTournamentResults,
 } from "@/server/matches";
 import { getTeams } from "@/server/teams"; // Global teams
@@ -177,6 +178,10 @@ function TournamentMatchesPage() {
 	const [isRecalculatingTournament, setIsRecalculatingTournament] =
 		useState(false);
 
+	// Reset Bets State
+	const [isResetBetsModalOpen, setIsResetBetsModalOpen] = useState(false);
+	const [isResettingBets, setIsResettingBets] = useState(false);
+
 	const handleResetMatch = async () => {
 		if (!matchToReset) return;
 		setIsResetting(true);
@@ -213,6 +218,24 @@ function TournamentMatchesPage() {
 			toast.error(t("reset.tournamentResetError"));
 		} finally {
 			setIsResettingTournament(false);
+		}
+	};
+
+	const handleResetBets = async () => {
+		setIsResettingBets(true);
+		try {
+			const result = await resetTournamentBets({
+				data: { tournamentId: tournament.id },
+			});
+			toast.success(t("resetBets.success", { count: result.deletedCount }));
+			setIsResetBetsModalOpen(false);
+			// Invalidate user points cache when bets are reset
+			await queryClient.invalidateQueries({ queryKey: ["userPoints"] });
+			router.invalidate();
+		} catch (e) {
+			toast.error(t("resetBets.error"));
+		} finally {
+			setIsResettingBets(false);
 		}
 	};
 
@@ -484,6 +507,14 @@ function TournamentMatchesPage() {
 					>
 						<CheckCircle2 size={12} strokeWidth={3} />
 						{t("recalc.button")}
+					</button>
+
+					<button
+						onClick={() => setIsResetBetsModalOpen(true)}
+						className="flex items-center gap-2 border-[2px] border-black bg-[#ffc700] px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all hover:bg-[#ccff00]"
+					>
+						<RotateCcw size={12} strokeWidth={3} />
+						{t("resetBets.button")}
 					</button>
 
 					<button
@@ -1399,6 +1430,18 @@ function TournamentMatchesPage() {
 				confirmLabel={t("reset.tournamentConfirm")}
 				cancelLabel={t("reset.cancelLabel")}
 				variant="danger"
+			/>
+
+			<ConfirmationModal
+				isOpen={isResetBetsModalOpen}
+				onClose={() => setIsResetBetsModalOpen(false)}
+				onConfirm={handleResetBets}
+				isLoading={isResettingBets}
+				title={t("resetBets.title")}
+				description={t("resetBets.description")}
+				confirmLabel={t("resetBets.confirmLabel")}
+				cancelLabel={t("resetBets.cancelLabel")}
+				variant="warning"
 			/>
 		</div>
 	);

@@ -102,8 +102,7 @@ function RouteComponent() {
 								{t("title")}
 							</h1>
 							<p className="mt-2 font-bold text-gray-600 text-lg">
-								{t("greeting", { name: displayName })}{" "}
-								{t("subtitle")}
+								{t("greeting", { name: displayName })} {t("subtitle")}
 							</p>
 						</div>
 						<Link

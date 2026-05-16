@@ -154,7 +154,8 @@ export function RoundRobinResultView({
 					</h4>
 					{standings.length > 0 && (
 						<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
-							<div className="overflow-x-auto">
+							{/* Desktop Table */}
+							<div className="hidden md:block">
 								<table className="w-full text-left">
 									<thead className="border-black border-b-2 bg-[#121212] text-white">
 										<tr className="border-transparent border-l-4">
@@ -177,9 +178,7 @@ export function RoundRobinResultView({
 									</thead>
 									<tbody className="divide-y-2 divide-black/10">
 										{standings.map((row, index) => {
-											// Mark top 2 as qualifying visually (common in RR groups)
 											const isTop = index < 2;
-
 											return (
 												<tr
 													key={row.team.id}
@@ -237,6 +236,84 @@ export function RoundRobinResultView({
 										})}
 									</tbody>
 								</table>
+							</div>
+
+							{/* Mobile Cards */}
+							<div className="flex flex-col gap-2 p-2 md:hidden">
+								{standings.map((row, index) => {
+									const isTop = index < 2;
+									return (
+										<div
+											key={row.team.id}
+											className={clsx(
+												"flex items-center gap-3 rounded-lg border-2 p-3 transition-all",
+												isTop
+													? "border-[#ccff00] bg-[#ccff00]/20 shadow-[3px_3px_0_0_#ccff00]"
+													: "border-black/10 bg-white shadow-[3px_3px_0_0_rgba(0,0,0,0.1)]",
+											)}
+										>
+											{/* Rank */}
+											<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white font-black text-black text-sm shadow-[2px_2px_0_0_#000]">
+												{index + 1}
+											</div>
+
+											{/* Team */}
+											<div className="flex min-w-0 flex-1 items-center gap-2">
+												<TeamLogo
+													teamName={row.team.name}
+													logoUrl={row.team.logoUrl}
+													size="sm"
+													className="shrink-0"
+												/>
+												<span
+													className={clsx(
+														"truncate font-black text-sm uppercase",
+														isTop ? "text-black" : "text-zinc-700",
+													)}
+												>
+													{row.team.name}
+												</span>
+											</div>
+
+											{/* Stats */}
+											<div className="flex shrink-0 items-center gap-3">
+												<div className="flex flex-col items-end">
+													<span className="font-black text-[10px] text-zinc-500 uppercase">
+														W-L
+													</span>
+													<span className="font-black text-black text-sm">
+														{row.wins}-{row.losses}
+													</span>
+												</div>
+												<div className="flex flex-col items-end">
+													<span className="font-black text-[10px] text-zinc-500 uppercase">
+														Maps
+													</span>
+													<span className="font-bold text-gray-500 text-sm">
+														{row.mapWins}-{row.mapLosses}
+													</span>
+												</div>
+												<div className="flex flex-col items-end">
+													<span className="font-black text-[10px] text-zinc-500 uppercase">
+														Diff
+													</span>
+													<span
+														className={clsx(
+															"font-black text-sm",
+															row.mapDiff > 0
+																? "text-green-600"
+																: row.mapDiff < 0
+																	? "text-red-500"
+																	: "text-gray-400",
+														)}
+													>
+														{row.mapDiff > 0 ? `+${row.mapDiff}` : row.mapDiff}
+													</span>
+												</div>
+											</div>
+										</div>
+									);
+								})}
 							</div>
 						</div>
 					)}

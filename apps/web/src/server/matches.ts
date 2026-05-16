@@ -2409,3 +2409,43 @@ export const generatePlayoffDraftServer =
 			playoffStageId: string;
 		};
 	}) => Promise<{ success: boolean }>;
+
+const resetTournamentBetsFn = createServerFn({ method: "POST" }).handler(
+	async (ctx: any) => {
+		const { db } = await import("@bsebet/db");
+		const { tournamentId } = z
+			.object({ tournamentId: z.number() })
+			.parse(ctx.data);
+
+		const tournamentMatches = await db.query.matches.findMany({
+			where: eq(matches.tournamentId, tournamentId),
+		});
+
+		const matchIds = tournamentMatches.map((m) => m.id);
+
+		// Delete all bets for the tournament
+		let deletedCount = 0;
+		if (matchIds.length > 0) {
+			const result = await db
+				.delete(bets)
+				.where(inArray(bets.matchId, matchIds))
+				.returning({ id: bets.id });
+			deletedCount = result.length;
+		}
+
+		// Reset all match days to "open" so users can place fresh bets
+		await db
+			.update(matchDays)
+			.set({ status: "open" })
+			.where(eq(matchDays.tournamentId, tournamentId));
+
+		return {
+			success: true,
+			deletedCount,
+		};
+	},
+);
+
+export const resetTournamentBets = resetTournamentBetsFn as unknown as (opts: {
+	data: { tournamentId: number };
+}) => Promise<{ success: boolean; deletedCount: number }>;

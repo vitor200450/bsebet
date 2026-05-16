@@ -60,8 +60,8 @@ export default function UserMenu({
 
 	if (!mounted || isPending || (session && isProfileLoading)) {
 		return (
-			<div className="flex items-center gap-3">
-				<div className="flex flex-col items-end gap-1.5">
+			<div className="flex items-center gap-1.5 sm:gap-3">
+				<div className="hidden flex-col items-end gap-1.5 sm:flex">
 					<Skeleton
 						className={clsx(
 							"h-3 w-20",
@@ -77,7 +77,7 @@ export default function UserMenu({
 				</div>
 				<Skeleton
 					className={clsx(
-						"h-10 w-10 -skew-x-6 transform border-[3px]",
+						"h-8 w-8 -skew-x-6 transform border-[3px] sm:h-10 sm:w-10",
 						variant === "dark" ? "border-white/20" : "border-black/20",
 					)}
 				/>
@@ -109,11 +109,11 @@ export default function UserMenu({
 			<DropdownMenuTrigger
 				nativeButton={false}
 				render={
-					<div className="group flex cursor-pointer items-center gap-3">
+					<div className="group flex cursor-pointer items-center gap-1.5 sm:gap-3">
 						<div className="hidden flex-col items-end leading-none sm:flex">
 							<span
 								className={clsx(
-									"whitespace-nowrap font-black font-display text-sm uppercase italic tracking-tighter",
+									"max-w-[70px] truncate px-1 font-black font-display text-xs uppercase italic tracking-tighter sm:max-w-none sm:text-sm",
 									variant === "dark" ? "text-white" : "text-black",
 								)}
 							>
@@ -135,7 +135,7 @@ export default function UserMenu({
 						<div className="relative">
 							<div
 								className={clsx(
-									"relative h-10 w-10 -skew-x-6 transform overflow-hidden border-[3px] transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px]",
+									"relative h-8 w-8 -skew-x-6 transform overflow-hidden border-[3px] transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px] sm:h-10 sm:w-10",
 									variant === "dark"
 										? "border-white bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
 										: "border-black bg-white shadow-none",
@@ -150,10 +150,9 @@ export default function UserMenu({
 										/>
 									) : (
 										<User
-											size={40}
 											strokeWidth={2}
 											className={clsx(
-												"shrink-0",
+												"h-5 w-5 shrink-0 sm:h-8 sm:w-8",
 												variant === "dark" ? "text-white" : "text-black",
 											)}
 										/>
@@ -172,6 +171,50 @@ export default function UserMenu({
 					<DropdownMenuLabel className="!text-black pb-1 font-black font-display text-xs uppercase italic tracking-wider">
 						{t("userMenu.playerMenu")}
 					</DropdownMenuLabel>
+					<div className="mb-2 flex items-center gap-2 border border-black/10 bg-gray-50 p-2 sm:hidden">
+						<div
+							className={clsx(
+								"relative h-8 w-8 shrink-0 -skew-x-6 transform overflow-hidden border-[2px]",
+								variant === "dark"
+									? "border-white bg-black"
+									: "border-black bg-white",
+							)}
+						>
+							<div className="absolute inset-0 flex items-center justify-center">
+								{(profile?.image ?? session.user.image) ? (
+									<img
+										src={(profile?.image ?? session.user.image)!}
+										alt={displayName ?? "User"}
+										className="h-full w-full object-cover"
+									/>
+								) : (
+									<User
+										strokeWidth={2}
+										className={clsx(
+											"h-4 w-4",
+											variant === "dark" ? "text-white" : "text-black",
+										)}
+									/>
+								)}
+							</div>
+						</div>
+						<div className="flex min-w-0 flex-1 flex-col leading-none">
+							<span className="truncate font-black text-black text-sm uppercase italic tracking-tighter">
+								{displayName}
+							</span>
+							<div className="mt-0.5 flex items-center gap-2">
+								<span className="font-black text-[#ff2e2e] text-[9px] uppercase tracking-widest">
+									{totalPoints ?? 0} PTS
+								</span>
+								{medalCounts && medalCounts.total > 0 && (
+									<span className="flex items-center gap-0.5 font-black text-[#FFD700] text-[9px] uppercase tracking-widest">
+										<Trophy className="h-3 w-3" fill="#FFD700" />
+										{medalCounts.total}
+									</span>
+								)}
+							</div>
+						</div>
+					</div>
 					<div className="mb-2 truncate border border-black/10 bg-gray-100 px-2 py-1 font-bold text-[10px] text-gray-400">
 						{session.user.email}
 					</div>

@@ -161,21 +161,21 @@ export function MatchCard({
 					match.name || match.label ? "pt-2" : "",
 				)}
 			>
-				<div className="relative flex h-20 items-center gap-4 p-2 md:gap-8">
+				<div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-2 md:flex md:h-20 md:items-center md:gap-8 md:p-2">
 					{/* --- TEAM A --- */}
 					<div
 						className={clsx(
-							"relative flex h-full flex-1 items-center justify-end gap-3 overflow-hidden rounded-lg py-1 pr-1 transition-all lg:pr-2",
+							"relative flex items-center justify-end gap-2 overflow-hidden rounded-lg py-1 pr-1 transition-all md:h-full md:gap-3 md:pr-1 lg:pr-2",
 							userPredictedWinnerA ? "bg-[#ccff00]/40" : "",
 						)}
 					>
-						<div className="z-10 flex min-w-0 max-w-full flex-col items-end leading-tight">
+						<div className="z-10 flex min-w-0 flex-col items-end leading-tight">
 							{teamA?.slug ? (
 								<Link
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamA.slug, lang }}
 									className={clsx(
-										"block w-full break-words text-right font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
+										"block w-full truncate text-right font-black text-[10px] uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -184,7 +184,7 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full break-words text-right font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
+										"block w-full truncate text-right font-black text-[10px] uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerA ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -192,7 +192,7 @@ export function MatchCard({
 								</span>
 							)}
 							{initialBet && !showPredictionScore && (
-								<span className="mt-0.5 whitespace-nowrap font-black text-[10px] text-black/40 uppercase">
+								<span className="mt-0.5 hidden whitespace-nowrap font-black text-[10px] text-black/40 uppercase md:block">
 									{t("betPredictionPrefix")}: {initialBet.predictedScoreA}
 								</span>
 							)}
@@ -202,39 +202,39 @@ export function MatchCard({
 						<TeamLogo
 							teamName={teamA?.name || match.labelTeamA || t("matchCard.tbd")}
 							logoUrl={teamA?.logoUrl}
-							size="md"
+							size="sm"
 							className={clsx(
-								"transition-transform",
+								"h-8 w-8 shrink-0 transition-transform md:h-10 md:w-10",
 								userPredictedWinnerA ? "rotate-[-2deg] scale-105" : "",
 							)}
 						/>
 					</div>
 
 					{/* --- VS / PLACAR (Center) --- */}
-					<div className="flex w-24 shrink-0 flex-col items-center justify-center md:w-36">
-						<div className="flex items-center gap-2 md:gap-3">
+					<div className="flex shrink-0 flex-col items-center justify-center px-1 md:w-36 md:px-0">
+						<div className="flex items-center gap-1 md:gap-3">
 							{(isLive || isFinished || showPredictionScore) && (
-								<div className="flex h-10 w-8 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-xl text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
+								<div className="flex h-8 w-7 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-lg text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
 									{isWalkover && isFinished ? walkoverScoreA : displayScoreA}
 								</div>
 							)}
 
-							<div className="relative flex h-full min-w-[60px] flex-col items-center justify-center md:min-w-[80px]">
+							<div className="relative flex flex-col items-center justify-center md:min-w-[80px]">
 								{isLive ? (
-									<span className="mb-1 animate-pulse font-black text-[8px] text-red-600 uppercase tracking-tighter">
+									<span className="mb-0.5 animate-pulse font-black text-[7px] text-red-600 uppercase tracking-tighter md:mb-1 md:text-[9px]">
 										{t("badges.live")}
 									</span>
 								) : (
 									<span
-										className="mb-1 font-black text-[8px] text-zinc-400 uppercase leading-none tracking-tighter md:text-[9px]"
+										className="mb-0.5 font-black text-[7px] text-zinc-400 uppercase leading-none tracking-tighter md:mb-1 md:text-[9px]"
 										suppressHydrationWarning
 									>
 										{formattedStartDate}
 									</span>
 								)}
 
-								<div className="flex items-center justify-center rounded border border-zinc-200/50 bg-zinc-100/50 px-2 py-0.5">
-									<span className="font-black text-[10px] text-zinc-500 italic leading-none md:text-xs">
+								<div className="flex items-center justify-center rounded border border-zinc-200/50 bg-zinc-100/50 px-1.5 py-0.5 md:px-2">
+									<span className="font-black text-[9px] text-zinc-500 italic leading-none md:text-xs">
 										{isWalkover && isFinished
 											? t("walkover.forfeit")
 											: t("matchCard.vs")}
@@ -242,7 +242,7 @@ export function MatchCard({
 								</div>
 
 								<span
-									className="mt-1 font-black text-[8px] text-zinc-400 uppercase tabular-nums leading-none tracking-tighter md:text-[9px]"
+									className="mt-0.5 font-black text-[7px] text-zinc-400 uppercase tabular-nums leading-none tracking-tighter md:mt-1 md:text-[9px]"
 									suppressHydrationWarning
 								>
 									{formattedStartTime}
@@ -250,7 +250,7 @@ export function MatchCard({
 							</div>
 
 							{(isLive || isFinished || showPredictionScore) && (
-								<div className="flex h-10 w-8 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-xl text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
+								<div className="flex h-8 w-7 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-lg text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
 									{isWalkover && isFinished ? walkoverScoreB : displayScoreB}
 								</div>
 							)}
@@ -260,7 +260,7 @@ export function MatchCard({
 					{/* --- TEAM B --- */}
 					<div
 						className={clsx(
-							"relative flex h-full flex-1 items-center justify-start gap-3 overflow-hidden rounded-lg py-1 pr-1 pl-1 transition-all lg:pr-2 lg:pl-2",
+							"relative flex items-center justify-start gap-2 overflow-hidden rounded-lg py-1 pr-1 pl-1 transition-all md:h-full md:gap-3 md:pr-1 md:pl-1 lg:pr-2 lg:pl-2",
 							userPredictedWinnerB ? "bg-[#ccff00]/40" : "",
 						)}
 					>
@@ -268,20 +268,20 @@ export function MatchCard({
 						<TeamLogo
 							teamName={teamB?.name || match.labelTeamB || t("matchCard.tbd")}
 							logoUrl={teamB?.logoUrl}
-							size="md"
+							size="sm"
 							className={clsx(
-								"transition-transform",
+								"h-8 w-8 shrink-0 transition-transform md:h-10 md:w-10",
 								userPredictedWinnerB ? "rotate-[2deg] scale-105" : "",
 							)}
 						/>
 
-						<div className="z-10 flex min-w-0 max-w-full flex-col items-start leading-tight">
+						<div className="z-10 flex min-w-0 flex-col items-start leading-tight">
 							{teamB?.slug ? (
 								<Link
 									{...routeTo("/teams/$teamId")}
 									params={{ teamId: teamB.slug, lang }}
 									className={clsx(
-										"block w-full break-words text-left font-black text-xs uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
+										"block w-full truncate text-left font-black text-[10px] uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -290,7 +290,7 @@ export function MatchCard({
 							) : (
 								<span
 									className={clsx(
-										"block w-full break-words text-left font-black text-xs uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
+										"block w-full truncate text-left font-black text-[10px] uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
 										userPredictedWinnerB ? "text-black" : "text-zinc-800",
 									)}
 								>
@@ -298,7 +298,7 @@ export function MatchCard({
 								</span>
 							)}
 							{initialBet && !showPredictionScore && (
-								<span className="mt-0.5 whitespace-nowrap font-black text-[10px] text-black/40 uppercase">
+								<span className="mt-0.5 hidden whitespace-nowrap font-black text-[10px] text-black/40 uppercase md:block">
 									{t("betPredictionPrefix")}: {initialBet.predictedScoreB}
 								</span>
 							)}
