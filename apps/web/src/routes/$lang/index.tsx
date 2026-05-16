@@ -1267,23 +1267,42 @@ function ReviewScreen({
 														</span>
 													)}
 											</div>
-											<div
-												className={clsx(
-													"flex shrink-0 items-center gap-1 font-black text-[10px] italic",
-													betData?.isPerfectPick
-														? "text-black"
-														: "text-[#ccff00]",
+											<div className="flex items-center gap-2">
+												{/* Predicted score badge — moved to header to avoid overlap with BetSplitBar */}
+												{betData && (
+													<div
+														className={clsx(
+															"rotate-1 border-[2px] border-black px-1.5 py-0.5 shadow-[2px_2px_0px_0px_#000]",
+															betData.isPerfectPick && match.winnerId !== null
+																? "border-black bg-[#ccff00] text-black"
+																: betData.predictedWinnerId === match.winnerId
+																	? "bg-green-100 text-green-700"
+																	: "bg-red-100 text-red-600",
+														)}
+													>
+														<span className="font-black font-display text-[9px] italic">
+															{betData.predictedScoreA}-{betData.predictedScoreB}
+														</span>
+													</div>
 												)}
-												suppressHydrationWarning
-											>
-												<span className="material-symbols-outlined text-xs">
-													schedule
-												</span>
-												{new Date(match.startTime).toLocaleTimeString("pt-BR", {
-													hour: "2-digit",
-													minute: "2-digit",
-													timeZone: "America/Sao_Paulo",
-												})}
+												<div
+													className={clsx(
+														"flex shrink-0 items-center gap-1 font-black text-[10px] italic",
+														betData?.isPerfectPick
+															? "text-black"
+															: "text-[#ccff00]",
+													)}
+													suppressHydrationWarning
+												>
+													<span className="material-symbols-outlined text-xs">
+														schedule
+													</span>
+													{new Date(match.startTime).toLocaleTimeString("pt-BR", {
+														hour: "2-digit",
+														minute: "2-digit",
+														timeZone: "America/Sao_Paulo",
+													})}
+												</div>
 											</div>
 										</div>
 
@@ -1527,109 +1546,76 @@ function ReviewScreen({
 												</div>
 											)}
 
-											<div
-												className={clsx(
-													"absolute left-1/2 z-50 -translate-x-1/2 transition-all duration-300",
-													showResult || isEditingScore
-														? "top-1/2 -translate-y-1/2 md:top-auto md:-bottom-2 md:translate-y-0"
-														: "-bottom-2",
-												)}
-											>
-												{isEditingScore && isEditableInRecovery ? (
-													<div className="zoom-in-95 flex -rotate-1 animate-in gap-1 border-[3px] border-black bg-white p-1 shadow-[4px_4px_0px_0px_#000] duration-200">
-														{scoreOptions.map((opt) => (
-															<button
-																key={opt}
-																onClick={(e) => {
-																	e.stopPropagation();
-																	onUpdatePrediction(
-																		match.id,
-																		prediction?.winnerId || 0,
-																		opt,
-																	);
-																	setEditingScoreMatchId(null);
-																}}
-																className={clsx(
-																	"border-2 px-2 py-1 font-black font-display text-xs italic transition-all",
-																	prediction?.score === opt
-																		? matchActiveColor === "brawl-blue"
-																			? "border-black bg-brawl-blue text-white"
-																			: "border-black bg-brawl-red text-white"
-																		: "border-transparent bg-white text-gray-400 hover:border-gray-200 hover:text-black",
-																)}
-															>
-																{opt}
-															</button>
-														))}
-													</div>
-												) : showResult && betData ? (
-													// Show comparison: predicted vs actual
-													<div className="flex flex-row items-center gap-2">
-														{/* Actual Score (Left) */}
-														<div className="-rotate-1 border-[3px] border-black bg-zinc-800 px-4 py-1 shadow-[4px_4px_0px_0px_#000]">
-															<span className="font-black font-display text-sm text-white italic">
-																{displayScore}
-															</span>
+											{(isEditingScore || (showResult && betData)) && (
+												<div
+													className={clsx(
+														"absolute left-1/2 z-50 -translate-x-1/2 transition-all duration-300",
+														isEditingScore
+															? "top-1/2 -translate-y-1/2 md:top-auto md:-bottom-2 md:translate-y-0"
+															: "top-1/2 -translate-y-1/2 md:top-auto md:-bottom-2 md:translate-y-0",
+													)}
+												>
+													{isEditingScore && isEditableInRecovery ? (
+														<div className="zoom-in-95 flex -rotate-1 animate-in gap-1 border-[3px] border-black bg-white p-1 shadow-[4px_4px_0px_0px_#000] duration-200">
+															{scoreOptions.map((opt) => (
+																<button
+																	key={opt}
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		onUpdatePrediction(
+																			match.id,
+																			prediction?.winnerId || 0,
+																			opt,
+																		);
+																		setEditingScoreMatchId(null);
+																	}}
+																	className={clsx(
+																		"border-2 px-2 py-1 font-black font-display text-xs italic transition-all",
+																		prediction?.score === opt
+																			? matchActiveColor === "brawl-blue"
+																				? "border-black bg-brawl-blue text-white"
+																				: "border-black bg-brawl-red text-white"
+																			: "border-transparent bg-white text-gray-400 hover:border-gray-200 hover:text-black",
+																	)}
+																>
+																	{opt}
+																</button>
+															))}
 														</div>
-														{/* Predicted Score (Right) */}
-														<div
-															className={clsx(
-																"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
-																betData.isPerfectPick && match.winnerId !== null
-																	? "border-black bg-[#ccff00] text-black"
-																	: betData.predictedWinnerId === match.winnerId
-																		? "bg-green-100 text-green-700"
-																		: "bg-red-100 text-red-600",
-															)}
-														>
-															<div className="flex flex-col items-center leading-none">
-																<span className="mb-0.5 font-bold text-[6px] uppercase md:text-[7px]">
-																	PALPITE
-																</span>
-																<span className="font-black font-display text-[10px] italic md:text-sm">
-																	{betData.predictedScoreA}-
-																	{betData.predictedScoreB}
+													) : (
+														// Show comparison: predicted vs actual
+														<div className="flex flex-row items-center gap-2">
+															{/* Actual Score (Left) */}
+															<div className="-rotate-1 border-[3px] border-black bg-zinc-800 px-4 py-1 shadow-[4px_4px_0px_0px_#000]">
+																<span className="font-black font-display text-sm text-white italic">
+																	{displayScore}
 																</span>
 															</div>
+															{/* Predicted Score (Right) */}
+															<div
+																className={clsx(
+																	"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
+																	betData.isPerfectPick && match.winnerId !== null
+																		? "border-black bg-[#ccff00] text-black"
+																		: betData.predictedWinnerId === match.winnerId
+																			? "bg-green-100 text-green-700"
+																			: "bg-red-100 text-red-600",
+																)}
+															>
+																<div className="flex flex-col items-center leading-none">
+																	<span className="mb-0.5 font-bold text-[6px] uppercase md:text-[7px]">
+																		PALPITE
+																	</span>
+																	<span className="font-black font-display text-[10px] italic md:text-sm">
+																		{betData.predictedScoreA}-
+																		{betData.predictedScoreB}
+																	</span>
+																</div>
+															</div>
 														</div>
-													</div>
-												) : (
-													<button
-														onClick={(e) => {
-															e.stopPropagation();
-															if (
-																!showResult &&
-																(currentMatchDayStatus === "locked"
-																	? isEditableInRecovery
-																	: !isReadOnly)
-															)
-																setEditingScoreMatchId(mId);
-														}}
-														className={clsx(
-															"pointer-events-auto relative z-40 -rotate-1 border-[3px] border-black px-4 py-1 shadow-[4px_4px_0px_0px_#000] outline-none transition-all",
-															!showResult &&
-																(currentMatchDayStatus === "locked"
-																	? isEditableInRecovery
-																	: !isReadOnly) &&
-																"cursor-pointer hover:scale-105 active:scale-95",
-															showResult
-																? "bg-zinc-800"
-																: matchActiveColor === "brawl-blue"
-																	? "bg-brawl-blue"
-																	: "bg-brawl-red",
-														)}
-													>
-														<span className="font-black font-display text-sm text-white italic">
-															{displayScore}
-														</span>
-														{isWalkoverResult && (
-															<span className="ml-2 border-2 border-white bg-black px-1.5 py-0.5 font-black text-[8px] text-white uppercase">
-																WO
-															</span>
-														)}
-													</button>
-												)}
-											</div>
+													)}
+												</div>
+											)}
 
 											{/* Points Badge - Show for finished matches */}
 											{match.status === "finished" &&
