@@ -141,5 +141,12 @@
 		"playoffBracket": "Playoff Bracket",
 		"lowerBracket": "Chave Inferior",
 		"thirdPlace": "Disputa de 3\u00ba Lugar"
+	},
+	"community": {
+		"title": "Comunidade",
+		"voted": "apostaram aqui",
+		"noBets": "Nenhuma aposta ainda",
+		"totalVotes_one": "{{count}} aposta no total",
+		"totalVotes_other": "{{count}} apostas no total"
 	}
 }

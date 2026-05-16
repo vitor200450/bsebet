@@ -141,5 +141,12 @@
 		"playoffBracket": "Playoff Bracket",
 		"lowerBracket": "Lower Bracket",
 		"thirdPlace": "Third Place"
+	},
+	"community": {
+		"title": "Community",
+		"voted": "voted here",
+		"noBets": "No bets yet",
+		"totalVotes_one": "{{count}} bet total",
+		"totalVotes_other": "{{count}} bets total"
 	}
 }
