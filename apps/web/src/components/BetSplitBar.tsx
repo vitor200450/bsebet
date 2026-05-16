@@ -45,14 +45,14 @@ export function BetSplitBar({
 			)}
 
 			{/* Split bar — flush with card edges */}
-			<div className={`flex w-full ${compact ? "h-4" : "h-5"}`}>
+			<div className={`flex w-full ${compact ? "h-6" : "h-8"}`}>
 				{/* Left fill (blue) */}
 				<div
-					className="relative flex items-center justify-end bg-[#2e5cff] pr-1 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
+					className="relative flex items-center justify-end bg-[#2e5cff] pr-2 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
 					style={{ width: `${teamAPercent}%` }}
 				>
-					{teamAPercent >= 12 && (
-						<span className="font-black text-white text-[9px] leading-none">
+					{teamAPercent >= 15 && (
+						<span className="font-display font-black text-sm text-white uppercase italic leading-none">
 							{teamAPercent}%
 						</span>
 					)}
@@ -60,10 +60,10 @@ export function BetSplitBar({
 
 				{/* Right fill (red) */}
 				<div
-					className="relative flex flex-1 items-center bg-[#ff2e2e] pl-1 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none"
+					className="relative flex flex-1 items-center bg-[#ff2e2e] pl-2 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none"
 				>
-					{teamBPercent >= 12 && (
-						<span className="font-black text-white text-[9px] leading-none">
+					{teamBPercent >= 15 && (
+						<span className="font-display font-black text-sm text-white uppercase italic leading-none">
 							{teamBPercent}%
 						</span>
 					)}
