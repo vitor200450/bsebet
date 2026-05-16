@@ -5,8 +5,10 @@ import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BetSplitBar } from "@/components/BetSplitBar";
 import { useLangLink } from "@/i18n/useLangLink";
 import { deriveMatchFormat } from "@/lib/utils";
+import type { BetStats } from "@/server/bets";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
@@ -19,8 +21,6 @@ import {
 import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
 import { isBracketMatchLike } from "../../utils/recovery";
-import type { BetStats } from "@/server/bets";
-import { BetSplitBar } from "@/components/BetSplitBar";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -697,6 +697,36 @@ function ReviewScreen({
 		null,
 	);
 	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>({});
+
+	// Fetch community bet stats for all matches when ReviewScreen mounts
+	useEffect(() => {
+		const matchIds = matches.map((m: any) => m.id).filter((id: number) => id > 0);
+		if (matchIds.length === 0) return;
+
+		let cancelled = false;
+
+		(async () => {
+			try {
+				const { getMatchBetStats } = await import("@/server/bets");
+				const results = await Promise.all(
+					matchIds.map((id: number) => getMatchBetStats({ data: { matchId: id } })),
+				);
+				if (cancelled) return;
+				const statsMap: Record<number, BetStats> = {};
+				matchIds.forEach((id: number, i: number) => {
+					if (results[i]) statsMap[id] = results[i];
+				});
+				setMatchBetStats(statsMap);
+			} catch {
+				// non-fatal — bars simply won't appear
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [matches]);
 
 	// Note: These were previously calculated here, but now they are passed as props from Home
 	// to avoid redundant calculations and allow Home to use them for auto-review logic.
@@ -1878,6 +1908,22 @@ function ReviewScreen({
 													</div>
 												</div>
 											)}
+
+									{/* Community bet stats */}
+									{(() => {
+										const stats = matchBetStats[match.id];
+										if (!stats) return null;
+										return (
+											<div className="mt-3 border-black border-t-2 bg-[#fafafa] px-3 py-2">
+												<BetSplitBar
+													teamAName={match.teamA?.name ?? "Team A"}
+													teamBName={match.teamB?.name ?? "Team B"}
+													stats={stats}
+													compact
+												/>
+											</div>
+										);
+									})()}
 									</div>
 								);
 							})}
@@ -1976,7 +2022,9 @@ function SubmitBetsModal({
 		"idle" | "submitting" | "success" | "error"
 	>("idle");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>({});
+	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>(
+		{},
+	);
 
 	// Calculate if there are any valid bets to submit
 	const hasValidBetsToSubmit = useMemo(() => {
@@ -2262,13 +2310,20 @@ function SubmitBetsModal({
 
 				{/* Bet summary list with community stats */}
 				{Object.keys(predictions).length > 0 && (
-					<div className="mb-6 w-full max-h-[35vh] overflow-y-auto space-y-3">
+					<div className="mb-6 max-h-[35vh] w-full space-y-3 overflow-y-auto">
 						{Object.entries(predictions).map(([matchIdStr, pred]) => {
 							const matchId = Number(matchIdStr);
 							const match = matchList.find((m: any) => m.id === matchId);
-							if (!match || match.status === "live" || match.status === "finished")
+							if (
+								!match ||
+								match.status === "live" ||
+								match.status === "finished"
+							)
 								return null;
-							if (matchDayStatus === "locked" && !editableRecoveryMatchIds.has(matchId))
+							if (
+								matchDayStatus === "locked" &&
+								!editableRecoveryMatchIds.has(matchId)
+							)
 								return null;
 
 							const teamAName = match.teamA?.name ?? "Time A";
@@ -2304,9 +2359,9 @@ function SubmitBetsModal({
 									)}
 								</div>
 							);
-							})}
-						</div>
-					)}
+						})}
+					</div>
+				)}
 
 				{status === "error" && (
 					<div className="mb-6 w-full border-2 border-red-500 bg-red-100 p-3 text-left font-bold text-red-700 text-xs">
