@@ -15,18 +15,19 @@ export function BetSplitBar({
 	compact = false,
 }: BetSplitBarProps) {
 	const { t } = useTranslation("betting");
-
 	const { teamAPercent, teamBPercent, totalCount } = stats;
 
 	if (totalCount === 0) {
 		return (
 			<div className="w-full">
 				{!compact && (
-					<p className="mb-1 font-black text-[9px] text-gray-400 uppercase tracking-wider">
+					<p className="mb-1.5 font-black text-[9px] text-gray-400 uppercase tracking-wider">
 						{t("community.title")}
 					</p>
 				)}
-				<div className="h-3 w-full rounded-sm border-2 border-black bg-gray-200 shadow-[2px_2px_0_0_#000]" />
+				<div
+					className={`w-full rounded-md bg-[#1a1a2e] ${compact ? "h-5" : "h-7"}`}
+				/>
 				{!compact && (
 					<p className="mt-1 text-center font-bold text-[9px] text-gray-400">
 						{t("community.noBets")}
@@ -38,39 +39,44 @@ export function BetSplitBar({
 
 	return (
 		<div className="w-full">
+			{/* Title label */}
 			{!compact && (
-				<p className="mb-1 font-black text-[9px] text-gray-400 uppercase tracking-wider">
+				<p className="mb-1.5 font-black text-[9px] text-gray-400 uppercase tracking-wider">
 					{t("community.title")}
 				</p>
 			)}
 
-			{/* Labels row */}
-			<div className="mb-1 flex items-center justify-between">
-				<span className="font-black text-[10px] text-[#2e5cff]">
-					{teamAName} {teamAPercent}%
-				</span>
-				<span className="font-black text-[10px] text-[#ff2e2e]">
-					{teamBPercent}% {teamBName}
-				</span>
-			</div>
-
-			{/* Bar */}
+			{/* Split bar */}
 			<div
-				className={`relative w-full overflow-hidden rounded-sm border-2 border-black shadow-[2px_2px_0_0_#000] ${compact ? "h-3" : "h-5"}`}
+				className={`relative flex w-full overflow-hidden rounded-md bg-[#1a1a2e] ${compact ? "h-5" : "h-7"}`}
 			>
+				{/* Left fill (blue) */}
 				<div
-					className="absolute inset-y-0 left-0 bg-[#2e5cff] transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
+					className="relative flex items-center justify-end bg-[#2e5cff] pr-1.5 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
 					style={{ width: `${teamAPercent}%` }}
-				/>
+				>
+					{teamAPercent >= 15 && (
+						<span className="font-black text-white text-[10px] leading-none">
+							{teamAPercent}%
+						</span>
+					)}
+				</div>
+
+				{/* Right fill (red) */}
 				<div
-					className="absolute inset-y-0 right-0 bg-[#ff2e2e] transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
-					style={{ width: `${teamBPercent}%` }}
-				/>
+					className="relative flex flex-1 items-center bg-[#ff2e2e] pl-1.5 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none"
+				>
+					{teamBPercent >= 15 && (
+						<span className="font-black text-white text-[10px] leading-none">
+							{teamBPercent}%
+						</span>
+					)}
+				</div>
 			</div>
 
 			{/* Total count */}
 			{!compact && (
-				<p className="mt-1 text-center font-bold text-[9px] text-gray-400">
+				<p className="mt-1.5 text-right font-bold text-[9px] text-gray-400">
 					{t("community.totalVotes", { count: totalCount })}
 				</p>
 			)}
