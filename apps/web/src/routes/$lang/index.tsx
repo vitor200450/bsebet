@@ -5,6 +5,7 @@ import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLangLink } from "@/i18n/useLangLink";
 import { deriveMatchFormat } from "@/lib/utils";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
@@ -18,6 +19,8 @@ import {
 import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
 import { isBracketMatchLike } from "../../utils/recovery";
+import type { BetStats } from "@/server/bets";
+import { BetSplitBar } from "@/components/BetSplitBar";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -845,7 +848,7 @@ function ReviewScreen({
 
 	return (
 		<>
-			<div className="fade-in slide-in-from-bottom-5 relative flex min-h-screen w-full animate-in flex-col bg-paper bg-paper-texture p-4 pb-32 duration-300 md:p-6">
+			<div className="fade-in slide-in-from-bottom-5 relative flex min-h-screen w-full animate-in flex-col bg-paper p-4 pb-32 duration-300 md:p-6">
 				<div className="mx-auto flex w-full max-w-4xl flex-col items-center">
 					{/* Header */}
 					<header className="mb-8 text-center">
@@ -891,7 +894,7 @@ function ReviewScreen({
 					{!isReadOnly ? (
 						<button
 							onClick={onBack}
-							className="mb-6 flex items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-red"
+							className="mb-6 flex w-fit items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-red"
 						>
 							<span className="material-symbols-outlined text-lg">
 								arrow_back
@@ -907,7 +910,7 @@ function ReviewScreen({
 								setShowReview?.(false);
 								setPredictions?.({});
 							}}
-							className="mb-6 flex cursor-pointer items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-blue"
+							className="mb-6 flex w-fit cursor-pointer items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-blue"
 						>
 							<span className="material-symbols-outlined text-lg">
 								emoji_events
@@ -1968,10 +1971,12 @@ function SubmitBetsModal({
 }) {
 	const { t, i18n } = useTranslation("betting");
 	const navigate = useNavigate();
+	const { routeTo } = useLangLink();
 	const [status, setStatus] = useState<
 		"idle" | "submitting" | "success" | "error"
 	>("idle");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>({});
 
 	// Calculate if there are any valid bets to submit
 	const hasValidBetsToSubmit = useMemo(() => {
@@ -2033,6 +2038,41 @@ function SubmitBetsModal({
 			onSuccess?.();
 		}
 	}, [status, onSuccess]);
+
+	// Fetch community bet stats for all pending matches when modal mounts
+	useEffect(() => {
+		const matchIds = Object.keys(predictions)
+			.map(Number)
+			.filter((id) => {
+				const match = matchList.find((m: any) => m.id === id);
+				return match && match.status !== "finished" && match.status !== "live";
+			});
+
+		if (matchIds.length === 0) return;
+
+		let cancelled = false;
+
+		(async () => {
+			try {
+				const { getMatchBetStats } = await import("@/server/bets");
+				const results = await Promise.all(
+					matchIds.map((id) => getMatchBetStats({ data: { matchId: id } })),
+				);
+				if (cancelled) return;
+				const statsMap: Record<number, BetStats> = {};
+				matchIds.forEach((id, i) => {
+					if (results[i]) statsMap[id] = results[i];
+				});
+				setMatchBetStats(statsMap);
+			} catch {
+				// non-fatal — bars simply won't appear
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const handleSubmit = async () => {
 		setStatus("submitting");
@@ -2136,7 +2176,10 @@ function SubmitBetsModal({
 
 			const { submitMultipleBets } = await import("@/server/bets");
 			await submitMultipleBets({
-				data: { bets: betsToSubmit, lang: i18n.language },
+				data: {
+					bets: betsToSubmit,
+					lang: i18n.language === "en" ? "en" : "pt",
+				},
 			});
 
 			// After successful submission:
@@ -2195,7 +2238,7 @@ function SubmitBetsModal({
 						onClick={() => {
 							onClose();
 							// Navigate to my-bets page
-							navigate({ to: "/my-bets" });
+							navigate(routeTo("/my-bets"));
 						}}
 						className="w-full border-[4px] border-black bg-black py-4 font-black text-lg text-white uppercase tracking-widest shadow-[6px_6px_0px_0px_#ccff00] transition-all hover:bg-zinc-800 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 					>
@@ -2213,9 +2256,57 @@ function SubmitBetsModal({
 					{t("review.confirmTitle")}
 				</h3>
 
-				<p className="mb-8 font-body font-bold text-gray-600">
+				<p className="mb-4 font-body font-bold text-gray-600">
 					{t("review.description")}
 				</p>
+
+				{/* Bet summary list with community stats */}
+				{Object.keys(predictions).length > 0 && (
+					<div className="mb-6 w-full max-h-[35vh] overflow-y-auto space-y-3">
+						{Object.entries(predictions).map(([matchIdStr, pred]) => {
+							const matchId = Number(matchIdStr);
+							const match = matchList.find((m: any) => m.id === matchId);
+							if (!match || match.status === "live" || match.status === "finished")
+								return null;
+							if (matchDayStatus === "locked" && !editableRecoveryMatchIds.has(matchId))
+								return null;
+
+							const teamAName = match.teamA?.name ?? "Time A";
+							const teamBName = match.teamB?.name ?? "Time B";
+							const pickedTeamName =
+								pred.winnerId === match.teamA?.id
+									? teamAName
+									: pred.winnerId === match.teamB?.id
+										? teamBName
+										: "?";
+							const stats = matchBetStats[matchId];
+
+							return (
+								<div
+									key={matchId}
+									className="w-full rounded-sm border-2 border-black bg-[#fafafa] p-3 text-left shadow-[2px_2px_0_0_#000]"
+								>
+									<div className="mb-2 flex items-center justify-between">
+										<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
+											{teamAName} vs {teamBName}
+										</span>
+										<span className="rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase">
+											{pickedTeamName}
+										</span>
+									</div>
+									{stats && (
+										<BetSplitBar
+											teamAName={teamAName}
+											teamBName={teamBName}
+											stats={stats}
+											compact
+										/>
+									)}
+								</div>
+							);
+							})}
+						</div>
+					)}
 
 				{status === "error" && (
 					<div className="mb-6 w-full border-2 border-red-500 bg-red-100 p-3 text-left font-bold text-red-700 text-xs">
@@ -3411,7 +3502,7 @@ function Home() {
 	// Only show when matchDays has data to avoid empty state flicker
 	if (selectedTournamentId && !selectedMatchDayId && matchDays.length > 0) {
 		return (
-			<div className="relative">
+			<div className="relative flex min-h-screen w-full flex-col bg-paper pt-16 md:pt-0">
 				{/* Back button */}
 				{tournaments.length > 1 && (
 					<button
@@ -3421,7 +3512,7 @@ function Home() {
 							setPredictions({});
 							setShowReview(false);
 						}}
-						className="mb-3 flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:fixed md:top-28 md:left-4 md:z-[60]"
+						className="fixed bottom-6 left-4 z-[90] flex w-fit items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:left-4"
 					>
 						<span className="material-symbols-outlined text-base">
 							arrow_back
@@ -3448,7 +3539,7 @@ function Home() {
 	const hasMatches = carouselMatches.length > 0;
 
 	return (
-		<div className="flex min-h-screen w-full flex-col bg-paper bg-paper-texture pt-14 md:pt-0">
+		<div className="flex min-h-screen w-full flex-col bg-paper pt-16 md:pt-0">
 			{/* Recovery Bets Toast — only when no tournament is selected yet */}
 			{recoveryToast?.show && !selectedTournamentId && (
 				<RecoveryBetsToast
@@ -3473,7 +3564,7 @@ function Home() {
 						setSelectedMatchDayId(null);
 						setShowReview(false);
 					}}
-					className="mb-3 flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black text-[10px] text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:fixed md:top-28 md:left-4 md:z-[90] md:text-xs"
+					className="fixed bottom-6 left-4 z-[90] flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black text-[10px] text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:text-xs"
 				>
 					<span className="material-symbols-outlined text-base">
 						arrow_back
@@ -3484,7 +3575,7 @@ function Home() {
 
 			{/* VIEW SWITCHER & ACTIONS */}
 			{hasMatches && !showReview && (
-				<div className="mx-4 mt-3 mb-4 flex flex-col items-end gap-3 md:fixed md:right-6 md:bottom-8 md:z-[90] md:mx-0 md:w-auto">
+				<div className="fixed right-4 bottom-6 z-[90] flex flex-col items-end gap-3 md:right-6 md:bottom-8">
 					{/* View Results Button - Only show if user has bets */}
 					{isReadOnly && (
 						<button
@@ -3499,7 +3590,7 @@ function Home() {
 					)}
 
 					{!isReadOnly && (
-						<div className="inline-flex overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000]">
+						<div className="inline-flex overflow-hidden border-[3px] border-black bg-paper shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000]">
 							<button
 								onClick={() => setViewMode("list")}
 								className={clsx(
