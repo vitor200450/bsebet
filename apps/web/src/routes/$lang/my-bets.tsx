@@ -25,9 +25,9 @@ export const Route = createFileRoute("/$lang/my-bets")({
 		const session = await getUser();
 		return { session };
 	},
-	loader: async ({ context }) => {
+	loader: async ({ context, params }) => {
 		if (!context.session) {
-			throw redirect({ to: "/login" });
+			throw redirect({ to: "/$lang/login", params: { lang: params.lang } });
 		}
 	},
 });
@@ -164,8 +164,8 @@ function RouteComponent() {
 
 				{/* Filter Tabs - Clean horizontal design */}
 				<section className="mb-8">
-					<div className="flex flex-wrap items-center gap-3">
-						<div className="flex items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
+					<div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+						<div className="scrollbar-hide flex items-center gap-1 overflow-x-auto rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
 							{[
 								{
 									key: "all" as FilterType,
@@ -190,13 +190,16 @@ function RouteComponent() {
 										type="button"
 										onClick={() => setFilter(tab.key)}
 										className={clsx(
-											"flex items-center gap-2 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+											"flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition-all md:gap-2 md:px-4 md:py-2 md:text-sm",
 											filter === tab.key
 												? "bg-[#121212] text-white"
 												: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
 										)}
 									>
-										<Icon className="h-4 w-4" strokeWidth={2.5} />
+										<Icon
+											className="h-3.5 w-3.5 md:h-4 md:w-4"
+											strokeWidth={2.5}
+										/>
 										{tab.label}
 									</button>
 								);
@@ -204,7 +207,7 @@ function RouteComponent() {
 						</div>
 
 						{!isLoading && (
-							<div className="ml-auto flex items-center gap-2 rounded-lg border-2 border-black bg-[#121212] px-3 py-2 shadow-[3px_3px_0_0_#000]">
+							<div className="flex items-center gap-2 self-start rounded-lg border-2 border-black bg-[#121212] px-3 py-2 shadow-[3px_3px_0_0_#000] md:ml-auto">
 								<History className="h-4 w-4 text-white" strokeWidth={2} />
 								<span className="font-black text-sm text-white">
 									{totalFilteredBets} palpite
@@ -379,9 +382,15 @@ function RouteComponent() {
 																	name: bet.match.teamB?.name || "TBD",
 																	logoUrl: bet.match.teamB?.logoUrl,
 																}}
-																status={bet.match.status}
-																resultType={bet.match.resultType}
-																startTime={bet.match.startTime}
+																status={bet.match.status || "scheduled"}
+																resultType={
+																	bet.match.resultType === "wo" ? "wo" : null
+																}
+																startTime={
+																	typeof bet.match.startTime === "string"
+																		? bet.match.startTime
+																		: bet.match.startTime?.toISOString()
+																}
 																predictedWinnerId={bet.predictedWinnerId}
 																predictedScoreA={bet.predictedScoreA}
 																predictedScoreB={bet.predictedScoreB}
@@ -389,10 +398,15 @@ function RouteComponent() {
 																actualScoreB={bet.match.scoreB}
 																actualWinnerId={bet.match.winnerId}
 																pointsEarned={bet.pointsEarned}
-																isPerfectPick={bet.isPerfectPick}
-																isUnderdogPick={bet.isUnderdogPick}
+																isPerfectPick={bet.isPerfectPick ?? undefined}
+																isUnderdogPick={bet.isUnderdogPick ?? undefined}
 																isProjected={isProjected}
 																locale={myBetsLocale}
+																betStats={
+																	isProjected
+																		? undefined
+																		: (bet as any).betStats
+																}
 															/>
 														);
 													})}
