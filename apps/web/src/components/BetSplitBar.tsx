@@ -52,18 +52,16 @@ export function BetSplitBar({
 					style={{ width: `${teamAPercent}%` }}
 				>
 					{teamAPercent >= 15 && (
-						<span className="font-display font-black text-sm text-white uppercase italic leading-none">
+						<span className="font-black font-display text-sm text-white uppercase italic leading-none">
 							{teamAPercent}%
 						</span>
 					)}
 				</div>
 
 				{/* Right fill (red) */}
-				<div
-					className="relative flex flex-1 items-center bg-[#ff2e2e] pl-2 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none"
-				>
+				<div className="relative flex flex-1 items-center bg-[#ff2e2e] pl-2 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none">
 					{teamBPercent >= 15 && (
-						<span className="font-display font-black text-sm text-white uppercase italic leading-none">
+						<span className="font-black font-display text-sm text-white uppercase italic leading-none">
 							{teamBPercent}%
 						</span>
 					)}

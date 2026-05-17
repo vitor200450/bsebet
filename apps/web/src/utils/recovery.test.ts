@@ -2,6 +2,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	buildRecoveryDependencySet,
+	canOpenRecoveryScoreEditor,
 	isBracketMatchLike,
 	isRecoverySubmissionAllowed,
 } from "./recovery";
@@ -68,6 +69,28 @@ describe("recovery helpers", () => {
 		expect(allowed).toBeTrue();
 	});
 
+	it("allows locked recovery submission for projected final teams", () => {
+		const allowed = isRecoverySubmissionAllowed({
+			match: {
+				id: 415,
+				status: "scheduled",
+				resultType: "normal",
+				winnerId: null,
+				teamAId: null,
+				teamBId: null,
+				teamAPreviousMatchId: 413,
+				teamBPreviousMatchId: 414,
+				label: "Final",
+			},
+			hasExistingBet: false,
+			dependencyEligible: true,
+			projectedTeamAId: 15,
+			projectedTeamBId: 12,
+		});
+
+		expect(allowed).toBeTrue();
+	});
+
 	it("blocks locked submission when not bracket and not dependency-eligible", () => {
 		const allowed = isRecoverySubmissionAllowed({
 			match: {
@@ -86,6 +109,26 @@ describe("recovery helpers", () => {
 		});
 
 		expect(allowed).toBeFalse();
+	});
+
+	it("allows score editor for editable recovery matches with a selected winner", () => {
+		expect(
+			canOpenRecoveryScoreEditor({
+				isEditableInRecovery: true,
+				hasSelectedWinner: true,
+				showResult: false,
+			}),
+		).toBeTrue();
+	});
+
+	it("blocks score editor for locked non-recovery matches", () => {
+		expect(
+			canOpenRecoveryScoreEditor({
+				isEditableInRecovery: false,
+				hasSelectedWinner: true,
+				showResult: false,
+			}),
+		).toBeFalse();
 	});
 
 	it("detects bracket matches from explicit links or labels", () => {

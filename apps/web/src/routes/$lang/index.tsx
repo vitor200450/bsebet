@@ -20,7 +20,10 @@ import {
 } from "../../components/TournamentBracket";
 import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
-import { isBracketMatchLike } from "../../utils/recovery";
+import {
+	canOpenRecoveryScoreEditor,
+	isBracketMatchLike,
+} from "../../utils/recovery";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -697,11 +700,15 @@ function ReviewScreen({
 		null,
 	);
 	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>({});
+	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>(
+		{},
+	);
 
 	// Fetch community bet stats for all matches when ReviewScreen mounts
 	useEffect(() => {
-		const matchIds = matches.map((m: any) => m.id).filter((id: number) => id > 0);
+		const matchIds = matches
+			.map((m: any) => m.id)
+			.filter((id: number) => id > 0);
 		if (matchIds.length === 0) return;
 
 		let cancelled = false;
@@ -710,7 +717,9 @@ function ReviewScreen({
 			try {
 				const { getMatchBetStats } = await import("@/server/bets");
 				const results = await Promise.all(
-					matchIds.map((id: number) => getMatchBetStats({ data: { matchId: id } })),
+					matchIds.map((id: number) =>
+						getMatchBetStats({ data: { matchId: id } }),
+					),
 				);
 				if (cancelled) return;
 				const statsMap: Record<number, BetStats> = {};
@@ -1201,6 +1210,11 @@ function ReviewScreen({
 
 								const isEditableInRecovery =
 									currentMatchDayStatus !== "locked" || !!isRecoveryMatch;
+								const canOpenScoreEditor = canOpenRecoveryScoreEditor({
+									isEditableInRecovery,
+									hasSelectedWinner: Boolean(effectivePrediction?.winnerId),
+									showResult,
+								});
 
 								return (
 									<div
@@ -1280,11 +1294,14 @@ function ReviewScreen({
 													<span className="material-symbols-outlined text-xs">
 														schedule
 													</span>
-													{new Date(match.startTime).toLocaleTimeString("pt-BR", {
-														hour: "2-digit",
-														minute: "2-digit",
-														timeZone: "America/Sao_Paulo",
-													})}
+													{new Date(match.startTime).toLocaleTimeString(
+														"pt-BR",
+														{
+															hour: "2-digit",
+															minute: "2-digit",
+															timeZone: "America/Sao_Paulo",
+														},
+													)}
 												</div>
 											</div>
 										</div>
@@ -1578,9 +1595,11 @@ function ReviewScreen({
 															<div
 																className={clsx(
 																	"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
-																	betData.isPerfectPick && match.winnerId !== null
+																	betData.isPerfectPick &&
+																		match.winnerId !== null
 																		? "border-black bg-[#ccff00] text-black"
-																		: betData.predictedWinnerId === match.winnerId
+																		: betData.predictedWinnerId ===
+																				match.winnerId
 																			? "bg-green-100 text-green-700"
 																			: "bg-red-100 text-red-600",
 																)}
@@ -1598,9 +1617,19 @@ function ReviewScreen({
 														</div>
 													) : betData ? (
 														// Review mode: show bet badge in center between teams
-														<div
+														<button
+															type="button"
+															onClick={(e) => {
+																e.stopPropagation();
+																if (canOpenScoreEditor) {
+																	setEditingScoreMatchId(mId);
+																}
+															}}
+															disabled={!canOpenScoreEditor}
 															className={clsx(
 																"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
+																canOpenScoreEditor &&
+																	"cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0.5",
 																matchActiveColor === "brawl-blue"
 																	? "bg-brawl-blue"
 																	: "bg-brawl-red",
@@ -1611,10 +1640,11 @@ function ReviewScreen({
 																	PALPITE
 																</span>
 																<span className="font-black font-display text-[10px] text-white italic md:text-sm">
-																	{betData.predictedScoreA}-{betData.predictedScoreB}
+																	{betData.predictedScoreA}-
+																	{betData.predictedScoreB}
 																</span>
 															</div>
-														</div>
+														</button>
 													) : null}
 												</div>
 											)}
@@ -1897,21 +1927,21 @@ function ReviewScreen({
 												</div>
 											)}
 
-									{/* Community bet stats */}
-									{(() => {
-										const stats = matchBetStats[match.id];
-										if (!stats) return null;
-										return (
-											<div className="w-full">
-												<BetSplitBar
-													teamAName={match.teamA?.name ?? "Team A"}
-													teamBName={match.teamB?.name ?? "Team B"}
-													stats={stats}
-													compact
-												/>
-											</div>
-										);
-									})()}
+										{/* Community bet stats */}
+										{(() => {
+											const stats = matchBetStats[match.id];
+											if (!stats) return null;
+											return (
+												<div className="w-full">
+													<BetSplitBar
+														teamAName={match.teamA?.name ?? "Team A"}
+														teamBName={match.teamB?.name ?? "Team B"}
+														stats={stats}
+														compact
+													/>
+												</div>
+											);
+										})()}
 									</div>
 								);
 							})}

@@ -245,6 +245,9 @@ const submitMultipleBetsFn = createServerFn({
 	// Track which matchIds are being submitted as first-time recovery bets
 	const recoveryMatchIds = new Set<number>();
 	const recoveryDependenciesByTournament = new Map<number, Set<number>>();
+	const submittedBetByMatchId = new Map(
+		validData.bets.map((bet) => [bet.matchId, bet]),
+	);
 
 	const getRecoveryDependencySetForTournament = async (
 		tournamentId: number,
@@ -291,6 +294,19 @@ const submitMultipleBetsFn = createServerFn({
 		return dependencySet;
 	};
 
+	const getProjectedParticipantId = async (parentMatchId?: number | null) => {
+		if (!parentMatchId) return null;
+
+		const submittedParentBet = submittedBetByMatchId.get(Number(parentMatchId));
+		if (submittedParentBet) return submittedParentBet.predictedWinnerId;
+
+		const existingParentBet = await db.query.bets.findFirst({
+			where: and(eq(bets.userId, userId), eq(bets.matchId, parentMatchId)),
+		});
+
+		return existingParentBet?.predictedWinnerId ?? null;
+	};
+
 	// Validate each bet
 	for (const betData of validData.bets) {
 		const match = matchesData.find((m) => m.id === betData.matchId);
@@ -304,6 +320,15 @@ const submitMultipleBetsFn = createServerFn({
 		const existingBet = await db.query.bets.findFirst({
 			where: and(eq(bets.userId, userId), eq(bets.matchId, betData.matchId)),
 		});
+		const projectedTeamAId = match.teamAId
+			? null
+			: await getProjectedParticipantId(match.teamAPreviousMatchId);
+		const projectedTeamBId = match.teamBId
+			? null
+			: await getProjectedParticipantId(match.teamBPreviousMatchId);
+		const effectiveTeamAId = match.teamAId ?? projectedTeamAId;
+		const effectiveTeamBId = match.teamBId ?? projectedTeamBId;
+
 		if (!match.isBettingEnabled) {
 			if (!match.tournamentId) {
 				errors.push(
@@ -333,6 +358,8 @@ const submitMultipleBetsFn = createServerFn({
 				},
 				hasExistingBet: Boolean(existingBet),
 				dependencyEligible,
+				projectedTeamAId,
+				projectedTeamBId,
 			});
 
 			if (!recoveryAllowed) {
@@ -387,10 +414,10 @@ const submitMultipleBetsFn = createServerFn({
 			continue;
 		}
 
-		if (match.teamAId && match.teamBId) {
+		if (effectiveTeamAId && effectiveTeamBId) {
 			if (
-				betData.predictedWinnerId !== match.teamAId &&
-				betData.predictedWinnerId !== match.teamBId
+				betData.predictedWinnerId !== effectiveTeamAId &&
+				betData.predictedWinnerId !== effectiveTeamBId
 			) {
 				errors.push(`Vencedor inválido para partida ${betData.matchId}`);
 				continue;

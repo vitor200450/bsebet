@@ -121,18 +121,40 @@ export function buildRecoveryDependencySet(
 	return dependentIds;
 }
 
+export function canOpenRecoveryScoreEditor(params: {
+	isEditableInRecovery: boolean;
+	hasSelectedWinner: boolean;
+	showResult: boolean;
+}): boolean {
+	return (
+		params.isEditableInRecovery &&
+		params.hasSelectedWinner &&
+		!params.showResult
+	);
+}
+
 export function isRecoverySubmissionAllowed(params: {
 	match: RecoveryMatchNode;
 	hasExistingBet: boolean;
 	dependencyEligible: boolean;
+	projectedTeamAId?: number | null;
+	projectedTeamBId?: number | null;
 }): boolean {
-	const { match, hasExistingBet, dependencyEligible } = params;
+	const {
+		match,
+		hasExistingBet,
+		dependencyEligible,
+		projectedTeamAId,
+		projectedTeamBId,
+	} = params;
 
 	if (match.status !== "scheduled") return false;
 	if (match.resultType === "wo") return false;
 	if (match.winnerId) return false;
 
-	const hasBothTeams = Boolean(match.teamAId && match.teamBId);
+	const effectiveTeamAId = match.teamAId ?? projectedTeamAId;
+	const effectiveTeamBId = match.teamBId ?? projectedTeamBId;
+	const hasBothTeams = Boolean(effectiveTeamAId && effectiveTeamBId);
 	if (!hasBothTeams) return false;
 
 	if (hasExistingBet) return true;
