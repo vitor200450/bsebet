@@ -22,6 +22,7 @@ import { TournamentSelector } from "../../components/TournamentSelector";
 import { queryClient } from "../../router";
 import {
 	canOpenRecoveryScoreEditor,
+	getRecoveryReviewScoreLabel,
 	isBracketMatchLike,
 } from "../../utils/recovery";
 
@@ -1215,6 +1216,14 @@ function ReviewScreen({
 									hasSelectedWinner: Boolean(effectivePrediction?.winnerId),
 									showResult,
 								});
+								const serverBetScore = betData
+									? `${betData.predictedScoreA}-${betData.predictedScoreB}`
+									: "?-?";
+								const reviewBadgeScore = getRecoveryReviewScoreLabel({
+									displayScore,
+									serverScore: serverBetScore,
+									canOpenScoreEditor,
+								});
 
 								return (
 									<div
@@ -1609,8 +1618,7 @@ function ReviewScreen({
 																		PALPITE
 																	</span>
 																	<span className="font-black font-display text-[10px] italic md:text-sm">
-																		{betData.predictedScoreA}-
-																		{betData.predictedScoreB}
+																		{betData.predictedScoreA}-{betData.predictedScoreB}
 																	</span>
 																</div>
 															</div>
@@ -1640,8 +1648,7 @@ function ReviewScreen({
 																	PALPITE
 																</span>
 																<span className="font-black font-display text-[10px] text-white italic md:text-sm">
-																	{betData.predictedScoreA}-
-																	{betData.predictedScoreB}
+																	{reviewBadgeScore}
 																</span>
 															</div>
 														</button>

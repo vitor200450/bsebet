@@ -133,6 +133,14 @@ export function canOpenRecoveryScoreEditor(params: {
 	);
 }
 
+export function getRecoveryReviewScoreLabel(params: {
+	displayScore: string;
+	serverScore: string;
+	canOpenScoreEditor: boolean;
+}): string {
+	return params.canOpenScoreEditor ? params.displayScore : params.serverScore;
+}
+
 export function isRecoverySubmissionAllowed(params: {
 	match: RecoveryMatchNode;
 	hasExistingBet: boolean;

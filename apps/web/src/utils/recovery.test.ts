@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	buildRecoveryDependencySet,
 	canOpenRecoveryScoreEditor,
+	getRecoveryReviewScoreLabel,
 	isBracketMatchLike,
 	isRecoverySubmissionAllowed,
 } from "./recovery";
@@ -119,6 +120,26 @@ describe("recovery helpers", () => {
 				showResult: false,
 			}),
 		).toBeTrue();
+	});
+
+	it("shows local edited score instead of stale server score in recovery review", () => {
+		expect(
+			getRecoveryReviewScoreLabel({
+				displayScore: "0-3",
+				serverScore: "1-3",
+				canOpenScoreEditor: true,
+			}),
+		).toBe("0-3");
+	});
+
+	it("keeps server score for non-editable review badges", () => {
+		expect(
+			getRecoveryReviewScoreLabel({
+				displayScore: "0-3",
+				serverScore: "1-3",
+				canOpenScoreEditor: false,
+			}),
+		).toBe("1-3");
 	});
 
 	it("blocks score editor for locked non-recovery matches", () => {
