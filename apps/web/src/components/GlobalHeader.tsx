@@ -38,6 +38,7 @@ export function GlobalHeader() {
 		queryKey: ["liveStatus"],
 		queryFn: () => getLiveStatus(),
 		refetchInterval: 30000,
+		retry: false,
 	});
 
 	useEffect(() => {

@@ -13,11 +13,21 @@ import { toast } from "sonner";
 
 import Loader from "./components/loader";
 import { routeTree } from "./routeTree.gen";
+import { shouldShowGlobalQueryErrorToast } from "./utils/query-errors";
 import { TRPCProvider } from "./utils/trpc";
 
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
 		onError: (error, query) => {
+			if (
+				!shouldShowGlobalQueryErrorToast({
+					queryKey: query.queryKey,
+					error,
+				})
+			) {
+				return;
+			}
+
 			toast.error(error.message, {
 				action: {
 					label: "retry",

@@ -10,15 +10,21 @@ export const Route = createFileRoute("/$lang/login")({
 
 function RouteComponent() {
 	const { t } = useTranslation("landing");
+	const { lang } = Route.useParams();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleGoogleLogin = async () => {
 		setIsLoading(true);
 		try {
-			await authClient.signIn.social({
+			const result = await authClient.signIn.social({
 				provider: "google",
-				callbackURL: "/dashboard",
+				callbackURL: `/${lang}/dashboard`,
 			});
+
+			if (result?.error) {
+				console.error("Login failed", result.error);
+				setIsLoading(false);
+			}
 		} catch (error) {
 			console.error("Login failed", error);
 			setIsLoading(false);
