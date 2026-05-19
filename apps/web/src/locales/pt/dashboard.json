@@ -14,12 +14,12 @@
 		"tournaments": "Torneios",
 		"noActiveTournaments": "Sem torneios ativos",
 		"perfectPicks": "Placares Exatos",
-		"totalBets": "Total de Apostas",
+		"totalBets": "Total de Palpites",
 		"correctCount": "{{correct}} de {{total}} corretos"
 	},
 	"viewHistory": "Ver histórico completo",
 	"empty": {
-		"noBets": "Faça suas apostas e acompanhe aqui!",
+		"noBets": "Faça seus palpites e acompanhe aqui!",
 		"noActive": "Nenhum palpite ativo"
 	},
 	"betLabel": "Seu palpite",

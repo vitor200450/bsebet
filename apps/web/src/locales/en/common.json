@@ -1,10 +1,10 @@
 {
-	"appName": "BSEBET",
+	"appName": "BSEN Pickems",
 	"nav": {
 		"home": "Home",
-		"bet": "Bet",
+		"bet": "Pick",
 		"dashboard": "Dashboard",
-		"myBets": "My Bets",
+		"myBets": "My Picks",
 		"leaderboard": "Leaderboard",
 		"tournaments": "Tournaments",
 		"teams": "Teams",

@@ -32,7 +32,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "BSEBET",
+				title: "BSEN Pickems",
 			},
 		],
 		links: [

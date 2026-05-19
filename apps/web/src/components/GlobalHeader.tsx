@@ -93,10 +93,10 @@ export function GlobalHeader() {
 						>
 							<div className="flex skew-x-12 transform items-center gap-2">
 								<img
-									src="/logo-new.png"
+									src="/logo-newer.png"
 									alt={t("appName")}
 									className={clsx(
-										"h-6 object-contain md:h-8",
+										"h-7 object-contain md:h-9",
 										variant === "dark" ? "brightness-200 grayscale-0" : "",
 									)}
 								/>

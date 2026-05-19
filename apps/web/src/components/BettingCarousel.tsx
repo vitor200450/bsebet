@@ -571,7 +571,7 @@ export function BettingCarousel({
 														</div>
 														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Apostas
+																Palpites
 															</span>
 															<span className="font-bold text-[10px] text-brawl-blue">
 																{currentMatch.stats.betCountA}
@@ -634,7 +634,7 @@ export function BettingCarousel({
 														</div>
 														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
 															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Apostas
+																Palpites
 															</span>
 															<span className="font-bold text-[10px] text-brawl-red">
 																{currentMatch.stats.betCountB}

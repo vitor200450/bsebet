@@ -5,23 +5,24 @@
 		"description": "Earn points with your winning picks and climb to the top"
 	},
 	"recovery": {
-		"available": "RECOVERY BETS AVAILABLE!",
+		"available": "RECOVERY PICKS AVAILABLE!",
 		"active": "Recovery Mode Active",
-		"errorPrompt": "You missed some predictions. You qualify for recovery bets!",
-		"qualify": "You qualify for recovery bets!",
+		"errorPrompt": "You missed some predictions. You qualify for recovery picks!",
+		"qualify": "You qualify for recovery picks!",
 		"points": "recover points",
 		"wrongMatchup": "Different matchup than predicted",
 		"wrongWinner": "Your winner pick didn't match",
-		"matchupLabel": "You bet on a matchup that didn't happen"
+		"matchupLabel": "You picked a matchup that didn't happen",
+		"backToPicks": "Back to picks"
 	},
 	"bonus": {
 		"underdog": "Underdog Bonus (+{{percent}}%)",
 		"underdogLabel": "Underdogs"
 	},
 	"toast": {
-		"confirmed": "Your bets are confirmed! Good luck, champion!",
-		"updated": "Bet updated successfully",
-		"saved": "Bet placed successfully"
+		"confirmed": "Your picks are confirmed! Good luck, champion!",
+		"updated": "Pick updated successfully",
+		"saved": "Pick saved successfully"
 	},
 	"empty": {
 		"noTournament": "No Tournament Available",
@@ -41,29 +42,29 @@
 		"reviewSubtitle": "Check everything before locking in!",
 		"lockAll": "Lock in All Picks",
 		"lockIn": "LOCK IN",
-		"updateBets": "UPDATE BETS",
+		"updateBets": "UPDATE PICKS",
 		"picksLocked": "Picks Locked",
 		"noValidPicks": "No Valid Picks",
 		"successTitle": "PICKS",
 		"successTitleHighlight": "LOCKED!",
-		"viewMyBets": "VIEW MY BETS"
+		"viewMyBets": "VIEW MY PICKS"
 	},
-	"betLabel": "You bet on:",
+	"betLabel": "You picked:",
 	"totalPoints": "Total: {{count}} point",
 	"totalPoints_other": "Total: {{count}} points",
 	"matchDayComplete": "Complete!",
 	"matchDayNewAvailable": "A new match day is available",
 	"nextMatch": "Next Match",
-	"betCount_one": "{{count}} bet",
-	"betCount_other": "{{count}} bets",
-	"walkoverNote": "All bettors receive winner points",
+	"betCount_one": "{{count}} pick",
+	"betCount_other": "{{count}} picks",
+	"walkoverNote": "All pickers receive winner points",
 	"walkoverTitle": "Match ended by walkover",
 	"reviewAll": "Review All",
 	"missingScores": "Missing scores",
-	"reviewBets": "Review Bets",
+	"reviewBets": "Review Picks",
 	"betsClosed": "Closed",
 	"betsOpen": "Open",
-	"betSaved": "Bet saved!",
+	"betSaved": "Pick saved!",
 	"betPredictionPrefix": "Pick:",
 	"actualWinner": "Actual winner:",
 	"prediction": {
@@ -84,14 +85,14 @@
 	"correctWinner": "Correct winner",
 	"blocked": {
 		"waitingDefinition": "Awaiting definition",
-		"betPreviousFirst": "Bet on previous matches first",
+		"betPreviousFirst": "Pick previous matches first",
 		"outsideMatchDay": "Outside selected match day",
 		"recoveryUnavailable": "Recovery unavailable",
-		"betsUnavailable": "Bets unavailable",
+		"betsUnavailable": "Picks unavailable",
 		"waitingResults": "Waiting for previous results",
-		"waitingPreviousBets": "Waiting for your previous bets"
+		"waitingPreviousBets": "Waiting for your previous picks"
 	},
-	"walkoverDescription": "Walkover declared. All bettors receive winner points.",
+	"walkoverDescription": "Walkover declared. All pickers receive winner points.",
 	"teamB": "Team B",
 	"bracketTitle": "COMPETITIVE",
 	"bracketTitleHighlight": "BRACKETS",
@@ -145,8 +146,8 @@
 	"community": {
 		"title": "Community",
 		"voted": "voted here",
-		"noBets": "No bets yet",
-		"totalVotes_one": "{{count}} bet total",
-		"totalVotes_other": "{{count}} bets total"
+		"noBets": "No picks yet",
+		"totalVotes_one": "{{count}} pick total",
+		"totalVotes_other": "{{count}} picks total"
 	}
 }

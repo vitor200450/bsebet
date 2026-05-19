@@ -20,9 +20,9 @@
 		"none": "Nenhum palpite encontrado",
 		"noPending": "Nenhum palpite pendente",
 		"noFinished": "Nenhum palpite finalizado",
-		"filterHint": "Tente outro filtro ou faça mais apostas.",
+		"filterHint": "Tente outro filtro ou faça mais palpites.",
 		"noMatches": "Nenhuma partida encontrada",
-		"cta": "Faça suas apostas nos torneios ativos!"
+		"cta": "Faça seus palpites nos torneios ativos!"
 	},
 	"vs": "VS",
 	"betLabel": "Seu palpite",

@@ -939,7 +939,7 @@ function ReviewScreen({
 							<span className="material-symbols-outlined text-lg">
 								arrow_back
 							</span>
-							Voltar para apostas
+							{t("recovery.backToPicks")}
 						</button>
 					) : (
 						<button
@@ -1618,7 +1618,8 @@ function ReviewScreen({
 																		PALPITE
 																	</span>
 																	<span className="font-black font-display text-[10px] italic md:text-sm">
-																		{betData.predictedScoreA}-{betData.predictedScoreB}
+																		{betData.predictedScoreA}-
+																		{betData.predictedScoreB}
 																	</span>
 																</div>
 															</div>

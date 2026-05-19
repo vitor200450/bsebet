@@ -1,28 +1,28 @@
 {
 	"title": "Dashboard",
 	"greeting": "Hello, {{name}}!",
-	"subtitle": "Track your performance and bets.",
+	"subtitle": "Track your performance and picks.",
 	"stats": {
 		"title": "Your Stats",
 		"underdogsWon": "Winning Underdogs",
 		"totalPoints": "Total Points",
 		"hitRate": "Hit Rate",
-		"pendingBets": "Pending Bets",
-		"activeBets": "My Active Bets",
+		"pendingBets": "Pending Picks",
+		"activeBets": "My Active Picks",
 		"achievements": "Achievements",
 		"viewMatches": "View Matches",
 		"tournaments": "Tournaments",
 		"noActiveTournaments": "No active tournaments",
 		"perfectPicks": "Perfect Picks",
-		"totalBets": "Total Bets",
+		"totalBets": "Total Picks",
 		"correctCount": "{{correct}} of {{total}} correct"
 	},
 	"viewHistory": "View full history",
 	"empty": {
-		"noBets": "Place your bets and track them here!",
-		"noActive": "No active bets"
+		"noBets": "Make your picks and track them here!",
+		"noActive": "No active picks"
 	},
-	"betLabel": "Your bet",
+	"betLabel": "Your pick",
 	"status": {
 		"live": "LIVE",
 		"scheduled": "SCHEDULED"

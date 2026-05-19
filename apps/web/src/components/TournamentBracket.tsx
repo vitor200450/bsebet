@@ -280,7 +280,7 @@ export function TournamentBracket({
 						className="slide-in-from-bottom-4 flex animate-in cursor-pointer items-center gap-2 rounded-md border-2 border-black bg-brawl-red px-6 py-3 font-black text-sm text-white uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all duration-300 hover:bg-[#d41d1d] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 					>
 						<span className="material-symbols-outlined text-lg">verified</span>
-						Revisar Apostas
+						Revisar Palpites
 					</button>
 				</div>
 			)}

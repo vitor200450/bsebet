@@ -1,5 +1,5 @@
 {
-	"header": "Your complete bet history",
+	"header": "Your complete pick history",
 	"tabs": {
 		"all": "All",
 		"pending": "Pending",
@@ -17,12 +17,12 @@
 		"clickToExpand": "Click tournament name to expand"
 	},
 	"empty": {
-		"none": "No bets found",
-		"noPending": "No pending bets",
-		"noFinished": "No finished bets",
-		"filterHint": "Try another filter or place more bets.",
+		"none": "No picks found",
+		"noPending": "No pending picks",
+		"noFinished": "No finished picks",
+		"filterHint": "Try another filter or make more picks.",
 		"noMatches": "No matches found",
-		"cta": "Place your bets on active tournaments!"
+		"cta": "Make your picks on active tournaments!"
 	},
 	"vs": "VS",
 	"betLabel": "Your pick",

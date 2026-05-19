@@ -2,7 +2,7 @@
 	"loginWithGoogle": "Entrar com Google",
 	"beta": "BETA",
 	"welcome": "BEM-VINDO",
-	"heroSubtitle": "Faça login para começar a apostar",
+	"heroSubtitle": "Faça login para começar a palpiter",
 	"hero": {
 		"arenaTitle": "A ARENA DOS",
 		"picksTitle": "PALPITES",
@@ -31,7 +31,7 @@
 		"step3Desc": "Acompanhe seus palpites em tempo real e veja sua posição na tabela"
 	},
 	"footer": {
-		"disclaimer": "BSEBET não é endossado pela Supercell ou qualquer uma de suas afiliadas.",
-		"copyright": "© 2026 BSEBET. Todos os direitos reservados."
+		"disclaimer": "BSEN Pickems não é endossado pela Supercell ou qualquer uma de suas afiliadas.",
+		"copyright": "© 2026 BSEN Pickems. Todos os direitos reservados."
 	}
 }

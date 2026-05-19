@@ -2,7 +2,7 @@
 	"loginWithGoogle": "Sign in with Google",
 	"beta": "BETA",
 	"welcome": "WELCOME",
-	"heroSubtitle": "Sign in to start betting",
+	"heroSubtitle": "Sign in to start picking",
 	"hero": {
 		"arenaTitle": "THE ARENA OF",
 		"picksTitle": "PICKS",
@@ -31,7 +31,7 @@
 		"step3Desc": "Track your predictions in real-time and see your position on the leaderboard"
 	},
 	"footer": {
-		"disclaimer": "BSEBET is not endorsed by Supercell or any of its affiliates.",
-		"copyright": "© 2026 BSEBET. All rights reserved."
+		"disclaimer": "BSEN Pickems is not endorsed by Supercell or any of its affiliates.",
+		"copyright": "© 2026 BSEN Pickems. All rights reserved."
 	}
 }

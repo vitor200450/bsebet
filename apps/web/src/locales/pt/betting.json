@@ -5,23 +5,24 @@
 		"description": "Acumule pontos com seus palpites certeiros e escale até o topo"
 	},
 	"recovery": {
-		"available": "APOSTAS DE RECUPERAÇÃO DISPONÍVEIS!",
+		"available": "PALPITES DE RECUPERAÇÃO DISPONÍVEIS!",
 		"active": "Modo Recuperação Ativo",
-		"errorPrompt": "Você errou algumas previsões. Tem direito a apostas de recuperação!",
-		"qualify": "Tem direito a apostas de recuperação!",
+		"errorPrompt": "Você errou algumas previsões. Tem direito a palpites de recuperação!",
+		"qualify": "Tem direito a palpites de recuperação!",
 		"points": "recuperar pontos",
 		"wrongMatchup": "Confronto diferente do palpite",
 		"wrongWinner": "Seu palpite de vencedor não bateu",
-		"matchupLabel": "Você apostou num confronto que não ocorreu"
+		"matchupLabel": "Você palpitou num confronto que não ocorreu",
+		"backToPicks": "Voltar para palpites"
 	},
 	"bonus": {
 		"underdog": "Bônus azarão (+{{percent}}%)",
 		"underdogLabel": "Azarões"
 	},
 	"toast": {
-		"confirmed": "Suas apostas foram confirmadas! Boa sorte, campeão!",
-		"updated": "Aposta atualizada com sucesso",
-		"saved": "Aposta registrada com sucesso"
+		"confirmed": "Seus palpites foram confirmados! Boa sorte, campeão!",
+		"updated": "Palpite atualizado com sucesso",
+		"saved": "Palpite registrado com sucesso"
 	},
 	"empty": {
 		"noTournament": "Nenhum Torneio Disponível",
@@ -41,14 +42,14 @@
 		"reviewSubtitle": "Verifique tudo antes de confirmar!",
 		"lockAll": "Confirmar Todos",
 		"lockIn": "CONFIRMAR",
-		"updateBets": "ATUALIZAR APOSTAS",
-		"picksLocked": "Apostas Bloqueadas",
+		"updateBets": "ATUALIZAR PALPITES",
+		"picksLocked": "Palpites Bloqueados",
 		"noValidPicks": "Sem Palpites Válidos",
-		"successTitle": "APOSTAS",
+		"successTitle": "PALPITES",
 		"successTitleHighlight": "CONFIRMADAS!",
-		"viewMyBets": "VER MINHAS APOSTAS"
+		"viewMyBets": "VER MEUS PALPITES"
 	},
-	"betLabel": "Você apostou em:",
+	"betLabel": "Você palpitou em:",
 	"totalPoints": "Total: {{count}} ponto",
 	"totalPoints_other": "Total: {{count}} pontos",
 	"matchDayComplete": "Concluído!",
@@ -56,14 +57,14 @@
 	"nextMatch": "Próximo Jogo",
 	"betCount_one": "{{count}} palpite",
 	"betCount_other": "{{count}} palpites",
-	"walkoverNote": "Todos os apostadores recebem pontos de vencedor",
+	"walkoverNote": "Todos os palpitedores recebem pontos de vencedor",
 	"walkoverTitle": "Partida encerrada por walkover",
 	"reviewAll": "Revisar todos",
 	"missingScores": "Placar não informado",
-	"reviewBets": "Revisar Apostas",
+	"reviewBets": "Revisar Palpites",
 	"betsClosed": "Fechadas",
 	"betsOpen": "Abertas",
-	"betSaved": "Aposta salva!",
+	"betSaved": "Palpite salvo!",
 	"betPredictionPrefix": "Palpite:",
 	"actualWinner": "Vencedor real:",
 	"prediction": {
@@ -87,11 +88,11 @@
 		"betPreviousFirst": "Aposte nas partidas anteriores primeiro",
 		"outsideMatchDay": "Fora do match day selecionado",
 		"recoveryUnavailable": "Recuperação indisponível",
-		"betsUnavailable": "Apostas indisponíveis",
+		"betsUnavailable": "Palpites indisponíveis",
 		"waitingResults": "Aguardando resultados anteriores",
-		"waitingPreviousBets": "Aguardando suas apostas anteriores"
+		"waitingPreviousBets": "Aguardando seus palpites anteriores"
 	},
-	"walkoverDescription": "W.O. declarado. Todos os apostadores recebem pontos de vencedor.",
+	"walkoverDescription": "W.O. declarado. Todos os palpitedores recebem pontos de vencedor.",
 	"teamB": "Time B",
 	"bracketTitle": "CHAVEAMENTO",
 	"bracketTitleHighlight": "COMPETITIVO",
@@ -140,13 +141,13 @@
 		"groupStage": "Fase de Grupos",
 		"playoffBracket": "Playoff Bracket",
 		"lowerBracket": "Chave Inferior",
-		"thirdPlace": "Disputa de 3\u00ba Lugar"
+		"thirdPlace": "Disputa de 3º Lugar"
 	},
 	"community": {
 		"title": "Comunidade",
-		"voted": "apostaram aqui",
-		"noBets": "Nenhuma aposta ainda",
-		"totalVotes_one": "{{count}} aposta no total",
-		"totalVotes_other": "{{count}} apostas no total"
+		"voted": "palpiteram aqui",
+		"noBets": "Nenhum palpite ainda",
+		"totalVotes_one": "{{count}} palpite no total",
+		"totalVotes_other": "{{count}} palpites no total"
 	}
 }
