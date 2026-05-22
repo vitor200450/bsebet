@@ -2,36 +2,60 @@
 	"loginWithGoogle": "Entrar com Google",
 	"beta": "BETA",
 	"welcome": "BEM-VINDO",
-	"heroSubtitle": "Faça login para começar a palpiter",
+	"heroSubtitle": "Faça login para começar a palpitar",
 	"hero": {
-		"arenaTitle": "A ARENA DOS",
-		"picksTitle": "PALPITES",
-		"subtitle": "Você acompanha o competitivo de Brawl Stars? Então mostre seu conhecimento. Analise as partidas, escolha os vencedores e dispute o topo do ranking.",
+		"eyebrow": "BSC AO VIVO",
+		"title": "PALPITES",
+		"titleAccent": "DO CAMPEONATO",
+		"subtitle": "Você acompanha o competitivo de Brawl Stars? Prove que entende do meta. Faça suas previsões antes de cada rodada e suba no ranking.",
 		"cta": "ENTRAR NA ARENA",
-		"secondaryCta": "Já tenho conta"
+		"secondaryCta": "Já tenho conta",
+		"matchPreviewLabel": "PRÓXIMA PARTIDA",
+		"teamBlue": "AZUL",
+		"teamRed": "VERMELHO",
+		"pickOpen": "PALPITES ABERTOS"
 	},
-	"features": {
-		"predictTitle": "ESCOLHA SEUS",
-		"predictTitleSub": "VENCEDORES",
-		"predictDesc": "Estude o cenário competitivo, analise as equipes e faça suas previsões para cada partida do campeonato.",
-		"scoreTitle": "DISPUTE O",
-		"scoreTitleSub": "TOPO",
-		"scoreDesc": "Cada acerto soma pontos. Quem chega mais longe no ranking prova que realmente entende do competitivo.",
-		"prizesTitle": "RECONHECIMENTO",
-		"prizesTitleSub": "NA COMUNIDADE",
-		"prizesDesc": "Os melhores colocados ganham destaque na comunidade e provam que entendem do competitivo."
+	"challengers": {
+		"eyebrow": "COMUNIDADE BSEN",
+		"title": "APRESENTANDO OS",
+		"titleAccent": "MELHORES PALPITEIROS",
+		"body": "Cada rodada do BSC é uma nova chance de provar que você lê o meta melhor do que todo mundo. Faça suas previsões, acumule pontos e dispute o topo do ranking da comunidade.",
+		"cta": "VER RANKING"
 	},
-	"howItWorks": {
-		"title": "COMO FUNCIONA",
+	"watchPredict": {
+		"watchLabel": "ASSISTA",
+		"predictLabel": "PALPITE",
+		"title": "ASSISTA, FAÇA PALPITES E GANHE REPUTAÇÃO!",
+		"body": "Faça suas previsões antes de cada partida. Acompanhe ao vivo se você acertou. Os melhores palpiteiros da comunidade ganham destaque no ranking BSEN.",
+		"cta": "FAZER PALPITES"
+	},
+	"leaderboard": {
+		"title": "LIDERANÇA",
+		"subtitle": "Ranking global da comunidade BSEN",
+		"viewAll": "VER CLASSIFICAÇÃO",
+		"empty": "Temporada ainda não começou"
+	},
+	"howToCompete": {
+		"eyebrow": "VAMOS LÁ",
+		"title": "COMO COMPETIR",
 		"step1Title": "Escolha um torneio",
 		"step1Desc": "Selecione o campeonato de Brawl Stars que você quer acompanhar",
 		"step2Title": "Faça suas previsões",
 		"step2Desc": "Analise as partidas e escolha quem você acredita que vai vencer",
-		"step3Title": "Subiu no ranking",
+		"step3Title": "Suba no ranking",
 		"step3Desc": "Acompanhe seus palpites em tempo real e veja sua posição na tabela"
 	},
 	"footer": {
 		"disclaimer": "BSEN Pickems não é endossado pela Supercell ou qualquer uma de suas afiliadas.",
-		"copyright": "© 2026 BSEN Pickems. Todos os direitos reservados."
+		"copyright": "© 2026 BSEN Pickems. Todos os direitos reservados.",
+		"tagline": "PALPITES DA COMUNIDADE"
+	},
+	"mock": {
+		"matchCounter": "Partida 1 de 3",
+		"confirmPick": "CONFIRMAR PALPITE",
+		"picksOpen": "PICKS ABERTOS",
+		"statRegion": "REGIÃO",
+		"statWr": "WR",
+		"statSeries": "SÉRIE"
 	}
 }

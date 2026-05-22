@@ -4,25 +4,40 @@
 	"welcome": "WELCOME",
 	"heroSubtitle": "Sign in to start picking",
 	"hero": {
-		"arenaTitle": "THE ARENA OF",
-		"picksTitle": "PICKS",
-		"subtitle": "You follow Brawl Stars competitive? Then prove it. Analyze the matches, pick your winners, and climb the leaderboard.",
+		"eyebrow": "BSC LIVE",
+		"title": "CHAMPIONSHIP",
+		"titleAccent": "PICKS",
+		"subtitle": "You follow Brawl Stars competitive? Prove you read the meta. Make your predictions before each round and climb the community leaderboard.",
 		"cta": "ENTER THE ARENA",
-		"secondaryCta": "Already have an account"
+		"secondaryCta": "Already have an account",
+		"matchPreviewLabel": "NEXT MATCH",
+		"teamBlue": "BLUE",
+		"teamRed": "RED",
+		"pickOpen": "PICKS OPEN"
 	},
-	"features": {
-		"predictTitle": "PICK YOUR",
-		"predictTitleSub": "WINNERS",
-		"predictDesc": "Study the competitive scene, analyze the teams, and make your predictions for every match of the championship.",
-		"scoreTitle": "OWN THE",
-		"scoreTitleSub": "RANKING",
-		"scoreDesc": "Every correct pick earns points. The higher you climb, the more you prove you know the game.",
-		"prizesTitle": "COMMUNITY",
-		"prizesTitleSub": "RECOGNITION",
-		"prizesDesc": "Top predictors earn community recognition and prove they know the competitive scene."
+	"challengers": {
+		"eyebrow": "BSEN COMMUNITY",
+		"title": "INTRODUCING THE",
+		"titleAccent": "TOP PREDICTORS",
+		"body": "Every BSC round is a new chance to prove you read the meta better than anyone. Make your picks, rack up points, and fight for the top spot on the community leaderboard.",
+		"cta": "VIEW RANKING"
 	},
-	"howItWorks": {
-		"title": "HOW IT WORKS",
+	"watchPredict": {
+		"watchLabel": "WATCH",
+		"predictLabel": "PREDICT",
+		"title": "WATCH, PREDICT AND BUILD YOUR REPUTATION!",
+		"body": "Make your picks before every match. Watch live as results roll in. The community's top predictors earn recognition on the BSEN leaderboard.",
+		"cta": "MAKE PICKS"
+	},
+	"leaderboard": {
+		"title": "LEADERBOARD",
+		"subtitle": "BSEN global community ranking",
+		"viewAll": "VIEW FULL RANKING",
+		"empty": "Season hasn't started yet"
+	},
+	"howToCompete": {
+		"eyebrow": "LET'S GO",
+		"title": "HOW TO COMPETE",
 		"step1Title": "Pick a tournament",
 		"step1Desc": "Choose the Brawl Stars championship you want to follow",
 		"step2Title": "Make your predictions",
@@ -32,6 +47,15 @@
 	},
 	"footer": {
 		"disclaimer": "BSEN Pickems is not endorsed by Supercell or any of its affiliates.",
-		"copyright": "© 2026 BSEN Pickems. All rights reserved."
+		"copyright": "© 2026 BSEN Pickems. All rights reserved.",
+		"tagline": "COMMUNITY PICKS"
+	},
+	"mock": {
+		"matchCounter": "Match 1 of 3",
+		"confirmPick": "CONFIRM PICK",
+		"picksOpen": "PICKS OPEN",
+		"statRegion": "REGION",
+		"statWr": "WR",
+		"statSeries": "SERIES"
 	}
 }

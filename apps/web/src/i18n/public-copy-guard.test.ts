@@ -92,8 +92,10 @@ function collectBrandLocaleViolations(): string[] {
 
 function collectHardcodedViolations(): string[] {
 	const violations: string[] = [];
-	const jsxTextPattern = />\s*([^<{}`\n]*(?:Bet|Bets|Betting|Aposta|Apostas|BSEBET)[^<{}`\n]*)\s*</;
-	const simpleStringPattern = /["']([^"'{}$]*(?:Bet|Bets|Betting|Aposta|Apostas|BSEBET|logo-new\.png)[^"'{}$]*)["']/;
+	const jsxTextPattern =
+		/>\s*([^<{}`\n]*(?:Bet|Bets|Betting|Aposta|Apostas|BSEBET)[^<{}`\n]*)\s*</;
+	const simpleStringPattern =
+		/["']([^"'{}$]*(?:Bet|Bets|Betting|Aposta|Apostas|BSEBET|logo-new\.png)[^"'{}$]*)["']/;
 
 	for (const path of publicComponentFiles) {
 		const lines = readFileSync(path, "utf8").split("\n");

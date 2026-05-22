@@ -296,3 +296,43 @@ date.toLocaleDateString(locale, { day: "2-digit", month: "short" });
 2. Verify both `/pt/` and `/en/` routes render correctly
 3. Run `bun run build` to catch missing imports or broken references
 4. Add new keys to JSON files BEFORE using them in `t()` calls
+
+## 20) File Editing — Tab Indentation (Critical)
+
+All `.ts`, `.tsx`, `.json` files in this repo use **tabs** for indentation (Biome: `"indentStyle": "tab"`).
+
+The `edit` tool matches `old_string` as literal bytes. The `read` tool output prefixes each line with a line-number and a tab separator — the actual file content starts **after** that tab. When you copy indentation from `read` output into `old_string`, you will get the wrong number of tabs and the match will fail silently.
+
+### Rule: always use Python for multi-line edits in TSX/TS files
+
+Prefer a `python` inline script via `exec` for any edit that touches indented JSX/TSX blocks:
+
+```python
+path = r"C:\...\file.tsx"
+with open(path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+# Build old/new using explicit \t for each tab level
+old = '\t\t\t<div className="foo">\n\t\t\t\t<span>bar</span>\n\t\t\t</div>'
+new = '\t\t\t<div className="foo">\n\t\t\t\t<span>baz</span>\n\t\t\t</div>'
+
+if old in content:
+    content = content.replace(old, new, 1)
+
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+```
+
+Key points:
+- Always open/write with `encoding="utf-8"` — the files contain Portuguese characters and emoji.
+- Use `\t` explicitly for each tab level — never paste spaces.
+- Use `replace(old, new, 1)` (not `re.sub`) to avoid regex escaping issues in JSX.
+- Always check `if old in content` before replacing and print a diagnostic if not found.
+- To find the exact indentation of a block, run `cat -A file | sed -n 'Np'` (shows `^I` for each tab).
+
+### When the `edit` tool is safe to use
+
+The `edit` tool works reliably for:
+- Single-line changes (no indented block context needed)
+- JSON files (indentation is consistent and shallow)
+- Changes where `old_string` is short and unique enough to not require indentation matching
