@@ -1,98 +1,59 @@
 /*
  * Hallmark · macrostructure: Zoned Strip Stack · genre: playful · design-system: DESIGN.md
- * tone: broadcast-competitive · anchor hue: electric-yellow #D2FF00
- * studied: yes · DNA-source: event.supercell.com-DESIGN.md (official BSC design system)
- * pre-emit critique: P5 H5 E5 S5 R5 V5
+ * tone: broadcast-competitive · anchor hue: electric-lime #D2FF00
+ * DNA-source: event.supercell.com Brawl Stars Championship collage landing
  *
- * Zone sequence (mirrors BSC Championship reference):
- *   Z1  dark hero        — #000 bg · Geist Mono 800 headline · electric-yellow accent
- *   Z2  paper section    — #f5f4f0 · torn edge · challengers pitch
- *   Z3  amber flood      — #ffc700 · WATCH/PREDICT sticker diptych · CTA
- *   Z4  paper leaderboard— #f5f4f0 · rank table
- *   Z5  dark how-to      — #181818 · step cards
- *   Z6  footer           — #000 · minimal split
- *
- * Font usage per design-system spec:
- *   Display/H1/H2: Geist Mono weight 800 (var(--font-body))
- *   Body/labels:   Inter (var(--font-display) — already mapped in index.css)
- *   Decorative:    Permanent Marker (var(--font-marker)) for graffiti-text only
- *
- * Button spec (from design system §4):
- *   Primary CTA:   bg #D2FF00, text #000, border-radius 4px, shadow rgba(0,0,0,0.24) 0 4px 4px 0
- *   Secondary CTA: bg transparent, text #000 (or #fff on dark), hover → #FF5543
- *   NO thick comic borders, NO skew, NO hard-offset shadows on buttons.
- *
- * Card/surface spec:
- *   Cards:  bg #181818 or #2B2B2B, border 1px solid #2B2B2B, border-radius 0px
- *   Shadow: rgba(0,0,0,0.24) 0px 4px 4px 0px (raised) · rgba(0,0,0,0.5) 0px 8px 32px 0px (modal)
+ * Zone sequence:
+ *   Z1  dark hero collage     — charcoal + arena photo · brand-first
+ *   Z2  paper challengers     — asymmetric sticker + copy split
+ *   Z3  amber watch/predict   — watch→pick→rep loop + copy
+ *   Z4  pick arena            — paint splat blue vs red
+ *   Z5  paper leaderboard     — podium + graffiti
+ *   Z6  dark how-to           — staggered panels over lockers
+ *   (SiteFooter global in __root.tsx)
  */
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Star, Zap } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MedalCountSummary, MiniMedalBadge } from "@/components/MiniMedalBadge";
+import { TeamLogo } from "@/components/TeamLogo";
 import { useLangLink } from "@/i18n/useLangLink";
+import {
+	getLandingMatchups,
+	type LandingMatchup,
+} from "@/server/landing-matchups";
 import type { LeaderboardEntry } from "@/server/leaderboard";
 
 interface LandingPageProps {
 	isAuthenticated: boolean;
 	topUsers?: LeaderboardEntry[];
+	matchups?: LandingMatchup[];
 }
 
+const EMPTY_MATCHUPS: LandingMatchup[] = [];
+
 /* ─────────────────────────────────────────────
-   TORN EDGE — organic multi-layer paper rip
-   Two SVG layers for physical paper depth.
-   flip=true inverts for torn-bottom-of-zone.
+   SECTION CUT — hard flush + paint stripe.
+   Diagonal join strips caused white bands / black
+   hairlines on mobile; keep transitions seamless.
 ───────────────────────────────────────────── */
-function TornEdge({
-	topColor,
-	bottomColor,
-	flip = false,
-	height = 56,
-}: {
-	topColor: string;
-	bottomColor: string;
-	flip?: boolean;
-	height?: number;
-}) {
+function SectionCut() {
 	return (
-		<div
-			aria-hidden="true"
-			className={`relative w-full overflow-hidden leading-none select-none${flip ? "scale-y-[-1]" : ""}`}
-			style={{ background: bottomColor, height: `${height}px` }}
-		>
-			<svg
-				viewBox="0 0 1440 56"
-				xmlns="http://www.w3.org/2000/svg"
-				preserveAspectRatio="none"
-				className="absolute bottom-0 left-0 h-full w-full"
-				style={{ fill: topColor }}
-				aria-hidden="true"
-			>
-				<path d="M0,0 L0,32 L12,22 L28,38 L40,18 L58,40 L70,24 L84,44 L96,28 L112,46 L124,30 L138,48 L154,26 L168,42 L180,20 L196,38 L210,14 L228,36 L242,22 L256,42 L272,16 L284,38 L300,26 L316,44 L328,18 L344,40 L360,22 L374,46 L388,28 L402,42 L418,20 L434,38 L448,14 L462,36 L476,26 L492,44 L506,18 L520,40 L536,22 L550,46 L564,28 L578,42 L594,16 L608,38 L622,24 L636,44 L652,18 L666,40 L682,22 L696,46 L710,30 L726,44 L740,20 L754,38 L770,14 L784,36 L800,26 L814,44 L830,18 L844,40 L858,24 L874,46 L888,28 L902,42 L918,20 L932,38 L948,14 L962,36 L976,26 L990,44 L1006,18 L1020,40 L1034,22 L1050,46 L1064,28 L1078,42 L1094,16 L1108,38 L1122,24 L1136,44 L1150,18 L1166,40 L1180,22 L1196,46 L1210,30 L1226,42 L1242,16 L1258,38 L1272,24 L1288,44 L1302,18 L1318,40 L1334,22 L1350,46 L1364,28 L1380,42 L1396,20 L1412,38 L1428,14 L1440,32 L1440,0 Z" />
-			</svg>
-			<svg
-				viewBox="0 0 1440 56"
-				xmlns="http://www.w3.org/2000/svg"
-				preserveAspectRatio="none"
-				className="absolute bottom-0 left-0 h-full w-full opacity-35"
-				style={{ fill: topColor }}
-				aria-hidden="true"
-			>
-				<path d="M0,0 L0,40 L16,30 L36,48 L56,28 L72,50 L90,36 L108,52 L130,34 L148,54 L166,38 L184,56 L202,40 L222,56 L242,42 L262,56 L282,44 L302,56 L322,40 L342,56 L362,44 L382,56 L402,40 L422,56 L442,44 L462,56 L482,42 L502,56 L522,44 L542,56 L562,40 L582,56 L602,44 L622,56 L642,42 L662,56 L682,44 L702,56 L722,40 L742,56 L762,44 L782,56 L802,42 L822,56 L842,44 L862,56 L882,40 L902,56 L922,44 L942,56 L962,42 L982,56 L1002,44 L1022,56 L1042,40 L1062,56 L1082,44 L1102,56 L1122,42 L1142,56 L1162,44 L1182,56 L1202,40 L1222,56 L1242,44 L1262,56 L1282,42 L1302,56 L1322,44 L1342,56 L1362,40 L1382,56 L1402,44 L1422,56 L1440,44 L1440,0 Z" />
-			</svg>
+		<div aria-hidden="true" className="relative z-20 flex h-1.5 w-full">
+			<div className="w-1/2 bg-brawl-blue" />
+			<div className="w-1/2 bg-bsen-red" />
 		</div>
 	);
 }
 
-/* ─────────────────────────────────────────────
-   SPARK STAR — decorative 4-point star
-───────────────────────────────────────────── */
 function SparkStar({
 	className,
 	size = 32,
-	color = "#D2FF00",
+	color = "var(--color-electric-lime)",
 }: {
 	className?: string;
 	size?: number;
@@ -116,288 +77,487 @@ function SparkStar({
 	);
 }
 
-/* ─────────────────────────────────────────────
-   GRAFFITI MARKER TEXT — Permanent Marker font
-   Decorative background element, aria-hidden.
-───────────────────────────────────────────── */
-function GraffitiText({
-	children,
+/** Spray paint plate — original BSEN kit (transparent PNG) */
+function SpraySplat({
+	variant,
 	className,
-	color = "rgba(255,255,255,0.04)",
 }: {
-	children: string;
+	variant: "blue" | "red";
 	className?: string;
-	color?: string;
 }) {
 	return (
-		<span
+		<img
+			src={
+				variant === "blue"
+					? "/landing/spray-blue.png"
+					: "/landing/spray-red.png"
+			}
+			alt=""
 			aria-hidden="true"
-			className={`pointer-events-none select-none font-marker uppercase leading-none${className ? ` ${className}` : ""}`}
-			style={{ color }}
-		>
-			{children}
-		</span>
+			draggable={false}
+			className={clsx(
+				"pointer-events-none select-none object-contain",
+				className,
+			)}
+		/>
 	);
 }
 
-/* ─────────────────────────────────────────────
-   LIVE BADGE — broadcast indicator
-───────────────────────────────────────────── */
-function LiveBadge({ label }: { label: string }) {
+/** Crumpled paper scrap label */
+function TapeSticker({
+	children,
+	className,
+	rotate = "-8deg",
+	tone = "ink",
+}: {
+	children: ReactNode;
+	className?: string;
+	rotate?: string;
+	tone?: "ink" | "lime" | "red";
+}) {
 	return (
 		<div
-			className="inline-flex items-center gap-2 px-3 py-1"
-			style={{
-				background: "#D2FF00",
-				borderRadius: "4px",
-				boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
-			}}
+			aria-hidden="true"
+			className={clsx(
+				"pointer-events-none relative inline-flex items-center justify-center px-6 py-3",
+				className,
+			)}
+			style={{ transform: `rotate(${rotate})` }}
 		>
-			<span className="h-2 w-2 animate-pulse rounded-full bg-black" />
+			<img
+				src="/landing/tape-scrap.png"
+				alt=""
+				draggable={false}
+				className="absolute inset-0 h-full w-full object-fill drop-shadow-[3px_3px_0_rgba(0,0,0,0.35)]"
+			/>
 			<span
-				className="font-black text-black text-xs uppercase tracking-[0.18em]"
+				className={clsx(
+					"relative z-10 font-black text-base uppercase tracking-tight sm:text-xl md:text-3xl",
+					tone === "lime" && "text-electric-lime",
+					tone === "red" && "text-bsen-red",
+					tone === "ink" && "text-black",
+				)}
 				style={{ fontFamily: "var(--font-body)" }}
 			>
-				{label}
+				{children}
 			</span>
 		</div>
 	);
 }
 
+const paperCrumpleStyle: CSSProperties = {
+	backgroundColor: "var(--color-paper)",
+	backgroundImage: 'url("/landing/paper-crumple.jpg")',
+	backgroundSize: "cover",
+	backgroundPosition: "center",
+};
+
+const amberCrumpleStyle: CSSProperties = {
+	backgroundColor: "#ffc700",
+	backgroundImage: 'url("/landing/paper-crumple.jpg")',
+	backgroundSize: "cover",
+	backgroundPosition: "center",
+	backgroundBlendMode: "soft-light",
+};
 
 /* ─────────────────────────────────────────────
-   BETTING CAROUSEL MOCK — static preview for landing page Z3
-   Replicates the real BettingCarousel card visual.
-   aria-hidden: true — purely decorative.
+   WATCH → PICK → REPUTATION LOOP
 ───────────────────────────────────────────── */
-function BettingCarouselMock({ t }: { t: (key: string) => string }) {
+function WatchPredictLoop({ t }: { t: (key: string) => string }) {
+	return (
+		<div
+			className="relative mx-auto w-full max-w-[300px] select-none sm:max-w-[340px] md:mx-0 md:max-w-[360px]"
+			aria-hidden="true"
+		>
+			{/* 1 — Watch */}
+			<div className="relative z-[1] -rotate-2 border-[3px] border-black bg-charcoal p-4 shadow-[6px_6px_0_#000] sm:p-5">
+				<div className="mb-3 flex items-center gap-2">
+					<span className="inline-block h-2.5 w-2.5 shrink-0 bg-bsen-red" />
+					<span
+						className="font-black text-[11px] text-electric-lime uppercase tracking-[0.18em]"
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("watchPredict.watchLabel")}
+					</span>
+				</div>
+				<p
+					className="font-black text-lg text-white uppercase leading-[0.95] tracking-tight sm:text-xl"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("watchPredict.stepWatch")}
+				</p>
+			</div>
+
+			{/* 2 — Pick */}
+			<div className="relative z-[2] -mt-4 ml-3 rotate-[2.5deg] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_#000] sm:ml-6 sm:p-5 md:ml-8">
+				<div className="mb-3 inline-flex border-2 border-black bg-electric-lime px-2.5 py-1">
+					<span
+						className="font-black text-[11px] text-black uppercase tracking-[0.14em]"
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("watchPredict.predictLabel")}
+					</span>
+				</div>
+				<p
+					className="font-black text-ink text-lg uppercase leading-[0.95] tracking-tight sm:text-xl"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("watchPredict.stepPick")}
+				</p>
+				<div className="mt-3 flex items-center gap-2 border-2 border-black bg-paper px-2.5 py-1.5">
+					<span
+						className="material-symbols-outlined text-black text-lg"
+						style={{ fontVariationSettings: "'FILL' 1" }}
+					>
+						check_circle
+					</span>
+					<span
+						className="font-black text-[11px] text-black uppercase tracking-wider"
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("watchPredict.pickSaved")}
+					</span>
+				</div>
+			</div>
+
+			{/* 3 — Reputation */}
+			<div className="relative z-[3] -mt-4 -rotate-[1.5deg] border-[3px] border-black bg-electric-lime p-4 shadow-[6px_6px_0_#000] sm:p-5 md:mr-2">
+				<span
+					className="font-black text-[11px] text-black uppercase tracking-[0.18em]"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("watchPredict.reputationLabel")}
+				</span>
+				<p
+					className="mt-1 font-black text-4xl text-black uppercase leading-none tracking-tight sm:text-5xl"
+					style={{ fontFamily: "var(--font-display)" }}
+				>
+					{t("watchPredict.pts")}
+				</p>
+				<p
+					className="mt-2 font-black text-black/70 text-sm uppercase leading-snug"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("watchPredict.stepRep")}
+				</p>
+			</div>
+		</div>
+	);
+}
+
+/* ─────────────────────────────────────────────
+   BETTING CAROUSEL MOCK — mirrors BettingCarousel.tsx
+───────────────────────────────────────────── */
+function BettingCarouselMock({
+	t,
+	size = "md",
+	className,
+}: {
+	t: (key: string, options?: Record<string, string | number>) => string;
+	size?: "md" | "lg";
+	className?: string;
+}) {
+	const large = size === "lg";
+	const logoClass = large
+		? "h-14 w-14 drop-shadow-sm sm:h-16 sm:w-16 md:h-24 md:w-24"
+		: "h-14 w-14 drop-shadow-sm md:h-16 md:w-16";
+
 	return (
 		<div
 			aria-hidden="true"
-			className="pointer-events-none relative w-full shrink-0 md:w-[340px]"
-			style={{ filter: "drop-shadow(6px 6px 0px rgba(0,0,0,0.30))" }}
+			className={`pointer-events-none relative mx-auto w-full shrink-0${large ? "max-w-[min(100%,360px)] sm:max-w-[400px] md:max-w-[440px] lg:max-w-[480px]" : "max-w-[340px]"}${className ? ` ${className}` : ""}`}
 		>
-			{/* Outer wrapper — slight tilt for energy */}
-			<div className="relative -rotate-1">
-				{/* Paint splatter decorations */}
+			{/* Tournament header — outside the card, like the real carousel */}
+			<div className="mb-4 flex justify-center">
 				<div
-					className="pointer-events-none absolute -top-8 -left-10 z-0 h-[180px] w-[180px] -rotate-12 opacity-50"
-					style={{
-						background: "radial-gradient(circle, #2E5CFF 0%, transparent 70%)",
-						filter: "blur(18px)",
-					}}
-				/>
-				<div
-					className="pointer-events-none absolute -top-8 -right-10 z-0 h-[180px] w-[180px] rotate-12 opacity-50"
-					style={{
-						background: "radial-gradient(circle, #FF5543 0%, transparent 70%)",
-						filter: "blur(18px)",
-					}}
-				/>
+					className={`flex max-w-full items-center gap-2 rounded-md border-2 border-black bg-white shadow-comic sm:gap-3 ${large ? "px-3 py-2 sm:px-4 sm:py-2.5" : "px-3 py-2"}`}
+				>
+					<img
+						src="https://logos.bsebfantasy.me/tournaments/265/logo.png?t=1777573893124"
+						alt=""
+						className={`shrink-0 object-contain ${large ? "h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12" : "h-8 w-8"}`}
+					/>
+					<span
+						className={`min-w-0 truncate font-black text-ink uppercase tracking-wider ${large ? "text-xs sm:text-sm md:text-base" : "text-xs"}`}
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("mock.tournamentName")}
+					</span>
+				</div>
+			</div>
 
-				{/* Card shell */}
-				<div className="relative z-10 overflow-hidden rounded-lg border-[3px] border-black bg-white">
-					{/* Tournament header badge */}
-					<div className="flex items-center justify-center gap-2 border-black border-b-2 bg-white px-4 py-2.5">
-						<img
-							src="https://logos.bsebfantasy.me/tournaments/265/logo.png?t=1777573893124"
-							alt=""
-							className="h-6 w-6 rounded-sm object-contain"
-						/>
-						<span
-							className="font-black text-xs text-black uppercase tracking-wider"
-							style={{ fontFamily: "var(--font-body)" }}
-						>
-							BSC 2026: Brawl Cup
-						</span>
-					</div>
+			<div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+				<span
+					className="rounded-md bg-ink px-3 py-1 font-black text-white text-xs uppercase"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("mock.matchLabel")}
+				</span>
+				<span
+					className="rounded-full bg-electric-lime px-3 py-1 font-black text-[10px] text-black uppercase"
+					style={{ fontFamily: "var(--font-body)" }}
+				>
+					{t("mock.picksOpen")}
+				</span>
+			</div>
 
-					{/* Match counter bar */}
-					<div className="border-black border-b-2 bg-[#f5f4f0] py-1.5 text-center">
+			<div
+				className="relative"
+				style={{
+					filter: large
+						? "drop-shadow(10px 12px 0px rgba(0,0,0,0.45))"
+						: "drop-shadow(6px 6px 0px rgba(0,0,0,0.30))",
+				}}
+			>
+				<div className="relative overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-comic-md xl:-rotate-1">
+					{/* Match counter */}
+					<div className="border-black border-b-2 bg-tape py-1.5 text-center">
 						<span
-							className="font-black text-[10px] text-black uppercase tracking-wider"
+							className="font-black text-[10px] text-ink uppercase tracking-wider"
 							style={{ fontFamily: "var(--font-body)" }}
 						>
 							{t("mock.matchCounter")}
 						</span>
 					</div>
 
-					{/* Teams display */}
-					<div className="relative grid h-36 grid-cols-2">
-						{/* VS badge */}
+					{/* Teams */}
+					<div
+						className={`relative grid grid-cols-2 ${large ? "h-40 sm:h-44 md:h-52" : "h-40"}`}
+					>
 						<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
-							<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-white shadow-[2px_2px_0_0_#000]">
+							<div
+								className={`flex items-center justify-center rounded-full border-2 border-black bg-white shadow-comic-sm ${large ? "h-10 w-10" : "h-9 w-9"}`}
+							>
 								<span
-									className="font-black text-xs"
+									className={`font-black text-ink ${large ? "text-sm" : "text-xs"}`}
 									style={{ fontFamily: "var(--font-display)" }}
 								>
-									VS
+									{t("pickArena.vs")}
 								</span>
 							</div>
 						</div>
 
-						{/* Team A — Blue, selected (neon border) */}
-						<div className="relative flex h-full flex-col items-center overflow-hidden border-black border-r-2 bg-[#2E5CFF]">
-							{/* Neon selection border */}
-							<div className="pointer-events-none absolute inset-0 z-20 border-[#ccff00] border-[4px]" />
-							<div className="w-full bg-black/20 px-2 py-1.5 text-center">
-								<span
-									className="block font-black text-[10px] text-white uppercase tracking-wider"
-									style={{ fontFamily: "var(--font-body)" }}
-								>
-									LOUD
-								</span>
-							</div>
-							<div className="flex flex-grow items-center justify-center">
-								<div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/25 p-2">
-									<img
-										src="https://logos.bsebfantasy.me/teams/1/logo.png"
-										alt="LOUD"
-										className="h-full w-full object-contain"
+						{/* Team A — selected */}
+						<div className="relative flex h-full flex-col overflow-hidden border-black border-r-2 bg-brawl-blue">
+							<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
+							<div className="relative z-10 flex h-full w-full flex-col">
+								<div className="w-full bg-black/20 px-2 py-2 text-center">
+									<span
+										className={`block truncate font-black text-white uppercase tracking-wider ${large ? "text-xs" : "text-[10px]"}`}
+										style={{ fontFamily: "var(--font-body)" }}
+									>
+										HMBLE
+									</span>
+								</div>
+								<div className="flex flex-grow items-center justify-center p-3 md:p-4">
+									<TeamLogo
+										teamName="HMBLE"
+										logoUrl="https://logos.bsebfantasy.me/teams/15/logo.png"
+										size="xl"
+										className={logoClass}
 									/>
 								</div>
-							</div>
-							<div className="w-full bg-black/10 px-2 py-1 text-center">
-								<span className="font-bold text-[9px] text-white uppercase tracking-wider">WR: 68%</span>
+								<div className="flex min-h-[34px] w-full items-center justify-center bg-black/10 px-2 py-1.5 text-center">
+									<span className="font-bold text-[10px] text-white uppercase leading-none tracking-wider">
+										WR: 72%
+									</span>
+								</div>
 							</div>
 						</div>
 
-						{/* Team B — Red */}
-						<div className="relative flex h-full flex-col items-center overflow-hidden bg-[#FF5543]">
-							<div className="w-full bg-black/20 px-2 py-1.5 text-center">
-								<span
-									className="block font-black text-[10px] text-white uppercase tracking-wider"
-									style={{ fontFamily: "var(--font-body)" }}
-								>
-									Tribe Gaming
-								</span>
-							</div>
-							<div className="flex flex-grow items-center justify-center">
-								<div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/25 p-2">
-									<img
-										src="https://logos.bsebfantasy.me/teams/9/logo.png"
-										alt="Tribe Gaming"
-										className="h-full w-full object-contain"
+						{/* Team B — not selected (grayed like the real carousel) */}
+						<div className="relative flex h-full flex-col overflow-hidden bg-gray-200 grayscale">
+							<div className="relative z-10 flex h-full w-full flex-col">
+								<div className="w-full bg-black/10 px-2 py-2 text-center">
+									<span
+										className={`block truncate font-black text-ink/70 uppercase tracking-wider ${large ? "text-xs" : "text-[10px]"}`}
+										style={{ fontFamily: "var(--font-body)" }}
+									>
+										FUT Esports
+									</span>
+								</div>
+								<div className="flex flex-grow items-center justify-center p-3 md:p-4">
+									<TeamLogo
+										teamName="FUT Esports"
+										logoUrl="https://logos.bsebfantasy.me/teams/17/logo.png"
+										size="xl"
+										className={logoClass}
 									/>
 								</div>
-							</div>
-							<div className="w-full bg-black/10 px-2 py-1 text-center">
-								<span className="font-bold text-[9px] text-white uppercase tracking-wider">WR: 55%</span>
+								<div className="flex min-h-[34px] w-full items-center justify-center bg-black/5 px-2 py-1.5 text-center">
+									<span className="font-bold text-[10px] text-ink/50 uppercase leading-none tracking-wider">
+										WR: 61%
+									</span>
+								</div>
 							</div>
 						</div>
 					</div>
 
-					{/* Stats row */}
-					<div className="grid grid-cols-2 border-black border-t-2">
-						<div className="border-gray-200 border-r bg-[#2E5CFF]/[0.04] px-3 py-2 space-y-1.5">
-							{[
-								{ label: t("mock.statRegion"), value: "BR" },
-								{ label: t("mock.statWr"), value: "68%", accent: "#2E5CFF" },
-								{ label: t("mock.statSeries"), value: "+3", accent: "#16a34a" },
-							].map(({ label, value, accent }) => (
-								<div
-									key={label}
-									className="flex items-center justify-between rounded bg-white px-2 py-1 shadow-[1px_1px_0_0_#d9d9d9]"
-								>
-									<span className="font-black text-[8px] text-gray-400 uppercase">{label}</span>
-									<span
-										className="font-black text-[10px]"
-										style={{ color: accent ?? "#111" }}
+					{/* Stats */}
+					<div className="grid grid-cols-2 border-black border-t-2 bg-white">
+						<div className="border-gray-200 border-r bg-brawl-blue/[0.04] px-3 py-3">
+							<div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+								<span className="rounded bg-brawl-blue/10 px-1.5 py-0.5 font-black text-[10px] text-brawl-blue">
+									{t("mock.seed", { n: 1 })}
+								</span>
+								<span className="rounded bg-tape px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
+									{t("mock.group", { g: "A" })}
+								</span>
+							</div>
+							<div className="space-y-2">
+								{[
+									{
+										label: t("mock.statRegion"),
+										value: "EMEA",
+										valueClass: "font-bold text-[10px] text-ink",
+									},
+									{
+										label: t("mock.statWr"),
+										value: "72%",
+										valueClass: "font-black text-[11px] text-brawl-blue",
+									},
+									{
+										label: t("mock.statSeries"),
+										value: "+2",
+										valueClass: "font-bold text-[10px] text-green-600",
+									},
+								].map(({ label, value, valueClass }) => (
+									<div
+										key={label}
+										className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]"
 									>
-										{value}
-									</span>
-								</div>
-							))}
+										<span className="font-black text-[9px] text-gray-400 uppercase">
+											{label}
+										</span>
+										<span className={valueClass}>{value}</span>
+									</div>
+								))}
+							</div>
 						</div>
-						<div className="bg-[#FF5543]/[0.04] px-3 py-2 space-y-1.5">
-							{[
-								{ label: t("mock.statRegion"), value: "NA" },
-								{ label: t("mock.statWr"), value: "55%", accent: "#FF5543" },
-								{ label: t("mock.statSeries"), value: "-1", accent: "#FF5543" },
-							].map(({ label, value, accent }) => (
-								<div
-									key={label}
-									className="flex items-center justify-between rounded bg-white px-2 py-1 shadow-[1px_1px_0_0_#d9d9d9]"
-								>
-									<span className="font-black text-[8px] text-gray-400 uppercase">{label}</span>
-									<span
-										className="font-black text-[10px]"
-										style={{ color: accent ?? "#111" }}
+						<div className="bg-brawl-red/[0.04] px-3 py-3">
+							<div className="mb-2.5 flex flex-wrap items-center justify-end gap-1.5">
+								<span className="rounded bg-tape px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
+									{t("mock.group", { g: "D" })}
+								</span>
+								<span className="rounded bg-brawl-red/10 px-1.5 py-0.5 font-black text-[10px] text-brawl-red">
+									{t("mock.seed", { n: 2 })}
+								</span>
+							</div>
+							<div className="space-y-2">
+								{[
+									{
+										label: t("mock.statRegion"),
+										value: "EMEA",
+										valueClass: "font-bold text-[10px] text-ink",
+									},
+									{
+										label: t("mock.statWr"),
+										value: "61%",
+										valueClass: "font-black text-[11px] text-brawl-red",
+									},
+									{
+										label: t("mock.statSeries"),
+										value: "+1",
+										valueClass: "font-bold text-[10px] text-green-600",
+									},
+								].map(({ label, value, valueClass }) => (
+									<div
+										key={label}
+										className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]"
 									>
-										{value}
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
-
-					{/* Predict button — decorative */}
-					<div className="border-black border-t-2 px-4 py-3">
-						<div
-							className="flex w-full items-center justify-center gap-2 rounded py-2.5 font-black text-sm uppercase tracking-wide text-black"
-							style={{
-								background: "#D2FF00",
-								borderRadius: "4px",
-								boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
-								fontFamily: "var(--font-body)",
-							}}
-						>
-							{t("mock.confirmPick")}
+										<span className="font-black text-[9px] text-gray-400 uppercase">
+											{label}
+										</span>
+										<span className={valueClass}>{value}</span>
+									</div>
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			{/* Bets open badge below card */}
-			<div className="mt-3 flex justify-center">
-				<span
-					className="rounded-full bg-[#ccff00] px-3 py-1 font-black text-[10px] uppercase text-black"
+			{/* Score picker — mirrors real carousel below the card */}
+			<div className="mt-5 w-full">
+				<div className="mb-2 text-center">
+					<span
+						className="font-black text-white/85 text-xs uppercase tracking-wider"
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("mock.pickScore")}
+					</span>
+				</div>
+				<div className="grid grid-cols-3 gap-2 md:gap-3">
+					{[
+						{ label: "3 - 0", desc: t("mock.scoreDominant"), selected: true },
+						{ label: "3 - 1", desc: t("mock.scoreStrong"), selected: false },
+						{ label: "3 - 2", desc: t("mock.scoreClose"), selected: false },
+					].map(({ label, desc, selected }) => (
+						<div
+							key={label}
+							className={`relative flex h-14 flex-col items-center justify-center rounded-md border-2 bg-white p-1.5 md:h-16 ${selected ? "border-black shadow-comic" : "border-gray-300 opacity-80"}`}
+						>
+							{selected ? (
+								<div className="absolute top-0 right-0 left-0 h-1 rounded-t-[4px] bg-brawl-blue" />
+							) : null}
+							<span
+								className="font-black text-ink text-sm leading-none md:text-base"
+								style={{ fontFamily: "var(--font-body)" }}
+							>
+								{label}
+							</span>
+							<span className="mt-1 hidden font-bold text-[8px] text-gray-400 uppercase leading-none min-[380px]:block">
+								{desc}
+							</span>
+						</div>
+					))}
+				</div>
+			</div>
+
+			<div className="mt-4">
+				<div
+					className={`flex w-full items-center justify-center gap-2 rounded border-2 border-black bg-electric-lime font-black text-black uppercase tracking-wide shadow-comic ${large ? "py-3.5 text-sm md:text-base" : "py-3 text-sm"}`}
 					style={{ fontFamily: "var(--font-body)" }}
 				>
-					{t("mock.picksOpen")}
-				</span>
+					{t("mock.confirmPick")}
+				</div>
 			</div>
 		</div>
 	);
 }
 
-
-/* ─────────────────────────────────────────────
-   PRIMARY CTA BUTTON — per design system spec
-   bg #D2FF00, text #000, radius 4px, soft shadow
-───────────────────────────────────────────── */
 function PrimaryCTA({
 	children,
 	href,
 	className,
 }: {
-	children: React.ReactNode;
+	children: ReactNode;
 	href?: string;
 	className?: string;
 }) {
-	const style: React.CSSProperties = {
-		background: "#D2FF00",
+	const style: CSSProperties = {
+		background: "var(--color-electric-lime)",
 		color: "#000000",
 		borderRadius: "4px",
-		boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
+		boxShadow: "var(--shadow-broadcast)",
 		fontFamily: "var(--font-body)",
 		fontWeight: 800,
-		fontSize: "16px",
-		lineHeight: "16px",
+		lineHeight: "1.15",
 		letterSpacing: "-0.01em",
 		minHeight: "48px",
 		display: "inline-flex",
 		alignItems: "center",
 		justifyContent: "center",
-		padding: "0 24px",
 		textDecoration: "none",
 		transition: "box-shadow 150ms, filter 150ms",
 		textTransform: "uppercase",
+		whiteSpace: "normal",
+		textAlign: "center",
 	};
 	return (
 		<a
 			href={href}
-			className={`hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D2FF00]/50 hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
+			className={`px-4 text-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-electric-lime/50 sm:px-6 sm:text-base hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
 			style={style}
 		>
 			{children}
@@ -405,42 +565,38 @@ function PrimaryCTA({
 	);
 }
 
-/* ─────────────────────────────────────────────
-   DARK CTA BUTTON — dark bg version
-   Used on light / amber zones
-───────────────────────────────────────────── */
 function DarkCTA({
 	children,
 	href,
 	className,
 }: {
-	children: React.ReactNode;
+	children: ReactNode;
 	href?: string;
 	className?: string;
 }) {
-	const style: React.CSSProperties = {
-		background: "#FF5543",
+	const style: CSSProperties = {
+		background: "var(--color-bsen-red)",
 		color: "#FFFFFF",
 		borderRadius: "4px",
-		boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
+		boxShadow: "var(--shadow-broadcast)",
 		fontFamily: "var(--font-body)",
 		fontWeight: 800,
-		fontSize: "16px",
-		lineHeight: "16px",
+		lineHeight: "1.15",
 		letterSpacing: "-0.01em",
 		minHeight: "48px",
 		display: "inline-flex",
 		alignItems: "center",
 		justifyContent: "center",
-		padding: "0 24px",
 		textDecoration: "none",
 		transition: "box-shadow 150ms, filter 150ms",
 		textTransform: "uppercase",
+		whiteSpace: "normal",
+		textAlign: "center",
 	};
 	return (
 		<a
 			href={href}
-			className={`hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5543]/50 hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
+			className={`px-4 text-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-bsen-red/50 sm:px-6 sm:text-base hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
 			style={style}
 		>
 			{children}
@@ -448,44 +604,78 @@ function DarkCTA({
 	);
 }
 
-/* ─────────────────────────────────────────────
-   PODIUM COLUMN — mirrors leaderboard.tsx PodiumSection
-   Ranks 1/2/3 with coloured base, avatar initials,
-   comic shadow, stats pills, and crown for 1st.
-───────────────────────────────────────────── */
+function InkCTA({
+	children,
+	href,
+	className,
+}: {
+	children: ReactNode;
+	href?: string;
+	className?: string;
+}) {
+	const style: CSSProperties = {
+		background: "var(--color-ink)",
+		color: "#FFFFFF",
+		borderRadius: "4px",
+		boxShadow: "var(--shadow-broadcast)",
+		fontFamily: "var(--font-body)",
+		fontWeight: 800,
+		lineHeight: "1.15",
+		letterSpacing: "-0.01em",
+		minHeight: "48px",
+		display: "inline-flex",
+		alignItems: "center",
+		justifyContent: "center",
+		textDecoration: "none",
+		transition: "box-shadow 150ms, filter 150ms",
+		textTransform: "uppercase",
+		whiteSpace: "normal",
+		textAlign: "center",
+	};
+	return (
+		<a
+			href={href}
+			className={`px-4 text-sm hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/40 sm:px-6 sm:text-base active:brightness-95${className ? ` ${className}` : ""}`}
+			style={style}
+		>
+			{children}
+		</a>
+	);
+}
+
 const podiumCfg = {
 	1: {
-		bg: "bg-[#ffc700]",
-		shadow: "shadow-[6px_6px_0_0_#000]",
+		bg: "bg-brawl-yellow",
+		shadow: "shadow-comic-lg",
 		height: "h-44 md:h-52",
 		avatarSize: "h-20 w-20 md:h-24 md:w-24",
 		rankSize: "text-6xl md:text-7xl",
 		rankColor: "text-[#d4a800]",
-		badgeBg: "bg-[#ffc700]",
+		badgeBg: "bg-brawl-yellow",
 		badgeText: "text-black",
 		ptsSize: "text-3xl",
 		crown: true,
 	},
 	2: {
 		bg: "bg-[#c0c0c0]",
-		shadow: "shadow-[4px_4px_0_0_#000]",
+		shadow: "shadow-comic-md",
 		height: "h-36 md:h-44",
 		avatarSize: "h-16 w-16 md:h-20 md:w-20",
 		rankSize: "text-5xl md:text-6xl",
 		rankColor: "text-[#909090]",
-		badgeBg: "bg-[#121212]",
+		badgeBg: "bg-ink",
 		badgeText: "text-white",
 		ptsSize: "text-2xl",
 		crown: false,
 	},
 	3: {
 		bg: "bg-[#cd7f32]",
-		shadow: "shadow-[4px_4px_0_0_#000]",
+		shadow: "shadow-comic-md",
 		height: "h-28 md:h-36",
 		avatarSize: "h-14 w-14 md:h-16 md:w-16",
 		rankSize: "text-4xl md:text-5xl",
 		rankColor: "text-[#8b5e2a]",
-		badgeBg: "bg-[#121212]",
+		badgeBg: "bg-ink",
 		badgeText: "text-white",
 		ptsSize: "text-xl",
 		crown: false,
@@ -518,7 +708,6 @@ function PodiumColumn({
 				rank === 1 ? "z-20 scale-105" : "z-10",
 			)}
 		>
-			{/* Crown / Medal badge */}
 			<div className="mb-1">
 				{cfg.crown ? (
 					<Crown
@@ -531,7 +720,6 @@ function PodiumColumn({
 				)}
 			</div>
 
-			{/* Avatar */}
 			<div className="relative mb-1">
 				<div
 					className={clsx(
@@ -547,12 +735,11 @@ function PodiumColumn({
 							className="h-full w-full object-cover"
 						/>
 					) : (
-						<div className="flex h-full w-full items-center justify-center bg-[#f0f0f0] font-black text-gray-400 text-xl">
+						<div className="flex h-full w-full items-center justify-center bg-paper font-black text-gray-400 text-xl">
 							{entry.name.charAt(0).toUpperCase()}
 						</div>
 					)}
 				</div>
-				{/* Rank badge overlay */}
 				<div
 					className={clsx(
 						"absolute -right-1.5 -bottom-1.5 flex h-6 w-6 items-center justify-center rounded-lg border-2 border-black font-black text-xs shadow-sm",
@@ -564,12 +751,10 @@ function PodiumColumn({
 				</div>
 			</div>
 
-			{/* Name */}
 			<span className="mb-1 block max-w-[120px] truncate text-center font-black text-[#121212] text-xs uppercase tracking-tight md:max-w-[140px] md:text-sm">
 				{entry.name}
 			</span>
 
-			{/* Points */}
 			<div className="mb-2 text-center">
 				<span
 					className={clsx(
@@ -584,7 +769,6 @@ function PodiumColumn({
 				</span>
 			</div>
 
-			{/* Medals */}
 			{entry.medals.total > 0 && (
 				<div className="mb-1.5">
 					<MedalCountSummary
@@ -596,22 +780,21 @@ function PodiumColumn({
 				</div>
 			)}
 
-			{/* Mini stat pills */}
 			<div className="mb-3 flex items-center gap-0.5">
-				<div className="flex items-center gap-0.5 rounded border border-black bg-[#ffc700] px-1 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+				<div className="flex items-center gap-0.5 rounded border border-black bg-brawl-yellow px-1 py-0.5 shadow-comic-press">
 					<Star className="h-2.5 w-2.5 text-black" fill="black" />
 					<span className="font-black text-[9px] text-black">
 						{entry.perfectPicks}
 					</span>
 				</div>
-				<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+				<div className="flex items-center gap-0.5 rounded border border-black/20 bg-white px-1 py-0.5 shadow-comic-press">
 					<span className="font-black text-[9px] text-green-600">✓</span>
 					<span className="font-black text-[9px] text-black">
 						{entry.correctPredictions}
 					</span>
 				</div>
 				{entry.underdogPicks > 0 && (
-					<div className="flex items-center gap-0.5 rounded border border-black bg-purple-400 px-1 py-0.5 shadow-[1.5px_1.5px_0_0_#000]">
+					<div className="flex items-center gap-0.5 rounded border border-black bg-purple-400 px-1 py-0.5 shadow-comic-press">
 						<Zap className="h-2.5 w-2.5 text-black" strokeWidth={3} />
 						<span className="font-black text-[9px] text-black">
 							{entry.underdogPicks}
@@ -620,7 +803,7 @@ function PodiumColumn({
 				)}
 				<div
 					className={clsx(
-						"rounded border border-black px-1 py-0.5 shadow-[1.5px_1.5px_0_0_#000]",
+						"rounded border border-black px-1 py-0.5 shadow-comic-press",
 						accuracyRate >= 70
 							? "bg-green-500"
 							: accuracyRate >= 40
@@ -639,7 +822,6 @@ function PodiumColumn({
 				</div>
 			</div>
 
-			{/* Coloured base */}
 			<div
 				className={clsx(
 					"relative mt-auto w-full rounded-t-xl border-[3px] border-black",
@@ -664,10 +846,6 @@ function PodiumColumn({
 	);
 }
 
-/* ─────────────────────────────────────────────
-   LEADERBOARD CARD — rank 4+ entry
-   Mirrors LeaderboardCard from leaderboard.tsx
-───────────────────────────────────────────── */
 function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 	const accuracyRate =
 		entry.totalBets > 0
@@ -675,16 +853,14 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 			: 0;
 
 	return (
-		<div className="flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-2.5 shadow-[3px_3px_0_0_#000]">
-			{/* Rank Badge */}
-			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-black/10 bg-[#121212]">
+		<div className="flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-2.5 shadow-comic">
+			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-black/10 bg-ink">
 				<span className="font-black text-base text-white italic">
 					{entry.rank}
 				</span>
 			</div>
 
-			{/* Avatar initials */}
-			<div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#f0f0f0]">
+			<div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-paper">
 				{entry.image ? (
 					<img
 						src={entry.image}
@@ -698,13 +874,12 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 				)}
 			</div>
 
-			{/* Name + stats */}
 			<div className="flex min-w-0 flex-1 flex-col justify-center">
 				<span className="block truncate font-bold text-[#121212] text-xs uppercase tracking-tight md:text-sm">
 					{entry.name}
 				</span>
 				<div className="mt-1 flex flex-wrap items-center gap-1">
-					<div className="flex items-center gap-0.5 rounded bg-[#ffc700] px-1.5 py-0.5">
+					<div className="flex items-center gap-0.5 rounded bg-brawl-yellow px-1.5 py-0.5">
 						<Star className="h-2.5 w-2.5 text-black" fill="black" />
 						<span className="font-black text-[10px] text-black">
 							{entry.perfectPicks}
@@ -719,7 +894,7 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 					{entry.underdogPicks > 0 && (
 						<div className="flex items-center gap-0.5 rounded bg-purple-400 px-1.5 py-0.5">
 							<span className="font-black text-[10px] text-black">
-								⚡{entry.underdogPicks}
+								{entry.underdogPicks}
 							</span>
 						</div>
 					)}
@@ -753,8 +928,7 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 				</div>
 			</div>
 
-			{/* Points */}
-			<div className="shrink-0 rounded-md border-2 border-black bg-white px-3 py-1.5 text-center shadow-[2px_2px_0_0_#000]">
+			<div className="shrink-0 rounded-md border-2 border-black bg-white px-3 py-1.5 text-center shadow-comic-sm">
 				<span className="block font-black text-[#121212] text-xl leading-none">
 					{entry.totalPoints}
 				</span>
@@ -767,405 +941,661 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 }
 
 /* ─────────────────────────────────────────────
+   PICK ARENA — rotating featured BSC matchups
+───────────────────────────────────────────── */
+function PickArenaTeam({
+	team,
+	variant,
+}: {
+	team: LandingMatchup["teamA"];
+	variant: "blue" | "red";
+}) {
+	return (
+		<div className="relative flex w-full flex-col items-center">
+			<div className="relative flex h-36 w-full items-center justify-center sm:h-48 md:h-64">
+				<SpraySplat
+					variant={variant}
+					className={clsx(
+						"absolute top-1/2 left-1/2 z-0 h-44 w-52 max-w-none -translate-x-1/2 -translate-y-1/2 sm:h-64 sm:w-80 md:h-80 md:w-[26rem]",
+						variant === "blue" ? "-rotate-6" : "rotate-6",
+					)}
+				/>
+				{team.logoUrl ? (
+					<img
+						src={team.logoUrl}
+						alt={team.name}
+						className="relative z-10 h-20 w-20 object-contain drop-shadow-[3px_4px_0_rgba(0,0,0,0.35)] sm:h-28 sm:w-28 md:h-40 md:w-40"
+					/>
+				) : (
+					<span className="relative z-10 font-black text-4xl text-black drop-shadow-[2px_2px_0_#fff] sm:text-5xl md:text-6xl">
+						{team.name.charAt(0)}
+					</span>
+				)}
+			</div>
+			<span
+				className="relative z-10 mt-2 max-w-full truncate px-1 text-center font-black text-black text-sm uppercase leading-tight tracking-tight sm:text-lg md:text-2xl"
+				style={{ fontFamily: "var(--font-body)" }}
+			>
+				{team.name}
+			</span>
+			{team.region ? (
+				<span className="relative z-10 mt-1 font-bold text-black/45 text-xs uppercase tracking-widest md:text-sm">
+					{team.region}
+				</span>
+			) : null}
+		</div>
+	);
+}
+
+function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
+	const { t } = useTranslation("landing");
+	const reduceMotion = useReducedMotion();
+	const [index, setIndex] = useState(0);
+
+	useEffect(() => {
+		if (matchups.length < 2) return;
+		const id = window.setInterval(() => {
+			setIndex((prev) => (prev + 1) % matchups.length);
+		}, 7500);
+		return () => window.clearInterval(id);
+	}, [matchups.length]);
+
+	if (matchups.length === 0) return null;
+
+	const matchup = matchups[index];
+	if (!matchup) return null;
+
+	const slideEase = [0.22, 1, 0.36, 1] as const;
+
+	return (
+		<div className="relative mb-8 flex min-h-[220px] w-full max-w-5xl items-center justify-center overflow-hidden sm:mb-12 sm:min-h-[280px] md:min-h-[360px]">
+			<AnimatePresence mode="sync" initial={false}>
+				<motion.div
+					key={`${matchup.teamA.id}-${matchup.teamB.id}`}
+					className="absolute inset-0 flex items-center justify-center gap-1 px-1 sm:gap-6 sm:px-0 md:gap-10"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{
+						duration: reduceMotion ? 0.35 : 0.5,
+						ease: slideEase,
+					}}
+				>
+					<motion.div
+						className="relative flex w-[42%] max-w-[320px] sm:w-64 md:w-80"
+						initial={
+							reduceMotion
+								? { opacity: 0 }
+								: { x: -64, opacity: 0, scale: 0.88, rotate: -5 }
+						}
+						animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+						exit={
+							reduceMotion
+								? { opacity: 0 }
+								: { x: -48, opacity: 0, scale: 0.9, rotate: -4 }
+						}
+						transition={{
+							duration: reduceMotion ? 0.35 : 0.75,
+							ease: slideEase,
+							delay: reduceMotion ? 0 : 0.04,
+						}}
+					>
+						<PickArenaTeam team={matchup.teamA} variant="blue" />
+					</motion.div>
+
+					<motion.div
+						className="relative z-20 shrink-0 px-1.5 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4"
+						initial={
+							reduceMotion
+								? { opacity: 0 }
+								: { scale: 0.45, opacity: 0, rotate: -22, y: 12 }
+						}
+						animate={
+							reduceMotion
+								? { opacity: 1, scale: 1, rotate: -3, y: 0 }
+								: {
+										opacity: 1,
+										scale: 1,
+										rotate: -3,
+										y: [0, -4, 0],
+									}
+						}
+						exit={
+							reduceMotion
+								? { opacity: 0 }
+								: { scale: 0.6, opacity: 0, rotate: 14, y: -8 }
+						}
+						transition={
+							reduceMotion
+								? { duration: 0.35 }
+								: {
+										scale: {
+											type: "spring",
+											stiffness: 420,
+											damping: 18,
+											delay: 0.1,
+										},
+										rotate: {
+											type: "spring",
+											stiffness: 320,
+											damping: 16,
+											delay: 0.1,
+										},
+										opacity: { duration: 0.35, delay: 0.08 },
+										y: {
+											duration: 2.4,
+											repeat: Number.POSITIVE_INFINITY,
+											ease: "easeInOut",
+											delay: 0.55,
+										},
+									}
+						}
+					>
+						<img
+							src="/landing/tape-scrap.png"
+							alt=""
+							aria-hidden="true"
+							draggable={false}
+							className="absolute inset-0 h-full w-full object-fill drop-shadow-[3px_3px_0_rgba(0,0,0,0.4)]"
+						/>
+						<span
+							className="relative z-10 font-black text-base text-black sm:text-xl md:text-3xl"
+							style={{ fontFamily: "var(--font-body)" }}
+						>
+							{t("pickArena.vs")}
+						</span>
+					</motion.div>
+
+					<motion.div
+						className="relative flex w-[42%] max-w-[320px] sm:w-64 md:w-80"
+						initial={
+							reduceMotion
+								? { opacity: 0 }
+								: { x: 64, opacity: 0, scale: 0.88, rotate: 5 }
+						}
+						animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+						exit={
+							reduceMotion
+								? { opacity: 0 }
+								: { x: 48, opacity: 0, scale: 0.9, rotate: 4 }
+						}
+						transition={{
+							duration: reduceMotion ? 0.35 : 0.75,
+							ease: slideEase,
+							delay: reduceMotion ? 0 : 0.04,
+						}}
+					>
+						<PickArenaTeam team={matchup.teamB} variant="red" />
+					</motion.div>
+				</motion.div>
+			</AnimatePresence>
+		</div>
+	);
+}
+
+/* ─────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────── */
 export function LandingPage({
 	isAuthenticated,
 	topUsers = [],
+	matchups: matchupsProp = EMPTY_MATCHUPS,
 }: LandingPageProps) {
 	const { t } = useTranslation("landing");
 	const { routeTo } = useLangLink();
+	const reduceMotion = useReducedMotion();
+	const [matchups, setMatchups] = useState<LandingMatchup[]>(matchupsProp);
+
+	useEffect(() => {
+		if (matchupsProp.length > 0) {
+			setMatchups(matchupsProp);
+			return;
+		}
+		let cancelled = false;
+		getLandingMatchups()
+			.then((rows) => {
+				if (!cancelled) setMatchups(rows);
+			})
+			.catch(() => {
+				if (!cancelled) setMatchups([]);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [matchupsProp]);
 
 	const top3 = topUsers.slice(0, 3);
 	const rest = topUsers.slice(3);
+	const authTarget = isAuthenticated ? "/dashboard" : "/login";
+	const rankingTarget = isAuthenticated ? "/leaderboard" : "/login";
+
+	const floatY = reduceMotion ? 0 : 8;
 
 	return (
-		<div className="flex min-h-screen flex-col" style={{ overflowX: "clip" }}>
+		<div
+			className="flex min-h-[100dvh] flex-col bg-paper"
+			style={{ overflowX: "clip", backgroundColor: "var(--color-paper)" }}
+		>
 			{/* ════════════════════════════════════════════════════
-			    Z1 — DARK HERO
-			    Pure black bg. Geist Mono 800 at max size.
-			    Electric yellow (#D2FF00) accent word.
-			    Soft shadow depth — no hard comic borders.
+			    Z1 — DARK HERO COLLAGE
 			════════════════════════════════════════════════════ */}
 			<section
-				className="relative min-h-[90vh] w-full overflow-hidden md:min-h-screen"
-				style={{ background: "#000000" }}
+				className="relative min-h-[100dvh] w-full overflow-hidden"
+				style={{ background: "var(--color-charcoal)" }}
 			>
-				{/* Noise texture overlay */}
+				{/* Arena atmosphere */}
+				<img
+					src="/landing/hero-arena.png"
+					alt=""
+					className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+					aria-hidden="true"
+				/>
+				<div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,24,24,0.94)_0%,rgba(24,24,24,0.88)_55%,rgba(24,24,24,0.72)_100%)] md:bg-[linear-gradient(105deg,rgba(24,24,24,0.92)_0%,rgba(24,24,24,0.72)_48%,rgba(24,24,24,0.45)_100%)]" />
 				<div
 					className="pointer-events-none absolute inset-0"
 					style={{
 						backgroundImage: "var(--background-image-noise)",
-						opacity: 0.08,
+						opacity: 0.12,
 					}}
 				/>
 
-				{/* Point 3 — split stripe Blue/Red at top, thick broadcast bar */}
+				{/* Team paint wash */}
 				<div className="absolute top-0 right-0 left-0 z-20 flex h-[5px]">
-					<div className="flex-1" style={{ background: "#2e5cff" }} />
-					<div className="flex-1" style={{ background: "#FF5543" }} />
+					<div className="flex-1 bg-brawl-blue" />
+					<div className="flex-1 bg-bsen-red" />
 				</div>
 
-				{/* Decorative sparks */}
-				<SparkStar
-					className="absolute top-[16%] right-[8%] rotate-12 opacity-70 md:right-[11%]"
-					size={52}
-					color="#D2FF00"
+				<SpraySplat
+					variant="blue"
+					className="absolute top-[10%] -left-10 z-[1] h-40 w-56 opacity-40 sm:h-56 sm:w-72 sm:opacity-55 md:-left-16 md:h-80 md:w-[28rem]"
 				/>
-				<SparkStar
-					className="absolute top-[55%] right-[3%] -rotate-6 opacity-25 md:right-[5%]"
-					size={28}
-					color="#D2FF00"
-				/>
-				<SparkStar
-					className="absolute bottom-[28%] left-[4%] rotate-45 opacity-15"
-					size={20}
-					color="#D2FF00"
+				<SpraySplat
+					variant="red"
+					className="absolute right-[-8%] bottom-[8%] z-[1] h-36 w-52 opacity-35 sm:h-48 sm:w-72 sm:opacity-50 md:right-[-6%] md:bottom-[12%] md:h-72 md:w-96"
 				/>
 
-				{/* Background graffiti text */}
-				<GraffitiText
-					className="absolute top-[8%] right-[1%] text-[8rem] opacity-100 md:text-[14rem]"
-					color="rgba(255,255,255,0.065)"
-				>
-					BSC
-				</GraffitiText>
-				<GraffitiText
-					className="absolute bottom-[18%] left-[1%] text-[5rem] opacity-100 md:text-[9rem]"
-					color="rgba(255,255,255,0.05)"
-				>
-					BRAWL
-				</GraffitiText>
+				<SparkStar
+					className="absolute top-[18%] right-[22%] z-[3] hidden rotate-12 opacity-70 xl:block"
+					size={44}
+					color="var(--color-electric-lime)"
+				/>
 
-				{/* Hero content */}
-				<div className="relative z-10 flex h-full min-h-[90vh] flex-col justify-center px-6 py-20 md:min-h-screen md:px-16 md:py-0 lg:px-24">
-					{/* Live badge */}
-					<motion.div
-						initial={{ opacity: 0, x: -12 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.3 }}
-						className="mb-6 w-fit"
-					>
-						<LiveBadge label={t("hero.eyebrow")} />
-					</motion.div>
-
-					{/* Point 1 — BSEN Pickems logo real como âncora visual */}
-					<motion.div
-						initial={{ opacity: 0, y: 16 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.45, delay: 0.05 }}
-						className="mb-6 w-fit"
-					>
-						<img
-							src="/logo-white.png"
-							alt="BSEN Pickems"
-							className="h-14 w-auto object-contain md:h-20"
-						/>
-					</motion.div>
-
-					{/* Main headline — Geist Mono 800, matches design system Display/H1 spec */}
-					<motion.h1
-						initial={{ opacity: 0, y: 28 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.15 }}
-						className="font-black uppercase leading-[0.9] tracking-tight"
-						style={{
-							fontFamily: "var(--font-body)",
-							fontSize: "clamp(3.5rem, 13vw, 9rem)",
-							overflowWrap: "anywhere",
-							minWidth: 0,
-							color: "#FFFFFF",
-						}}
-					>
-						{t("hero.title")}
-						<br />
-						<span style={{ color: "#D2FF00" }}>{t("hero.titleAccent")}</span>
-					</motion.h1>
-
-					{/* Subtitle */}
-					<motion.p
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ delay: 0.38, duration: 0.4 }}
-						className="mt-6 max-w-lg font-black text-base leading-relaxed md:text-lg"
-						style={{
-							color: "#A0A0A0",
-							fontFamily: "var(--font-body)",
-						}}
-					>
-						{t("hero.subtitle")}
-					</motion.p>
-
-					{/* CTA group */}
-					<motion.div
-						initial={{ opacity: 0, y: 12 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.55, duration: 0.35 }}
-						className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
-					>
-						<Link
-							{...routeTo(isAuthenticated ? "/dashboard" : "/login")}
-							asChild
+				{/* Hero content + product mock — stacked through tablet/laptop, split at xl */}
+				<div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[1600px] flex-col xl:flex-row xl:items-center xl:gap-8 2xl:gap-12">
+					<div className="relative z-10 flex min-w-0 flex-col justify-center overflow-hidden px-4 pt-24 pb-6 sm:px-6 md:px-10 xl:w-[48%] xl:shrink-0 xl:overflow-visible xl:px-10 xl:pt-24 xl:pb-20 2xl:w-[52%] 2xl:px-16">
+						<motion.div
+							initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.05 }}
+							className="mb-5 w-fit"
 						>
-							<PrimaryCTA>{t("hero.cta")}</PrimaryCTA>
-						</Link>
+							<img
+								src="/logo-white.png"
+								alt="BSEN Pickems"
+								className="h-11 w-auto object-contain sm:h-14 md:h-20"
+							/>
+						</motion.div>
 
-						{!isAuthenticated && (
-							<Link
-								{...routeTo("/login")}
-								className="inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D2FF00]/50"
-								style={{
-									color: "#717070",
-									fontFamily: "var(--font-body)",
-									fontWeight: 800,
-									fontSize: "14px",
-									textTransform: "uppercase",
-									letterSpacing: "0.08em",
-									transition: "color 150ms",
-								}}
-							>
-								<span className="transition-colors hover:text-white">
-									{t("hero.secondaryCta")}
-								</span>
-								<span className="material-symbols-outlined text-sm">
-									arrow_forward
-								</span>
+						<motion.h1
+							initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.45, delay: 0.12 }}
+							className="max-w-full font-black text-white uppercase leading-[0.92] tracking-tight"
+							style={{
+								fontFamily: "var(--font-body)",
+								fontSize: "clamp(2.1rem, 6vw, 3.75rem)",
+							}}
+						>
+							<span className="block break-words 2xl:whitespace-nowrap">
+								{t("hero.title")}
+							</span>
+							<span className="block break-words text-electric-lime 2xl:whitespace-nowrap">
+								{t("hero.titleAccent")}
+							</span>
+						</motion.h1>
+
+						<motion.p
+							initial={reduceMotion ? false : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.28, duration: 0.35 }}
+							className="mt-5 max-w-md font-black text-[#A0A0A0] text-base leading-relaxed md:text-lg"
+							style={{ fontFamily: "var(--font-body)" }}
+						>
+							{t("hero.subtitle")}
+						</motion.p>
+
+						<motion.div
+							initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.4, duration: 0.3 }}
+							className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center"
+						>
+							<Link {...routeTo(authTarget)} asChild>
+								<PrimaryCTA className="w-full sm:w-auto">
+									{t("hero.cta")}
+								</PrimaryCTA>
 							</Link>
-						)}
-					</motion.div>
 
+							{!isAuthenticated && (
+								<Link
+									{...routeTo("/login")}
+									className="inline-flex items-center gap-1.5 font-black text-[#717070] text-sm uppercase tracking-[0.08em] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-lime/50"
+									style={{ fontFamily: "var(--font-body)" }}
+								>
+									{t("hero.secondaryCta")}
+									<span className="material-symbols-outlined text-sm">
+										arrow_forward
+									</span>
+								</Link>
+							)}
+						</motion.div>
+					</div>
+
+					<div className="relative z-0 flex w-full min-w-0 flex-1 items-center justify-center overflow-hidden px-4 pt-4 pb-12 sm:px-6 md:px-10 xl:w-[52%] xl:max-w-none xl:overflow-visible xl:px-6 xl:py-20 2xl:px-10">
+						<motion.div
+							initial={
+								reduceMotion ? false : { opacity: 0, y: 20, scale: 0.96 }
+							}
+							animate={
+								reduceMotion
+									? { opacity: 1, y: 0, scale: 1 }
+									: { opacity: 1, y: [0, -floatY, 0], scale: 1 }
+							}
+							transition={
+								reduceMotion
+									? { duration: 0.35 }
+									: {
+											opacity: { duration: 0.5, delay: 0.18 },
+											scale: {
+												duration: 0.5,
+												delay: 0.18,
+												ease: [0.22, 1, 0.36, 1],
+											},
+											y: {
+												duration: 5.5,
+												repeat: Number.POSITIVE_INFINITY,
+												ease: "easeInOut",
+												delay: 0.7,
+											},
+										}
+							}
+							className="w-full max-w-[min(100%,380px)] sm:max-w-[400px] xl:max-w-[360px] 2xl:max-w-[440px]"
+						>
+							<BettingCarouselMock t={t} size="lg" />
+						</motion.div>
+					</div>
 				</div>
 			</section>
 
-			{/* Torn edge: black → paper */}
-			<TornEdge topColor="#000000" bottomColor="#f5f4f0" height={64} />
+			<SectionCut />
 
 			{/* ════════════════════════════════════════════════════
-			    Z2 — PAPER CHALLENGERS
-			    Light paper with texture. BSEN sticker left.
-			    Headline + body + red CTA right.
+			    Z2 — PAPER CHALLENGERS (asymmetric split)
 			════════════════════════════════════════════════════ */}
 			<section
-				className="relative overflow-hidden py-14 md:py-20"
-				style={{
-					background: "#f5f4f0",
-					backgroundImage: "var(--background-image-paper-texture)",
-				}}
+				className="relative overflow-hidden py-12 md:py-20"
+				style={paperCrumpleStyle}
 			>
-				{/* Decorative graffiti on paper */}
-				<GraffitiText
-					className="absolute top-[8%] -right-3 rotate-6 text-[6rem] opacity-100 md:text-[10rem]"
-					color="rgba(0,0,0,0.04)"
-				>
-					ZZZ
-				</GraffitiText>
-				<GraffitiText
-					className="absolute bottom-[4%] left-0 -rotate-3 text-[4rem] opacity-100 md:text-[7rem]"
-					color="rgba(0,0,0,0.035)"
-				>
-					BRAWL
-				</GraffitiText>
-
-				{/* Amber glow top-right — decorative */}
-				<div
-					className="pointer-events-none absolute top-0 right-0 h-40 w-40 md:h-64 md:w-64"
-					style={{
-						background:
-							"radial-gradient(ellipse at 80% 20%, #ffc700 0%, transparent 70%)",
-						filter: "blur(32px)",
-						opacity: 0.18,
-					}}
-				/>
-
-				<div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-					{/* headline + body + CTA */}
-					<div className="flex flex-col gap-5">
-						{/* Eyebrow */}
-						<span
-							className="inline-block font-black text-xs uppercase tracking-[0.18em]"
+				<div className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 sm:gap-10 sm:px-8 md:grid-cols-12 md:items-center md:gap-12 lg:px-12">
+					{/* Left: community rank board (not the site logo) */}
+					<div className="relative order-2 flex justify-center md:order-1 md:col-span-5 md:justify-start">
+						<div
+							className="relative w-full max-w-[280px] rotate-[-4deg] border-[3px] border-black bg-white p-5 shadow-comic-lg md:max-w-[320px] md:p-6"
 							style={{
-								fontFamily: "var(--font-body)",
-								color: "#FF5543",
+								backgroundImage: 'url("/landing/paper-crumple.jpg")',
+								backgroundSize: "cover",
 							}}
 						>
-							{t("challengers.eyebrow")}
-						</span>
+							<TapeSticker rotate="-3deg" className="mb-4" tone="red">
+								{t("challengers.sticker")}
+							</TapeSticker>
 
+							{/* Mini podium bars */}
+							<div
+								className="relative flex items-end justify-center gap-2 pt-2"
+								aria-hidden="true"
+							>
+								<div className="flex w-14 flex-col items-center gap-1.5 md:w-16">
+									<span
+										className="font-black text-[#909090] text-lg leading-none"
+										style={{ fontFamily: "var(--font-display)" }}
+									>
+										2
+									</span>
+									<div className="h-16 w-full border-2 border-black bg-[#c0c0c0] shadow-comic-sm md:h-20" />
+								</div>
+								<div className="relative z-10 flex w-16 flex-col items-center gap-1.5 md:w-[4.5rem]">
+									<svg
+										viewBox="0 0 80 100"
+										className="mb-0.5 h-10 w-auto md:h-12"
+									>
+										<path
+											fill="#c9a227"
+											d="M20 12h40v8c0 14-8 24-16 28v8h10v8H26v-8h10v-8C28 44 20 34 20 20V12zm-8 4h6v10c0 6-2 10-6 12V16zm50 0h6v12c-4-2-6-6-6-12V16zM30 72h20l4 16H26l4-16z"
+										/>
+									</svg>
+									<span
+										className="font-black text-2xl text-[#d4a800] leading-none md:text-3xl"
+										style={{ fontFamily: "var(--font-display)" }}
+									>
+										1
+									</span>
+									<div className="h-24 w-full border-2 border-black bg-brawl-yellow shadow-comic-md md:h-28" />
+								</div>
+								<div className="flex w-14 flex-col items-center gap-1.5 md:w-16">
+									<span
+										className="font-black text-[#8b5e2a] text-lg leading-none"
+										style={{ fontFamily: "var(--font-display)" }}
+									>
+										3
+									</span>
+									<div className="h-12 w-full border-2 border-black bg-[#cd7f32] shadow-comic-sm md:h-14" />
+								</div>
+							</div>
+
+							<div className="mt-4 border-2 border-black bg-electric-lime px-3 py-2 text-center shadow-comic-sm">
+								<span
+									className="font-black text-black text-xs uppercase tracking-[0.18em]"
+									style={{ fontFamily: "var(--font-body)" }}
+								>
+									{t("challengers.rankMark")}
+								</span>
+							</div>
+
+							<SparkStar
+								className="absolute -top-4 -right-4"
+								size={36}
+								color="var(--color-electric-lime)"
+							/>
+						</div>
+					</div>
+
+					{/* Right: copy */}
+					<div className="order-1 flex flex-col gap-5 text-center md:order-2 md:col-span-7 md:text-left">
 						<h2
-							className="font-black uppercase leading-[0.9] tracking-tight"
+							className="font-black text-black uppercase leading-[0.9] tracking-tight"
 							style={{
 								fontFamily: "var(--font-body)",
-								fontSize: "clamp(2rem, 6vw, 3.75rem)",
-								overflowWrap: "anywhere",
-								minWidth: 0,
-								color: "#000000",
+								fontSize: "clamp(1.75rem, 7.5vw, 3.5rem)",
 								letterSpacing: "-0.02em",
 							}}
 						>
 							{t("challengers.title")}
 							<br />
-							<span style={{ color: "#FF5543" }}>
+							<span className="text-bsen-red">
 								{t("challengers.titleAccent")}
 							</span>
 						</h2>
 
 						<p
-							className="max-w-xl font-black text-base leading-relaxed md:text-lg"
-							style={{ color: "#454545", fontFamily: "var(--font-body)" }}
+							className="mx-auto max-w-xl font-black text-[#454545] text-base leading-relaxed md:mx-0 md:text-lg"
+							style={{ fontFamily: "var(--font-body)" }}
 						>
 							{t("challengers.body")}
 						</p>
 
-						<div className="mt-1">
-							<Link
-								{...routeTo(isAuthenticated ? "/dashboard" : "/login")}
-								asChild
-							>
-								<DarkCTA>{t("challengers.cta")}</DarkCTA>
+						<div className="mt-1 flex justify-center md:justify-start">
+							<Link {...routeTo(rankingTarget)} asChild>
+								<DarkCTA className="w-full sm:w-auto">
+									{t("challengers.cta")}
+								</DarkCTA>
 							</Link>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* Torn edge: paper → amber */}
-			<TornEdge topColor="#f5f4f0" bottomColor="#ffc700" height={52} />
+			<SectionCut />
 
 			{/* ════════════════════════════════════════════════════
-			    Z3 — AMBER WATCH+PREDICT FLOOD
-			    Warm golden zone. WATCH/PREDICT sticker diptych left.
-			    Headline + body + dark CTA right.
+			    Z3 — AMBER WATCH + PREDICT
 			════════════════════════════════════════════════════ */}
 			<section
-				className="relative overflow-hidden py-14 md:py-20"
-				style={{
-					background: "#ffc700",
-					backgroundImage: "var(--background-image-paper-texture)",
-				}}
+				className="relative overflow-hidden py-12 md:py-20"
+				style={amberCrumpleStyle}
 			>
-				{/* Decorative sparks */}
 				<SparkStar
-					className="absolute top-4 left-[6%] -rotate-12 opacity-60 md:left-[10%]"
-					size={40}
-					color="#000"
-				/>
-				<SparkStar
-					className="absolute right-[5%] bottom-4 rotate-12 opacity-40 md:right-[8%]"
-					size={24}
-					color="#000"
-				/>
-				<SparkStar
-					className="absolute top-[45%] right-[22%] opacity-20"
-					size={14}
+					className="absolute top-6 right-[8%] z-[1] rotate-12 opacity-50"
+					size={36}
 					color="#000"
 				/>
 
-				<div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-					<div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between md:gap-16">
-						{/* Left: BettingCarousel mock */}
-						<BettingCarouselMock t={t} />
+				<div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 sm:gap-10 sm:px-8 md:grid-cols-12 md:gap-10 lg:px-12">
+					<div className="order-2 flex justify-center md:order-1 md:col-span-5 md:justify-start">
+						<WatchPredictLoop t={t} />
+					</div>
 
-						{/* Right: headline + body + CTA */}
-						<div className="flex flex-col gap-5">
-							<h2
-								className="font-black uppercase leading-[0.9] tracking-tight"
-								style={{
-									fontFamily: "var(--font-body)",
-									fontSize: "clamp(1.75rem, 4.5vw, 3.25rem)",
-									overflowWrap: "anywhere",
-									minWidth: 0,
-									color: "#000000",
-									letterSpacing: "-0.02em",
-									maxWidth: "30rem",
-								}}
-							>
-								{t("watchPredict.title")}
-							</h2>
+					<div className="order-1 flex flex-col gap-5 text-center md:order-2 md:col-span-7 md:text-left">
+						<h2
+							className="mx-auto max-w-xl font-black text-black uppercase leading-[0.9] tracking-tight md:mx-0"
+							style={{
+								fontFamily: "var(--font-body)",
+								fontSize: "clamp(1.6rem, 6.5vw, 3.25rem)",
+								letterSpacing: "-0.02em",
+							}}
+						>
+							{t("watchPredict.title")}
+						</h2>
 
-							<p
-								className="max-w-lg font-black text-base leading-relaxed md:text-lg"
-								style={{
-									color: "rgba(0,0,0,0.55)",
-									fontFamily: "var(--font-body)",
-								}}
-							>
-								{t("watchPredict.body")}
-							</p>
+						<p
+							className="mx-auto max-w-lg font-black text-base text-black/55 leading-relaxed md:mx-0 md:text-lg"
+							style={{ fontFamily: "var(--font-body)" }}
+						>
+							{t("watchPredict.body")}
+						</p>
 
-							<div className="mt-1">
-								<Link
-									{...routeTo(isAuthenticated ? "/dashboard" : "/login")}
-									asChild
-								>
-									<PrimaryCTA>{t("watchPredict.cta")}</PrimaryCTA>
-								</Link>
-							</div>
+						<div className="mt-1 flex justify-center md:justify-start">
+							<Link {...routeTo(authTarget)} asChild>
+								<PrimaryCTA className="w-full sm:w-auto">
+									{t("watchPredict.cta")}
+								</PrimaryCTA>
+							</Link>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* Torn edge: amber → paper */}
-			<TornEdge topColor="#ffc700" bottomColor="#f5f4f0" height={52} />
+			<SectionCut />
 
 			{/* ════════════════════════════════════════════════════
-			    Z4 — LEADERBOARD
-			    Paper bg. Pódio 2-1-3 + cards 4°/5°.
-			    DNA idêntico à leaderboard.tsx.
+			    Z4 — PICK ARENA (rotating matchups)
 			════════════════════════════════════════════════════ */}
 			<section
-				className="relative py-14 md:py-20"
-				style={{
-					background: "#f5f4f0",
-					backgroundImage: "var(--background-image-paper-texture)",
-				}}
+				className="relative overflow-hidden py-20 md:py-28"
+				style={paperCrumpleStyle}
 			>
-				{/* Graffiti bg */}
-				<GraffitiText
-					className="absolute right-[-1%] bottom-[5%] rotate-3 text-[5rem] opacity-100 md:text-[8rem]"
-					color="rgba(0,0,0,0.035)"
-				>
-					CULT
-				</GraffitiText>
+				<div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-8">
+					{matchups.length > 0 ? (
+						<PickArenaMatchup matchups={matchups} />
+					) : (
+						<div className="relative mb-10 flex min-h-[120px] w-full max-w-xl items-center justify-center">
+							<SpraySplat
+								variant="blue"
+								className="absolute top-1/2 left-[18%] h-36 w-48 -translate-x-1/2 -translate-y-1/2 -rotate-6 md:h-44 md:w-56"
+							/>
+							<SpraySplat
+								variant="red"
+								className="absolute top-1/2 right-[18%] h-36 w-48 translate-x-1/2 -translate-y-1/2 rotate-6 md:h-44 md:w-56"
+							/>
+							<div className="relative z-10 px-5 py-3">
+								<img
+									src="/landing/tape-scrap.png"
+									alt=""
+									aria-hidden="true"
+									draggable={false}
+									className="absolute inset-0 h-full w-full object-fill drop-shadow-[3px_3px_0_rgba(0,0,0,0.4)]"
+								/>
+								<span
+									className="relative z-10 font-black text-black text-xl md:text-2xl"
+									style={{ fontFamily: "var(--font-body)" }}
+								>
+									{t("pickArena.vs")}
+								</span>
+							</div>
+						</div>
+					)}
 
-				<div className="relative z-10 mx-auto max-w-2xl px-6 sm:px-8">
-					{/* Section header */}
+					<h2
+						className="font-black text-black uppercase leading-[0.95] tracking-tight"
+						style={{
+							fontFamily: "var(--font-body)",
+							fontSize: "clamp(1.75rem, 7.5vw, 3.5rem)",
+							letterSpacing: "-0.02em",
+						}}
+					>
+						{t("pickArena.title")}
+					</h2>
+					<p
+						className="mt-4 max-w-md font-black text-[#454545] text-base leading-relaxed md:text-lg"
+						style={{ fontFamily: "var(--font-body)" }}
+					>
+						{t("pickArena.body")}
+					</p>
+					<div className="mt-7">
+						<Link {...routeTo(authTarget)} asChild>
+							<InkCTA>{t("watchPredict.cta")}</InkCTA>
+						</Link>
+					</div>
+				</div>
+			</section>
+
+			{/* ════════════════════════════════════════════════════
+			    Z5 — LEADERBOARD
+			════════════════════════════════════════════════════ */}
+			<section className="relative py-12 md:py-20" style={paperCrumpleStyle}>
+				<div className="relative z-10 mx-auto max-w-2xl px-4 sm:px-8">
 					<div className="mb-2 text-center">
 						<h2
-							className="font-black uppercase tracking-tight"
+							className="font-black text-black uppercase tracking-tight"
 							style={{
 								fontFamily: "var(--font-body)",
-								fontSize: "clamp(2rem, 6vw, 3rem)",
-								color: "#000000",
+								fontSize: "clamp(1.7rem, 7vw, 3rem)",
 								letterSpacing: "-0.02em",
 							}}
 						>
 							{t("leaderboard.title")}
 						</h2>
 						<p
-							className="mt-1 font-black text-xs uppercase tracking-[0.2em]"
-							style={{ color: "#717070", fontFamily: "var(--font-body)" }}
+							className="mt-1 font-black text-[#717070] text-xs uppercase tracking-[0.2em]"
+							style={{ fontFamily: "var(--font-body)" }}
 						>
 							{t("leaderboard.subtitle")}
 						</p>
 					</div>
 
 					{topUsers.length === 0 ? (
-						/* Empty state */
-						<div className="mt-8 flex flex-col items-center justify-center rounded-xl border-2 border-black/20 border-dashed bg-white/60 py-12 text-center">
+						<div className="mt-8 flex flex-col items-center justify-center border-2 border-black/20 border-dashed bg-white/70 py-12 text-center">
 							<p
-								className="font-black text-xs uppercase tracking-[0.2em]"
-								style={{ color: "#717070", fontFamily: "var(--font-body)" }}
+								className="font-black text-[#717070] text-xs uppercase tracking-[0.2em]"
+								style={{ fontFamily: "var(--font-body)" }}
 							>
 								{t("leaderboard.empty")}
 							</p>
 						</div>
 					) : (
 						<>
-							{/* Pódio — 2nd · 1st · 3rd, com floor line */}
 							{top3.length > 0 && (
-								<div className="relative mt-8 flex items-end gap-2 px-1 pt-8 sm:gap-4">
-									{/* Floor line */}
+								<div className="relative mt-8 flex items-end gap-1.5 px-0 pt-6 sm:gap-4 sm:px-1 sm:pt-8">
 									<div className="absolute right-0 bottom-0 left-0 h-1.5 bg-black" />
 									<PodiumColumn entry={top3[1]} rank={2} />
 									<PodiumColumn entry={top3[0]} rank={1} />
@@ -1173,7 +1603,6 @@ export function LandingPage({
 								</div>
 							)}
 
-							{/* Cards 4°+ */}
 							{rest.length > 0 && (
 								<div className="mt-6 flex flex-col gap-3">
 									{rest.map((entry) => (
@@ -1184,269 +1613,138 @@ export function LandingPage({
 						</>
 					)}
 
-					{/* View all CTA */}
 					<div className="mt-8 flex justify-center">
-						<Link
-							{...routeTo(isAuthenticated ? "/leaderboard" : "/login")}
-							asChild
-						>
+						<Link {...routeTo(rankingTarget)} asChild>
 							<DarkCTA>{t("leaderboard.viewAll")}</DarkCTA>
 						</Link>
 					</div>
 				</div>
 			</section>
 
-			{/* Torn edge: paper → dark */}
-			<TornEdge topColor="#f5f4f0" bottomColor="#181818" height={52} flip />
+			{/* Hard cut into dark howto — paint stripe only, no diagonal gap */}
+			<div aria-hidden="true" className="relative z-20 flex h-1 w-full">
+				<div className="w-1/2 bg-brawl-blue" />
+				<div className="w-1/2 bg-bsen-red" />
+			</div>
 
 			{/* ════════════════════════════════════════════════════
-			    Z5 — DARK HOW-TO
-			    #181818 bg. Step cards with 0px radius, 1px borders.
-			    Mirrors "COMO COMPETIR" section from the reference.
+			    Z6 — HOW TO COMPETE (staggered panels)
 			════════════════════════════════════════════════════ */}
 			<section
-				className="relative overflow-hidden py-14 md:py-20"
-				style={{ background: "#181818" }}
+				className="relative overflow-hidden py-12 md:py-20"
+				style={{ background: "var(--color-charcoal)" }}
 			>
-				{/* Noise overlay */}
+				<img
+					src="/landing/howto-atmosphere.jpg"
+					alt=""
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45"
+				/>
+				<div className="pointer-events-none absolute inset-0 bg-charcoal/70" />
 				<div
 					className="pointer-events-none absolute inset-0"
 					style={{
 						backgroundImage: "var(--background-image-noise)",
-						opacity: 0.15,
+						opacity: 0.2,
 					}}
 				/>
-				{/* Top color stripe */}
-				<div className="absolute top-0 right-0 left-0 flex h-[3px]">
-					<div className="w-1/2 bg-[#2e5cff]" />
-					<div className="w-1/2 bg-[#FF5543]" />
-				</div>
 
-				{/* Background graffiti */}
-				<GraffitiText
-					className="absolute bottom-[6%] left-[-1%] -rotate-6 text-[5rem] opacity-100 md:text-[8rem]"
-					color="rgba(255,255,255,0.03)"
+				{/* Trophy behind middle */}
+				<svg
+					aria-hidden="true"
+					viewBox="0 0 80 100"
+					className="pointer-events-none absolute top-1/2 left-1/2 z-[1] hidden h-56 w-auto -translate-x-1/2 -translate-y-1/2 opacity-15 md:block"
 				>
-					BRAWL
-				</GraffitiText>
-				<SparkStar
-					className="absolute top-[12%] right-[4%] rotate-12 opacity-25"
-					size={40}
-					color="#D2FF00"
-				/>
+					<path
+						fill="var(--color-electric-lime)"
+						d="M20 12h40v8c0 14-8 24-16 28v8h10v8H26v-8h10v-8C28 44 20 34 20 20V12zm-8 4h6v10c0 6-2 10-6 12V16zm50 0h6v12c-4-2-6-6-6-12V16zM30 72h20l4 16H26l4-16z"
+					/>
+				</svg>
 
-				<div className="relative z-10 mx-auto max-w-5xl px-6 sm:px-8">
-					{/* Section header */}
-					<div className="mb-10">
-						<span
-							className="font-black text-xs uppercase tracking-[0.22em]"
-							style={{ fontFamily: "var(--font-body)", color: "#D2FF00" }}
-						>
-							{t("howToCompete.eyebrow")}
-						</span>
-						<h2
-							className="mt-2 font-black uppercase leading-[0.9] tracking-tight"
-							style={{
-								fontFamily: "var(--font-body)",
-								fontSize: "clamp(2.2rem, 7vw, 4.5rem)",
-								overflowWrap: "anywhere",
-								minWidth: 0,
-								color: "#FFFFFF",
-								letterSpacing: "-0.02em",
-							}}
-						>
-							{t("howToCompete.title")}
-						</h2>
-					</div>
+				<div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-8">
+					<h2
+						className="mb-8 font-black text-white uppercase leading-[0.9] tracking-tight sm:mb-10"
+						style={{
+							fontFamily: "var(--font-body)",
+							fontSize: "clamp(1.85rem, 8vw, 4.5rem)",
+							letterSpacing: "-0.02em",
+						}}
+					>
+						{t("howToCompete.title")}
+					</h2>
 
-					{/* Step cards — border-radius 0px, 1px solid border, soft shadow */}
-					<div className="flex flex-col gap-4 md:flex-row md:gap-5">
-						{/* Step 1 — blue accent */}
-						<div
-							className="flex-1 p-6 md:p-8"
-							style={{
-								background: "#2B2B2B",
-								border: "1px solid #454545",
-								borderRadius: "0px",
-								boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
-								borderTop: "3px solid #2e5cff",
-							}}
-						>
+					{/* Staggered overlapping panels — not equal columns */}
+					<div className="relative flex flex-col gap-4 sm:gap-5 md:min-h-[340px] md:flex-row md:items-start md:gap-0">
+						{[
+							{
+								n: 1,
+								title: t("howToCompete.step1Title"),
+								desc: t("howToCompete.step1Desc"),
+								accent: "#2e5cff",
+								accentText: "#FFFFFF",
+								offset:
+									"md:mt-0 md:-rotate-1 lg:-rotate-2 md:z-10 lg:mr-[-12px]",
+							},
+							{
+								n: 2,
+								title: t("howToCompete.step2Title"),
+								desc: t("howToCompete.step2Desc"),
+								accent: "var(--color-bsen-red)",
+								accentText: "#FFFFFF",
+								offset: "md:mt-6 md:rotate-1 md:z-20 lg:mt-10 lg:scale-105",
+							},
+							{
+								n: 3,
+								title: t("howToCompete.step3Title"),
+								desc: t("howToCompete.step3Desc"),
+								accent: "var(--color-electric-lime)",
+								accentText: "#000000",
+								offset: "md:mt-4 md:-rotate-1 md:z-10 lg:ml-[-12px]",
+							},
+						].map((step) => (
 							<div
-								className="mb-5 flex h-10 w-10 items-center justify-center font-black text-xl"
+								key={step.n}
+								className={clsx("flex-1 p-5 sm:p-6 md:p-7", step.offset)}
 								style={{
-									background: "#2e5cff",
-									color: "#FFFFFF",
-									fontFamily: "var(--font-body)",
+									background: "var(--color-panel-gray)",
+									border: "1px solid #454545",
 									borderRadius: "0px",
+									boxShadow: "var(--shadow-broadcast-deep)",
+									borderTop: `4px solid ${step.accent}`,
 								}}
 							>
-								1
+								<div
+									className="mb-5 flex h-10 w-10 items-center justify-center font-black text-xl"
+									style={{
+										background: step.accent,
+										color: step.accentText,
+										fontFamily: "var(--font-body)",
+										borderRadius: "0px",
+									}}
+								>
+									{step.n}
+								</div>
+								<h3
+									className="mb-2 font-black text-white uppercase leading-tight tracking-tight"
+									style={{
+										fontFamily: "var(--font-body)",
+										fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+										letterSpacing: "-0.01em",
+									}}
+								>
+									{step.title}
+								</h3>
+								<p
+									className="font-black text-[#717070] text-sm leading-relaxed"
+									style={{ fontFamily: "var(--font-body)" }}
+								>
+									{step.desc}
+								</p>
 							</div>
-							<h3
-								className="mb-2 font-black uppercase leading-tight tracking-tight"
-								style={{
-									fontFamily: "var(--font-body)",
-									fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
-									overflowWrap: "anywhere",
-									minWidth: 0,
-									color: "#FFFFFF",
-									letterSpacing: "-0.01em",
-								}}
-							>
-								{t("howToCompete.step1Title")}
-							</h3>
-							<p
-								className="font-black text-sm leading-relaxed"
-								style={{ color: "#717070", fontFamily: "var(--font-body)" }}
-							>
-								{t("howToCompete.step1Desc")}
-							</p>
-						</div>
-
-						{/* Step 2 — red accent */}
-						<div
-							className="flex-1 p-6 md:p-8"
-							style={{
-								background: "#2B2B2B",
-								border: "1px solid #454545",
-								borderRadius: "0px",
-								boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
-								borderTop: "3px solid #FF5543",
-							}}
-						>
-							<div
-								className="mb-5 flex h-10 w-10 items-center justify-center font-black text-xl"
-								style={{
-									background: "#FF5543",
-									color: "#FFFFFF",
-									fontFamily: "var(--font-body)",
-									borderRadius: "0px",
-								}}
-							>
-								2
-							</div>
-							<h3
-								className="mb-2 font-black uppercase leading-tight tracking-tight"
-								style={{
-									fontFamily: "var(--font-body)",
-									fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
-									overflowWrap: "anywhere",
-									minWidth: 0,
-									color: "#FFFFFF",
-									letterSpacing: "-0.01em",
-								}}
-							>
-								{t("howToCompete.step2Title")}
-							</h3>
-							<p
-								className="font-black text-sm leading-relaxed"
-								style={{ color: "#717070", fontFamily: "var(--font-body)" }}
-							>
-								{t("howToCompete.step2Desc")}
-							</p>
-						</div>
-
-						{/* Step 3 — lime accent */}
-						<div
-							className="flex-1 p-6 md:p-8"
-							style={{
-								background: "#2B2B2B",
-								border: "1px solid #454545",
-								borderRadius: "0px",
-								boxShadow: "rgba(0,0,0,0.24) 0px 4px 4px 0px",
-								borderTop: "3px solid #D2FF00",
-							}}
-						>
-							<div
-								className="mb-5 flex h-10 w-10 items-center justify-center font-black text-xl"
-								style={{
-									background: "#D2FF00",
-									color: "#000000",
-									fontFamily: "var(--font-body)",
-									borderRadius: "0px",
-								}}
-							>
-								3
-							</div>
-							<h3
-								className="mb-2 font-black uppercase leading-tight tracking-tight"
-								style={{
-									fontFamily: "var(--font-body)",
-									fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
-									overflowWrap: "anywhere",
-									minWidth: 0,
-									color: "#FFFFFF",
-									letterSpacing: "-0.01em",
-								}}
-							>
-								{t("howToCompete.step3Title")}
-							</h3>
-							<p
-								className="font-black text-sm leading-relaxed"
-								style={{ color: "#717070", fontFamily: "var(--font-body)" }}
-							>
-								{t("howToCompete.step3Desc")}
-							</p>
-						</div>
+						))}
 					</div>
 				</div>
 			</section>
-
-			{/* ════════════════════════════════════════════════════
-			    Z6 — FOOTER (minimal split)
-			════════════════════════════════════════════════════ */}
-			<footer
-				className="relative overflow-hidden"
-				style={{ background: "#000000" }}
-			>
-				{/* Top stripe */}
-				<div className="absolute top-0 left-0 flex h-[3px] w-full">
-					<div className="w-1/2 bg-[#2e5cff]" />
-					<div className="w-1/2 bg-[#FF5543]" />
-				</div>
-
-				<div className="mx-auto max-w-7xl px-6 pt-10 pb-8 sm:px-8 lg:px-12">
-					<div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-						{/* Left: brand + tagline + CTA */}
-						<div className="flex flex-col gap-4">
-							<img
-								src="/logo-white.png"
-								alt="BSEN Pickems"
-								className="h-10 w-auto object-contain md:h-12"
-							/>
-							<p
-								className="font-black text-xs uppercase tracking-[0.2em]"
-								style={{ color: "#717070", fontFamily: "var(--font-body)" }}
-							>
-								{t("footer.tagline")}
-							</p>
-							<Link
-								{...routeTo(isAuthenticated ? "/dashboard" : "/login")}
-								asChild
-							>
-								<PrimaryCTA className="w-fit">{t("hero.cta")}</PrimaryCTA>
-							</Link>
-						</div>
-
-						{/* Right: legal */}
-						<div className="flex flex-col gap-1 md:text-right">
-							<p
-								className="font-black text-xs leading-relaxed md:max-w-xs"
-								style={{ color: "#454545", fontFamily: "var(--font-body)" }}
-							>
-								{t("footer.disclaimer")}
-							</p>
-							<p
-								className="font-black text-xs"
-								style={{ color: "#2B2B2B", fontFamily: "var(--font-body)" }}
-							>
-								{t("footer.copyright")}
-							</p>
-						</div>
-					</div>
-				</div>
-			</footer>
 		</div>
 	);
 }

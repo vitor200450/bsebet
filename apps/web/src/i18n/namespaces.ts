@@ -9,6 +9,7 @@ export const NAMESPACES = [
 	"team",
 	"user",
 	"landing",
+	"legal",
 	"admin",
 	"admin-matches",
 	"errors",

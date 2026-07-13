@@ -4,39 +4,53 @@
 	"welcome": "BEM-VINDO",
 	"heroSubtitle": "Faça login para começar a palpitar",
 	"hero": {
-		"eyebrow": "BSC AO VIVO",
 		"title": "PALPITES",
 		"titleAccent": "DO CAMPEONATO",
-		"subtitle": "Você acompanha o competitivo de Brawl Stars? Prove que entende do meta. Faça suas previsões antes de cada rodada e suba no ranking.",
+		"subtitle": "Prove que você lê o meta. Preveja cada rodada e suba no ranking.",
 		"cta": "ENTRAR NA ARENA",
 		"secondaryCta": "Já tenho conta",
 		"matchPreviewLabel": "PRÓXIMA PARTIDA",
 		"teamBlue": "AZUL",
 		"teamRed": "VERMELHO",
-		"pickOpen": "PALPITES ABERTOS"
+		"pickOpen": "PALPITES ABERTOS",
+		"broadcastLive": "AO VIVO",
+		"broadcastPickSaved": "PALPITE SALVO",
+		"broadcastPts": "+3 PTS"
 	},
 	"challengers": {
-		"eyebrow": "COMUNIDADE BSEN",
 		"title": "APRESENTANDO OS",
 		"titleAccent": "MELHORES PALPITEIROS",
-		"body": "Cada rodada do BSC é uma nova chance de provar que você lê o meta melhor do que todo mundo. Faça suas previsões, acumule pontos e dispute o topo do ranking da comunidade.",
-		"cta": "VER RANKING"
+		"body": "Cada rodada do BSC é uma nova chance de provar que você lê o meta. Faça previsões, acumule pontos e dispute o topo.",
+		"cta": "VER CLASSIFICAÇÃO",
+		"sticker": "COMUNIDADE",
+		"rankMark": "DISPUTE O TOPO"
 	},
 	"watchPredict": {
 		"watchLabel": "ASSISTA",
 		"predictLabel": "PALPITE",
+		"reputationLabel": "REPUTAÇÃO",
+		"stepWatch": "Acompanhe a rodada ao vivo",
+		"stepPick": "Trave seu palpite antes do início",
+		"stepRep": "Suba no ranking da comunidade",
+		"pickSaved": "Palpite salvo",
+		"pts": "+12 PTS",
 		"title": "ASSISTA, FAÇA PALPITES E GANHE REPUTAÇÃO!",
-		"body": "Faça suas previsões antes de cada partida. Acompanhe ao vivo se você acertou. Os melhores palpiteiros da comunidade ganham destaque no ranking BSEN.",
+		"body": "Preveja antes de cada partida. Acompanhe ao vivo. Os melhores palpiteiros ganham destaque no ranking.",
 		"cta": "FAZER PALPITES"
+	},
+	"pickArena": {
+		"title": "ESCOLHA SEU LADO",
+		"body": "Escolha um time. Confirme o palpite. Veja se você acertou quando a partida terminar.",
+		"cta": "ESCOLHER AGORA",
+		"vs": "VS"
 	},
 	"leaderboard": {
 		"title": "LIDERANÇA",
-		"subtitle": "Ranking global da comunidade BSEN",
+		"subtitle": "Ranking global da comunidade",
 		"viewAll": "VER CLASSIFICAÇÃO",
 		"empty": "Temporada ainda não começou"
 	},
 	"howToCompete": {
-		"eyebrow": "VAMOS LÁ",
 		"title": "COMO COMPETIR",
 		"step1Title": "Escolha um torneio",
 		"step1Desc": "Selecione o campeonato de Brawl Stars que você quer acompanhar",
@@ -45,15 +59,18 @@
 		"step3Title": "Suba no ranking",
 		"step3Desc": "Acompanhe seus palpites em tempo real e veja sua posição na tabela"
 	},
-	"footer": {
-		"disclaimer": "BSEN Pickems não é endossado pela Supercell ou qualquer uma de suas afiliadas.",
-		"copyright": "© 2026 BSEN Pickems. Todos os direitos reservados.",
-		"tagline": "PALPITES DA COMUNIDADE"
-	},
 	"mock": {
+		"tournamentName": "BSC 2026: Brawl Cup",
+		"matchLabel": "Final",
 		"matchCounter": "Partida 1 de 3",
 		"confirmPick": "CONFIRMAR PALPITE",
-		"picksOpen": "PICKS ABERTOS",
+		"picksOpen": "PALPITES ABERTOS",
+		"pickScore": "ESCOLHA O PLACAR",
+		"scoreDominant": "Dominante",
+		"scoreClose": "Jogo apertado",
+		"scoreStrong": "Vitória suada",
+		"seed": "Seed #{{n}}",
+		"group": "Grp {{g}}",
 		"statRegion": "REGIÃO",
 		"statWr": "WR",
 		"statSeries": "SÉRIE"

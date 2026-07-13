@@ -10,6 +10,7 @@ const publicLocaleFiles = [
 	"dashboard.json",
 	"errors.json",
 	"landing.json",
+	"legal.json",
 	"leaderboard.json",
 	"my-bets.json",
 	"profile.json",
@@ -21,6 +22,7 @@ const publicLocaleFiles = [
 const publicComponentFiles = [
 	join(import.meta.dir, "..", "components", "BettingCarousel.tsx"),
 	join(import.meta.dir, "..", "components", "GlobalHeader.tsx"),
+	join(import.meta.dir, "..", "components", "SiteFooter.tsx"),
 	join(import.meta.dir, "..", "components", "TournamentBracket.tsx"),
 	join(import.meta.dir, "..", "components", "SwissStageView.tsx"),
 	join(import.meta.dir, "..", "components", "TournamentSelector.tsx"),

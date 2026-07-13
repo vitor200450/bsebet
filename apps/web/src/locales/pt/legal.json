@@ -1,0 +1,95 @@
+{
+	"footer": {
+		"tagline": "PALPITES DA COMUNIDADE",
+		"copyright": "© 2026 BSEN Pickems. Todos os direitos reservados.",
+		"legalNav": "Links legais",
+		"disclaimer": "Este material é não oficial e não é endossado pela Supercell. Para mais informações, consulte a",
+		"disclaimerLink": "Política de Conteúdo de Fãs da Supercell",
+		"links": {
+			"terms": "Termos e Condições",
+			"privacy": "Política de Privacidade",
+			"fanContent": "Política de Conteúdo de Fãs (Supercell)",
+			"bsen": "BSEN"
+		}
+	},
+	"terms": {
+		"eyebrow": "BSEN Pickems",
+		"title": "Termos e Condições",
+		"lastUpdated": "Última atualização: julho de 2026",
+		"intro": "Estes Termos e Condições regem o uso do BSEN Pickems, produto de palpites da comunidade sob o projeto fan BSEN. Ao criar uma conta ou usar o serviço, você concorda com estes termos.",
+		"sections": {
+			"s1": {
+				"title": "O que é o BSEN Pickems",
+				"body": "O BSEN Pickems é uma experiência gratuita e sem valor monetário de palpites da comunidade para fãs de esports de Brawl Stars. Os palpites servem apenas para reconhecimento na comunidade e posição no ranking. Não há prêmios com valor financeiro nem mecânicas de jogo de azar."
+			},
+			"s2": {
+				"title": "Elegibilidade",
+				"body": "Você declara ter permissão legal para usar serviços online na sua região e, quando exigido pelas leis locais para a sua idade, contar com autorização de um responsável."
+			},
+			"s3": {
+				"title": "Sua conta",
+				"body": "Você é responsável pela atividade na sua conta e por manter suas credenciais seguras. Podemos suspender ou remover contas que abusem do serviço, tentem acesso não autorizado ou prejudiquem o jogo limpo entre os participantes."
+			},
+			"s4": {
+				"title": "Uso aceitável",
+				"body": "Use o BSEN Pickems de forma legal e respeitosa. Não faça scraping sem permissão, envie código malicioso, assedie outros usuários ou se apresente falsamente como Supercell, BSEN ou organizadores de torneios."
+			},
+			"s5": {
+				"title": "Projeto fan não oficial",
+				"body": "O BSEN Pickems é um projeto fan não oficial. Não é endossado pela Supercell ou suas afiliadas. Nomes de times, logos e informações de torneios podem vir de fontes públicas de esports e permanecem propriedade de seus respectivos donos."
+			},
+			"s6": {
+				"title": "Disponibilidade e alterações",
+				"body": "Podemos alterar, suspender ou descontinuar funcionalidades a qualquer momento. Dados de torneios, pontuação e resultados do ranking dependem dos resultados inseridos por administradores e podem ser corrigidos quando erros forem identificados."
+			},
+			"s7": {
+				"title": "Limitação de responsabilidade",
+				"body": "O BSEN Pickems é oferecido no estado em que se encontra. Na máxima extensão permitida pela lei aplicável, o projeto BSEN e seus colaboradores não se responsabilizam por danos indiretos ou consequenciais decorrentes do uso do serviço."
+			},
+			"s8": {
+				"title": "Contato e enquadramento legal",
+				"body": "Dúvidas sobre estes Termos podem ser enviadas para contact@bsen.news com \"BSEN Pickems\" no assunto.\n\nEstes Termos são destinados a uma audiência global. Quando leis locais de privacidade ou consumo concederem direitos adicionais, esses direitos se aplicam. Para usuários no Brasil, a LGPD pode oferecer proteções adicionais descritas na nossa Política de Privacidade."
+			}
+		}
+	},
+	"privacy": {
+		"eyebrow": "BSEN Pickems",
+		"title": "Política de Privacidade",
+		"lastUpdated": "Última atualização: julho de 2026",
+		"intro": "Esta Política de Privacidade explica como o BSEN Pickems coleta, usa e protege informações pessoais. Ela se aplica apenas a este produto e não à página de privacidade editorial do bsen.news.",
+		"sections": {
+			"s1": {
+				"title": "Quem opera o serviço",
+				"body": "O BSEN Pickems é operado como parte do projeto fan BSEN. É um produto da comunidade, não um serviço oficial da Supercell."
+			},
+			"s2": {
+				"title": "Informações que coletamos",
+				"body": "Dados de conta: nome, e-mail, imagem de perfil e identificadores de autenticação quando você entra com Google ou e-mail.\n\nDados de palpites: seus palpites de partidas, pontuação, posição no ranking e atividade relacionada a torneios.\n\nDados técnicos: cookies de sessão, endereço IP, informações de navegador/dispositivo e logs básicos necessários para manter o serviço seguro e funcionando."
+			},
+			"s3": {
+				"title": "Por que usamos essas informações",
+				"body": "Usamos esses dados para criar e proteger sua conta, salvar e pontuar seus palpites, exibir rankings, prevenir abuso e melhorar a confiabilidade. Não vendemos suas informações pessoais."
+			},
+			"s4": {
+				"title": "Cookies e sessão",
+				"body": "O BSEN Pickems usa cookies essenciais de sessão para mantê-lo conectado. Não usamos cookies de publicidade nem pixels de rastreamento de terceiros neste produto no momento."
+			},
+			"s5": {
+				"title": "Provedores de serviço",
+				"body": "Dependemos de provedores de infraestrutura e autenticação para operar o app, incluindo hospedagem, banco de dados e login com Google. Esses provedores processam dados apenas conforme necessário para entregar o serviço."
+			},
+			"s6": {
+				"title": "Retenção",
+				"body": "Mantemos dados de conta e palpites enquanto sua conta estiver ativa e conforme necessário para histórico de ranking, prevenção de fraude e conformidade legal. Você pode solicitar exclusão conforme descrito abaixo."
+			},
+			"s7": {
+				"title": "Seus direitos",
+				"body": "Dependendo de onde você mora, pode ter direito de acessar, corrigir, exportar ou excluir suas informações pessoais, e de se opor a certos tratamentos.\n\nUsuários no Brasil podem exercer direitos previstos na LGPD. Usuários em outras regiões podem ter direitos semelhantes sob leis locais de privacidade aplicáveis."
+			},
+			"s8": {
+				"title": "Contato e atualizações",
+				"body": "Para solicitações de privacidade sobre o BSEN Pickems, envie e-mail para contact@bsen.news com \"BSEN Pickems Privacidade\" no assunto.\n\nPodemos atualizar esta Política de Privacidade periodicamente. O uso continuado do serviço após uma atualização significa que você aceita a política revisada."
+			}
+		}
+	}
+}

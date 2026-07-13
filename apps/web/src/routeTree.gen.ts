@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as LangIndexRouteImport } from './routes/$lang/index'
 import { Route as LangTournamentsRouteImport } from './routes/$lang/tournaments'
+import { Route as LangTermsRouteImport } from './routes/$lang/terms'
 import { Route as LangProfileRouteImport } from './routes/$lang/profile'
+import { Route as LangPrivacyRouteImport } from './routes/$lang/privacy'
 import { Route as LangMyBetsRouteImport } from './routes/$lang/my-bets'
 import { Route as LangLoginRouteImport } from './routes/$lang/login'
 import { Route as LangLeaderboardRouteImport } from './routes/$lang/leaderboard'
@@ -49,9 +51,19 @@ const LangTournamentsRoute = LangTournamentsRouteImport.update({
   path: '/$lang/tournaments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangTermsRoute = LangTermsRouteImport.update({
+  id: '/$lang/terms',
+  path: '/$lang/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LangProfileRoute = LangProfileRouteImport.update({
   id: '/$lang/profile',
   path: '/$lang/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangPrivacyRoute = LangPrivacyRouteImport.update({
+  id: '/$lang/privacy',
+  path: '/$lang/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LangMyBetsRoute = LangMyBetsRouteImport.update({
@@ -165,7 +177,9 @@ export interface FileRoutesByFullPath {
   '/$lang/leaderboard': typeof LangLeaderboardRoute
   '/$lang/login': typeof LangLoginRoute
   '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/profile': typeof LangProfileRoute
+  '/$lang/terms': typeof LangTermsRoute
   '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
   '/$lang/': typeof LangIndexRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
@@ -191,7 +205,9 @@ export interface FileRoutesByTo {
   '/$lang/leaderboard': typeof LangLeaderboardRoute
   '/$lang/login': typeof LangLoginRoute
   '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/profile': typeof LangProfileRoute
+  '/$lang/terms': typeof LangTermsRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
   '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
   '/$lang/admin/teams': typeof LangAdminTeamsRoute
@@ -215,7 +231,9 @@ export interface FileRoutesById {
   '/$lang/leaderboard': typeof LangLeaderboardRoute
   '/$lang/login': typeof LangLoginRoute
   '/$lang/my-bets': typeof LangMyBetsRoute
+  '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/profile': typeof LangProfileRoute
+  '/$lang/terms': typeof LangTermsRoute
   '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
   '/$lang/': typeof LangIndexRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
@@ -243,7 +261,9 @@ export interface FileRouteTypes {
     | '/$lang/leaderboard'
     | '/$lang/login'
     | '/$lang/my-bets'
+    | '/$lang/privacy'
     | '/$lang/profile'
+    | '/$lang/terms'
     | '/$lang/tournaments'
     | '/$lang/'
     | '/$lang/admin/compensations'
@@ -269,7 +289,9 @@ export interface FileRouteTypes {
     | '/$lang/leaderboard'
     | '/$lang/login'
     | '/$lang/my-bets'
+    | '/$lang/privacy'
     | '/$lang/profile'
+    | '/$lang/terms'
     | '/$lang/admin/compensations'
     | '/$lang/admin/migrate-logos'
     | '/$lang/admin/teams'
@@ -292,7 +314,9 @@ export interface FileRouteTypes {
     | '/$lang/leaderboard'
     | '/$lang/login'
     | '/$lang/my-bets'
+    | '/$lang/privacy'
     | '/$lang/profile'
+    | '/$lang/terms'
     | '/$lang/tournaments'
     | '/$lang/'
     | '/$lang/admin/compensations'
@@ -319,7 +343,9 @@ export interface RootRouteChildren {
   LangLeaderboardRoute: typeof LangLeaderboardRoute
   LangLoginRoute: typeof LangLoginRoute
   LangMyBetsRoute: typeof LangMyBetsRoute
+  LangPrivacyRoute: typeof LangPrivacyRoute
   LangProfileRoute: typeof LangProfileRoute
+  LangTermsRoute: typeof LangTermsRoute
   LangTournamentsRoute: typeof LangTournamentsRouteWithChildren
   LangIndexRoute: typeof LangIndexRoute
   LangAdminCompensationsRoute: typeof LangAdminCompensationsRoute
@@ -357,11 +383,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTournamentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/terms': {
+      id: '/$lang/terms'
+      path: '/$lang/terms'
+      fullPath: '/$lang/terms'
+      preLoaderRoute: typeof LangTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$lang/profile': {
       id: '/$lang/profile'
       path: '/$lang/profile'
       fullPath: '/$lang/profile'
       preLoaderRoute: typeof LangProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$lang/privacy': {
+      id: '/$lang/privacy'
+      path: '/$lang/privacy'
+      fullPath: '/$lang/privacy'
+      preLoaderRoute: typeof LangPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$lang/my-bets': {
@@ -543,7 +583,9 @@ const rootRouteChildren: RootRouteChildren = {
   LangLeaderboardRoute: LangLeaderboardRoute,
   LangLoginRoute: LangLoginRoute,
   LangMyBetsRoute: LangMyBetsRoute,
+  LangPrivacyRoute: LangPrivacyRoute,
   LangProfileRoute: LangProfileRoute,
+  LangTermsRoute: LangTermsRoute,
   LangTournamentsRoute: LangTournamentsRouteWithChildren,
   LangIndexRoute: LangIndexRoute,
   LangAdminCompensationsRoute: LangAdminCompensationsRoute,

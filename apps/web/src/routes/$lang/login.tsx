@@ -32,7 +32,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-ink">
+		<div className="relative flex min-h-full w-full flex-1 items-center justify-center overflow-hidden bg-ink">
 			{/* Broadcast frame — top bar: blue/red split */}
 			<div className="absolute top-0 right-0 left-0 z-10 flex h-[6px]">
 				<div className="w-1/2 bg-brawl-blue" />

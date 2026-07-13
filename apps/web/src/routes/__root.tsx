@@ -11,6 +11,8 @@ import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { HeaderProvider } from "@/components/HeaderContext";
+import { SiteFooter } from "@/components/SiteFooter";
+import { getSiteFooterConfig } from "@/components/site-footer-config";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nRootProvider } from "@/i18n/I18nRootProvider";
 
@@ -49,6 +51,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
 	const location = useLocation();
 	const lang = location.pathname.split("/")[1] === "en" ? "en" : "pt";
+	const footerConfig = getSiteFooterConfig(location.pathname);
 	return (
 		<html lang={lang} className="dark" suppressHydrationWarning>
 			<head suppressHydrationWarning>
@@ -57,9 +60,14 @@ function RootDocument() {
 			<body suppressHydrationWarning>
 				<I18nRootProvider lang={lang}>
 					<HeaderProvider>
-						<div className="min-h-screen w-full overflow-x-hidden font-sans">
+						<div className="flex min-h-screen w-full flex-col overflow-x-hidden font-sans">
 							<GlobalHeader />
-							<Outlet />
+							<main className="flex flex-1 flex-col">
+								<Outlet />
+							</main>
+							{footerConfig.show ? (
+								<SiteFooter variant={footerConfig.variant} />
+							) : null}
 						</div>
 						<Toaster richColors />
 					</HeaderProvider>

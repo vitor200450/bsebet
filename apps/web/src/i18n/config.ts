@@ -7,6 +7,7 @@ import dashboardEn from "../locales/en/dashboard.json";
 import errorsEn from "../locales/en/errors.json";
 import landingEn from "../locales/en/landing.json";
 import leaderboardEn from "../locales/en/leaderboard.json";
+import legalEn from "../locales/en/legal.json";
 import myBetsEn from "../locales/en/my-bets.json";
 import profileEn from "../locales/en/profile.json";
 import teamEn from "../locales/en/team.json";
@@ -21,6 +22,7 @@ import dashboardPt from "../locales/pt/dashboard.json";
 import errorsPt from "../locales/pt/errors.json";
 import landingPt from "../locales/pt/landing.json";
 import leaderboardPt from "../locales/pt/leaderboard.json";
+import legalPt from "../locales/pt/legal.json";
 import myBetsPt from "../locales/pt/my-bets.json";
 import profilePt from "../locales/pt/profile.json";
 import teamPt from "../locales/pt/team.json";
@@ -45,6 +47,7 @@ export const resources = {
 		team: teamPt,
 		user: userPt,
 		landing: landingPt,
+		legal: legalPt,
 		admin: adminPt,
 		"admin-matches": adminMatchesPt,
 		errors: errorsPt,
@@ -61,6 +64,7 @@ export const resources = {
 		team: teamEn,
 		user: userEn,
 		landing: landingEn,
+		legal: legalEn,
 		admin: adminEn,
 		"admin-matches": adminMatchesEn,
 		errors: errorsEn,

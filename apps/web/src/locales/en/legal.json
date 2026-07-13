@@ -1,0 +1,95 @@
+{
+	"footer": {
+		"tagline": "COMMUNITY PICKS",
+		"copyright": "© 2026 BSEN Pickems. All rights reserved.",
+		"legalNav": "Legal links",
+		"disclaimer": "This material is unofficial and is not endorsed by Supercell. For more information see Supercell's",
+		"disclaimerLink": "Fan Content Policy",
+		"links": {
+			"terms": "Terms & Conditions",
+			"privacy": "Privacy Policy",
+			"fanContent": "Supercell Fan Content Policy",
+			"bsen": "BSEN"
+		}
+	},
+	"terms": {
+		"eyebrow": "BSEN Pickems",
+		"title": "Terms & Conditions",
+		"lastUpdated": "Last updated: July 2026",
+		"intro": "These Terms & Conditions govern your use of BSEN Pickems, a community prediction product under the BSEN fan project. By creating an account or using the service, you agree to these terms.",
+		"sections": {
+			"s1": {
+				"title": "What BSEN Pickems is",
+				"body": "BSEN Pickems is a free, non-monetary community pick'em experience for Brawl Stars esports fans. Predictions are for bragging rights and leaderboard ranking only. There are no prizes with monetary value, no stakes, and no gambling mechanics."
+			},
+			"s2": {
+				"title": "Eligibility",
+				"body": "You represent that you are legally allowed to use online services in your region and that you have permission from a parent or guardian if your local laws require it for your age."
+			},
+			"s3": {
+				"title": "Your account",
+				"body": "You are responsible for activity on your account and for keeping your login credentials secure. We may suspend or remove accounts that abuse the service, attempt unauthorized access, or interfere with fair play."
+			},
+			"s4": {
+				"title": "Acceptable use",
+				"body": "Use BSEN Pickems lawfully and respectfully. Do not scrape the service without permission, upload malicious code, harass other users, or misrepresent your affiliation with Supercell, BSEN, or tournament organizers."
+			},
+			"s5": {
+				"title": "Unofficial fan project",
+				"body": "BSEN Pickems is an unofficial fan project. It is not endorsed by Supercell or its affiliates. Team names, logos, and tournament information may come from public esports sources and remain the property of their respective owners."
+			},
+			"s6": {
+				"title": "Availability and changes",
+				"body": "We may change, suspend, or discontinue features at any time. Tournament data, scoring, and leaderboard results depend on match outcomes entered by administrators and may be corrected when errors are found."
+			},
+			"s7": {
+				"title": "Limitation of liability",
+				"body": "BSEN Pickems is provided as-is. To the fullest extent permitted by applicable law, the BSEN project and its contributors are not liable for indirect or consequential damages arising from your use of the service."
+			},
+			"s8": {
+				"title": "Contact and governing framework",
+				"body": "Questions about these Terms can be sent to contact@bsen.news with \"BSEN Pickems\" in the subject line.\n\nThese Terms are intended for a global audience. Where local privacy or consumer laws grant you additional rights, those rights apply. For users in Brazil, the LGPD may provide additional protections described in our Privacy Policy."
+			}
+		}
+	},
+	"privacy": {
+		"eyebrow": "BSEN Pickems",
+		"title": "Privacy Policy",
+		"lastUpdated": "Last updated: July 2026",
+		"intro": "This Privacy Policy explains how BSEN Pickems collects, uses, and protects personal information. It applies only to this product and not to the editorial privacy page of bsen.news.",
+		"sections": {
+			"s1": {
+				"title": "Who operates this service",
+				"body": "BSEN Pickems is operated as part of the BSEN fan project. It is a community product, not an official Supercell service."
+			},
+			"s2": {
+				"title": "Information we collect",
+				"body": "Account information: name, email address, profile image, and authentication identifiers when you sign in with Google or email.\n\nPrediction data: your match picks, scores, leaderboard position, and related tournament activity.\n\nTechnical data: session cookies, IP address, browser/device information, and basic usage logs needed to keep the service secure and running."
+			},
+			"s3": {
+				"title": "Why we use information",
+				"body": "We use this data to create and secure your account, save and score your predictions, display leaderboards, prevent abuse, and improve reliability. We do not sell your personal information."
+			},
+			"s4": {
+				"title": "Cookies and session storage",
+				"body": "BSEN Pickems uses essential session cookies to keep you signed in. We do not use advertising cookies or third-party tracking pixels in this product at this time."
+			},
+			"s5": {
+				"title": "Service providers",
+				"body": "We rely on infrastructure and authentication providers to run the app, including hosting, database, and Google sign-in. These providers process data only as needed to deliver the service."
+			},
+			"s6": {
+				"title": "Retention",
+				"body": "We keep account and prediction data while your account is active and as needed for leaderboard history, fraud prevention, and legal compliance. You may request deletion as described below."
+			},
+			"s7": {
+				"title": "Your rights",
+				"body": "Depending on where you live, you may have the right to access, correct, export, or delete your personal information, and to object to certain processing.\n\nUsers in Brazil may exercise rights under the LGPD. Users in other regions may have similar rights under applicable local privacy laws."
+			},
+			"s8": {
+				"title": "Contact and updates",
+				"body": "To make a privacy request about BSEN Pickems, email contact@bsen.news with \"BSEN Pickems Privacy\" in the subject line.\n\nWe may update this Privacy Policy from time to time. Continued use of the service after an update means you accept the revised policy."
+			}
+		}
+	}
+}
