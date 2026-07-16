@@ -1,9 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { AlertCircle, Check, Loader2, X } from "lucide-react";
+import { AlertCircle, Check, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import { deriveMatchFormat } from "@/lib/utils";
 import {
 	createMatch,
@@ -808,7 +809,7 @@ export function MatchModal({
 							<div className="flex items-center gap-1.5">
 								{saveStatus === "saving" && (
 									<div className="flex items-center gap-1 font-bold text-black/60 text-xs">
-										<Loader2 className="h-3 w-3 animate-spin" />
+										<InlineLoader size="xs" />
 										<span>{t("modal.saving")}</span>
 									</div>
 								)}
@@ -833,7 +834,7 @@ export function MatchModal({
 						className="bg-black p-1 text-white transition-colors hover:bg-[#ff2e2e] disabled:opacity-50"
 					>
 						{isSubmitting || saveStatus === "saving" ? (
-							<Loader2 className="h-4 w-4 animate-spin" />
+							<InlineLoader size="sm" />
 						) : (
 							<X className="h-4 w-4" strokeWidth={3} />
 						)}
@@ -865,7 +866,7 @@ export function MatchModal({
 											}))
 										}
 										className={clsx(
-											"border-2 border-black px-2 py-0.5 font-black text-[10px] uppercase transition-colors",
+											"border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest transition-colors",
 											formData.resultType === "wo"
 												? "bg-[#ff2e2e] text-white"
 												: "bg-white text-black hover:bg-gray-100",
@@ -873,7 +874,7 @@ export function MatchModal({
 									>
 										{t("modal.wo")}
 									</button>
-									<label className="font-black text-[10px] text-black uppercase">
+									<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
 										{t("modal.statusLabel")}
 									</label>
 									<select
@@ -894,7 +895,7 @@ export function MatchModal({
 													status !== "finished" ? "normal" : prev.resultType,
 											}));
 										}}
-										className="border-2 border-black bg-black px-2 py-0.5 font-black text-[#ccff00] text-[10px] uppercase focus:outline-none"
+										className="border-2 border-black bg-black px-2 py-0.5 font-black font-display text-[#ccff00] text-[10px] uppercase focus:outline-none"
 									>
 										<option value="scheduled">
 											{t("modal.statusScheduled")}
@@ -912,11 +913,11 @@ export function MatchModal({
 								<div className="space-y-1">
 									<div className="mb-1 flex items-center gap-2">
 										<div className="h-3 w-3 rounded-full border border-black bg-brawl-blue shadow-[1px_1px_0px_0px_#000]" />
-										<label className="font-black text-[10px] text-black uppercase">
+										<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
 											{matchToEdit?.teamA?.name || t("modal.teamA")}
 										</label>
 										{formData.winnerId === resolvedTeamAId && (
-											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
+											<span className="ml-auto font-bold font-body text-[9px] text-green-600 uppercase tracking-widest">
 												{t("modal.winnerBadge")}
 											</span>
 										)}
@@ -934,7 +935,7 @@ export function MatchModal({
 										className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
 									{matchToEdit?.tournament?.format && (
-										<p className="font-bold text-[9px] text-gray-500 uppercase">
+										<p className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 											{t("modal.max")}{" "}
 											{Math.ceil(
 												(matchToEdit.tournament.format
@@ -956,11 +957,11 @@ export function MatchModal({
 								<div className="space-y-1">
 									<div className="mb-1 flex items-center gap-2">
 										<div className="h-3 w-3 rounded-full border border-black bg-brawl-red shadow-[1px_1px_0px_0px_#000]" />
-										<label className="font-black text-[10px] text-black uppercase">
+										<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
 											{matchToEdit?.teamB?.name || t("modal.teamB")}
 										</label>
 										{formData.winnerId === resolvedTeamBId && (
-											<span className="ml-auto font-black text-[9px] text-green-600 uppercase">
+											<span className="ml-auto font-bold font-body text-[9px] text-green-600 uppercase tracking-widest">
 												{t("modal.winnerBadge")}
 											</span>
 										)}
@@ -978,7 +979,7 @@ export function MatchModal({
 										className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
 									{matchToEdit?.tournament?.format && (
-										<p className="font-bold text-[9px] text-gray-500 uppercase">
+										<p className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 											{t("modal.max")}{" "}
 											{Math.ceil(
 												(matchToEdit.tournament.format
@@ -999,7 +1000,7 @@ export function MatchModal({
 
 							{formData.status === "finished" && (
 								<div className="slide-in-from-top-2 animate-in pt-2 duration-300">
-									<label className="mb-2 ml-1 block font-black text-[10px] text-black uppercase italic">
+									<label className="mb-2 ml-1 block font-bold font-body text-[10px] text-black uppercase tracking-widest italic">
 										{t("modal.autoWinner")}
 									</label>
 									<div className="grid grid-cols-2 gap-3">
@@ -1047,7 +1048,7 @@ export function MatchModal({
 										</button>
 									</div>
 									{canAutoResolveOneSidedWalkover && (
-										<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-blue-700 uppercase">
+										<p className="mt-3 flex items-center gap-1 font-bold font-body text-[9px] text-blue-700 uppercase tracking-widest">
 											<AlertCircle className="h-3 w-3" />
 											{t("modal.woDescription")}
 										</p>
@@ -1063,7 +1064,7 @@ export function MatchModal({
 													scoreB: 0,
 												})
 											}
-											className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-black text-[10px] text-black uppercase hover:bg-yellow-300"
+											className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-yellow-300"
 										>
 											{t("modal.clearWinner")}
 										</button>
@@ -1075,11 +1076,11 @@ export function MatchModal({
 											disabled={
 												!canRefreshWalkoverWinner || isRefreshingWalkoverWinner
 											}
-											className="mt-2 w-full border-2 border-black bg-blue-100 px-2 py-2 font-black text-[10px] text-black uppercase hover:bg-blue-200 disabled:opacity-60"
+											className="mt-2 w-full border-2 border-black bg-blue-100 px-2 py-2 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-blue-200 disabled:opacity-60"
 										>
 											{isRefreshingWalkoverWinner ? (
 												<span className="inline-flex items-center gap-1">
-													<Loader2 className="h-3 w-3 animate-spin" />
+													<InlineLoader size="xs" />
 													{t("modal.updating")}
 												</span>
 											) : (
@@ -1089,13 +1090,13 @@ export function MatchModal({
 									)}
 									{canShowRefreshWalkoverWinner &&
 										!canRefreshWalkoverWinner && (
-											<p className="mt-1 text-center font-bold text-[9px] text-gray-600 uppercase">
+											<p className="mt-1 text-center font-bold font-body text-[9px] text-gray-600 uppercase tracking-widest">
 												{t("modal.refreshInfo")}
 											</p>
 										)}
 									{!formData.winnerId && !canAutoResolveOneSidedWalkover ? (
 										<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
-											<p className="flex items-center gap-2 font-black text-[10px] text-red-600 uppercase">
+											<p className="flex items-center gap-2 font-bold font-body text-[10px] text-red-600 uppercase tracking-widest">
 												<AlertCircle className="h-4 w-4" />
 												{t("modal.errorNoWinner")}
 											</p>
@@ -1104,7 +1105,7 @@ export function MatchModal({
 											</p>
 										</div>
 									) : (
-										<p className="mt-3 flex items-center gap-1 font-bold text-[9px] text-red-500 uppercase">
+										<p className="mt-3 flex items-center gap-1 font-bold font-body text-[9px] text-red-500 uppercase tracking-widest">
 											<AlertCircle className="h-3 w-3" />
 											{t("modal.finalizeWarning")}
 										</p>
@@ -1147,7 +1148,7 @@ export function MatchModal({
 									/>
 								)}
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("modal.roundNumber")}
 									</label>
 									<input
@@ -1161,12 +1162,12 @@ export function MatchModal({
 										}
 										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
-									<p className="mt-1 font-bold text-[9px] text-gray-500 leading-tight">
+									<p className="mt-1 font-bold font-body text-[9px] text-gray-500 leading-tight tracking-widest">
 										{t("modal.roundHint")}
 									</p>
 								</div>
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("modal.displayOrder")}
 									</label>
 									<input
@@ -1180,7 +1181,7 @@ export function MatchModal({
 										}
 										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 									/>
-									<p className="mt-1 font-bold text-[9px] text-gray-500 leading-tight">
+									<p className="mt-1 font-bold font-body text-[9px] text-gray-500 leading-tight tracking-widest">
 										{t("modal.verticalPosHint")}
 									</p>
 								</div>
@@ -1236,7 +1237,7 @@ export function MatchModal({
 					</div>
 
 					<div>
-						<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+						<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 							{t("modal.matchName")}
 						</label>
 						<input
@@ -1252,10 +1253,10 @@ export function MatchModal({
 
 					<div className="flex items-center justify-between border-2 border-black bg-gray-50 p-3">
 						<div className="flex flex-col">
-							<label className="font-black text-black text-xs uppercase">
+							<label className="font-bold font-body text-black text-xs uppercase tracking-widest">
 								{t("modal.enableBetting")}
 							</label>
-							<p className="font-bold text-[10px] text-gray-500 uppercase">
+							<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 								{t("modal.enableBettingDesc")}
 							</p>
 						</div>
@@ -1298,7 +1299,7 @@ export function MatchModal({
 					<div className="grid grid-cols-2 gap-4">
 						{/* Team A */}
 						<div className="space-y-2">
-							<label className="ml-1 block font-black text-black text-xs uppercase">
+							<label className="ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 								{t("modal.teamASource")}
 							</label>
 							<div className="mb-2 flex gap-2">
@@ -1317,7 +1318,7 @@ export function MatchModal({
 											onClick={() =>
 												setFormData({ ...formData, teamAType: type })
 											}
-											className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
+											className={`flex-1 border-2 border-black py-1 font-bold font-body text-[10px] uppercase tracking-widest ${
 												formData.teamAType === type
 													? "bg-black text-white"
 													: "bg-white text-gray-500 hover:bg-gray-100"
@@ -1429,7 +1430,7 @@ export function MatchModal({
 
 						{/* Team B */}
 						<div className="space-y-2">
-							<label className="ml-1 block font-black text-black text-xs uppercase">
+							<label className="ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 								{t("modal.teamBSource")}
 							</label>
 							<div className="mb-2 flex gap-2">
@@ -1448,7 +1449,7 @@ export function MatchModal({
 											onClick={() =>
 												setFormData({ ...formData, teamBType: type })
 											}
-											className={`flex-1 border-2 border-black py-1 font-bold text-[10px] uppercase ${
+											className={`flex-1 border-2 border-black py-1 font-bold font-body text-[10px] uppercase tracking-widest ${
 												formData.teamBType === type
 													? "bg-black text-white"
 													: "bg-white text-gray-500 hover:bg-gray-100"
@@ -1570,7 +1571,7 @@ export function MatchModal({
 						)}
 					>
 						{isSubmitting ? (
-							<Loader2 className="h-5 w-5 animate-spin" />
+							<InlineLoader size="md" />
 						) : matchToEdit ? (
 							<>
 								<Check className="h-5 w-5" />

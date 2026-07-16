@@ -39,6 +39,8 @@
 		"playerMenu": "Player Menu",
 		"commandCenter": "Command Center",
 		"medals": "Medals",
+		"pointsLabel": "Points",
+		"pointsShort": "{{count}} pts",
 		"myBets": "My Picks",
 		"signOut": "Sign Out"
 	}

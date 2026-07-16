@@ -1,5 +1,11 @@
 {
 	"appName": "BSEN Pickems",
+	"language": {
+		"label": "Idioma",
+		"pt": "Português",
+		"en": "English",
+		"switchTo": "Mudar idioma para {{language}}"
+	},
 	"nav": {
 		"home": "Início",
 		"bet": "Palpitar",

@@ -1,5 +1,6 @@
 import { Calendar, Check, Lock, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PublicPageShell } from "@/components/PublicPageShell";
 
 interface MatchDay {
 	id: number;
@@ -73,17 +74,7 @@ export function MatchDaySelector({
 	});
 
 	return (
-		<div className="relative flex min-h-screen flex-col items-center bg-paper p-6">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="flex flex-col items-center p-6">
 			<div className="relative z-10 w-full max-w-4xl">
 				{/* Header */}
 				<div className="mb-8 text-center">
@@ -236,6 +227,6 @@ export function MatchDaySelector({
 					</div>
 				)}
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }

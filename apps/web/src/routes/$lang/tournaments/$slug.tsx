@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { RoundRobinResultView } from "@/components/RoundRobinResultView";
 import { SwissStageView } from "@/components/SwissStageView";
 import { TournamentBracket } from "@/components/TournamentBracket";
@@ -487,20 +488,10 @@ function TournamentDetailsPage() {
 	}, [filteredMatches]);
 
 	return (
-		<div className="min-h-screen bg-[#f0f0f0] pb-20 font-sans">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-20 font-sans">
 			{/* Clean Header Banner */}
 			<div
-				className="relative border-black border-b-2 transition-all duration-500"
+				className="relative z-10 border-black border-b-2 transition-all duration-500"
 				style={{
 					background: `linear-gradient(135deg, ${tournamentColors.primary} 0%, ${tournamentColors.intermediate} 50%, ${tournamentColors.secondary} 100%)`,
 				}}
@@ -511,7 +502,7 @@ function TournamentDetailsPage() {
 						<Link
 							to={linkTo("/tournaments")}
 							search={{ filter: "active" }}
-							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
+							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold font-display text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
 						>
 							<ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
 							<span className="hidden sm:inline">{t("detail.back")}</span>
@@ -522,7 +513,7 @@ function TournamentDetailsPage() {
 						) && (
 							<Link
 								to={linkTo("/")}
-								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
+								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
 							>
 								<Sparkles className="h-4 w-4" strokeWidth={2.5} />
 								{t("detail.bet")}
@@ -546,7 +537,7 @@ function TournamentDetailsPage() {
 								)}
 							</div>
 							{isActive && (
-								<div className="absolute -right-2 -bottom-2 rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black text-white text-xs shadow-[2px_2px_0_0_#000]">
+								<div className="absolute -right-2 -bottom-2 rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black font-display text-white text-xs shadow-[2px_2px_0_0_#000]">
 									{t("detail.live")}
 								</div>
 							)}
@@ -556,17 +547,17 @@ function TournamentDetailsPage() {
 						<div className="flex-1 text-center md:text-left">
 							<div className="mb-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
 								{tournament.region && (
-									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 										<MapPin className="h-3 w-3" strokeWidth={2.5} />
 										{tournament.region}
 									</span>
 								)}
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 									<Calendar className="h-3 w-3" strokeWidth={2.5} />
 									{formatDate(tournament.startDate, t)} -{" "}
 									{formatDate(tournament.endDate, t)}
 								</span>
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold text-white text-xs backdrop-blur-sm">
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 									<Users className="h-3 w-3" strokeWidth={2.5} />
 									{t("detail.teamCount", {
 										count: tournament.participantsCount || 0,
@@ -574,11 +565,11 @@ function TournamentDetailsPage() {
 								</span>
 							</div>
 
-							<h1 className="mb-2 font-black text-3xl text-white uppercase italic tracking-tighter md:text-5xl">
+							<h1 className="mb-2 font-black font-display text-3xl text-white uppercase italic tracking-tighter md:text-5xl">
 								{tournament.name}
 							</h1>
 
-							<p className="font-bold text-sm text-white/80 uppercase tracking-wide">
+							<p className="font-bold font-body text-sm text-white/80 uppercase tracking-widest">
 								{tournament.format ||
 									(() => {
 										const stages = (tournament.stages as any[]) || [];
@@ -619,7 +610,7 @@ function TournamentDetailsPage() {
 						type="button"
 						onClick={() => setFilter("all")}
 						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
 							filter === "all"
 								? "bg-[#121212] text-white"
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -631,7 +622,7 @@ function TournamentDetailsPage() {
 						type="button"
 						onClick={() => setFilter("my-bets")}
 						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
 							filter === "my-bets"
 								? "bg-[#121212] text-white"
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -639,7 +630,7 @@ function TournamentDetailsPage() {
 					>
 						{t("detail.filterMyBets")}
 						{userBets.length > 0 && (
-							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-bold text-[10px] text-white">
+							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[10px] text-white tabular-nums">
 								{userBets.length}
 							</span>
 						)}
@@ -648,7 +639,7 @@ function TournamentDetailsPage() {
 						type="button"
 						onClick={() => setFilter("upcoming")}
 						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
 							filter === "upcoming"
 								? "bg-[#121212] text-white"
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -660,7 +651,7 @@ function TournamentDetailsPage() {
 						type="button"
 						onClick={() => setFilter("finished")}
 						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
 							filter === "finished"
 								? "bg-[#121212] text-white"
 								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -717,7 +708,7 @@ function TournamentDetailsPage() {
 									{groupedMatches.swissRoundData.length > 0 && (
 										<div className="rounded-xl border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
 											<div className="mb-6 flex w-full items-center gap-3">
-												<h3 className="font-black text-2xl text-[#121212] uppercase italic">
+												<h3 className="font-black font-display text-2xl text-ink uppercase italic">
 													{t("swiss.title")}
 												</h3>
 												<div className="h-0.5 flex-1 bg-black/10" />
@@ -739,7 +730,7 @@ function TournamentDetailsPage() {
 													className="h-6 w-6 text-[#121212]"
 													strokeWidth={2.5}
 												/>
-												<h3 className="font-black text-2xl text-[#121212] uppercase italic">
+												<h3 className="font-black font-display text-2xl text-ink uppercase italic">
 													{t("detail.playoffBracket")}
 												</h3>
 												<div className="h-0.5 flex-1 bg-black/10" />
@@ -827,17 +818,17 @@ function TournamentDetailsPage() {
 							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
 								<Filter className="h-8 w-8 text-gray-400" strokeWidth={2} />
 							</div>
-							<h3 className="font-black text-[#121212] text-xl uppercase">
+							<h3 className="font-black font-display text-ink text-xl uppercase italic">
 								{t("detail.noMatches")}
 							</h3>
-							<p className="mt-2 text-gray-600 text-sm">
+							<p className="mt-2 font-display text-gray-600 text-sm">
 								{t("detail.emptyHint")}
 							</p>
 						</div>
 					)}
 				</div>
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }
 

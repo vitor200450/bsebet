@@ -42,7 +42,8 @@
 		"title": "ESCOLHA SEU LADO",
 		"body": "Escolha um time. Confirme o palpite. Veja se você acertou quando a partida terminar.",
 		"cta": "ESCOLHER AGORA",
-		"vs": "VS"
+		"vs": "VS",
+		"matchupLive": "{{teamA}} versus {{teamB}}"
 	},
 	"leaderboard": {
 		"title": "LIDERANÇA",

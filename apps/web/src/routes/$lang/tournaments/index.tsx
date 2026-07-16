@@ -11,6 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { i18next } from "@/i18n";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getTournaments } from "@/server/tournaments";
@@ -51,32 +52,22 @@ function TournamentsPage() {
 	];
 
 	return (
-		<div className="relative min-h-screen bg-[#f0f0f0] pb-12">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-12">
 			<div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
 				{/* Clean Header */}
 				<header className="mb-10 md:mb-12">
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
-							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
+							<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
 								{t("browse.title")}
 							</h1>
-							<p className="mt-2 font-bold text-gray-600 text-lg">
+							<p className="mt-2 font-bold font-display text-gray-600 text-lg">
 								{t("browse.description")}
 							</p>
 						</div>
 						<div className="flex items-center gap-2 text-gray-500">
 							<Trophy className="h-5 w-5" strokeWidth={2} />
-							<span className="font-bold text-sm uppercase tracking-wider">
+							<span className="font-bold font-body text-[10px] uppercase tracking-widest">
 								{t("browse.totalCount", { count: tournaments.length })}
 							</span>
 						</div>
@@ -94,7 +85,7 @@ function TournamentsPage() {
 								placeholder={t("browse.searchPlaceholder")}
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full bg-transparent font-bold text-[#121212] placeholder:text-gray-400 focus:outline-none"
+								className="w-full bg-transparent font-bold font-display text-ink placeholder:text-gray-400 focus:outline-none"
 							/>
 						</div>
 					</div>
@@ -107,7 +98,7 @@ function TournamentsPage() {
 								key={tab.key}
 								onClick={() => navigate({ search: { filter: tab.key } })}
 								className={clsx(
-									"rounded-md px-4 py-2 font-bold text-sm uppercase tracking-wider transition-all",
+									"rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
 									filter === tab.key
 										? "bg-[#121212] text-white"
 										: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -130,7 +121,7 @@ function TournamentsPage() {
 					</div>
 				)}
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }
 
@@ -201,7 +192,7 @@ function TournamentCard({
 					{/* Status badge */}
 					<div
 						className={clsx(
-							"absolute top-3 right-3 flex items-center gap-1.5 rounded-md px-2 py-1 font-black text-[10px] uppercase tracking-wider",
+							"absolute top-3 right-3 flex items-center gap-1.5 rounded-md px-2 py-1 font-black font-display text-[10px] uppercase tracking-wider",
 							statusConfig.color,
 						)}
 					>
@@ -215,7 +206,7 @@ function TournamentCard({
 					{tournament.region && (
 						<div className="absolute top-3 left-3 flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 shadow-sm">
 							<MapPin className="h-3 w-3 text-gray-600" strokeWidth={2} />
-							<span className="font-bold text-[10px] text-gray-700 uppercase">
+							<span className="font-bold font-body text-[10px] text-gray-700 uppercase tracking-widest">
 								{tournament.region}
 							</span>
 						</div>
@@ -241,12 +232,12 @@ function TournamentCard({
 				<div className="px-4 pt-12 pb-4">
 					{/* Meta */}
 					<div className="mb-3 flex flex-wrap items-center gap-2">
-						<span className="flex items-center gap-1 rounded bg-[#f0f0f0] px-2 py-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+						<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 							<Calendar className="h-3 w-3" strokeWidth={2} />
 							{formatDateRange(tournament.startDate, tournament.endDate)}
 						</span>
 						{tournament.participantsCount && (
-							<span className="flex items-center gap-1 rounded bg-[#f0f0f0] px-2 py-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+							<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 								<Users className="h-3 w-3" strokeWidth={2} />
 								{tournament.participantsCount} {t("browse.teams")}
 							</span>
@@ -254,12 +245,12 @@ function TournamentCard({
 					</div>
 
 					{/* Title */}
-					<h2 className="mb-2 line-clamp-2 font-black text-[#121212] text-xl uppercase tracking-tight transition-colors group-hover:text-[#2e5cff]">
+					<h2 className="mb-2 line-clamp-2 font-black font-display text-ink text-xl uppercase italic tracking-tight transition-colors group-hover:text-brawl-blue">
 						{tournament.name}
 					</h2>
 
 					{tournament.format && (
-						<p className="mb-4 font-bold text-gray-400 text-xs uppercase tracking-wider">
+						<p className="mb-4 font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
 							{tournament.format}
 						</p>
 					)}
@@ -269,7 +260,7 @@ function TournamentCard({
 						to={linkTo("/tournaments/$slug")}
 						params={{ slug: tournament.slug }}
 						className={clsx(
-							"flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black py-3 font-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none",
+							"flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black py-3 font-black font-display text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none",
 							isActive && "bg-[#ff2e2e] text-white",
 							isFinished && "bg-[#f0f0f0] text-[#121212]",
 							!isActive && !isFinished && "bg-[#ffc700] text-black",
@@ -301,10 +292,10 @@ function EmptyState({
 			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
 				<Search className="h-8 w-8 text-gray-400" strokeWidth={2} />
 			</div>
-			<h2 className="mb-2 font-black text-[#121212] text-xl uppercase">
+			<h2 className="mb-2 font-black font-display text-ink text-xl uppercase italic">
 				{hasSearch ? t("browse.noResults") : t("browse.empty")}
 			</h2>
-			<p className="mx-auto max-w-md text-gray-600 text-sm">
+			<p className="mx-auto max-w-md font-display text-gray-600 text-sm">
 				{hasSearch
 					? t("browse.searchHint")
 					: filter === "active"

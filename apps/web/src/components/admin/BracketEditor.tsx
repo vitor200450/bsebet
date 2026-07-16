@@ -157,7 +157,7 @@ export function BracketEditor({
 					<h2 className="font-black text-3xl text-black uppercase italic">
 						{t("bracketEditor.title")}
 					</h2>
-					<p className="font-bold text-[10px] text-black/40 uppercase">
+					<p className="font-bold font-body text-[10px] text-black/40 uppercase tracking-widest">
 						{t("bracketEditor.subtitle")}
 					</p>
 				</div>
@@ -259,7 +259,7 @@ export function BracketEditor({
 										key={`upper-${roundIdx}`}
 										className="flex flex-col gap-2"
 									>
-										<div className="h-4 text-center font-bold text-[9px] text-gray-500 uppercase tracking-wider">
+										<div className="h-4 text-center font-bold font-body text-[9px] text-gray-500 uppercase tracking-wider">
 											{getRoundTitle("upper", roundIdx)}
 										</div>
 										<div className="flex h-full flex-col justify-around gap-4">
@@ -294,7 +294,7 @@ export function BracketEditor({
 								{/* GRAND FINAL Appended */}
 								{(stageType === "Double Elimination" || final.length > 0) && (
 									<div className="flex flex-col gap-2">
-										<div className="h-4 text-center font-bold text-[9px] text-gray-500 uppercase tracking-wider">
+										<div className="h-4 text-center font-bold font-body text-[9px] text-gray-500 uppercase tracking-wider">
 											{t("bracketEditor.grandFinal")}
 										</div>
 										<div className="flex h-full flex-col justify-around gap-4">
@@ -330,7 +330,7 @@ export function BracketEditor({
 						{thirdPlace.length > 0 && (
 							<div className="relative mt-6 border-black/5 border-t pt-5">
 								<div className="mx-auto flex max-w-xs flex-col items-center gap-3">
-									<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-bold text-[9px] text-gray-400 uppercase tracking-wider">
+									<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-bold font-body text-[9px] text-gray-400 uppercase tracking-wider">
 										{t("bracketEditor.thirdPlace")}
 									</span>
 									{thirdPlace.map((match) => (
@@ -359,7 +359,7 @@ export function BracketEditor({
 											key={`lower-${roundIdx}`}
 											className="flex flex-col gap-2"
 										>
-											<div className="text-center font-bold text-[9px] text-gray-500 uppercase tracking-wider">
+											<div className="text-center font-bold font-body text-[9px] text-gray-500 uppercase tracking-wider">
 												{getRoundTitle("lower", roundIdx)}
 											</div>
 											<div className="flex h-full flex-col justify-around gap-4">
@@ -396,7 +396,7 @@ function AddMatchButton({
 			onClick={onClick}
 			className="group flex h-10 w-full items-center justify-center rounded border-2 border-black/10 border-dashed bg-gray-50/10 transition-all hover:border-black hover:bg-white"
 		>
-			<div className="flex items-center gap-2 font-bold text-[9px] text-black/20 uppercase group-hover:text-black">
+			<div className="flex items-center gap-2 font-bold font-body text-[9px] text-black/20 uppercase tracking-widest group-hover:text-black">
 				<Plus className="h-3 w-3" /> {label}
 			</div>
 		</button>
@@ -458,17 +458,17 @@ function EditorMatchCard({
 		>
 			{/* Status Badges */}
 			{match.status === "live" && (
-				<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					{t("bracketEditor.badgeLive")}
 				</div>
 			)}
 			{match.status === "finished" && (
-				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					{t("bracketEditor.badgeFinal")}
 				</div>
 			)}
 			{isWalkover && (
-				<div className="absolute top-6 -right-1 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute top-6 -right-1 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					{t("bracketEditor.badgeWO")}
 				</div>
 			)}
@@ -477,7 +477,7 @@ function EditorMatchCard({
 			<div className="relative -mx-1.5 -mt-1.5 mb-1 box-border flex min-h-7 flex-shrink-0 flex-col justify-center gap-0.5 border-black border-b-2 bg-gray-50/50 px-1.5 py-0.5 pr-10">
 				<div className="flex w-full items-center justify-between">
 					<div className="min-w-0 flex-grow pr-1">
-						<span className="line-clamp-2 block text-left font-black text-[10px] text-black uppercase italic leading-tight antialiased">
+						<span className="line-clamp-2 block text-left font-bold font-body text-[10px] text-black uppercase tracking-widest leading-tight">
 							{match.name || match.label}
 						</span>
 					</div>
@@ -518,7 +518,7 @@ function EditorMatchCard({
 						)}
 					</div>
 					<div className="flex h-full items-center overflow-hidden px-1.5">
-						<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+						<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase italic leading-none tracking-tighter">
 							{match.teamA?.name || abbreviateLabel(match.labelTeamA)}
 						</span>
 					</div>
@@ -541,7 +541,7 @@ function EditorMatchCard({
 						)}
 					</div>
 					<div className="flex h-full items-center overflow-hidden px-1.5">
-						<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+						<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase italic leading-none tracking-tighter">
 							{match.teamB?.name || abbreviateLabel(match.labelTeamB)}
 						</span>
 					</div>

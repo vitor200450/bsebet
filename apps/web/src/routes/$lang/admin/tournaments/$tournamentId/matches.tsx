@@ -399,7 +399,7 @@ function TournamentMatchesPage() {
 						{/* 1. Teams - Add teams first */}
 						<button
 							onClick={() => setActiveTab("teams")}
-							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 								activeTab === "teams"
 									? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 									: "bg-white hover:bg-gray-50"
@@ -411,7 +411,7 @@ function TournamentMatchesPage() {
 						{/* 2. Schedule - Define match days */}
 						<button
 							onClick={() => setActiveTab("schedule")}
-							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 								activeTab === "schedule"
 									? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 									: "bg-white hover:bg-gray-50"
@@ -424,7 +424,7 @@ function TournamentMatchesPage() {
 						{hasGroups && (
 							<button
 								onClick={() => setActiveTab("seeding")}
-								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 									activeTab === "seeding"
 										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 										: "bg-white hover:bg-gray-50"
@@ -438,7 +438,7 @@ function TournamentMatchesPage() {
 						{hasGroups && (
 							<button
 								onClick={() => setActiveTab("groups")}
-								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 									activeTab === "groups"
 										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 										: "bg-white hover:bg-gray-50"
@@ -452,7 +452,7 @@ function TournamentMatchesPage() {
 						{hasSwiss && (
 							<button
 								onClick={() => setActiveTab("swiss")}
-								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 									activeTab === "swiss"
 										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 										: "bg-white hover:bg-gray-50"
@@ -466,7 +466,7 @@ function TournamentMatchesPage() {
 						{hasBracket && (
 							<button
 								onClick={() => setActiveTab("bracket")}
-								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+								className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 									activeTab === "bracket"
 										? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 										: "bg-white hover:bg-gray-50"
@@ -479,7 +479,7 @@ function TournamentMatchesPage() {
 						{/* 6. Matches - Manage individual matches */}
 						<button
 							onClick={() => setActiveTab("matches")}
-							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 								activeTab === "matches"
 									? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 									: "bg-white hover:bg-gray-50"
@@ -491,7 +491,7 @@ function TournamentMatchesPage() {
 						{/* 7. Order - Fine-tune display order */}
 						<button
 							onClick={() => setActiveTab("ordering")}
-							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all ${
+							className={`flex items-center gap-2 border-[2px] border-black px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all ${
 								activeTab === "ordering"
 									? "-translate-y-0.5 bg-[#ccff00] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
 									: "bg-white hover:bg-gray-50"
@@ -503,7 +503,7 @@ function TournamentMatchesPage() {
 
 					<button
 						onClick={() => setIsRecalculateModalOpen(true)}
-						className="flex items-center gap-2 border-[2px] border-black bg-black px-4 py-1.5 font-black text-[#ccff00] text-[10px] uppercase transition-all hover:bg-[#ccff00] hover:text-black"
+						className="flex items-center gap-2 border-[2px] border-black bg-black px-4 py-1.5 font-black font-display text-[#ccff00] text-[10px] uppercase transition-all hover:bg-[#ccff00] hover:text-black"
 					>
 						<CheckCircle2 size={12} strokeWidth={3} />
 						{t("recalc.button")}
@@ -511,7 +511,7 @@ function TournamentMatchesPage() {
 
 					<button
 						onClick={() => setIsResetBetsModalOpen(true)}
-						className="flex items-center gap-2 border-[2px] border-black bg-[#ffc700] px-4 py-1.5 font-black text-[10px] text-black uppercase transition-all hover:bg-[#ccff00]"
+						className="flex items-center gap-2 border-[2px] border-black bg-[#ffc700] px-4 py-1.5 font-black font-display text-[10px] text-black uppercase transition-all hover:bg-[#ccff00]"
 					>
 						<RotateCcw size={12} strokeWidth={3} />
 						{t("resetBets.button")}
@@ -519,7 +519,7 @@ function TournamentMatchesPage() {
 
 					<button
 						onClick={() => setIsResetTournamentModalOpen(true)}
-						className="flex items-center gap-2 border-[2px] border-black bg-white px-4 py-1.5 font-black text-[#ff2e2e] text-[10px] uppercase transition-all hover:bg-[#ff2e2e] hover:text-white"
+						className="flex items-center gap-2 border-[2px] border-black bg-white px-4 py-1.5 font-black font-display text-[#ff2e2e] text-[10px] uppercase transition-all hover:bg-[#ff2e2e] hover:text-white"
 					>
 						<RotateCcw size={12} strokeWidth={3} />
 						{t("reset.button")}
@@ -545,20 +545,20 @@ function TournamentMatchesPage() {
 			<div className="sticky top-20 z-30 flex gap-2 overflow-x-auto border-black border-b-2 bg-white p-2 lg:hidden">
 				<button
 					onClick={() => setActiveTab("teams")}
-					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "teams" ? "bg-[#ccff00]" : "bg-white"}`}
+					className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "teams" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
 					{t("matches.tabTeams")}
 				</button>
 				<button
 					onClick={() => setActiveTab("schedule")}
-					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "schedule" ? "bg-[#ccff00]" : "bg-white"}`}
+					className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "schedule" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
 					{t("matches.tabDays")}
 				</button>
 				{hasGroups && (
 					<button
 						onClick={() => setActiveTab("seeding")}
-						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "seeding" ? "bg-[#ccff00]" : "bg-white"}`}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "seeding" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabSeeding")}
 					</button>
@@ -566,7 +566,7 @@ function TournamentMatchesPage() {
 				{hasGroups && (
 					<button
 						onClick={() => setActiveTab("groups")}
-						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "groups" ? "bg-[#ccff00]" : "bg-white"}`}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "groups" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabGroups")}
 					</button>
@@ -574,7 +574,7 @@ function TournamentMatchesPage() {
 				{hasSwiss && (
 					<button
 						onClick={() => setActiveTab("swiss")}
-						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "swiss" ? "bg-[#ccff00]" : "bg-white"}`}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "swiss" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabSwiss")}
 					</button>
@@ -582,20 +582,20 @@ function TournamentMatchesPage() {
 				{hasBracket && (
 					<button
 						onClick={() => setActiveTab("bracket")}
-						className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
+						className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "bracket" ? "bg-[#ccff00]" : "bg-white"}`}
 					>
 						{t("matches.tabBracket")}
 					</button>
 				)}
 				<button
 					onClick={() => setActiveTab("matches")}
-					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "matches" ? "bg-[#ccff00]" : "bg-white"}`}
+					className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "matches" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
 					{t("matches.tabMatches")}
 				</button>
 				<button
 					onClick={() => setActiveTab("ordering")}
-					className={`shrink-0 border-2 border-black px-4 py-2 font-black text-[10px] text-black uppercase ${activeTab === "ordering" ? "bg-[#ccff00]" : "bg-white"}`}
+					className={`shrink-0 border-2 border-black px-4 py-2 font-black font-display text-[10px] text-black uppercase ${activeTab === "ordering" ? "bg-[#ccff00]" : "bg-white"}`}
 				>
 					{t("matches.tabOrder")}
 				</button>
@@ -642,7 +642,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.groupStage")}
 							</h2>
-							<p className="font-bold text-gray-500 text-sm">
+							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
 								{t("matchBuilder.groupStageDescription")}
 							</p>
 						</div>
@@ -703,7 +703,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.swissStage")}
 							</h2>
-							<p className="font-bold text-gray-500 text-sm">
+							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
 								{t("matches.swissStageDescription")}
 							</p>
 						</div>
@@ -726,7 +726,7 @@ function TournamentMatchesPage() {
 										toast.error(t("matches.generateSwissRoundOneError"));
 									}
 								}}
-								className="border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+								className="border-[3px] border-black bg-white px-4 py-2 font-black font-display text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
 							>
 								{t("matches.generateSwissRoundOne")}
 							</button>
@@ -754,7 +754,7 @@ function TournamentMatchesPage() {
 										);
 									}
 								}}
-								className="border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
+								className="border-[3px] border-black bg-white px-4 py-2 font-black font-display text-black text-xs uppercase shadow-[3px_3px_0_0_#000] hover:bg-[#ccff00]"
 							>
 								{t("matches.suggestSwissNextRound")}
 							</button>
@@ -783,12 +783,12 @@ function TournamentMatchesPage() {
 										<div key={roundIdx} className="mb-8 last:mb-0">
 											<div className="mb-3 flex items-center gap-3">
 												<div className="inline-block -skew-x-6 border-2 border-black bg-black px-3 py-1">
-													<span className="block skew-x-6 font-black text-[#ccff00] text-xs uppercase tracking-widest">
+													<span className="block skew-x-6 font-bold font-body text-[#ccff00] text-xs uppercase tracking-widest">
 														Rodada {roundIdx + 1}
 													</span>
 												</div>
 												<div className="h-0.5 flex-1 bg-black/10" />
-												<span className="font-bold text-[10px] text-gray-400 uppercase">
+												<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
 													{
 														rounds[roundIdx].filter(
 															(m: any) => m.status === "finished",
@@ -816,19 +816,19 @@ function TournamentMatchesPage() {
 															className="group relative flex cursor-pointer flex-col border-[2px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5"
 														>
 															{isLive && (
-																<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-brawl-red px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-brawl-red px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 																	AO VIVO
 																</div>
 															)}
 															{isFinished && (
-																<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-black text-[7px] text-white uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 																	FINAL
 																</div>
 															)}
 															<div className="relative -mx-0 -mt-0 box-border flex min-h-7 flex-shrink-0 flex-col justify-center gap-0.5 border-black border-b-2 bg-gray-50/50 px-1.5 py-0.5">
 																<div className="flex w-full items-center justify-between">
 																	<div className="min-w-0 flex-grow pr-1">
-																		<span className="line-clamp-2 block text-left font-black text-[10px] text-black uppercase italic leading-tight antialiased">
+																		<span className="line-clamp-2 block text-left font-black font-display text-[10px] text-black uppercase italic leading-tight antialiased">
 																			{match.name || `Match #${match.id}`}
 																		</span>
 																	</div>
@@ -869,7 +869,7 @@ function TournamentMatchesPage() {
 																		)}
 																	</div>
 																	<div className="flex h-full items-center overflow-hidden px-1.5">
-																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+																		<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase leading-none tracking-tighter">
 																			{match.teamA?.name ||
 																				match.labelTeamA ||
 																				"TBD"}
@@ -894,7 +894,7 @@ function TournamentMatchesPage() {
 																		)}
 																	</div>
 																	<div className="flex h-full items-center overflow-hidden px-1.5">
-																		<span className="block w-full truncate text-left font-black text-[10px] text-black uppercase leading-none tracking-tighter">
+																		<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase leading-none tracking-tighter">
 																			{match.teamB?.name ||
 																				match.labelTeamB ||
 																				"TBD"}
@@ -925,7 +925,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.playoffs")}
 							</h2>
-							<p className="font-bold text-gray-500 text-sm">
+							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
 								{t("matchBuilder.description")}
 							</p>
 						</div>
@@ -1101,14 +1101,14 @@ function TournamentMatchesPage() {
 													>
 														<div className="flex items-center justify-between border-black border-b-2 bg-gray-100 px-3 py-2 text-black">
 															<div className="flex items-center gap-2">
-																<span className="font-black text-gray-500 text-xs uppercase">
+																<span className="font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
 																	{new Date(match.startTime).toLocaleTimeString(
 																		[],
 																		{ hour: "2-digit", minute: "2-digit" },
 																	)}
 																</span>
 																<div className="flex flex-col">
-																	<span className="w-fit rounded-full bg-black px-2 font-bold text-[10px] text-white uppercase">
+																	<span className="w-fit rounded-full bg-black px-2 font-bold font-body text-[10px] text-white uppercase tracking-widest">
 																		{stages.find(
 																			(s) =>
 																				s.id === match.stageId ||
@@ -1118,12 +1118,12 @@ function TournamentMatchesPage() {
 																			t("matches.unknownStage")}
 																	</span>
 																	{match.name && (
-																		<span className="mt-1 font-black text-[10px] text-black uppercase">
+																		<span className="mt-1 font-black font-display text-[10px] text-black uppercase">
 																			{match.name}
 																		</span>
 																	)}
 																	{match.startTime ? (
-																		<div className="mt-1 font-bold text-[9px] text-gray-600">
+																		<div className="mt-1 font-bold font-body text-[9px] text-gray-600 tracking-widest">
 																			📅{" "}
 																			{new Date(
 																				match.startTime,
@@ -1141,23 +1141,23 @@ function TournamentMatchesPage() {
 																			})}
 																		</div>
 																	) : (
-																		<div className="mt-1 font-bold text-[9px] text-red-500">
+																		<div className="mt-1 font-bold font-body text-[9px] text-red-500 tracking-widest">
 																			⚠️ {t("matches.noDateSet")}
 																		</div>
 																	)}
 																	<div className="mt-1">
 																		{match.resultType === "wo" &&
 																			match.status === "finished" && (
-																				<span className="mr-1 border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[9px] text-white uppercase shadow-[1px_1px_0px_0px_#000]">
+																				<span className="mr-1 border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 																					W.O.
 																				</span>
 																			)}
 																		{match.isBettingEnabled ? (
-																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0px_0px_#000]">
+																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-bold font-body text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 																				{t("matches.betsOpen")}
 																			</span>
 																		) : (
-																			<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-black text-[9px] text-gray-400 uppercase">
+																			<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
 																				{t("matches.betsClosed")}
 																			</span>
 																		)}
@@ -1195,12 +1195,12 @@ function TournamentMatchesPage() {
 																				className="h-full w-full object-contain"
 																			/>
 																		) : (
-																			<span className="font-black text-gray-400 text-xs">
+																			<span className="font-bold font-body text-gray-400 text-xs tracking-widest">
 																				?
 																			</span>
 																		)}
 																	</div>
-																	<span className="font-black text-black text-sm uppercase leading-none">
+																	<span className="font-black font-display text-black text-sm uppercase italic leading-none">
 																		{match.teamA
 																			? match.teamA.name
 																			: match.labelTeamA}
@@ -1256,12 +1256,12 @@ function TournamentMatchesPage() {
 																				className="h-full w-full object-contain"
 																			/>
 																		) : (
-																			<span className="font-black text-gray-400 text-xs">
+																			<span className="font-bold font-body text-gray-400 text-xs tracking-widest">
 																				?
 																			</span>
 																		)}
 																	</div>
-																	<span className="font-black text-black text-sm uppercase leading-none">
+																	<span className="font-black font-display text-black text-sm uppercase italic leading-none">
 																		{match.teamB
 																			? match.teamB.name
 																			: match.labelTeamB}

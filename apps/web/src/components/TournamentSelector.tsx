@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { ArrowRight, Calendar, Gamepad2, Globe, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PublicPageShell } from "@/components/PublicPageShell";
 
 export interface TournamentOption {
 	id: number;
@@ -65,17 +66,7 @@ export function TournamentSelector({
 	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 
 	return (
-		<div className="relative flex min-h-screen flex-col items-center overflow-x-hidden bg-paper">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="flex flex-col items-center overflow-x-hidden">
 			{/* Header Section */}
 			<header className="relative z-10 flex w-full justify-center px-4 pt-24 pb-8 md:pt-32 md:pb-12">
 				<div className="mx-auto w-full max-w-2xl -rotate-1 transform">
@@ -202,13 +193,13 @@ export function TournamentSelector({
 
 								{/* Content */}
 								<div className="flex-grow space-y-4 px-5 pb-5">
-									<h2 className="border-ink border-l-4 pl-3 font-black text-2xl text-ink uppercase leading-tight md:text-3xl">
+									<h2 className="border-ink border-l-4 pl-3 font-black font-display text-2xl text-ink uppercase italic leading-tight md:text-3xl">
 										{tournament.name}
 									</h2>
 
 									<div className="grid grid-cols-2 gap-3">
 										<div className="flex flex-col gap-1">
-											<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
+											<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("selector.startDate")}
 											</span>
 											<div className="flex items-center gap-2 rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold font-display text-ink text-sm shadow-[2px_2px_0px_0px_#000]">
@@ -232,7 +223,7 @@ export function TournamentSelector({
 										</div>
 
 										<div className="flex flex-col gap-1">
-											<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
+											<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("selector.currentPhase")}
 											</span>
 											<div
@@ -307,6 +298,6 @@ export function TournamentSelector({
 					{t("selector.pickHint")}
 				</p>
 			</footer>
-		</div>
+		</PublicPageShell>
 	);
 }

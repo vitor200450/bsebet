@@ -23,6 +23,8 @@ interface MedalSummaryProps {
 	}>;
 	userId?: string;
 	showLink?: boolean;
+	/** Hide the internal title row when the parent already provides a section heading. */
+	hideHeader?: boolean;
 	className?: string;
 }
 
@@ -61,38 +63,47 @@ export function MedalSummary({
 	recentMedals,
 	userId,
 	showLink = true,
+	hideHeader = false,
 	className,
 }: MedalSummaryProps) {
 	const { t } = useTranslation("user");
 	const { routeTo, lang } = useLangLink();
 	const hasMedals = total > 0;
 
+	const viewAllLink =
+		showLink && userId ? (
+			<Link
+				{...routeTo("/users/$userId")}
+				params={{ userId, lang }}
+				className="group flex items-center gap-1 font-black font-display text-brawl-blue text-[10px] uppercase tracking-wider transition-colors hover:text-ink"
+			>
+				{t("medals.viewAll")}
+				<ChevronRight
+					className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
+					strokeWidth={3}
+				/>
+			</Link>
+		) : null;
+
 	return (
 		<div className={cn("space-y-4", className)}>
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<div className="rotate-3 transform border-2 border-black bg-[#FFD700] p-1.5 shadow-[2px_2px_0_0_#000]">
-						<Trophy className="h-4 w-4 text-black" strokeWidth={2.5} />
+			{!hideHeader ? (
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<div className="rotate-3 transform border-2 border-black bg-[#FFD700] p-1.5 shadow-[2px_2px_0_0_#000]">
+							<Trophy className="h-4 w-4 text-black" strokeWidth={2.5} />
+						</div>
+						<h3 className="font-black font-display text-black text-sm uppercase italic tracking-tight">
+							{t("medals.yourAchievements")}
+						</h3>
 					</div>
-					<h3 className="font-black text-black text-sm uppercase italic tracking-tight">
-						{t("medals.yourAchievements")}
-					</h3>
+					{viewAllLink}
 				</div>
-				{showLink && userId && (
-					<Link
-						{...routeTo("/users/$userId")}
-						params={{ userId, lang }}
-						className="group flex items-center gap-1 font-black text-[#2e5cff] text-[10px] uppercase tracking-wider transition-colors hover:text-black"
-					>
-						{t("medals.viewAll")}
-						<ChevronRight
-							className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
-							strokeWidth={3}
-						/>
-					</Link>
-				)}
-			</div>
+			) : (
+				viewAllLink && (
+					<div className="flex justify-end">{viewAllLink}</div>
+				)
+			)}
 
 			{!hasMedals ? (
 				// Empty State
@@ -101,10 +112,10 @@ export function MedalSummary({
 						<Trophy className="h-5 w-5 text-gray-400" />
 					</div>
 					<div>
-						<p className="font-black text-black/60 text-sm uppercase italic">
+						<p className="font-black font-display text-black/60 text-sm uppercase italic">
 							{t("medals.empty")}
 						</p>
-						<p className="font-bold text-[10px] text-black/40">
+						<p className="font-bold font-body text-[10px] text-black/40 uppercase tracking-widest">
 							{t("medals.emptySubtitle")}
 						</p>
 					</div>
@@ -128,13 +139,16 @@ export function MedalSummary({
 								strokeWidth={2.5}
 							/>
 							<span
-								className={cn("mt-1 font-black text-2xl", tierConfig.gold.text)}
+								className={cn(
+									"mt-1 font-black font-body text-2xl tabular-nums",
+									tierConfig.gold.text,
+								)}
 							>
 								{gold}
 							</span>
 							<span
 								className={cn(
-									"font-black text-[8px] uppercase tracking-wider",
+									"font-bold font-body text-[8px] uppercase tracking-widest",
 									tierConfig.gold.text,
 								)}
 							>
@@ -157,7 +171,7 @@ export function MedalSummary({
 							/>
 							<span
 								className={cn(
-									"mt-1 font-black text-2xl",
+									"mt-1 font-black font-body text-2xl tabular-nums",
 									tierConfig.silver.text,
 								)}
 							>
@@ -165,7 +179,7 @@ export function MedalSummary({
 							</span>
 							<span
 								className={cn(
-									"font-black text-[8px] uppercase tracking-wider",
+									"font-bold font-body text-[8px] uppercase tracking-widest",
 									tierConfig.silver.text,
 								)}
 							>
@@ -188,7 +202,7 @@ export function MedalSummary({
 							/>
 							<span
 								className={cn(
-									"mt-1 font-black text-2xl",
+									"mt-1 font-black font-body text-2xl tabular-nums",
 									tierConfig.bronze.text,
 								)}
 							>
@@ -196,7 +210,7 @@ export function MedalSummary({
 							</span>
 							<span
 								className={cn(
-									"font-black text-[8px] uppercase tracking-wider",
+									"font-bold font-body text-[8px] uppercase tracking-widest",
 									tierConfig.bronze.text,
 								)}
 							>
@@ -209,17 +223,17 @@ export function MedalSummary({
 					<div className="flex items-center justify-center">
 						<div className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 shadow-[3px_3px_0_0_#000]">
 							<Trophy className="h-4 w-4 text-[#FFD700]" fill="#FFD700" />
-							<span className="font-black text-sm text-white uppercase tracking-wider">
+							<span className="font-bold font-body text-sm text-white uppercase tracking-widest">
 								{t("medals.total")}
 							</span>
-							<span className="font-black text-[#FFD700] text-xl">{total}</span>
+							<span className="font-black font-body text-[#FFD700] text-xl tabular-nums">{total}</span>
 						</div>
 					</div>
 
 					{/* Recent Medals */}
 					{recentMedals && recentMedals.length > 0 && (
 						<div className="space-y-2">
-							<h4 className="font-black text-[10px] text-black/60 uppercase tracking-wider">
+							<h4 className="font-bold font-body text-[10px] text-black/60 uppercase tracking-widest">
 								{t("medals.latest")}
 							</h4>
 							<div className="space-y-2">
@@ -229,10 +243,10 @@ export function MedalSummary({
 										className="flex items-center gap-2 rounded border border-black/10 bg-white p-2"
 									>
 										<MedalBadge placement={medal.placement} size="sm" />
-										<span className="flex-1 truncate font-bold text-black text-xs">
+										<span className="flex-1 truncate font-bold font-display text-black text-xs">
 											{medal.tournamentName}
 										</span>
-										<span className="font-black text-[10px] text-black/40">
+										<span className="font-black font-body text-[10px] text-black/40 tabular-nums">
 											#{medal.placement}º
 										</span>
 									</div>

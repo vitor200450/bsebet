@@ -102,7 +102,7 @@ export function TournamentTeamsManager({
 		<div className="space-y-6">
 			<div className="flex items-end gap-4 border-2 border-black bg-gray-50 p-4">
 				<div className="flex-1">
-					<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+					<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 						{t("teams.addTitle")}
 					</label>
 					<CustomSelect
@@ -208,7 +208,7 @@ export function TournamentTeamsManager({
 										</h4>
 										{team.region && (
 											<span
-												className={`flex w-fit items-center gap-1 rounded-full border-2 border-black px-2 py-0.5 font-bold text-[10px] ${getRegionColor(
+												className={`flex w-fit items-center gap-1 rounded-full border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest ${getRegionColor(
 													team.region,
 												)}`}
 											>

@@ -1,8 +1,9 @@
 import { useRouter } from "@tanstack/react-router";
-import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import {
 	createMatchDay,
 	deleteMatchDay,
@@ -166,7 +167,7 @@ export function MatchDaysManager({
 				</h3>
 				<div className="flex items-end gap-4">
 					<div className="flex-1">
-						<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+						<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 							{t("matchDays.nameLabel")}
 						</label>
 						<input
@@ -200,7 +201,7 @@ export function MatchDaysManager({
 						className="flex h-[46px] items-center gap-2 border-[3px] border-black bg-black px-6 py-2 font-black text-sm text-white uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] transition-all hover:bg-[#ccff00] hover:text-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{isCreating ? (
-							<Loader2 className="h-5 w-5 animate-spin" />
+							<InlineLoader size="md" />
 						) : (
 							<Plus className="h-5 w-5" strokeWidth={3} />
 						)}
@@ -224,7 +225,7 @@ export function MatchDaysManager({
 								<div className="space-y-4">
 									<div className="flex items-end gap-4">
 										<div className="flex-1">
-											<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+											<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 												{t("matchDays.editNameLabel")}
 											</label>
 											<input
@@ -312,13 +313,13 @@ export function MatchDaysManager({
 											</h4>
 											<div className="mt-1 flex items-center gap-2">
 												<span
-													className={`rounded-full border-2 px-2 py-0.5 font-bold text-[10px] uppercase ${getStatusColor(
+													className={`rounded-full border-2 px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest ${getStatusColor(
 														day.status,
 													)}`}
 												>
 													{getStatusLabel(day.status)}
 												</span>
-												<span className="font-bold text-gray-400 text-xs">
+												<span className="font-bold text-gray-400 text-xs font-body tracking-widest">
 													{t("matchDays.matchCount", {
 														count: day.matches.length,
 													})}
@@ -331,19 +332,19 @@ export function MatchDaysManager({
 										{/* Betting Status Indicator - Based on Match Day Status */}
 										<div className="mr-2 flex flex-col items-end">
 											{day.status === "open" ? (
-												<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase shadow-[1px_1px_0px_0px_#000]">
+												<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-bold font-body text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 													{t("matchDays.betsOpenBadge")}
 												</span>
 											) : day.status === "locked" ? (
-												<span className="border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-black text-[9px] text-white uppercase">
+												<span className="border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest">
 													{t("matchDays.betsClosedBadge")}
 												</span>
 											) : day.status === "finished" ? (
-												<span className="border border-black bg-black px-1.5 py-0.5 font-black text-[9px] text-white uppercase">
+												<span className="border border-black bg-black px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest">
 													{t("matchDays.finishedBadge")}
 												</span>
 											) : (
-												<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-black text-[9px] text-gray-400 uppercase">
+												<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
 													{t("matchDays.draftBadge")}
 												</span>
 											)}

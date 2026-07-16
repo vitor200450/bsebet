@@ -82,7 +82,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="flex items-center justify-between">
-				<label className="ml-1 block font-black text-black text-xs uppercase">
+				<label className="ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 					{t("stageBuilder.title")}
 				</label>
 				<button
@@ -112,7 +112,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 
 						<div className="mb-4 grid grid-cols-1 gap-4 pr-6 md:grid-cols-2">
 							<div>
-								<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+								<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 									{t("stageBuilder.stageName")}
 								</label>
 								<input
@@ -146,7 +146,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 						<div className="mb-4 border-2 border-gray-200 bg-white p-3">
 							<div className="mb-2 flex items-center gap-2 text-gray-400">
 								<Settings className="h-3 w-3" />
-								<span className="font-bold text-[10px] uppercase">
+								<span className="font-bold font-body text-[10px] uppercase tracking-widest">
 									{t("stageBuilder.settings")}
 								</span>
 							</div>
@@ -180,7 +180,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											]}
 										/>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("stageBuilder.groupsCount")}
 											</label>
 											<input
@@ -199,7 +199,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("stageBuilder.teamsPerGroup")}
 											</label>
 											<input
@@ -218,7 +218,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("stageBuilder.topNAdvance")}
 											</label>
 											<input
@@ -241,7 +241,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 								{stage.type === "Swiss" && (
 									<>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												Participantes
 											</label>
 											<input
@@ -260,7 +260,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												Vitórias p/ Avançar
 											</label>
 											<input
@@ -279,7 +279,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												Derrotas p/ Eliminar
 											</label>
 											<input
@@ -298,7 +298,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												Máx. Rodadas
 											</label>
 											<input
@@ -317,7 +317,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												Avançam p/ Playoff
 											</label>
 											<input
@@ -365,7 +365,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 											/>
 										</button>
 										<div>
-											<label className="block font-black text-[10px] text-gray-500 uppercase">
+											<label className="block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("stageBuilder.thirdPlaceMatch")}
 											</label>
 											<p className="text-[9px] text-gray-400">
@@ -395,13 +395,13 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 						<div className="mt-4 border-2 border-gray-200 bg-white p-3">
 							<div className="mb-2 flex items-center gap-2 text-gray-400">
 								<Settings className="h-3 w-3" />
-								<span className="font-bold text-[10px] uppercase">
+								<span className="font-bold font-body text-[10px] uppercase tracking-widest">
 									{t("stageBuilder.scoringOverrides")}
 								</span>
 							</div>
 							<div className="grid grid-cols-2 gap-2">
 								<div>
-									<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+									<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("stageBuilder.winnerPts")}
 									</label>
 									<input
@@ -432,7 +432,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 									/>
 								</div>
 								<div>
-									<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+									<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("stageBuilder.exactPts")}
 									</label>
 									<input
@@ -460,7 +460,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 								</div>
 								<div>
 									<label
-										className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+										className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 										title={t("stageBuilder.underdogT1Tooltip")}
 									>
 										{t("stageBuilder.underdogT1")}
@@ -490,7 +490,7 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 								</div>
 								<div>
 									<label
-										className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+										className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 										title={t("stageBuilder.underdogT2Tooltip")}
 									>
 										{t("stageBuilder.underdogT2")}

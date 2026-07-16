@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { InlineLoader } from "@/components/inline-loader";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
@@ -71,10 +71,10 @@ function RouteComponent() {
 				{/* Content */}
 				<div className="space-y-6">
 					<div className="space-y-2 text-center">
-						<h2 className="font-black text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
+						<h2 className="font-black font-display text-2xl text-black uppercase italic tracking-tighter md:text-3xl">
 							{t("welcome")}
 						</h2>
-						<p className="font-bold text-gray-500 text-xs uppercase tracking-[0.15em]">
+						<p className="font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
 							{t("heroSubtitle")}
 						</p>
 					</div>
@@ -93,7 +93,7 @@ function RouteComponent() {
 					>
 						<div className="relative z-10 flex items-center gap-3">
 							{isLoading ? (
-								<Loader2 className="h-5 w-5 animate-spin text-black" />
+								<InlineLoader size="md" />
 							) : (
 								<>
 									<div className="flex h-7 w-7 items-center justify-center rounded-sm border-2 border-black bg-white p-1">

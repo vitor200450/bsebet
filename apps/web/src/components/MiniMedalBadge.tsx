@@ -103,7 +103,7 @@ export function MiniMedalBadge({
 			{showCount && count !== undefined && count > 0 && (
 				<div
 					className={cn(
-						"absolute flex items-center justify-center rounded-full border border-black bg-black font-black text-white shadow-[1px_1px_0_0_rgba(0,0,0,0.3)]",
+						"absolute flex items-center justify-center rounded-full border border-black bg-black font-black font-body text-white tabular-nums shadow-[1px_1px_0_0_rgba(0,0,0,0.3)]",
 						sizeClasses.countBadge,
 					)}
 				>
@@ -146,7 +146,7 @@ export function MedalCountSummary({
 				)}
 			>
 				<Trophy size={sizeConfig[size].icon} />
-				<span className={cn("font-bold", sizeConfig[size].font)}>0</span>
+				<span className={cn("font-bold font-body tabular-nums", sizeConfig[size].font)}>0</span>
 			</div>
 		);
 	}
@@ -174,7 +174,7 @@ export function MedalCountSummary({
 			)}
 			{showTotal && totalMedals > 0 && (
 				<span
-					className={cn("ml-1 font-black text-black", sizeConfig[size].font)}
+					className={cn("ml-1 font-black font-body text-black tabular-nums", sizeConfig[size].font)}
 				>
 					({totalMedals})
 				</span>

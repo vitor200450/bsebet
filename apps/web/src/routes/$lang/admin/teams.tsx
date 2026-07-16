@@ -3,7 +3,6 @@ import {
 	Copy,
 	Edit2,
 	Image as ImageIcon,
-	Loader2,
 	Plus,
 	Search,
 	Trash2,
@@ -13,6 +12,7 @@ import {
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import { deleteTeam, getTeams, saveTeam } from "@/server/teams";
 import { useSetHeader } from "../../../components/HeaderContext";
@@ -259,9 +259,9 @@ function AdminTeamsPage() {
 					<button
 						type="button"
 						onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-						className="relative flex w-full min-w-[120px] items-center gap-2 border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold text-black text-sm uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
+						className="relative flex w-full min-w-[120px] items-center gap-2 border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 					>
-						<span className="mr-1 text-gray-400 text-xs">
+						<span className="mr-1 font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
 							{t("common:actions.sort")}:
 						</span>
 						{sortOrder === "recent"
@@ -287,7 +287,7 @@ function AdminTeamsPage() {
 										setSortOrder(opt.id);
 										setIsSortDropdownOpen(false);
 									}}
-									className={`w-full px-4 py-2 text-left font-bold text-black text-xs uppercase transition-colors hover:bg-[#ccff00] ${
+									className={`w-full px-4 py-2 text-left font-bold font-body text-black text-xs uppercase tracking-widest transition-colors hover:bg-[#ccff00] ${
 										sortOrder === opt.id ? "bg-gray-100" : ""
 									}`}
 								>
@@ -305,7 +305,7 @@ function AdminTeamsPage() {
 						placeholder={t("teams.searchPlaceholder")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-64"
+						className="w-full border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-64"
 					/>
 					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 				</div>
@@ -361,12 +361,12 @@ function AdminTeamsPage() {
 										{team.name}
 									</h3>
 									<div className="mt-2 flex items-center justify-center gap-2">
-										<span className="rounded border border-gray-300 bg-gray-100 px-2 py-0.5 font-mono text-gray-500 text-xs">
+										<span className="rounded border border-gray-300 bg-gray-100 px-2 py-0.5 font-bold font-body text-[10px] text-gray-500 tracking-widest">
 											{team.slug}
 										</span>
 										{team.region && (
 											<span
-												className={`rounded-full border-2 border-black px-2 py-0.5 font-bold text-xs ${getRegionColor(
+												className={`rounded-full border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest ${getRegionColor(
 													team.region,
 												)}`}
 											>
@@ -450,7 +450,7 @@ function AdminTeamsPage() {
 							{/* Left: Inputs */}
 							<div className="space-y-4">
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("teams.nameLabel")}
 									</label>
 									<input
@@ -464,7 +464,7 @@ function AdminTeamsPage() {
 								</div>
 
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("teams.slugLabel")}
 									</label>
 									<div className="relative">
@@ -484,7 +484,7 @@ function AdminTeamsPage() {
 
 								<div className="grid grid-cols-2 gap-4">
 									<div className="relative">
-										<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+										<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 											{t("teams.region")}
 										</label>
 
@@ -532,7 +532,7 @@ function AdminTeamsPage() {
 							{/* Right: Preview & Logo */}
 							<div className="flex flex-col gap-4">
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("teams.logoUrlLabel")}
 									</label>
 									<div className="flex gap-2">
@@ -588,7 +588,7 @@ function AdminTeamsPage() {
 										</button>
 									</div>
 									{formData.logoUrl.startsWith("data:") && (
-										<p className="mt-1 font-bold text-[10px] text-red-500 uppercase italic">
+										<p className="mt-1 font-bold font-body text-[10px] text-red-500 uppercase tracking-widest italic">
 											{t("teams.base64Warning")}{" "}
 											<Link
 												to={linkTo("/admin/migrate-logos")}
@@ -622,7 +622,7 @@ function AdminTeamsPage() {
 									{/* Fake region badge preview */}
 									{formData.region && (
 										<span
-											className={`absolute top-2 right-2 rounded-full border-2 border-black px-2 py-0.5 font-bold text-[10px] shadow-sm ${getRegionColor(
+											className={`absolute top-2 right-2 rounded-full border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] tracking-widest shadow-sm ${getRegionColor(
 												formData.region,
 											)}`}
 										>
@@ -648,7 +648,7 @@ function AdminTeamsPage() {
 									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black text-lg uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000] disabled:cursor-not-allowed disabled:opacity-70"
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-5 w-5 animate-spin" />
+										<InlineLoader size="md" />
 									) : (
 										<Plus strokeWidth={4} className="h-5 w-5" />
 									)}
@@ -684,7 +684,7 @@ function AdminTeamsPage() {
 									</div>
 								)}
 								<div>
-									<span className="block font-black text-[10px] text-gray-500 uppercase tracking-widest">
+									<span className="block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("teams.selectedTeam")}
 									</span>
 									<span className="block font-black text-black text-xl uppercase italic">
@@ -700,7 +700,7 @@ function AdminTeamsPage() {
 									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-6 w-6 animate-spin" />
+										<InlineLoader size="lg" />
 									) : (
 										t("teams.deleteConfirmAction")
 									)}

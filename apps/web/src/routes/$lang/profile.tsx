@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ImageCropper } from "@/components/image-cropper";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { getUser } from "@/functions/get-user";
 import { useLangLink } from "@/i18n/useLangLink";
 import { authClient } from "@/lib/auth-client";
@@ -155,24 +156,15 @@ export function ProfilePageContent({
 	const displayImage = avatarPreview ?? user?.image;
 
 	return (
-		<div className="relative min-h-screen bg-[#f0f0f0] pb-12">
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-12">
 			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
 				<div className="mb-8 md:mb-10">
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
-							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+							<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl">
 								{t("title")}
 							</h1>
-							<p className="mt-2 font-bold text-gray-600 text-lg">
+							<p className="mt-2 font-bold font-display text-gray-600 text-lg">
 								{t("editInfo")}
 							</p>
 						</div>
@@ -180,7 +172,7 @@ export function ProfilePageContent({
 							<Link
 								{...routeTo("/users/$userId")}
 								params={{ userId: user.id }}
-								className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
+								className="group flex items-center gap-2 font-black font-display text-brawl-blue text-sm uppercase tracking-wider transition-colors hover:text-ink"
 							>
 								{t("viewPublic")}
 								<ChevronRight
@@ -200,7 +192,7 @@ export function ProfilePageContent({
 									<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2e5cff]">
 										<Camera className="h-4 w-4 text-white" strokeWidth={2.5} />
 									</div>
-									<h2 className="font-black text-[#121212] text-lg uppercase tracking-tight">
+									<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
 										{t("avatarSection")}
 									</h2>
 								</div>
@@ -237,7 +229,7 @@ export function ProfilePageContent({
 									<div className="grid w-full grid-cols-1 gap-3">
 										<button
 											onClick={() => fileInputRef.current?.click()}
-											className="rounded-lg border-2 border-black bg-[#2e5cff] px-4 py-3 font-black text-sm text-white uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
+											className="rounded-lg border-2 border-black bg-[#2e5cff] px-4 py-3 font-black font-display text-sm text-white uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
 										>
 											{t("changePhoto")}
 										</button>
@@ -245,7 +237,7 @@ export function ProfilePageContent({
 											onClick={handleRestoreGoogleAvatar}
 											disabled={isRestoring}
 											title={t("restoreGoogle")}
-											className="flex items-center justify-center gap-2 rounded-lg border-2 border-black bg-white px-4 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] disabled:opacity-50"
+											className="flex items-center justify-center gap-2 rounded-lg border-2 border-black bg-white px-4 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] disabled:opacity-50"
 										>
 											<svg
 												viewBox="0 0 24 24"
@@ -258,7 +250,7 @@ export function ProfilePageContent({
 										</button>
 									</div>
 
-									<p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
+									<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("avatarNote")}
 									</p>
 
@@ -280,14 +272,14 @@ export function ProfilePageContent({
 								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ff2e2e]">
 									<Lock className="h-4 w-4 text-white" strokeWidth={2.5} />
 								</div>
-								<h2 className="font-black text-[#121212] text-lg uppercase tracking-tight">
+								<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
 									{t("accountSection")}
 								</h2>
 							</div>
 
 							<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
-									<div className="mb-1 font-black text-[9px] text-gray-500 uppercase tracking-widest">
+									<div className="mb-1 font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("nameLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
@@ -303,7 +295,7 @@ export function ProfilePageContent({
 								</div>
 
 								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
-									<div className="mb-1 font-black text-[9px] text-gray-500 uppercase tracking-widest">
+									<div className="mb-1 font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("emailLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
@@ -319,7 +311,7 @@ export function ProfilePageContent({
 								</div>
 							</div>
 
-							<p className="mt-4 font-bold text-[9px] text-gray-400 uppercase tracking-wider">
+							<p className="mt-4 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
 								{t("googleAccountNote")}
 							</p>
 						</div>
@@ -331,14 +323,14 @@ export function ProfilePageContent({
 										id_card
 									</span>
 								</div>
-								<h2 className="font-black text-[#121212] text-lg uppercase tracking-tight">
+								<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
 									{t("nicknameSection")}
 								</h2>
 							</div>
 
 							<div className="space-y-4">
 								<div>
-									<label className="mb-2 block font-black text-[10px] text-gray-500 uppercase tracking-widest">
+									<label className="mb-2 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("nicknameLabel")}
 									</label>
 									<div className="relative">
@@ -353,7 +345,7 @@ export function ProfilePageContent({
 											{nickname.length}/50
 										</span>
 									</div>
-									<p className="mt-2 font-bold text-[10px] text-gray-500 uppercase tracking-wider">
+									<p className="mt-2 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("displayNameHint")}
 									</p>
 								</div>
@@ -361,7 +353,7 @@ export function ProfilePageContent({
 								<button
 									onClick={handleSave}
 									disabled={isSaving}
-									className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-[#ffc700] px-5 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none disabled:opacity-60"
+									className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-[#ffc700] px-5 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none disabled:opacity-60"
 								>
 									<Save className="h-4 w-4" strokeWidth={2.5} />
 									{isSaving ? t("saving") : t("saveChanges")}
@@ -385,6 +377,6 @@ export function ProfilePageContent({
 					onCancel={() => setCroppingImage(null)}
 				/>
 			)}
-		</div>
+		</PublicPageShell>
 	);
 }

@@ -281,29 +281,21 @@ export function BettingCarousel({
 
 	if (!currentMatch)
 		return (
-			<div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-paper p-6">
-				<div
-					className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-					style={{
-						backgroundImage:
-							'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-						backgroundRepeat: "repeat",
-					}}
-				/>
+			<div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-transparent p-6 text-ink">
 				<div className="relative z-10 w-full max-w-sm">
-					<div className="flex flex-col items-center rounded-lg border-2 border-black bg-white p-8 text-center shadow-[4px_4px_0_0_#000]">
-						<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-black bg-tape shadow-[2px_2px_0_0_#000]">
+					<div className="flex flex-col items-center rounded-lg border-2 border-black bg-white p-8 text-center shadow-comic-md">
+						<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-black bg-tape shadow-comic-sm">
 							<span className="material-symbols-outlined text-2xl text-gray-500">
 								calendar_clock
 							</span>
 						</div>
 
-						<h2 className="mb-2 font-black font-display text-2xl text-ink uppercase">
+						<h2 className="mb-2 font-black font-display text-2xl text-ink uppercase italic">
 							{t("empty.title")}{" "}
 							<span className="text-brawl-red">{t("empty.now")}</span>
 						</h2>
 
-						<p className="mb-6 font-bold text-gray-600 text-sm">
+						<p className="mb-6 font-bold font-display text-gray-600 text-sm">
 							{t("empty.noMatches")}
 						</p>
 
@@ -311,7 +303,7 @@ export function BettingCarousel({
 						onShowReview ? (
 							<button
 								onClick={onShowReview}
-								className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-brawl-red py-3 font-black text-white uppercase shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000] active:translate-y-0.5 active:shadow-none"
+								className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-brawl-red py-3 font-black font-display text-white uppercase shadow-comic transition-all hover:shadow-comic-md active:translate-y-0.5 active:shadow-none"
 							>
 								<span className="material-symbols-outlined text-lg">
 									rate_review
@@ -319,7 +311,7 @@ export function BettingCarousel({
 								{t("reviewBets")}
 							</button>
 						) : (
-							<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-bold text-gray-400 text-sm">
+							<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
 								<span className="material-symbols-outlined text-sm">
 									hourglass_empty
 								</span>
@@ -333,20 +325,11 @@ export function BettingCarousel({
 
 	return (
 		<>
-			<div className="relative flex w-full flex-col items-center overflow-x-hidden bg-paper pt-20 pb-24 font-body text-ink md:pb-12">
-				<div
-					className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-					style={{
-						backgroundImage:
-							'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-						backgroundRepeat: "repeat",
-					}}
-				/>
-
+			<div className="relative flex w-full flex-col items-center overflow-x-hidden bg-transparent pt-20 pb-24 font-body text-ink md:pb-12">
 				<main className="relative z-10 mx-auto flex w-full max-w-[500px] flex-col items-center px-4">
 					{/* Tournament Header */}
 					<header className="mb-6 flex w-full flex-col items-center text-center">
-						<div className="mb-4 flex items-center gap-3 rounded-md border-2 border-black bg-white px-4 py-2.5 shadow-[3px_3px_0_0_#000]">
+						<div className="mb-4 flex items-center gap-3 rounded-md border-2 border-black bg-white px-4 py-2.5 shadow-comic">
 							{currentMatch.tournamentLogoUrl && (
 								<img
 									src={currentMatch.tournamentLogoUrl}
@@ -376,7 +359,7 @@ export function BettingCarousel({
 								"rounded-full px-3 py-1 font-black text-[10px] uppercase",
 								isEffectiveReadOnly
 									? "bg-tape text-gray-600"
-									: "bg-[#ccff00] text-black",
+									: "bg-electric-lime text-black",
 							)}
 						>
 							{isEffectiveReadOnly ? t("betsClosed") : t("betsOpen")}
@@ -403,7 +386,7 @@ export function BettingCarousel({
 									</div>
 
 									{/* Match Card Container */}
-									<div className="relative z-10 overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000]">
+									<div className="relative z-10 overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-comic-md">
 										{/* Match Counter */}
 										<div className="border-black border-b-2 bg-tape py-1.5 text-center">
 											<span className="font-black text-[10px] text-ink uppercase tracking-wider">
@@ -418,7 +401,7 @@ export function BettingCarousel({
 										<div className="relative grid h-40 grid-cols-2 md:h-48">
 											{/* VS Badge - Centered */}
 											<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-white shadow-[2px_2px_0_0_#000] md:h-10 md:w-10">
+												<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-white shadow-comic-sm md:h-10 md:w-10">
 													<span className="font-black font-display text-ink text-xs md:text-sm">
 														VS
 													</span>
@@ -444,7 +427,7 @@ export function BettingCarousel({
 												)}
 											>
 												{isSelected(currentMatch.teamA?.id || 0) && (
-													<div className="pointer-events-none absolute inset-0 z-20 border-[#ccff00] border-[4px]" />
+													<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
 												)}
 
 												<div className="relative z-10 flex h-full w-full flex-col">
@@ -488,7 +471,7 @@ export function BettingCarousel({
 												)}
 											>
 												{isSelected(currentMatch.teamB?.id || 0) && (
-													<div className="pointer-events-none absolute inset-0 z-20 border-[#ccff00] border-[4px]" />
+													<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
 												)}
 
 												<div className="relative z-10 flex h-full w-full flex-col">
@@ -753,7 +736,7 @@ export function BettingCarousel({
 														isDisabled || isEffectiveReadOnly
 															? "cursor-not-allowed border-gray-300 bg-gray-100 opacity-50"
 															: isOptionSelected
-																? "border-black bg-white shadow-[3px_3px_0_0_#000]"
+																? "border-black bg-white shadow-comic"
 																: "border-gray-300 bg-white hover:border-gray-400 hover:shadow-[2px_2px_0_0_#ccc]",
 													)}
 												>
@@ -785,7 +768,7 @@ export function BettingCarousel({
 														className={clsx(
 															"mt-0.5 rounded px-1.5 py-0.5 font-bold text-[9px] uppercase",
 															isOptionSelected
-																? "bg-[#ccff00] text-black"
+																? "bg-electric-lime text-black"
 																: "text-gray-500",
 														)}
 													>
@@ -806,12 +789,12 @@ export function BettingCarousel({
 							onClick={handleNext}
 							disabled={!selectedWinnerId || !selectedScore}
 							className={clsx(
-								"flex w-full items-center justify-center gap-2 rounded-md border-2 border-black py-3.5 font-black font-display text-base text-white uppercase shadow-[3px_3px_0_0_#000] transition-all active:translate-y-0.5 active:shadow-none md:text-lg",
+								"flex w-full items-center justify-center gap-2 rounded-md border-2 border-black py-3.5 font-black font-display text-base text-white uppercase shadow-comic transition-all active:translate-y-0.5 active:shadow-none md:text-lg",
 								!selectedWinnerId || !selectedScore
 									? "cursor-not-allowed border-gray-400 bg-gray-400"
 									: activeAccentColor === "brawl-blue"
-										? "bg-brawl-blue hover:shadow-[4px_4px_0_0_#000]"
-										: "bg-brawl-red hover:shadow-[4px_4px_0_0_#000]",
+										? "bg-brawl-blue hover:shadow-comic-md"
+										: "bg-brawl-red hover:shadow-comic-md",
 							)}
 						>
 							<span className="material-symbols-outlined text-lg">
@@ -837,7 +820,7 @@ export function BettingCarousel({
 									className={clsx(
 										"h-2.5 rounded-full border-2 border-black transition-all duration-200",
 										i === currentIndex
-											? "w-8 bg-[#ccff00]"
+											? "w-8 bg-electric-lime"
 											: hasPrediction
 												? "w-2.5 bg-green-500 hover:bg-green-600"
 												: "w-2.5 bg-white hover:bg-gray-200",

@@ -4,6 +4,7 @@ import { ArrowLeft, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CustomSelect } from "@/components/admin/CustomInputs";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { TrophyCase } from "@/components/RealisticMedal";
 import { TeamLogo } from "@/components/TeamLogo";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -101,22 +102,12 @@ function UserProfilePage() {
 		.toUpperCase();
 
 	return (
-		<div className="relative min-h-screen bg-[#f0f0f0] pb-12 font-display">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-12 font-display">
 			{/* Page Header */}
 			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
 				<div className="mb-8 flex flex-col justify-between gap-4 md:mb-10 md:flex-row md:items-end">
 					<div>
-						<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+						<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl">
 							{t("profile")}
 						</h1>
 					</div>
@@ -124,7 +115,7 @@ function UserProfilePage() {
 					<Link
 						to={linkTo("/leaderboard")}
 						search={{ page: 1, pageSize: 20 } as any}
-						className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
+						className="group flex items-center gap-2 font-black font-display text-brawl-blue text-sm uppercase tracking-wider transition-colors hover:text-ink"
 					>
 						<ArrowLeft
 							className="h-4 w-4 transition-transform group-hover:-translate-x-1"
@@ -161,15 +152,15 @@ function UserProfilePage() {
 								</div>
 
 								<div className="mt-8 mb-2 -rotate-2 border-[2px] border-black bg-[#ffc700] px-4 py-1 shadow-[2px_2px_0_0_#000]">
-									<p className="font-black text-black text-xs uppercase tracking-[0.2em]">
-										PLAYER
-									</p>
+								<p className="font-bold font-body text-black text-xs uppercase tracking-[0.2em]">
+									PLAYER
+								</p>
 								</div>
 
-								<h2 className="mt-2 mb-1 w-full skew-x-[-6deg] truncate text-center font-black text-3xl text-black uppercase italic tracking-tighter">
+								<h2 className="mt-2 mb-1 w-full skew-x-[-6deg] truncate text-center font-black font-display text-3xl text-black uppercase italic tracking-tighter">
 									{user.nickname ?? user.name}
 								</h2>
-								<p className="mt-2 font-bold text-gray-500 text-sm uppercase">
+								<p className="mt-2 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 									{t("memberSince")} {memberSince}
 								</p>
 							</div>
@@ -189,7 +180,7 @@ function UserProfilePage() {
 										query_stats
 									</span>
 								</div>
-								<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
+								<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 									{t("stats.general")}
 								</h2>
 							</div>
@@ -204,10 +195,10 @@ function UserProfilePage() {
 											</span>
 										</div>
 									</div>
-									<div className="font-black text-3xl text-[#121212] md:text-4xl">
+									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.totalPoints}
 									</div>
-									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("totalPoints")}
 									</div>
 								</div>
@@ -221,11 +212,11 @@ function UserProfilePage() {
 											</span>
 										</div>
 									</div>
-									<div className="font-black text-3xl text-[#121212] md:text-4xl">
+									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.accuracy}
 										<span className="text-xl">%</span>
 									</div>
-									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("hitRate")}
 									</div>
 								</div>
@@ -239,10 +230,10 @@ function UserProfilePage() {
 											</span>
 										</div>
 									</div>
-									<div className="font-black text-3xl text-[#121212] md:text-4xl">
+									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.perfectPicks}
 									</div>
-									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("exactScores")}
 									</div>
 								</div>
@@ -256,10 +247,10 @@ function UserProfilePage() {
 											</span>
 										</div>
 									</div>
-									<div className="mb-1 font-black text-3xl text-white md:text-4xl">
+									<div className="mb-1 font-black font-body text-3xl text-white tabular-nums md:text-4xl">
 										{stats.underdogWins}
 									</div>
-									<div className="mt-1 font-bold text-[10px] text-white/80 uppercase tracking-wider">
+									<div className="mt-1 font-bold font-body text-[10px] text-white/80 uppercase tracking-widest">
 										{t("stats.underdogs")}
 									</div>
 								</div>
@@ -273,10 +264,10 @@ function UserProfilePage() {
 											</span>
 										</div>
 									</div>
-									<div className="font-black text-3xl text-[#121212] md:text-4xl">
+									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.totalBets}
 									</div>
-									<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("totalBets")}
 									</div>
 								</div>
@@ -292,7 +283,7 @@ function UserProfilePage() {
 											sports_esports
 										</span>
 									</div>
-									<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
+									<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 										{t("recentBets")}
 									</h2>
 									{betsByTournament.length > 1 && (
@@ -333,7 +324,7 @@ function UserProfilePage() {
 												) : (
 													<div className="h-5 w-5 -skew-x-12 transform border-2 border-black bg-[#ffc700]" />
 												)}
-												<h3 className="font-black text-black text-lg uppercase tracking-tight md:text-xl">
+												<h3 className="font-black font-display text-black text-lg uppercase italic tracking-tight md:text-xl">
 													{tournamentGroup.name}
 												</h3>
 											</div>
@@ -566,7 +557,7 @@ function UserProfilePage() {
 											emoji_events
 										</span>
 									</div>
-									<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
+									<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 										{t("stats.tournamentHistory")}
 									</h2>
 								</div>
@@ -655,6 +646,6 @@ function UserProfilePage() {
 					</div>
 				</div>
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }

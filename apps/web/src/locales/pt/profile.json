@@ -39,6 +39,8 @@
 		"playerMenu": "Menu do Jogador",
 		"commandCenter": "Central de Comando",
 		"medals": "Medalhas",
+		"pointsLabel": "Pontos",
+		"pointsShort": "{{count}} pts",
 		"myBets": "Meus Palpites",
 		"signOut": "Sair da Conta"
 	}

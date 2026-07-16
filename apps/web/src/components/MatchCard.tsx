@@ -133,17 +133,17 @@ export function MatchCard({
 				return (
 					<div className="absolute -top-2 left-4 z-20 flex items-center gap-2">
 						{cleanedLabel && (
-							<div className="-rotate-1 skew-x-[-12deg] transform border-2 border-white bg-black px-3 py-0.5 font-black text-[10px] text-white uppercase italic shadow-[2px_2px_0_0_#000] md:text-xs">
+							<div className="-rotate-1 skew-x-[-12deg] transform border-2 border-white bg-black px-3 py-0.5 font-black text-[10px] text-white uppercase italic shadow-comic-sm md:text-xs">
 								<span className="block skew-x-[12deg]">{cleanedLabel}</span>
 							</div>
 						)}
 						{initialBet && showPredictionScore && (
-							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ccff00] px-2 py-0.5 font-black text-[8px] text-black uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
+							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-electric-lime px-2 py-0.5 font-black text-[8px] text-black uppercase shadow-comic-sm duration-300 md:text-[10px]">
 								{t("betSaved")}
 							</div>
 						)}
 						{isWalkover && isFinished && (
-							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-[#ff2e2e] px-2 py-0.5 font-black text-[8px] text-white uppercase shadow-[2px_2px_0_0_#000] duration-300 md:text-[10px]">
+							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-brawl-red px-2 py-0.5 font-black text-[8px] text-white uppercase shadow-comic-sm duration-300 md:text-[10px]">
 								{t("badges.wo")}
 							</div>
 						)}
@@ -153,7 +153,7 @@ export function MatchCard({
 
 			<div
 				className={clsx(
-					"relative overflow-visible border-2 border-black bg-white shadow-[4px_4px_0_0_#000] transition-all",
+					"relative overflow-visible border-2 border-black bg-white shadow-comic-md transition-all",
 					isLive
 						? "border-red-600 bg-red-50 ring-2 ring-red-600/20"
 						: "hover:bg-zinc-50",
@@ -166,7 +166,7 @@ export function MatchCard({
 					<div
 						className={clsx(
 							"relative flex items-center justify-end gap-2 overflow-hidden rounded-lg py-1 pr-1 transition-all md:h-full md:gap-3 md:pr-1 lg:pr-2",
-							userPredictedWinnerA ? "bg-[#ccff00]/40" : "",
+							userPredictedWinnerA ? "bg-electric-lime/40" : "",
 						)}
 					>
 						<div className="z-10 flex min-w-0 flex-col items-end leading-tight">
@@ -261,7 +261,7 @@ export function MatchCard({
 					<div
 						className={clsx(
 							"relative flex items-center justify-start gap-2 overflow-hidden rounded-lg py-1 pr-1 pl-1 transition-all md:h-full md:gap-3 md:pr-1 md:pl-1 lg:pr-2 lg:pl-2",
-							userPredictedWinnerB ? "bg-[#ccff00]/40" : "",
+							userPredictedWinnerB ? "bg-electric-lime/40" : "",
 						)}
 					>
 						{/* Logo */}

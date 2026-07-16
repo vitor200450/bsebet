@@ -2,20 +2,21 @@
 	"title": "Leaderboard",
 	"subtitle": "The best predictors on BSEN Pickems",
 	"rankingCriteria": "Ranking Criteria",
+	"criteriaToggle": "How ranking works",
 	"tabs": {
-		"global": "Global Ranking",
+		"global": "Global",
 		"season": "Season",
 		"tournament": "By Tournament"
 	},
 	"columns": {
-		"position": "Position",
+		"position": "Pos",
 		"player": "Player",
-		"score": "Score",
+		"score": "Pts",
 		"underdogs": "Underdogs",
 		"globalPosition": "Overall position",
 		"hits": "Hits",
 		"perfect": "Perfect",
-		"hitRate": "Hit Rate",
+		"hitRate": "Rate",
 		"medals": "Medals",
 		"decisiveMatch": "Decisive Match",
 		"lastMonthResult": "Previous month result",
@@ -32,5 +33,13 @@
 	"legend": "Legend",
 	"empty": "No data available",
 	"emptyHint": "Be the first to score!",
-	"selectTournament": "Filter tournament"
+	"selectTournament": "Filter tournament",
+	"restOfBoard": "Rest of the board",
+	"showingRange": "{{from}}-{{to}} of {{total}}",
+	"prevPage": "Previous",
+	"nextPage": "Next",
+	"jumpToYou": "Jump to you",
+	"yourRank": "Your rank",
+	"you": "You",
+	"pts": "PTS"
 }

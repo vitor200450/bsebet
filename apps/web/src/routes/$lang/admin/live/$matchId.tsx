@@ -180,7 +180,7 @@ function LiveMatchControl() {
 			variant: "dark" as const,
 			actions: (
 				<div className="flex items-center gap-4">
-					<span className="hidden font-bold text-[10px] text-gray-500 uppercase sm:inline">
+					<span className="hidden font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest sm:inline">
 						{match.name || match.label}
 					</span>
 					<button
@@ -356,7 +356,7 @@ function LiveMatchControl() {
 									>
 										{scoreA}
 										{isMatchPointA && !winner && (
-											<div className="absolute -top-4 -right-6 rotate-12 animate-pulse rounded-sm bg-brawl-yellow px-1.5 py-0.5 font-black text-[10px] text-black">
+											<div className="absolute -top-4 -right-6 rotate-12 animate-pulse rounded-sm bg-brawl-yellow px-1.5 py-0.5 font-bold font-body text-[10px] text-black uppercase tracking-widest">
 												MP
 											</div>
 										)}
@@ -366,7 +366,7 @@ function LiveMatchControl() {
 
 							{/* VS Separator */}
 							<div className="mx-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-[3px] border-gray-700 bg-black md:h-12 md:w-12">
-								<span className="font-black text-[10px] text-gray-400 md:text-xs">
+								<span className="font-bold font-body text-[10px] text-gray-400 md:text-xs uppercase tracking-widest">
 									{t("live.vs")}
 								</span>
 							</div>
@@ -414,7 +414,7 @@ function LiveMatchControl() {
 									>
 										{scoreB}
 										{isMatchPointB && !winner && (
-											<div className="absolute -top-4 -right-6 rotate-12 animate-pulse rounded-sm bg-brawl-yellow px-1.5 py-0.5 font-black text-[10px] text-black">
+											<div className="absolute -top-4 -right-6 rotate-12 animate-pulse rounded-sm bg-brawl-yellow px-1.5 py-0.5 font-bold font-body text-[10px] text-black uppercase tracking-widest">
 												MP
 											</div>
 										)}
@@ -623,7 +623,7 @@ function LiveMatchControl() {
 												)}
 											</div>
 											<div className="text-center">
-												<div className="mb-1 max-w-[100px] truncate font-black text-gray-400 text-xs uppercase">
+												<div className="mb-1 max-w-[100px] truncate font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
 													{match.teamA?.name}
 												</div>
 												<div
@@ -642,7 +642,7 @@ function LiveMatchControl() {
 										{/* VS */}
 										<div className="flex flex-col items-center gap-1">
 											<div className="h-10 w-[2px] bg-gray-700" />
-											<span className="font-black text-gray-500 text-xs">
+											<span className="font-bold font-body text-gray-500 text-xs tracking-widest">
 												{t("live.vs")}
 											</span>
 											<div className="h-10 w-[2px] bg-gray-700" />
@@ -663,7 +663,7 @@ function LiveMatchControl() {
 												)}
 											</div>
 											<div className="text-center">
-												<div className="mb-1 max-w-[100px] truncate font-black text-gray-400 text-xs uppercase">
+												<div className="mb-1 max-w-[100px] truncate font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
 													{match.teamB?.name}
 												</div>
 												<div

@@ -57,7 +57,7 @@ const ScorePicker = ({
 					setIsOpen(!isOpen);
 				}}
 				className={clsx(
-					"flex h-7 items-center justify-center gap-1 border-2 border-black bg-white px-2 text-black shadow-[2px_2px_0px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none",
+					"flex h-7 items-center justify-center gap-1 border-2 border-black bg-white px-2 text-black shadow-comic-sm transition-all active:translate-y-0.5 active:shadow-none",
 					isOpen ? "relative z-50" : "z-10",
 				)}
 			>
@@ -70,7 +70,7 @@ const ScorePicker = ({
 			</button>
 
 			{isOpen && (
-				<div className="zoom-in-95 absolute top-full right-0 z-[100] mt-2 flex min-w-[130px] origin-top-right animate-in flex-col gap-2 border-[3px] border-black bg-white p-2 shadow-[4px_4px_0px_0px_#000] duration-100">
+				<div className="zoom-in-95 absolute top-full right-0 z-[100] mt-2 flex min-w-[130px] origin-top-right animate-in flex-col gap-2 border-[3px] border-black bg-white p-2 shadow-comic-md duration-100">
 					<div className="mb-1 text-center font-black text-[9px] text-gray-500 uppercase">
 						{t("matchCard.pickScore")}
 					</div>
@@ -263,9 +263,9 @@ export const MatchCard = ({
 	return (
 		<div
 			className={clsx(
-				"group relative z-10 w-full overflow-visible rounded-md border-2 border-black bg-white text-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200",
+				"group relative z-10 w-full overflow-visible rounded-md border-2 border-black bg-white text-black shadow-comic transition-all duration-200",
 				canInteract &&
-					"cursor-pointer focus-within:z-[60] hover:z-50 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:z-[60]",
+					"cursor-pointer focus-within:z-[60] hover:z-50 hover:-translate-y-0.5 hover:shadow-comic-md active:z-[60]",
 				!canInteract &&
 					!showResult &&
 					!isReadOnly &&
@@ -411,7 +411,7 @@ export const MatchCard = ({
 					{match.name || match.label}
 				</div>
 				{match.startTime && (
-					<div className="ml-2 flex shrink-0 items-center gap-1 font-black text-[#ccff00] text-[8px] italic">
+					<div className="ml-2 flex shrink-0 items-center gap-1 font-black text-[8px] text-electric-lime italic">
 						<span className="material-symbols-outlined text-[10px]">
 							schedule
 						</span>
@@ -442,7 +442,7 @@ export const MatchCard = ({
 				{/* Helper for LOCKED matches */}
 				{!canInteract && !showResult && !isReadOnly && (
 					<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover:opacity-100">
-						<div className="flex -rotate-1 transform flex-col items-center gap-1 border-2 border-[#ccff00] bg-black px-3 py-2 text-white shadow-[2px_2px_0px_0px_#000]">
+						<div className="flex -rotate-1 transform flex-col items-center gap-1 border-2 border-electric-lime bg-black px-3 py-2 text-white shadow-comic-sm">
 							<span className="material-symbols-outlined text-sm">lock</span>
 							<span className="text-center font-black text-[8px] uppercase leading-tight tracking-widest">
 								{blockedReason}
@@ -467,7 +467,7 @@ export const MatchCard = ({
 						canInteract ? "cursor-pointer" : "",
 						isWinnerA
 							? showResult
-								? "bg-[#ccff00] text-black"
+								? "bg-electric-lime text-black"
 								: "bg-brawl-blue"
 							: "hover:bg-gray-50",
 						showResult && !isWinnerA && "bg-gray-100 opacity-70",
@@ -515,7 +515,7 @@ export const MatchCard = ({
 						) : (
 							isWinnerA && (
 								<>
-									<div className="h-2 w-2 animate-pulse rounded-full bg-[#ccff00]" />
+									<div className="h-2 w-2 animate-pulse rounded-full bg-electric-lime" />
 									{isReadOnly ? (
 										<span className="px-2 font-black text-white text-xs italic">
 											{prediction?.score || t("matchCard.defaultScore")}
@@ -556,7 +556,7 @@ export const MatchCard = ({
 						canInteract ? "cursor-pointer" : "",
 						isWinnerB
 							? showResult
-								? "bg-[#ccff00] text-black"
+								? "bg-electric-lime text-black"
 								: "bg-brawl-red"
 							: "hover:bg-gray-50",
 						showResult && !isWinnerB && "bg-gray-100 opacity-70",
@@ -604,7 +604,7 @@ export const MatchCard = ({
 						) : (
 							isWinnerB && (
 								<>
-									<div className="h-2 w-2 animate-pulse rounded-full bg-[#ccff00]" />
+									<div className="h-2 w-2 animate-pulse rounded-full bg-electric-lime" />
 									{isReadOnly ? (
 										<span className="px-2 font-black text-white text-xs italic">
 											{prediction?.score || t("matchCard.defaultScore")}

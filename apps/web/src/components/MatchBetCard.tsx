@@ -91,7 +91,7 @@ export function MatchBetCard({
 			: isWalkover
 				? { label: "W.O.", color: "bg-ink text-white" }
 				: won
-					? { label: t("result.correct"), color: "bg-[#ccff00] text-black" }
+					? { label: t("result.correct"), color: "bg-electric-lime text-black" }
 					: lost
 						? { label: t("result.incorrect"), color: "bg-brawl-red text-white" }
 						: { label: t("result.scheduled"), color: "bg-tape text-ink" };
@@ -99,7 +99,7 @@ export function MatchBetCard({
 	const borderColor = isProjected
 		? "border-gray-300 border-dashed"
 		: won
-			? "border-[#ccff00]"
+			? "border-electric-lime"
 			: lost
 				? "border-brawl-red"
 				: "border-black";
@@ -107,28 +107,28 @@ export function MatchBetCard({
 	const shadowColor = isProjected
 		? "shadow-[3px_3px_0_0_#d1d5db]"
 		: won
-			? "shadow-[3px_3px_0_0_#ccff00]"
+			? "shadow-[3px_3px_0_0_var(--color-electric-lime)]"
 			: lost
 				? "shadow-[3px_3px_0_0_#ff2e2e]"
-				: "shadow-[3px_3px_0_0_#000]";
+				: "shadow-comic";
 
 	const accentColor = isProjected
 		? "bg-gray-400"
 		: won
-			? "bg-[#ccff00]"
+			? "bg-electric-lime"
 			: lost
 				? "bg-brawl-red"
 				: isLive
 					? "bg-brawl-red animate-pulse"
-					: "bg-[#ffc700]";
+					: "bg-brawl-yellow";
 
 	const pickedTeamBgA =
-		pickedA && !isProjected ? "ring-4 ring-inset ring-[#ccff00]" : "";
-	const pickedWinnerBgA = pickedA && aWon && isFinished ? "bg-[#f0f0f0]" : "";
+		pickedA && !isProjected ? "ring-4 ring-inset ring-electric-lime" : "";
+	const pickedWinnerBgA = pickedA && aWon && isFinished ? "bg-paper" : "";
 
 	const pickedTeamBgB =
-		pickedB && !isProjected ? "ring-4 ring-inset ring-[#ccff00]" : "";
-	const pickedWinnerBgB = pickedB && bWon && isFinished ? "bg-[#f0f0f0]" : "";
+		pickedB && !isProjected ? "ring-4 ring-inset ring-electric-lime" : "";
+	const pickedWinnerBgB = pickedB && bWon && isFinished ? "bg-paper" : "";
 
 	return (
 		<div
@@ -144,7 +144,7 @@ export function MatchBetCard({
 			<div className={clsx("h-1.5 w-full", accentColor)} />
 
 			{/* Header */}
-			<div className="flex items-center justify-between gap-2 border-black border-b-2 bg-[#fafafa] px-3 py-1.5">
+			<div className="flex items-center justify-between gap-2 border-black border-b-2 bg-paper px-3 py-1.5">
 				<div className="flex min-w-0 items-center gap-2">
 					{headerLogoUrl ? (
 						<img
@@ -153,13 +153,13 @@ export function MatchBetCard({
 							className="h-5 w-5 shrink-0 object-contain"
 						/>
 					) : null}
-					<span className="truncate font-black text-[10px] text-gray-500 uppercase tracking-widest">
+					<span className="truncate font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 						{matchLabel}
 					</span>
 				</div>
 				<div
 					className={clsx(
-						"shrink-0 rounded-sm border-2 border-black px-2 py-0.5 font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0_0_#000]",
+						"shrink-0 rounded-sm border-2 border-black px-2 py-0.5 font-black font-display text-[9px] uppercase tracking-wider shadow-comic-press",
 						statusConfig.color,
 					)}
 				>
@@ -183,11 +183,11 @@ export function MatchBetCard({
 						size="xl"
 						className="drop-shadow-sm"
 					/>
-					<p className="max-w-full text-center font-black text-ink text-sm uppercase leading-tight">
+					<p className="max-w-full text-center font-black font-display text-ink text-sm uppercase leading-tight">
 						{teamA.name}
 					</p>
 					{pickedA && !isProjected && (
-						<div className="flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[8px] text-black uppercase shadow-[1px_1px_0_0_#000]">
+						<div className="flex items-center gap-1 rounded-sm border border-black bg-electric-lime px-1.5 py-0.5 font-black font-display text-[8px] text-black uppercase shadow-comic-press">
 							<span className="material-symbols-outlined text-[10px]">
 								check_circle
 							</span>
@@ -195,7 +195,7 @@ export function MatchBetCard({
 						</div>
 					)}
 					{aWon && isFinished && (
-						<div className="flex items-center gap-1 font-black text-[#121212] text-[9px] uppercase">
+						<div className="flex items-center gap-1 font-bold font-body text-[#121212] text-[9px] uppercase tracking-widest">
 							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
@@ -209,28 +209,28 @@ export function MatchBetCard({
 						<div className="flex flex-col items-center gap-2">
 							{hasPredictedScore ? (
 								<>
-									<span className="font-black text-[9px] text-gray-500 uppercase tracking-[0.18em]">
+									<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("betPredictionPrefix")}
 									</span>
 									<div className="flex items-center gap-2">
-										<span className="font-black font-display text-3xl text-ink">
+										<span className="font-black font-body text-3xl text-ink tabular-nums">
 											{predictedScoreA}
 										</span>
-										<span className="font-black text-gray-300 text-xl">-</span>
-										<span className="font-black font-display text-3xl text-ink">
+										<span className="font-black font-body text-gray-300 text-xl">-</span>
+										<span className="font-black font-body text-3xl text-ink tabular-nums">
 											{predictedScoreB}
 										</span>
 									</div>
 								</>
 							) : (
-								<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-black shadow-[2px_2px_0_0_#ccff00]">
-									<span className="font-black text-white text-xs italic">
+								<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-black shadow-[2px_2px_0_0_var(--color-electric-lime)]">
+									<span className="font-black font-display text-white text-xs italic">
 										VS
 									</span>
 								</div>
 							)}
 							{!isProjected && startTime && (
-								<span className="flex items-center gap-1 text-center font-bold text-[10px] text-gray-500">
+								<span className="flex items-center gap-1 text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 									<Calendar className="h-3 w-3" strokeWidth={2} />
 									{new Date(startTime).toLocaleString(locale, {
 										day: "2-digit",
@@ -244,23 +244,23 @@ export function MatchBetCard({
 					) : (
 						<div className="flex flex-col items-center gap-2.5">
 							{/* Actual Score */}
-							<span className="font-black text-[9px] text-gray-500 uppercase tracking-[0.18em]">
+							<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 								{t("matchCard.score")}
 							</span>
 							<div className="flex items-center gap-1.5">
 								<span
 									className={clsx(
-										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black text-xl shadow-[2px_2px_0_0_#000]",
-										aWon ? "bg-[#ccff00] text-black" : "bg-ink text-white",
+										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black font-body text-xl tabular-nums shadow-comic-sm",
+										aWon ? "bg-electric-lime text-black" : "bg-ink text-white",
 									)}
 								>
 									{woA ?? actualScoreA ?? "—"}
 								</span>
-								<span className="font-black text-gray-400 text-sm">-</span>
+								<span className="font-black font-body text-gray-400 text-sm">-</span>
 								<span
 									className={clsx(
-										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black text-xl shadow-[2px_2px_0_0_#000]",
-										bWon ? "bg-[#ccff00] text-black" : "bg-ink text-white",
+										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black font-body text-xl tabular-nums shadow-comic-sm",
+										bWon ? "bg-electric-lime text-black" : "bg-ink text-white",
 									)}
 								>
 									{woB ?? actualScoreB ?? "—"}
@@ -269,10 +269,10 @@ export function MatchBetCard({
 							{/* Predicted Score */}
 							{hasPredictedScore && !isProjected && (
 								<div className="mt-1 flex flex-col items-center gap-0.5">
-									<span className="font-bold text-[9px] text-gray-500 uppercase tracking-[0.18em]">
+									<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("betPredictionPrefix")}
 									</span>
-									<span className="font-black font-display text-gray-400 text-xl">
+									<span className="font-black font-body text-gray-400 text-xl tabular-nums">
 										{predictedScoreA} - {predictedScoreB}
 									</span>
 								</div>
@@ -295,11 +295,11 @@ export function MatchBetCard({
 						size="xl"
 						className="drop-shadow-sm"
 					/>
-					<p className="max-w-full text-center font-black text-ink text-sm uppercase leading-tight">
+					<p className="max-w-full text-center font-black font-display text-ink text-sm uppercase leading-tight">
 						{teamB.name}
 					</p>
 					{pickedB && !isProjected && (
-						<div className="flex items-center gap-1 rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[8px] text-black uppercase shadow-[1px_1px_0_0_#000]">
+						<div className="flex items-center gap-1 rounded-sm border border-black bg-electric-lime px-1.5 py-0.5 font-black font-display text-[8px] text-black uppercase shadow-comic-press">
 							<span className="material-symbols-outlined text-[10px]">
 								check_circle
 							</span>
@@ -307,7 +307,7 @@ export function MatchBetCard({
 						</div>
 					)}
 					{bWon && isFinished && (
-						<div className="flex items-center gap-1 font-black text-[#121212] text-[9px] uppercase">
+						<div className="flex items-center gap-1 font-bold font-body text-[#121212] text-[9px] uppercase tracking-widest">
 							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
@@ -317,27 +317,27 @@ export function MatchBetCard({
 
 			{/* Footer - Points & Badges */}
 			{isFinished && !isProjected && (
-				<div className="flex items-center justify-between border-black border-t-2 bg-[#fafafa] px-3 py-2">
+				<div className="flex items-center justify-between border-black border-t-2 bg-paper px-3 py-2">
 					<div className="flex items-center gap-2">
 						{isPerfectPick && (
-							<span className="rounded-sm border border-black bg-[#ffc700] px-2 py-0.5 font-black text-[9px] text-black uppercase">
+							<span className="rounded-sm border border-black bg-brawl-yellow px-2 py-0.5 font-black font-display text-[9px] text-black uppercase">
 								{t("perfectScore")}
 							</span>
 						)}
 						{isUnderdogPick && won && (
-							<span className="rounded-sm border border-black bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 font-black text-[9px] text-white uppercase">
+							<span className="rounded-sm border border-black bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 font-black font-display text-[9px] text-white uppercase">
 								{t("labels.underdogLabel")}
 							</span>
 						)}
 						{isFinished && (pointsEarned == null || pointsEarned === 0) && (
-							<span className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">
+							<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 								{t("result.noPoints")}
 							</span>
 						)}
 					</div>
 
 					{typeof pointsEarned === "number" && pointsEarned > 0 && (
-						<span className="rounded-md border border-black bg-[#ccff00] px-2.5 py-0.5 font-black text-black text-sm shadow-[1px_1px_0_0_#000]">
+						<span className="rounded-md border border-black bg-electric-lime px-2.5 py-0.5 font-black font-body text-black text-sm tabular-nums shadow-comic-press">
 							+{pointsEarned}
 						</span>
 					)}

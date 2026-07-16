@@ -5,6 +5,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { InlineLoader } from "@/components/inline-loader";
 import { migrateLogosToR2 } from "../../../server/migrate-logos";
 
 export const Route = createFileRoute("/$lang/admin/migrate-logos")({
@@ -106,7 +107,7 @@ function MigrateLogosPage() {
 
 					{loading && (
 						<div className="mt-6 flex items-center gap-3">
-							<div className="h-6 w-6 animate-spin rounded-full border-4 border-black border-t-transparent" />
+							<InlineLoader size="lg" />
 							<span className="font-medium">{t("migrateLogos.migrating")}</span>
 						</div>
 					)}

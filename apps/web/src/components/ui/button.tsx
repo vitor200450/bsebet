@@ -19,6 +19,15 @@ const buttonVariants = cva(
 				destructive:
 					"bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 dark:hover:bg-destructive/30",
 				link: "text-primary underline-offset-4 hover:underline",
+				/** Product comic — Neo Brutal primary CTA */
+				brand:
+					"btn-press border-[3px] border-black bg-electric-lime font-black text-black uppercase shadow-comic hover:shadow-comic-press focus-visible:ring-electric-lime/50",
+				/** Broadcast BSC — soft shadow, 4px radius, no comic border */
+				broadcast:
+					"rounded-broadcast bg-electric-lime font-black text-black uppercase shadow-broadcast hover:brightness-105 focus-visible:ring-electric-lime/50 active:brightness-95",
+				/** Championship red emphasis on light surfaces */
+				"brand-red":
+					"btn-press border-[3px] border-black bg-bsen-red font-black text-white uppercase shadow-comic hover:shadow-comic-press focus-visible:ring-bsen-red/50",
 			},
 			size: {
 				default:
@@ -26,6 +35,7 @@ const buttonVariants = cva(
 				xs: "h-6 gap-1 rounded-none px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
 				sm: "h-7 gap-1 rounded-none px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
 				lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+				xl: "h-12 gap-2 px-6 text-base has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
 				icon: "size-8",
 				"icon-xs": "size-6 rounded-none [&_svg:not([class*='size-'])]:size-3",
 				"icon-sm": "size-7 rounded-none",

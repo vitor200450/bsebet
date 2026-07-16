@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Guidance for coding agents working in `bsebet`.
-Follow this file plus `CLAUDE.md` and `DESIGN.md`.
+Follow this file plus `DESIGN.md`.
 
 ## 1) Repository Snapshot
 
@@ -66,6 +66,80 @@ Follow this file plus `CLAUDE.md` and `DESIGN.md`.
 - Keep route logic in file-based routes under `apps/web/src/routes`.
 - Do not edit generated router file: `apps/web/src/routeTree.gen.ts`.
 
+### Monorepo layout
+
+```
+bsebet/
+├── apps/
+│   └── web/                   # TanStack Start app (SSR React)
+│       ├── src/
+│       │   ├── routes/        # File-based routing (TanStack Router)
+│       │   ├── components/    # Shared UI components
+│       │   │   └── admin/     # Admin-specific components
+│       │   └── server/        # Server Functions (backend logic)
+├── packages/
+│   ├── api/                   # tRPC API layer (currently minimal)
+│   ├── auth/                  # Better-Auth configuration
+│   ├── db/                    # Drizzle ORM schema & queries
+│   ├── env/                   # Environment variable validation
+│   ├── config/                # Shared config (TypeScript, Biome)
+│   └── infra/                 # Cloudflare / Alchemy deployment
+```
+
+### Database schema (core entities)
+
+In `packages/db/src/schema/index.ts`:
+- `teams` — name, logo, region
+- `tournaments` — metadata with `stages` JSONB for format config
+- `tournamentTeams` — many-to-many join
+- `matchDays` — groups matches by date; betting status `draft` | `open` | `locked` | `finished`
+- `matches` — individual games with bracket navigation fields
+- `bets` — user predictions with scoring
+
+### Bracket system
+
+Three supported formats:
+1. **Groups (GSL)**: `bracketSide: null` or `"groups"` — grid layout
+2. **Single Elimination**: `bracketSide: "upper"` only — tree structure
+3. **Double Elimination**: `bracketSide: "upper" | "lower" | "grand_final"` — dual brackets
+
+Key fields: `nextMatchWinnerId` / `nextMatchWinnerSlot`, `nextMatchLoserId` / `nextMatchLoserSlot`, `roundIndex` (0 = first round), `displayOrder`.
+
+**Match projection**: when users predict winners, teams are projected into future matches via the `next*` fields.
+
+### Authentication
+
+Better-Auth with email/password + Google OAuth, Drizzle adapter, session via TanStack Start cookies.
+- Config: `packages/auth/src/index.ts`
+- Auth schema: `packages/db/src/schema/auth.ts`
+
+### Server Functions type-safety pattern
+
+Return types often need an explicit cast wrapper due to TanStack Start limitations:
+
+```typescript
+const getTournamentFn = createServerFn({ method: "GET" })
+  .handler(async (ctx: any) => { /* ... */ });
+
+export const getTournament = getTournamentFn as unknown as (opts: {
+  data: number;
+}) => Promise<typeof tournaments.$inferSelect>;
+```
+
+### Component organization
+
+- User-facing: `apps/web/src/components/` — BettingCarousel, MatchCard, TournamentBracket
+- Admin-only: `apps/web/src/components/admin/` — StageBuilder, BracketEditor, MatchModal
+- Validation: `apps/web/src/utils/validators.ts` — shared Zod schemas
+
+### Admin workflow
+
+1. Create Tournament → Add Stages (StageBuilder) → Add Teams (TournamentTeamsManager)
+2. Create Match Days (MatchDaysManager) with status control
+3. Build Bracket (BracketEditor) — configure `nextMatch*` paths
+4. Set Match Day to `open` to enable user betting
+5. Update match results → system calculates points
+
 ## 8) Formatting And Import Rules
 
 - Biome is the formatter/linter source of truth (`biome.json`).
@@ -102,17 +176,61 @@ Follow this file plus `CLAUDE.md` and `DESIGN.md`.
 - Keep side effects in `useEffect` with clean dependencies.
 - Reuse existing UI primitives under `apps/web/src/components/ui`.
 - Follow design language from `DESIGN.md` (broadcast/comic style, bold borders/shadows).
+- Apply typography tokens per §11.2: `font-display` (Inter) for titles/buttons/team names; `font-body` (Geist Mono) for labels/metadata.
 - Preserve existing Tailwind token usage (`brawl-*`, `paper`, `ink`, etc.) where present.
 
 ## 11.1) Text Contrast Guardrails (Critical)
 
+**Most common bug:** `text-white` inherited from a dark parent onto a child with `bg-white` / `bg-paper` → invisible text. Treat as a blocking bug.
+
 - Never rely on inherited text color on badges/cards/buttons with custom backgrounds.
 - Always set explicit text color classes when setting background classes.
-- Default-safe mappings:
-  - light backgrounds (`bg-white`, `bg-gray-*`, `bg-[#f0f0f0]`, `bg-[#e6e6e6]`, `bg-[#ffc700]`, `bg-[#ccff00]`) -> `text-black`
-  - dark/saturated backgrounds (`bg-black`, `bg-[#121212]`, `bg-[#ff2e2e]`, `bg-[#2e5cff]`) -> `text-white`
-- For any UI edit touching buttons, pills, badges, tabs, or cards, verify hover/active states keep readable contrast.
+- **Prefer `surface-*` utilities** over separate `bg-*` + `text-*` (see `apps/web/src/index.css` and `DESIGN.md` §2.1):
+  - Light: `surface-paper`, `surface-white`, `surface-tape`, `surface-lime`, `surface-yellow`
+  - Dark: `surface-ink`, `surface-charcoal`, `surface-panel`, `surface-brawl-blue`, `surface-brawl-red`, `surface-bsen-red`
+  - Hover: `hover-surface-lime`, `hover-surface-brawl-blue`, `hover-surface-brawl-red`, `hover-surface-bsen-red`, `hover-surface-white`
+- Default-safe mappings when not using `surface-*`:
+  - light backgrounds (`bg-white`, `bg-paper`, `bg-tape`, `bg-gray-*`, `bg-[#f0f0f0]`, `bg-[#e6e6e6]`, `bg-[#ffc700]`, `bg-[#ccff00]`, `bg-electric-lime`) → `text-black` or `text-ink`
+  - dark/saturated backgrounds (`bg-black`, `bg-ink`, `bg-charcoal`, `bg-panel-gray`, `bg-[#121212]`, `bg-[#ff2e2e]`, `bg-brawl-red`, `bg-[#2e5cff]`, `bg-brawl-blue`, `bg-bsen-red`) → `text-white`
+- **Nesting:** children inside `text-white` parents that get a light `bg-*` must reset `text-ink`/`text-black` on that child.
+- For any UI edit touching buttons, pills, badges, tabs, or cards, verify hover/active states keep readable contrast (change bg AND text together).
+- Before finishing: grep changed files for `text-white` (must be on dark bg) and `bg-white`/`bg-paper` (must have dark text on same element).
 - If a style change introduces white text on light surfaces, treat it as a bug and fix before finishing.
+
+## 11.2) Typography Guardrails (Critical)
+
+**Most common bug:** agents use bare `font-bold` / `font-black` without `font-display` or `font-body` → generic Inter that looks flat and inconsistent.
+
+### Token rules
+
+| Token | Family | Use for |
+| :--- | :--- | :--- |
+| `font-display` | Inter Black | Page titles, section headings, buttons, tabs, **team names**, tournament names |
+| `font-body` | Geist Mono | Form labels, metadata pills, badges, table headers, scores/IDs/slugs, admin search bars |
+
+> CSS vars: `--font-display` = Inter, `--font-body` = Geist Mono. Always set the Tailwind utility on every styled text node.
+
+### Copy-paste class patterns
+
+- **Form label:** `font-bold font-body text-black text-xs uppercase tracking-widest`
+- **Small label:** `font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest`
+- **Metadata pill:** `font-bold font-body text-[10px] uppercase tracking-widest`
+- **Team name (bracket / match):** `font-black font-display uppercase italic tracking-tighter`
+- **Section title:** `font-black font-display uppercase italic`
+- **Button / tab:** `font-black font-display uppercase`
+- **Admin header search:** `font-bold font-body uppercase tracking-widest placeholder:font-body`
+- **Numbers:** add `font-body tabular-nums`
+
+### Blocking mistakes
+
+1. **Team names on Geist Mono** — bracket and match cards must use `font-display`, not `font-body`.
+2. **Labels on Inter** — form labels and metadata pills must use `font-body tracking-widest`, not bare `font-bold`.
+3. **Bare weight classes** — `font-bold text-sm uppercase` without `font-display`/`font-body` is forbidden on new/edited UI.
+4. **`font-mono` on new code** — use `font-body` instead.
+
+### Before finishing UI work
+
+Grep changed files for `font-bold` / `font-black` and verify each has `font-display` or `font-body`. See `DESIGN.md` §3 and `design-system/MASTER.md` Typography.
 
 ## 12) Error Handling And Logging
 
@@ -132,8 +250,15 @@ Follow this file plus `CLAUDE.md` and `DESIGN.md`.
 
 ## 14) Environment And Secrets
 
-- Required env vars are documented in `CLAUDE.md`.
+Required in `.env` at project root:
+- `BETTER_AUTH_SECRET` — auth signing key
+- `BETTER_AUTH_URL` — full app URL (e.g. http://localhost:3001)
+- `CORS_ORIGIN` — same as `BETTER_AUTH_URL`
+- `DATABASE_URL` — PostgreSQL connection string (Neon)
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — OAuth credentials
+
 - Root `.env` is used by web dev script (`bun run dev:web`).
+- `vite.config.ts` loads root `.env` and defines `process.env.*` for client-side access.
 - Do not commit secrets or copy real credential values into docs/logs.
 
 ## 15) Git And Change Hygiene For Agents
@@ -151,7 +276,7 @@ Follow this file plus `CLAUDE.md` and `DESIGN.md`.
 
 ## 17) Practical Agent Workflow (Recommended)
 
-- 1. Read `CLAUDE.md` and relevant target files before editing.
+- 1. Read this file and relevant target files before editing.
 - 2. Implement minimal, typed changes following existing patterns.
 - 3. Run `bun run check-types`.
 - 4. Run `bun run check`.
@@ -336,3 +461,28 @@ The `edit` tool works reliably for:
 - Single-line changes (no indented block context needed)
 - JSON files (indentation is consistent and shallow)
 - Changes where `old_string` is short and unique enough to not require indentation matching
+
+## 21) Stitch UI Generation
+
+This project uses Google Stitch for rapid UI prototyping:
+1. Use `/enhance-prompt` skill to refine UI descriptions
+2. Call `generate_screen_from_text` with `model_id: "GEMINI_3_PRO"` (never Flash)
+3. Use `/react:components` skill to convert designs to code
+4. Always set `device_type: "MOBILE"` or `"DESKTOP"` for responsive designs
+
+See `.claude/rules/bsebet-project-rules.md` for detailed Stitch workflow.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `vitor200450/bsebet` (via `gh`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `CONTEXT.md` + `docs/adr/`. See `docs/agents/domain.md`.
+

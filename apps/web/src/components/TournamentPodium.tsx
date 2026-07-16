@@ -4,6 +4,7 @@ import { type ClassValue, clsx } from "clsx";
 import { Award, ChevronRight, Crown, Medal, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
+import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getLeaderboard } from "@/server/leaderboard";
 
@@ -77,7 +78,7 @@ export function TournamentPodium({
 				)}
 			>
 				<div className="flex h-40 items-center justify-center">
-					<div className="h-8 w-8 animate-spin border-4 border-black border-t-transparent" />
+					<InlineLoader size="lg" />
 				</div>
 			</div>
 		);
@@ -128,10 +129,10 @@ export function TournamentPodium({
 							)}
 						</div>
 						<div>
-							<p className="font-black text-[10px] text-white/60 uppercase tracking-widest">
+							<p className="font-bold font-body text-[10px] text-white/60 uppercase tracking-widest">
 								{t("podium.title")}
 							</p>
-							<h2 className="font-black text-white text-xl uppercase italic tracking-tight md:text-2xl">
+							<h2 className="font-black font-display text-white text-xl uppercase italic tracking-tight md:text-2xl">
 								{tournamentName}
 							</h2>
 						</div>
@@ -140,7 +141,7 @@ export function TournamentPodium({
 					<Link
 						{...routeTo("/leaderboard")}
 						search={{ tab: "season", tournamentId }}
-						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
+						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black font-display text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
 					>
 						{t("podium.viewRanking")}
 						<ChevronRight
@@ -235,7 +236,7 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 				{/* Rank Badge - positioned outside the overflow container */}
 				<div
 					className={cn(
-						"absolute -right-2 -bottom-2 flex transform items-center justify-center border-2 border-white font-black text-white shadow-[2px_2px_0_0_#000]",
+						"absolute -right-2 -bottom-2 flex transform items-center justify-center border-2 border-white font-black shadow-[2px_2px_0_0_#000]",
 						isWinner ? "h-8 w-8 text-lg" : "h-6 w-6 text-xs",
 						config.bg,
 						config.border,

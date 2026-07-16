@@ -6,12 +6,14 @@ import { Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BetSplitBar } from "@/components/BetSplitBar";
+import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import { deriveMatchFormat } from "@/lib/utils";
 import type { BetStats } from "@/server/bets";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
+import { PublicPageShell } from "../../components/PublicPageShell";
 import { SwissStageView } from "../../components/SwissStageView";
 import {
 	type Match,
@@ -888,8 +890,8 @@ function ReviewScreen({
 
 	return (
 		<>
-			<div className="fade-in slide-in-from-bottom-5 relative flex min-h-screen w-full animate-in flex-col bg-paper p-4 pb-32 duration-300 md:p-6">
-				<div className="mx-auto flex w-full max-w-4xl flex-col items-center">
+			<PublicPageShell className="fade-in slide-in-from-bottom-5 flex w-full animate-in flex-col p-4 pb-32 duration-300 md:p-6">
+				<div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center">
 					{/* Header */}
 					<header className="mb-8 text-center">
 						<div className="mb-2 inline-flex -skew-x-12 transform items-center gap-1.5 rounded-full bg-black px-3 py-1 font-black text-[10px] text-white tracking-[0.2em]">
@@ -1256,8 +1258,8 @@ function ReviewScreen({
 												<span
 													className={clsx(
 														"font-black text-[10px] uppercase italic tracking-[0.2em] md:text-xs",
-														betData?.isPerfectPick || betData?.isUnderdogPick
-															? "text-white"
+														betData?.isPerfectPick && match.winnerId !== null
+															? "text-black"
 															: "text-white",
 													)}
 												>
@@ -1981,7 +1983,7 @@ function ReviewScreen({
 						</div>
 					)}
 				</div>
-			</div>
+			</PublicPageShell>
 
 			{/* COMPLETION MODAL */}
 			{isSuccessModalOpen && (
@@ -2414,9 +2416,7 @@ function SubmitBetsModal({
 						)}
 					>
 						{status === "submitting" ? (
-							<span className="material-symbols-outlined animate-spin">
-								refresh
-							</span>
+							<InlineLoader size="sm" />
 						) : (
 							<span>{t("review.lockIn")}</span>
 						)}
@@ -3539,8 +3539,8 @@ function Home() {
 	// Show empty state if no tournaments
 	if (tournaments.length === 0) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-paper bg-paper-texture p-6">
-				<div className="w-full max-w-md text-center">
+			<PublicPageShell className="flex items-center justify-center p-6">
+				<div className="relative z-10 w-full max-w-md text-center">
 					<div className="relative inline-block w-full overflow-hidden border-[4px] border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000]">
 						{/* Corner decorations */}
 						<div className="absolute -top-2 -right-2 h-4 w-4 border-2 border-black bg-[#ccff00]" />
@@ -3552,12 +3552,12 @@ function Home() {
 						<h3 className="mb-3 -skew-x-12 transform font-black font-display text-black text-xl uppercase italic tracking-tighter md:text-3xl">
 							Carregando torneio...
 						</h3>
-						<p className="font-bold text-gray-500 text-sm uppercase leading-relaxed tracking-widest">
+						<p className="font-bold font-body text-gray-500 text-sm uppercase leading-relaxed tracking-widest">
 							Volte em breve para acompanhar <br /> novos torneios competitivos!
 						</p>
 					</div>
 				</div>
-			</div>
+			</PublicPageShell>
 		);
 	}
 
@@ -3568,14 +3568,14 @@ function Home() {
 		(selectedTournamentId && matchDays.length === 0)
 	) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-paper bg-paper-texture">
-				<div className="space-y-4 text-center">
-					<div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-black border-t-[#ccff00]" />
+			<PublicPageShell className="flex items-center justify-center">
+				<div className="relative z-10 space-y-4 text-center">
+					<InlineLoader size="xl" className="mx-auto" />
 					<h2 className="animate-pulse font-black font-display text-2xl text-black uppercase italic">
 						{t("empty.noTournament")}
 					</h2>
 				</div>
-			</div>
+			</PublicPageShell>
 		);
 	}
 
@@ -3583,7 +3583,7 @@ function Home() {
 	// Only show when matchDays has data to avoid empty state flicker
 	if (selectedTournamentId && !selectedMatchDayId && matchDays.length > 0) {
 		return (
-			<div className="relative flex min-h-screen w-full flex-col bg-paper pt-16 md:pt-0">
+			<div className="relative flex min-h-[100dvh] w-full flex-col pt-16 md:pt-0">
 				{/* Back button */}
 				{tournaments.length > 1 && (
 					<button
@@ -3620,7 +3620,7 @@ function Home() {
 	const hasMatches = carouselMatches.length > 0;
 
 	return (
-		<div className="flex min-h-screen w-full flex-col bg-paper pt-16 md:pt-0">
+		<PublicPageShell className="flex w-full flex-col pt-16 md:pt-0">
 			{/* Recovery Bets Toast — only when no tournament is selected yet */}
 			{recoveryToast?.show && !selectedTournamentId && (
 				<RecoveryBetsToast
@@ -3857,6 +3857,6 @@ function Home() {
 					</div>
 				)}
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }

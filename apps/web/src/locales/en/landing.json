@@ -42,7 +42,8 @@
 		"title": "PICK YOUR SIDE",
 		"body": "Pick a team. Lock your prediction. See if you called it when the match ends.",
 		"cta": "PICK NOW",
-		"vs": "VS"
+		"vs": "VS",
+		"matchupLive": "{{teamA}} versus {{teamB}}"
 	},
 	"leaderboard": {
 		"title": "LEADERBOARD",

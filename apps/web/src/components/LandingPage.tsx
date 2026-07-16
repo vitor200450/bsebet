@@ -14,10 +14,10 @@
  */
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { Crown, Star, Zap } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MedalCountSummary, MiniMedalBadge } from "@/components/MiniMedalBadge";
 import { TeamLogo } from "@/components/TeamLogo";
@@ -47,33 +47,6 @@ function SectionCut() {
 			<div className="w-1/2 bg-brawl-blue" />
 			<div className="w-1/2 bg-bsen-red" />
 		</div>
-	);
-}
-
-function SparkStar({
-	className,
-	size = 32,
-	color = "var(--color-electric-lime)",
-}: {
-	className?: string;
-	size?: number;
-	color?: string;
-}) {
-	return (
-		<svg
-			width={size}
-			height={size}
-			viewBox="0 0 32 32"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-			className={className}
-			aria-hidden="true"
-		>
-			<path
-				d="M16 0L18 12L28 4L20 14L32 16L20 18L28 28L18 20L16 32L14 20L4 28L12 18L0 16L12 14L4 4L14 12Z"
-				fill={color}
-			/>
-		</svg>
 	);
 }
 
@@ -164,13 +137,33 @@ const amberCrumpleStyle: CSSProperties = {
    WATCH → PICK → REPUTATION LOOP
 ───────────────────────────────────────────── */
 function WatchPredictLoop({ t }: { t: (key: string) => string }) {
+	const reduceMotion = useReducedMotion();
+	const ref = useRef<HTMLDivElement>(null);
+	const inView = useInView(ref, { once: true, margin: "-80px" });
+	const ease = [0.23, 1, 0.32, 1] as const;
+
+	const step = (delay: number) =>
+		reduceMotion
+			? { initial: false as const, animate: { opacity: 1 } }
+			: {
+					initial: { opacity: 0, transform: "translateY(12px)" },
+					animate: inView
+						? { opacity: 1, transform: "translateY(0px)" }
+						: { opacity: 0, transform: "translateY(12px)" },
+					transition: { duration: 0.32, ease, delay },
+				};
+
 	return (
 		<div
+			ref={ref}
 			className="relative mx-auto w-full max-w-[300px] select-none sm:max-w-[340px] md:mx-0 md:max-w-[360px]"
 			aria-hidden="true"
 		>
 			{/* 1 — Watch */}
-			<div className="relative z-[1] -rotate-2 border-[3px] border-black bg-charcoal p-4 shadow-[6px_6px_0_#000] sm:p-5">
+			<motion.div
+				className="relative z-[1] -rotate-2 border-[3px] border-black bg-charcoal p-4 shadow-[6px_6px_0_#000] sm:p-5"
+				{...step(0)}
+			>
 				<div className="mb-3 flex items-center gap-2">
 					<span className="inline-block h-2.5 w-2.5 shrink-0 bg-bsen-red" />
 					<span
@@ -186,10 +179,13 @@ function WatchPredictLoop({ t }: { t: (key: string) => string }) {
 				>
 					{t("watchPredict.stepWatch")}
 				</p>
-			</div>
+			</motion.div>
 
 			{/* 2 — Pick */}
-			<div className="relative z-[2] -mt-4 ml-3 rotate-[2.5deg] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_#000] sm:ml-6 sm:p-5 md:ml-8">
+			<motion.div
+				className="relative z-[2] -mt-4 ml-3 rotate-[2.5deg] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_#000] sm:ml-6 sm:p-5 md:ml-8"
+				{...step(0.05)}
+			>
 				<div className="mb-3 inline-flex border-2 border-black bg-electric-lime px-2.5 py-1">
 					<span
 						className="font-black text-[11px] text-black uppercase tracking-[0.14em]"
@@ -218,10 +214,13 @@ function WatchPredictLoop({ t }: { t: (key: string) => string }) {
 						{t("watchPredict.pickSaved")}
 					</span>
 				</div>
-			</div>
+			</motion.div>
 
 			{/* 3 — Reputation */}
-			<div className="relative z-[3] -mt-4 -rotate-[1.5deg] border-[3px] border-black bg-electric-lime p-4 shadow-[6px_6px_0_#000] sm:p-5 md:mr-2">
+			<motion.div
+				className="relative z-[3] -mt-4 -rotate-[1.5deg] border-[3px] border-black bg-electric-lime p-4 shadow-[6px_6px_0_#000] sm:p-5 md:mr-2"
+				{...step(0.1)}
+			>
 				<span
 					className="font-black text-[11px] text-black uppercase tracking-[0.18em]"
 					style={{ fontFamily: "var(--font-body)" }}
@@ -240,7 +239,7 @@ function WatchPredictLoop({ t }: { t: (key: string) => string }) {
 				>
 					{t("watchPredict.stepRep")}
 				</p>
-			</div>
+			</motion.div>
 		</div>
 	);
 }
@@ -309,7 +308,7 @@ function BettingCarouselMock({
 						: "drop-shadow(6px 6px 0px rgba(0,0,0,0.30))",
 				}}
 			>
-				<div className="relative overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-comic-md xl:-rotate-1">
+				<div className="relative -rotate-1 overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-comic-md">
 					{/* Match counter */}
 					<div className="border-black border-b-2 bg-tape py-1.5 text-center">
 						<span
@@ -549,7 +548,6 @@ function PrimaryCTA({
 		alignItems: "center",
 		justifyContent: "center",
 		textDecoration: "none",
-		transition: "box-shadow 150ms, filter 150ms",
 		textTransform: "uppercase",
 		whiteSpace: "normal",
 		textAlign: "center",
@@ -557,7 +555,11 @@ function PrimaryCTA({
 	return (
 		<a
 			href={href}
-			className={`px-4 text-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-electric-lime/50 sm:px-6 sm:text-base hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
+			className={clsx(
+				"landing-cta landing-cta-lime px-4 text-sm sm:px-6 sm:text-base",
+				"focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-electric-lime/50",
+				className,
+			)}
 			style={style}
 		>
 			{children}
@@ -588,7 +590,6 @@ function DarkCTA({
 		alignItems: "center",
 		justifyContent: "center",
 		textDecoration: "none",
-		transition: "box-shadow 150ms, filter 150ms",
 		textTransform: "uppercase",
 		whiteSpace: "normal",
 		textAlign: "center",
@@ -596,7 +597,11 @@ function DarkCTA({
 	return (
 		<a
 			href={href}
-			className={`px-4 text-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-bsen-red/50 sm:px-6 sm:text-base hover:[box-shadow:rgba(0,0,0,0.32)_0px_6px_8px_0px] active:[box-shadow:rgba(0,0,0,0.16)_0px_2px_2px_0px] active:brightness-95${className ? ` ${className}` : ""}`}
+			className={clsx(
+				"landing-cta landing-cta-red px-4 text-sm sm:px-6 sm:text-base",
+				"focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-bsen-red/50",
+				className,
+			)}
 			style={style}
 		>
 			{children}
@@ -627,7 +632,6 @@ function InkCTA({
 		alignItems: "center",
 		justifyContent: "center",
 		textDecoration: "none",
-		transition: "box-shadow 150ms, filter 150ms",
 		textTransform: "uppercase",
 		whiteSpace: "normal",
 		textAlign: "center",
@@ -635,7 +639,11 @@ function InkCTA({
 	return (
 		<a
 			href={href}
-			className={`px-4 text-sm hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/40 sm:px-6 sm:text-base active:brightness-95${className ? ` ${className}` : ""}`}
+			className={clsx(
+				"landing-cta landing-cta-ink px-4 text-sm sm:px-6 sm:text-base",
+				"focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/40",
+				className,
+			)}
 			style={style}
 		>
 			{children}
@@ -853,7 +861,7 @@ function LandingLeaderboardCard({ entry }: { entry: LeaderboardEntry }) {
 			: 0;
 
 	return (
-		<div className="flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-2.5 shadow-comic">
+		<div className="landing-lb-card flex w-full items-center gap-3 overflow-hidden rounded-lg border-2 border-black bg-white px-3 py-2.5 shadow-comic">
 			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-black/10 bg-ink">
 				<span className="font-black text-base text-white italic">
 					{entry.rank}
@@ -991,53 +999,95 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 	const { t } = useTranslation("landing");
 	const reduceMotion = useReducedMotion();
 	const [index, setIndex] = useState(0);
+	const [hoverPaused, setHoverPaused] = useState(false);
+
+	const isPaused = hoverPaused || !!reduceMotion;
 
 	useEffect(() => {
-		if (matchups.length < 2) return;
+		if (matchups.length < 2 || isPaused) return;
 		const id = window.setInterval(() => {
 			setIndex((prev) => (prev + 1) % matchups.length);
 		}, 7500);
 		return () => window.clearInterval(id);
-	}, [matchups.length]);
+	}, [matchups.length, isPaused]);
 
 	if (matchups.length === 0) return null;
 
 	const matchup = matchups[index];
 	if (!matchup) return null;
 
-	const slideEase = [0.22, 1, 0.36, 1] as const;
+	const enterEase = [0.23, 1, 0.32, 1] as const;
+	const exitEase = [0.4, 0, 1, 1] as const;
+	const enterDur = reduceMotion ? 0.2 : 0.42;
+	const exitDur = reduceMotion ? 0.15 : 0.22;
+	const liveLabel = t("pickArena.matchupLive", {
+		teamA: matchup.teamA.name,
+		teamB: matchup.teamB.name,
+	});
 
 	return (
-		<div className="relative mb-8 flex min-h-[220px] w-full max-w-5xl items-center justify-center overflow-hidden sm:mb-12 sm:min-h-[280px] md:min-h-[360px]">
+		<div
+			className="relative mb-8 flex min-h-[220px] w-full max-w-5xl items-center justify-center overflow-hidden sm:mb-12 sm:min-h-[280px] md:min-h-[360px]"
+			onMouseEnter={() => setHoverPaused(true)}
+			onMouseLeave={() => setHoverPaused(false)}
+			onFocusCapture={() => setHoverPaused(true)}
+			onBlurCapture={(e) => {
+				if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+					setHoverPaused(false);
+				}
+			}}
+		>
+			<p className="sr-only" aria-live="polite" aria-atomic="true">
+				{liveLabel}
+			</p>
+
 			<AnimatePresence mode="sync" initial={false}>
 				<motion.div
 					key={`${matchup.teamA.id}-${matchup.teamB.id}`}
 					className="absolute inset-0 flex items-center justify-center gap-1 px-1 sm:gap-6 sm:px-0 md:gap-10"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-					transition={{
-						duration: reduceMotion ? 0.35 : 0.5,
-						ease: slideEase,
+					initial={{
+						opacity: 0,
+						filter: reduceMotion ? "blur(0px)" : "blur(2px)",
 					}}
+					animate={{ opacity: 1, filter: "blur(0px)" }}
+					exit={{
+						opacity: 0,
+						filter: reduceMotion ? "blur(0px)" : "blur(2px)",
+					}}
+					transition={{
+						opacity: { duration: exitDur, ease: exitEase },
+						filter: { duration: exitDur, ease: exitEase },
+					}}
+					aria-hidden="true"
 				>
 					<motion.div
 						className="relative flex w-[42%] max-w-[320px] sm:w-64 md:w-80"
 						initial={
 							reduceMotion
 								? { opacity: 0 }
-								: { x: -64, opacity: 0, scale: 0.88, rotate: -5 }
+								: {
+										opacity: 0,
+										transform:
+											"translateX(-48px) scale(0.92) rotate(-4deg)",
+									}
 						}
-						animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+						animate={{
+							opacity: 1,
+							transform: "translateX(0px) scale(1) rotate(0deg)",
+						}}
 						exit={
 							reduceMotion
 								? { opacity: 0 }
-								: { x: -48, opacity: 0, scale: 0.9, rotate: -4 }
+								: {
+										opacity: 0,
+										transform:
+											"translateX(-32px) scale(0.94) rotate(-3deg)",
+									}
 						}
 						transition={{
-							duration: reduceMotion ? 0.35 : 0.75,
-							ease: slideEase,
-							delay: reduceMotion ? 0 : 0.04,
+							duration: enterDur,
+							ease: enterEase,
+							delay: reduceMotion ? 0 : 0.03,
 						}}
 					>
 						<PickArenaTeam team={matchup.teamA} variant="blue" />
@@ -1048,46 +1098,33 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 						initial={
 							reduceMotion
 								? { opacity: 0 }
-								: { scale: 0.45, opacity: 0, rotate: -22, y: 12 }
-						}
-						animate={
-							reduceMotion
-								? { opacity: 1, scale: 1, rotate: -3, y: 0 }
 								: {
-										opacity: 1,
-										scale: 1,
-										rotate: -3,
-										y: [0, -4, 0],
+										opacity: 0,
+										transform:
+											"translateY(8px) scale(0.92) rotate(-12deg)",
 									}
 						}
+						animate={{
+							opacity: 1,
+							transform: "translateY(0px) scale(1) rotate(-3deg)",
+						}}
 						exit={
 							reduceMotion
 								? { opacity: 0 }
-								: { scale: 0.6, opacity: 0, rotate: 14, y: -8 }
+								: {
+										opacity: 0,
+										transform:
+											"translateY(-6px) scale(0.94) rotate(8deg)",
+									}
 						}
 						transition={
 							reduceMotion
-								? { duration: 0.35 }
+								? { duration: 0.2 }
 								: {
-										scale: {
-											type: "spring",
-											stiffness: 420,
-											damping: 18,
-											delay: 0.1,
-										},
-										rotate: {
-											type: "spring",
-											stiffness: 320,
-											damping: 16,
-											delay: 0.1,
-										},
-										opacity: { duration: 0.35, delay: 0.08 },
-										y: {
-											duration: 2.4,
-											repeat: Number.POSITIVE_INFINITY,
-											ease: "easeInOut",
-											delay: 0.55,
-										},
+										type: "spring",
+										stiffness: 380,
+										damping: 22,
+										delay: 0.06,
 									}
 						}
 					>
@@ -1111,18 +1148,29 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 						initial={
 							reduceMotion
 								? { opacity: 0 }
-								: { x: 64, opacity: 0, scale: 0.88, rotate: 5 }
+								: {
+										opacity: 0,
+										transform:
+											"translateX(48px) scale(0.92) rotate(4deg)",
+									}
 						}
-						animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+						animate={{
+							opacity: 1,
+							transform: "translateX(0px) scale(1) rotate(0deg)",
+						}}
 						exit={
 							reduceMotion
 								? { opacity: 0 }
-								: { x: 48, opacity: 0, scale: 0.9, rotate: 4 }
+								: {
+										opacity: 0,
+										transform:
+											"translateX(32px) scale(0.94) rotate(3deg)",
+									}
 						}
 						transition={{
-							duration: reduceMotion ? 0.35 : 0.75,
-							ease: slideEase,
-							delay: reduceMotion ? 0 : 0.04,
+							duration: enterDur,
+							ease: enterEase,
+							delay: reduceMotion ? 0 : 0.03,
 						}}
 					>
 						<PickArenaTeam team={matchup.teamB} variant="red" />
@@ -1169,7 +1217,7 @@ export function LandingPage({
 	const authTarget = isAuthenticated ? "/dashboard" : "/login";
 	const rankingTarget = isAuthenticated ? "/leaderboard" : "/login";
 
-	const floatY = reduceMotion ? 0 : 8;
+	const floatY = reduceMotion ? 0 : 4;
 
 	return (
 		<div
@@ -1205,51 +1253,58 @@ export function LandingPage({
 					<div className="flex-1 bg-bsen-red" />
 				</div>
 
-				<SpraySplat
-					variant="blue"
-					className="absolute top-[10%] -left-10 z-[1] h-40 w-56 opacity-40 sm:h-56 sm:w-72 sm:opacity-55 md:-left-16 md:h-80 md:w-[28rem]"
-				/>
+				{/* Red spray — asymmetric atmosphere (blue is anchored to the logo) */}
 				<SpraySplat
 					variant="red"
 					className="absolute right-[-8%] bottom-[8%] z-[1] h-36 w-52 opacity-35 sm:h-48 sm:w-72 sm:opacity-50 md:right-[-6%] md:bottom-[12%] md:h-72 md:w-96"
 				/>
 
-				<SparkStar
-					className="absolute top-[18%] right-[22%] z-[3] hidden rotate-12 opacity-70 xl:block"
-					size={44}
-					color="var(--color-electric-lime)"
-				/>
-
 				{/* Hero content + product mock — stacked through tablet/laptop, split at xl */}
-				<div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[1600px] flex-col xl:flex-row xl:items-center xl:gap-8 2xl:gap-12">
-					<div className="relative z-10 flex min-w-0 flex-col justify-center overflow-hidden px-4 pt-24 pb-6 sm:px-6 md:px-10 xl:w-[48%] xl:shrink-0 xl:overflow-visible xl:px-10 xl:pt-24 xl:pb-20 2xl:w-[52%] 2xl:px-16">
+				<div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[1600px] flex-col xl:flex-row xl:items-center xl:gap-6 2xl:gap-10">
+					<div className="relative z-10 flex min-w-0 flex-col justify-center px-4 pt-24 pb-6 sm:px-6 md:px-10 xl:w-[54%] xl:shrink-0 xl:px-12 xl:pt-28 xl:pb-24 2xl:w-[56%] 2xl:px-20">
 						<motion.div
-							initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.05 }}
-							className="mb-5 w-fit"
+							initial={
+								reduceMotion
+									? false
+									: { opacity: 0, transform: "translateY(12px)" }
+							}
+							animate={{ opacity: 1, transform: "translateY(0px)" }}
+							transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+							className="relative mb-5 w-fit"
 						>
+							<SpraySplat
+								variant="blue"
+								className="pointer-events-none absolute top-1/2 left-1/2 z-0 h-28 w-40 max-w-none -translate-x-1/2 -translate-y-1/2 -rotate-6 opacity-55 sm:h-36 sm:w-52 sm:opacity-60 md:h-44 md:w-64 xl:h-52 xl:w-72"
+							/>
 							<img
 								src="/logo-white.png"
 								alt="BSEN Pickems"
-								className="h-11 w-auto object-contain sm:h-14 md:h-20"
+								className="relative z-10 h-11 w-auto object-contain sm:h-14 md:h-16 xl:h-[5.5rem] 2xl:h-24"
 							/>
 						</motion.div>
 
 						<motion.h1
-							initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.45, delay: 0.12 }}
+							initial={
+								reduceMotion
+									? false
+									: { opacity: 0, transform: "translateY(16px)" }
+							}
+							animate={{ opacity: 1, transform: "translateY(0px)" }}
+							transition={{
+								duration: 0.3,
+								delay: 0.04,
+								ease: [0.23, 1, 0.32, 1],
+							}}
 							className="max-w-full font-black text-white uppercase leading-[0.92] tracking-tight"
 							style={{
 								fontFamily: "var(--font-body)",
-								fontSize: "clamp(2.1rem, 6vw, 3.75rem)",
+								fontSize: "clamp(2.1rem, 1.75rem + 2.8vw, 5.5rem)",
 							}}
 						>
-							<span className="block break-words 2xl:whitespace-nowrap">
+							<span className="block break-words xl:whitespace-nowrap">
 								{t("hero.title")}
 							</span>
-							<span className="block break-words text-electric-lime 2xl:whitespace-nowrap">
+							<span className="block break-words text-electric-lime xl:whitespace-nowrap">
 								{t("hero.titleAccent")}
 							</span>
 						</motion.h1>
@@ -1257,17 +1312,25 @@ export function LandingPage({
 						<motion.p
 							initial={reduceMotion ? false : { opacity: 0 }}
 							animate={{ opacity: 1 }}
-							transition={{ delay: 0.28, duration: 0.35 }}
-							className="mt-5 max-w-md font-black text-[#A0A0A0] text-base leading-relaxed md:text-lg"
+							transition={{ delay: 0.09, duration: 0.28 }}
+							className="mt-5 max-w-lg font-black text-[#A0A0A0] text-base leading-relaxed md:text-lg xl:text-xl"
 							style={{ fontFamily: "var(--font-body)" }}
 						>
 							{t("hero.subtitle")}
 						</motion.p>
 
 						<motion.div
-							initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.4, duration: 0.3 }}
+							initial={
+								reduceMotion
+									? false
+									: { opacity: 0, transform: "translateY(10px)" }
+							}
+							animate={{ opacity: 1, transform: "translateY(0px)" }}
+							transition={{
+								delay: 0.12,
+								duration: 0.28,
+								ease: [0.23, 1, 0.32, 1],
+							}}
 							className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center"
 						>
 							<Link {...routeTo(authTarget)} asChild>
@@ -1279,11 +1342,14 @@ export function LandingPage({
 							{!isAuthenticated && (
 								<Link
 									{...routeTo("/login")}
-									className="inline-flex items-center gap-1.5 font-black text-[#717070] text-sm uppercase tracking-[0.08em] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-lime/50"
+									className="landing-text-link inline-flex items-center gap-1.5 font-black text-[#717070] text-sm uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-lime/50"
 									style={{ fontFamily: "var(--font-body)" }}
 								>
 									{t("hero.secondaryCta")}
-									<span className="material-symbols-outlined text-sm">
+									<span
+										className="material-symbols-outlined text-sm"
+										aria-hidden="true"
+									>
 										arrow_forward
 									</span>
 								</Link>
@@ -1291,35 +1357,47 @@ export function LandingPage({
 						</motion.div>
 					</div>
 
-					<div className="relative z-0 flex w-full min-w-0 flex-1 items-center justify-center overflow-hidden px-4 pt-4 pb-12 sm:px-6 md:px-10 xl:w-[52%] xl:max-w-none xl:overflow-visible xl:px-6 xl:py-20 2xl:px-10">
+					<div className="relative z-0 flex w-full min-w-0 flex-1 items-center justify-center overflow-hidden px-4 pt-4 pb-12 sm:px-6 md:px-10 xl:w-[46%] xl:max-w-none xl:overflow-visible xl:px-8 xl:py-24 2xl:px-12">
 						<motion.div
 							initial={
-								reduceMotion ? false : { opacity: 0, y: 20, scale: 0.96 }
+								reduceMotion
+									? false
+									: {
+											opacity: 0,
+											transform: "translateY(16px) scale(0.96)",
+										}
 							}
 							animate={
 								reduceMotion
-									? { opacity: 1, y: 0, scale: 1 }
-									: { opacity: 1, y: [0, -floatY, 0], scale: 1 }
+									? { opacity: 1, transform: "translateY(0px) scale(1)" }
+									: {
+											opacity: 1,
+											transform: [
+												"translateY(0px) scale(1)",
+												`translateY(-${floatY}px) scale(1)`,
+												"translateY(0px) scale(1)",
+											],
+										}
 							}
 							transition={
 								reduceMotion
-									? { duration: 0.35 }
+									? { duration: 0.28 }
 									: {
-											opacity: { duration: 0.5, delay: 0.18 },
-											scale: {
-												duration: 0.5,
-												delay: 0.18,
-												ease: [0.22, 1, 0.36, 1],
+											opacity: {
+												duration: 0.35,
+												delay: 0.1,
+												ease: [0.23, 1, 0.32, 1],
 											},
-											y: {
-												duration: 5.5,
+											transform: {
+												duration: 6.5,
 												repeat: Number.POSITIVE_INFINITY,
 												ease: "easeInOut",
-												delay: 0.7,
+												delay: 0.45,
+												times: [0, 0.5, 1],
 											},
 										}
 							}
-							className="w-full max-w-[min(100%,380px)] sm:max-w-[400px] xl:max-w-[360px] 2xl:max-w-[440px]"
+							className="w-full max-w-[min(100%,380px)] sm:max-w-[400px] xl:max-w-[460px] 2xl:max-w-[520px]"
 						>
 							<BettingCarouselMock t={t} size="lg" />
 						</motion.div>
@@ -1401,12 +1479,6 @@ export function LandingPage({
 									{t("challengers.rankMark")}
 								</span>
 							</div>
-
-							<SparkStar
-								className="absolute -top-4 -right-4"
-								size={36}
-								color="var(--color-electric-lime)"
-							/>
 						</div>
 					</div>
 
@@ -1454,12 +1526,6 @@ export function LandingPage({
 				className="relative overflow-hidden py-12 md:py-20"
 				style={amberCrumpleStyle}
 			>
-				<SparkStar
-					className="absolute top-6 right-[8%] z-[1] rotate-12 opacity-50"
-					size={36}
-					color="#000"
-				/>
-
 				<div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 sm:gap-10 sm:px-8 md:grid-cols-12 md:gap-10 lg:px-12">
 					<div className="order-2 flex justify-center md:order-1 md:col-span-5 md:justify-start">
 						<WatchPredictLoop t={t} />
@@ -1701,8 +1767,8 @@ export function LandingPage({
 								accentText: "#000000",
 								offset: "md:mt-4 md:-rotate-1 md:z-10 lg:ml-[-12px]",
 							},
-						].map((step) => (
-							<div
+						].map((step, i) => (
+							<motion.div
 								key={step.n}
 								className={clsx("flex-1 p-5 sm:p-6 md:p-7", step.offset)}
 								style={{
@@ -1711,6 +1777,21 @@ export function LandingPage({
 									borderRadius: "0px",
 									boxShadow: "var(--shadow-broadcast-deep)",
 									borderTop: `4px solid ${step.accent}`,
+								}}
+								initial={
+									reduceMotion
+										? false
+										: { opacity: 0, transform: "translateY(14px)" }
+								}
+								whileInView={{
+									opacity: 1,
+									transform: "translateY(0px)",
+								}}
+								viewport={{ once: true, margin: "-60px" }}
+								transition={{
+									duration: 0.32,
+									ease: [0.23, 1, 0.32, 1],
+									delay: reduceMotion ? 0 : i * 0.05,
 								}}
 							>
 								<div
@@ -1735,12 +1816,12 @@ export function LandingPage({
 									{step.title}
 								</h3>
 								<p
-									className="font-black text-[#717070] text-sm leading-relaxed"
+									className="font-black text-white/70 text-sm leading-relaxed"
 									style={{ fontFamily: "var(--font-body)" }}
 								>
 									{step.desc}
 								</p>
-							</div>
+							</motion.div>
 						))}
 					</div>
 				</div>

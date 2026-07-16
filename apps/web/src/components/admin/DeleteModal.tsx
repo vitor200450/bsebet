@@ -1,4 +1,5 @@
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
+import { InlineLoader } from "@/components/inline-loader";
 
 interface DeleteModalProps {
 	isOpen: boolean;
@@ -41,7 +42,7 @@ export function DeleteModal({
 				{/* Content */}
 				<div className="space-y-4 p-6">
 					<p className="font-bold text-black text-sm">{description}</p>
-					<p className="border-2 border-red-200 bg-red-50 p-2 font-black text-[10px] text-red-600 uppercase">
+					<p className="border-2 border-red-200 bg-red-50 p-2 font-bold font-body text-[10px] text-red-600 uppercase tracking-widest">
 						This action cannot be undone.
 					</p>
 
@@ -58,7 +59,7 @@ export function DeleteModal({
 							className="flex flex-1 items-center justify-center gap-2 border-[3px] border-black bg-[#ff2e2e] py-3 font-black text-sm text-white uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-red-600 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 						>
 							{isDeleting ? (
-								<Loader2 className="h-4 w-4 animate-spin" />
+								<InlineLoader size="sm" />
 							) : (
 								"Delete"
 							)}

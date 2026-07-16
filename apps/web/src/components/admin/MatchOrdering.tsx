@@ -18,10 +18,11 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "@tanstack/react-router";
-import { GripVertical, Loader2, Save } from "lucide-react";
+import { GripVertical, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import type { Match } from "@/components/TournamentBracket";
 import { updateMatchOrder } from "@/server/matches";
 
@@ -76,7 +77,7 @@ function MatchItemCard({
 						{match.name || match.label || t("ordering.tbdVsTbd")}
 					</span>
 					<div className="mt-1 flex items-center gap-2">
-						<span className="font-black text-gray-500 text-xs uppercase">
+						<span className="font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
 							{new Date(match.startTime).toLocaleDateString()} •{" "}
 							{new Date(match.startTime).toLocaleTimeString([], {
 								hour: "2-digit",
@@ -84,12 +85,12 @@ function MatchItemCard({
 							})}
 						</span>
 						{match.status === "finished" && (
-							<span className="bg-black px-1.5 py-0.5 font-black text-[10px] text-white uppercase leading-none">
+							<span className="bg-black px-1.5 py-0.5 font-bold font-body text-[10px] text-white uppercase tracking-widest leading-none">
 								{t("bracketEditor.badgeFinal")}
 							</span>
 						)}
 						{match.status === "live" && (
-							<span className="animate-pulse bg-red-500 px-1.5 py-0.5 font-black text-[10px] text-white uppercase leading-none">
+							<span className="animate-pulse bg-red-500 px-1.5 py-0.5 font-bold font-body text-[10px] text-white uppercase tracking-widest leading-none">
 								{t("bracketEditor.badgeLive")}
 							</span>
 						)}
@@ -273,7 +274,7 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 					className="flex items-center gap-2 border-2 border-black bg-brawl-yellow px-4 py-2 font-bold text-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:bg-[#ffe600] hover:shadow-none disabled:opacity-50"
 				>
 					{isSaving ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
+						<InlineLoader size="sm" />
 					) : (
 						<Save className="h-4 w-4" />
 					)}

@@ -253,19 +253,9 @@ export function TournamentBracket({
 		<div
 			className={
 				className ||
-				"relative flex min-h-screen w-full flex-col items-center overflow-x-auto bg-paper p-6 font-body"
+				"relative flex min-h-[100dvh] w-full flex-col items-center overflow-x-auto bg-transparent p-6 font-body text-ink"
 			}
 		>
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
 			{/* Review Button - Fixed at bottom right */}
 			{showReviewButton && (
 				<div className="fixed right-6 bottom-24 z-[70]">

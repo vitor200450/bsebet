@@ -5,7 +5,6 @@ import {
 	Copy,
 	Edit2,
 	Image as ImageIcon,
-	Loader2,
 	Search,
 	Shield,
 	Trash2,
@@ -16,6 +15,7 @@ import {
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
 	deleteUser,
@@ -200,7 +200,7 @@ function AdminUsersPage() {
 						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-96"
+						className="w-full border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-96"
 					/>
 					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 				</div>
@@ -223,7 +223,7 @@ function AdminUsersPage() {
 					<div className="overflow-x-auto">
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header */}
-							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
+							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-bold font-body text-sm text-white uppercase tracking-widest md:grid">
 								<div className="col-span-4">{t("users.tableUserIdentity")}</div>
 								<div className="col-span-4">{t("users.tableContact")}</div>
 								<div className="col-span-2 text-center">
@@ -287,11 +287,11 @@ function AdminUsersPage() {
 
 											{/* Contact */}
 											<div className="flex w-full flex-col justify-center md:col-span-4">
-												<span className="flex items-center gap-2 break-all font-bold font-mono text-gray-700 text-sm">
+												<span className="flex items-center gap-2 break-all font-bold font-body text-gray-700 text-sm">
 													{u.email}
 													<Copy className="h-3 w-3 shrink-0 cursor-pointer text-gray-300 hover:text-black" />
 												</span>
-												<span className="font-bold font-mono text-[10px] text-gray-400 uppercase">
+												<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest tabular-nums">
 													ID: {u.id.slice(0, 8)}...
 												</span>
 											</div>
@@ -301,7 +301,7 @@ function AdminUsersPage() {
 												<button
 													onClick={() => initiateRoleToggle(u)}
 													className={clsx(
-														"flex transform items-center gap-1 border-[2px] border-black px-3 py-1 font-black text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-none",
+														"flex transform items-center gap-1 border-[2px] border-black px-3 py-1 font-black font-display text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-none",
 														u.role === "admin"
 															? "-skew-x-6 bg-[#ccff00] text-black"
 															: "-skew-x-6 bg-gray-200 text-gray-500",
@@ -357,7 +357,7 @@ function AdminUsersPage() {
 						<form onSubmit={handleSaveDetails} className="space-y-6 p-6">
 							{/* Nickname Field */}
 							<div>
-								<label className="mb-1 block font-black text-black text-xs uppercase">
+								<label className="mb-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 									{t("users.displayName")}
 								</label>
 								<input
@@ -374,7 +374,7 @@ function AdminUsersPage() {
 
 							{/* Image Field */}
 							<div>
-								<label className="mb-1 block font-black text-black text-xs uppercase">
+								<label className="mb-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 									{t("users.profilePicture")}
 								</label>
 
@@ -408,7 +408,7 @@ function AdminUsersPage() {
 									</div>
 
 									<div className="flex items-center gap-2">
-										<span className="font-bold text-[10px] text-gray-400 uppercase">
+										<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
 											{t("users.or")}
 										</span>
 										<div className="h-[1px] flex-1 bg-gray-200" />
@@ -445,7 +445,7 @@ function AdminUsersPage() {
 									disabled={isSubmitting}
 									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000]"
 								>
-									{isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+									{isSubmitting && <InlineLoader size="sm" />}
 									{t("users.saveChanges")}
 								</button>
 							</div>
@@ -528,7 +528,7 @@ function AdminUsersPage() {
 									)}
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-6 w-6 animate-spin" />
+										<InlineLoader size="lg" />
 									) : (
 										<>
 											{roleTargetUser.currentRole === "admin"
@@ -598,7 +598,7 @@ function AdminUsersPage() {
 									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-6 w-6 animate-spin" />
+										<InlineLoader size="lg" />
 									) : (
 										<>{t("users.yesDelete")}</>
 									)}

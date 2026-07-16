@@ -72,8 +72,10 @@ export function StandardGroupView({
 						))}
 					</div>
 					{matches.length === 0 && (
-						<div className="rounded border-2 border-gray-300 border-dashed p-8 text-center text-gray-400 text-sm italic">
-							{t("bracketView.noMatches")}
+						<div className="rounded border-2 border-gray-300 border-dashed p-8 text-center">
+							<p className="font-black font-display text-gray-500 text-sm italic">
+								{t("bracketView.noMatches")}
+							</p>
 						</div>
 					)}
 				</div>

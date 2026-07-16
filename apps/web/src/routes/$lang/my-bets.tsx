@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { MatchBetCard } from "@/components/MatchBetCard";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { getMyBets } from "@/functions/get-my-bets";
 import { getUser } from "@/functions/get-user";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -126,32 +127,22 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="relative min-h-screen bg-paper pb-12">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-12">
 			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
 				{/* Clean Header */}
 				<div className="mb-8 md:mb-10">
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
-							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl">
+							<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl">
 								{t("header")}
 							</h1>
-							<p className="mt-2 font-bold text-gray-600 text-lg">
+							<p className="mt-2 font-bold font-display text-gray-600 text-lg">
 								{t("header")}
 							</p>
 						</div>
 						<Link
 							to={linkTo("/dashboard")}
-							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
+							className="group flex items-center gap-2 font-black font-display text-brawl-blue text-sm uppercase tracking-wider transition-colors hover:text-ink"
 						>
 							{t("actions.backToDashboard")}
 							<ChevronRight
@@ -190,7 +181,7 @@ function RouteComponent() {
 										type="button"
 										onClick={() => setFilter(tab.key)}
 										className={clsx(
-											"flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition-all md:gap-2 md:px-4 md:py-2 md:text-sm",
+											"flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 font-bold font-display text-xs uppercase tracking-wider transition-all md:gap-2 md:px-4 md:py-2 md:text-sm",
 											filter === tab.key
 												? "bg-[#121212] text-white"
 												: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
@@ -309,7 +300,7 @@ function RouteComponent() {
 													onClick={() => toggleTournament(group.tournament.id)}
 													className="group flex min-w-0 flex-1 items-center gap-2 text-left"
 												>
-													<h2 className="break-words pr-1 font-black text-[#121212] text-xl uppercase tracking-tight transition-colors group-hover:text-[#2e5cff] md:text-2xl">
+													<h2 className="break-words pr-1 font-black font-display text-ink text-xl uppercase italic tracking-tight transition-colors group-hover:text-brawl-blue md:text-2xl">
 														{group.tournament.name}
 													</h2>
 													<ChevronDown
@@ -413,7 +404,7 @@ function RouteComponent() {
 												</div>
 											) : (
 												<div className="rounded-lg border-2 border-black bg-white p-4 text-center shadow-[3px_3px_0_0_#000]">
-													<p className="font-bold text-gray-600 text-sm">
+													<p className="font-bold font-display text-gray-600 text-sm">
 														{t("labels.clickToExpand")}
 													</p>
 												</div>
@@ -431,20 +422,20 @@ function RouteComponent() {
 								inbox
 							</span>
 						</div>
-						<p className="mb-1 font-black text-[#121212] text-lg uppercase">
+						<p className="mb-1 font-black font-display text-ink text-lg uppercase italic">
 							{filter === "all"
 								? t("empty.none")
 								: filter === "pending"
 									? t("empty.noPending")
 									: t("empty.noFinished")}
 						</p>
-						<p className="mb-5 text-gray-600 text-sm">
+						<p className="mb-5 font-display text-gray-600 text-sm">
 							{filter === "all" ? t("empty.cta") : t("empty.filterHint")}
 						</p>
 						<Link to={linkTo("/")}>
 							<button
 								type="button"
-								className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
+								className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
 							>
 								{t("actions.viewMatches")}
 							</button>
@@ -459,6 +450,6 @@ function RouteComponent() {
 					<div className="h-px w-16 bg-black" />
 				</div>
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }

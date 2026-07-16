@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import { ArrowLeft, Award, Target, TrendingUp, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { TeamLogo } from "@/components/TeamLogo";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
@@ -89,20 +90,10 @@ function TeamDetailsPage() {
 		);
 
 	return (
-		<div className="min-h-screen bg-paper pb-20 font-sans">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-20 font-sans">
 			{/* Clean Header Banner */}
 			<div
-				className="relative border-black border-b-2 transition-all duration-500"
+				className="relative z-10 border-black border-b-2 transition-all duration-500"
 				style={{
 					background: `linear-gradient(135deg, ${teamColors.primary} 0%, ${teamColors.tertiary} 50%, ${teamColors.secondary} 100%)`,
 				}}
@@ -143,7 +134,7 @@ function TeamDetailsPage() {
 								</div>
 							)}
 
-							<h1 className="mb-2 font-black text-3xl text-white uppercase italic tracking-tighter [text-wrap:balance] md:text-5xl">
+							<h1 className="mb-2 font-black font-display text-3xl text-white uppercase italic tracking-tighter [text-wrap:balance] md:text-5xl">
 								{team.name}
 							</h1>
 
@@ -197,7 +188,7 @@ function TeamDetailsPage() {
 					<div className="mb-12">
 						<div className="mb-6 flex items-center gap-4">
 							<div className="h-10 w-1.5 rounded-full bg-gradient-to-b from-[#2e5cff] to-[#2e5cff]/40" />
-							<h2 className="font-black text-3xl text-[#121212] uppercase italic tracking-tight [text-wrap:pretty]">
+							<h2 className="font-black font-display text-3xl text-ink uppercase italic tracking-tight [text-wrap:pretty]">
 								{t("sections.upcoming")}
 							</h2>
 							{upcomingMatches.some((m) => m.status === "live") && (
@@ -461,7 +452,7 @@ function TeamDetailsPage() {
 				<div className="mb-12">
 					<div className="mb-6 flex items-center gap-3">
 						<div className="h-8 w-1 rounded-full bg-[#121212]" />
-						<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
+						<h2 className="font-black font-display text-2xl text-ink uppercase italic [text-wrap:pretty]">
 							{t("sections.recentHistory")}
 						</h2>
 					</div>
@@ -868,7 +859,7 @@ function TeamDetailsPage() {
 							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
 								<Trophy className="h-8 w-8 text-gray-700" strokeWidth={2} />
 							</div>
-							<h3 className="font-black text-[#121212] text-xl uppercase">
+							<h3 className="font-black font-display text-ink text-xl uppercase italic">
 								{t("empty.noFinishedMatches")}
 							</h3>
 						</div>
@@ -880,7 +871,7 @@ function TeamDetailsPage() {
 					<div>
 						<div className="mb-6 flex items-center gap-3">
 							<div className="h-8 w-1 rounded-full bg-[#121212]" />
-							<h2 className="font-black text-2xl text-[#121212] uppercase italic [text-wrap:pretty]">
+							<h2 className="font-black font-display text-2xl text-ink uppercase italic [text-wrap:pretty]">
 								{t("tournaments")}
 							</h2>
 						</div>
@@ -951,7 +942,7 @@ function TeamDetailsPage() {
 					</div>
 				)}
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }
 

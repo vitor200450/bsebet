@@ -2,20 +2,21 @@
 	"title": "Ranking",
 	"subtitle": "Os melhores palpiteiros do BSEN Pickems",
 	"rankingCriteria": "Critérios de Classificação",
+	"criteriaToggle": "Como funciona o ranking",
 	"tabs": {
-		"global": "Ranking Mundial",
+		"global": "Mundial",
 		"season": "Temporada",
 		"tournament": "Camp Específico"
 	},
 	"columns": {
-		"position": "Posição",
+		"position": "Pos",
 		"player": "Jogador",
-		"score": "Pontuação",
+		"score": "Pts",
 		"underdogs": "Azarões",
 		"globalPosition": "Posição geral",
 		"hits": "Acertos",
-		"perfect": "Placares Exatos",
-		"hitRate": "Taxa de Acerto",
+		"perfect": "Exatos",
+		"hitRate": "Taxa",
 		"medals": "Medalhas",
 		"decisiveMatch": "Partida Decisiva",
 		"lastMonthResult": "Resultado mês anterior",
@@ -32,5 +33,13 @@
 	"legend": "Legenda",
 	"empty": "Nenhum dado disponível",
 	"emptyHint": "Seja o primeiro a pontuar!",
-	"selectTournament": "Filtrar torneio"
+	"selectTournament": "Filtrar torneio",
+	"restOfBoard": "Restante do ranking",
+	"showingRange": "{{from}}-{{to}} de {{total}}",
+	"prevPage": "Anterior",
+	"nextPage": "Próxima",
+	"jumpToYou": "Ir até você",
+	"yourRank": "Sua posição",
+	"you": "Você",
+	"pts": "PTS"
 }

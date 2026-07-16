@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { InlineLoader } from "@/components/inline-loader";
 
 interface ConfirmationModalProps {
 	isOpen: boolean;
@@ -101,7 +102,7 @@ export function ConfirmationModal({
 							)}
 						>
 							{isLoading ? (
-								<Loader2 className="h-4 w-4 animate-spin" />
+								<InlineLoader size="sm" />
 							) : (
 								confirmLabel
 							)}

@@ -115,36 +115,49 @@
 	--radius-3xl: calc(var(--radius) + 12px);
 	--radius-4xl: calc(var(--radius) + 16px);
 
-	/* Custom fonts */
+	/* Custom fonts — broadcast dual-font (see DESIGN.md §3)
+	   font-display = Inter (editorial) | font-body = Geist Mono (metadata) */
 	--font-display: "Inter", sans-serif;
 	--font-body: "Geist Mono", monospace;
 	--font-marker: "Permanent Marker", cursive;
 	--font-military: "Black Ops One", cursive;
 
-	/* Custom colors */
+	/* Brand colors — see DESIGN.md / design-system/MASTER.md */
+	--color-electric-lime: #d2ff00;
+	--color-bsen-red: #ff5543;
 	--color-brawl-blue: #2e5cff;
 	--color-brawl-red: #ff2e2e;
 	--color-brawl-yellow: #ffc700;
-	--color-paper: #f0f0f0;
+	--color-paper: #f5f4f0;
 	--color-ink: #121212;
 	--color-charcoal: #181818;
 	--color-tape: #e6e6e6;
+	--color-panel-gray: #2b2b2b;
+	/* Legacy alias: prefer electric-lime in new code */
+	--color-lime: #d2ff00;
 
-	/* Custom background images */
-	--background-image-paper-texture: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+	/* Product / broadcast radius (do not override global shadcn --radius) */
+	--radius-brutal: 0px;
+	--radius-broadcast: 4px;
+
+	/* Product paper — same crumple as landing paper zones */
+	--background-image-paper-crumple: url("/landing/paper-crumple.jpg");
+	--background-image-paper-texture: url("/textures/cream-paper.png");
 	--background-image-noise: url("https://www.transparenttextures.com/patterns/noise-lines.png");
 
-	/* Custom shadows */
+	/* Shadows — dual mode: product comic vs broadcast BSC */
 	--shadow-comic: 3px 3px 0px 0px #000000;
+	--shadow-comic-md: 4px 4px 0px 0px #000000;
+	--shadow-comic-lg: 6px 6px 0px 0px #000000;
+	--shadow-comic-sm: 2px 2px 0px 0px #000000;
+	--shadow-comic-press: 1px 1px 0px 0px #000000;
 	--shadow-comic-hover: 1px 1px 0px 0px #000000;
 	--shadow-comic-deep: 6px 6px 0px 0px rgba(0, 0, 0, 0.15);
+	--shadow-broadcast: 0px 4px 4px 0px rgba(0, 0, 0, 0.24);
+	--shadow-broadcast-deep: 0px 8px 32px 0px rgba(0, 0, 0, 0.5);
 }
 
 /* Custom Utilities from HTML */
-.btn-press:active {
-	transform: translate(2px, 2px);
-	box-shadow: 1px 1px 0 0 #000;
-}
 .btn-press:active {
 	transform: translate(2px, 2px);
 	box-shadow: 1px 1px 0 0 #000;
@@ -190,6 +203,77 @@
 			-1px 1px 0 #000,
 			1px 1px 0 #000;
 	}
+
+	/*
+	 * Surface pairs — ALWAYS prefer these over separate bg-* + text-* classes.
+	 * Prevents inherited text-white on light backgrounds (common agent bug).
+	 * See DESIGN.md §2.1 and design-system/MASTER.md § Contrast Guardrails.
+	 */
+	.surface-paper {
+		@apply bg-paper text-ink;
+	}
+	.surface-white {
+		@apply bg-white text-ink;
+	}
+	.surface-tape {
+		@apply bg-tape text-ink;
+	}
+	.surface-lime {
+		@apply bg-electric-lime text-black;
+	}
+	.surface-yellow {
+		@apply bg-brawl-yellow text-black;
+	}
+	.surface-ink {
+		@apply bg-ink text-white;
+	}
+	.surface-charcoal {
+		@apply bg-charcoal text-white;
+	}
+	.surface-panel {
+		@apply bg-panel-gray text-white;
+	}
+	.surface-brawl-blue {
+		@apply bg-brawl-blue text-white;
+	}
+	.surface-brawl-red {
+		@apply bg-brawl-red text-white;
+	}
+	.surface-bsen-red {
+		@apply bg-bsen-red text-white;
+	}
+
+	/* Hover pairs — change bg AND text together */
+	.hover-surface-lime:hover {
+		@apply bg-electric-lime text-black;
+	}
+	.hover-surface-brawl-blue:hover {
+		@apply bg-brawl-blue text-white;
+	}
+	.hover-surface-brawl-red:hover {
+		@apply bg-brawl-red text-white;
+	}
+	.hover-surface-bsen-red:hover {
+		@apply bg-bsen-red text-white;
+	}
+	.hover-surface-white:hover {
+		@apply bg-white text-ink;
+	}
+
+	/*
+	 * Product page canvas — DESIGN.md § Dual Surface Modes (Product comic).
+	 * Size against the element width (100%), not dvw — dropdowns that toggle
+	 * the scrollbar must not rescale the paper grain.
+	 */
+	.page-canvas {
+		@apply relative min-h-[100dvh] text-ink;
+		background-color: var(--color-paper);
+		background-image: var(--background-image-paper-crumple);
+		background-size: 100% auto;
+		background-position: center top;
+		background-repeat: repeat-y;
+		background-attachment: scroll;
+	}
 }
 
 @layer base {
@@ -201,5 +285,89 @@
 	}
 	html {
 		@apply font-sans;
+		/* Keep layout width stable when menus lock body scroll */
+		scrollbar-gutter: stable;
+	}
+}
+
+/* Landing — press feedback, hover (fine pointers), leaderboard rows */
+.landing-cta {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 140ms var(--ease-out),
+		box-shadow 150ms var(--ease-out),
+		filter 150ms var(--ease-out);
+}
+
+.landing-cta:active {
+	transform: scale(0.97);
+	filter: brightness(0.95);
+	box-shadow: rgba(0, 0, 0, 0.16) 0px 2px 2px 0px;
+}
+
+.landing-text-link {
+	transition: color 160ms ease;
+}
+
+.landing-lb-card {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 140ms var(--ease-out),
+		box-shadow 150ms var(--ease-out);
+}
+
+.landing-lb-card:active {
+	transform: scale(0.98);
+}
+
+/* Leaderboard polish — fine-pointer hover only */
+.lb-avatar-hover {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 160ms var(--ease-out);
+}
+
+.lb-row-hover {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	transition: background-color 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.landing-cta-lime:hover {
+		filter: brightness(1.05);
+		box-shadow: rgba(0, 0, 0, 0.32) 0px 6px 8px 0px;
+	}
+
+	.landing-cta-red:hover {
+		filter: brightness(1.05);
+		box-shadow: rgba(0, 0, 0, 0.32) 0px 6px 8px 0px;
+	}
+
+	.landing-cta-ink:hover {
+		filter: brightness(1.1);
+		box-shadow: rgba(0, 0, 0, 0.32) 0px 6px 8px 0px;
+	}
+
+	.landing-text-link:hover {
+		color: #ffffff;
+	}
+
+	.landing-lb-card:hover {
+		transform: translateY(-1px);
+		box-shadow: 4px 5px 0 #000;
+	}
+
+	.lb-avatar-hover:hover {
+		transform: scale(1.05);
+	}
+
+	.lb-row-hover:hover {
+		background-color: color-mix(in srgb, var(--color-tape) 60%, transparent);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lb-avatar-hover,
+	.lb-row-hover {
+		transition: none;
 	}
 }

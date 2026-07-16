@@ -4,7 +4,6 @@ import {
 	Award,
 	Check,
 	History,
-	Loader2,
 	Search,
 	Trophy,
 	User,
@@ -13,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/inline-loader";
 import { CustomSelect } from "@/components/admin/CustomInputs";
 import { useSetHeader } from "@/components/HeaderContext";
 import { getMatches } from "@/server/matches";
@@ -379,7 +379,7 @@ function CompensationsPage() {
 						<div className="space-y-6 border-[4px] border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)]">
 							{/* Tournament Selector */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
 									<Trophy className="h-4 w-4" />
 									{t("compensations.tournament")}
 								</label>
@@ -404,7 +404,7 @@ function CompensationsPage() {
 
 							{/* User Search */}
 							<div className="relative">
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
 									<User className="h-4 w-4" />
 									{t("compensations.user")}
 								</label>
@@ -448,7 +448,10 @@ function CompensationsPage() {
 											className="w-full border-[3px] border-black p-3 pl-10 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 										/>
 										{isSearchingUsers && (
-											<Loader2 className="absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 animate-spin text-gray-400" />
+											<InlineLoader
+												size="md"
+												className="absolute top-1/2 right-3 -translate-y-1/2"
+											/>
 										)}
 
 										{/* Dropdown Results */}
@@ -475,7 +478,7 @@ function CompensationsPage() {
 															<p className="truncate font-bold text-black text-sm">
 																{user.name}
 															</p>
-															<p className="truncate font-mono text-gray-500 text-xs">
+															<p className="truncate font-bold font-body text-gray-500 text-xs tracking-wide">
 																{user.email}
 															</p>
 														</div>
@@ -489,7 +492,7 @@ function CompensationsPage() {
 											userSearchResults.length === 0 &&
 											!isSearchingUsers && (
 												<div className="absolute top-full right-0 left-0 z-50 mt-2 border-[3px] border-black bg-white p-4 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-													<p className="font-bold text-gray-500 text-sm">
+													<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
 														{t("compensations.noUserFound")}
 													</p>
 												</div>
@@ -500,7 +503,7 @@ function CompensationsPage() {
 
 							{/* Match Selector (Optional) */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
 									<Trophy className="h-4 w-4" />
 									{t("compensations.affectedMatch")}{" "}
 									<span className="font-normal text-gray-500">
@@ -534,7 +537,7 @@ function CompensationsPage() {
 
 							{/* Score Inputs */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
 									<Award className="h-4 w-4" />
 									{t("compensations.betScore")}
 								</label>
@@ -556,7 +559,7 @@ function CompensationsPage() {
 												</span>
 											)}
 										</div>
-										<label className="w-full text-center font-bold text-[10px] text-gray-500 uppercase leading-tight">
+										<label className="w-full text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest leading-tight">
 											{selectedMatchData?.teamAName ||
 												t("compensations.teamAFallback")}
 										</label>
@@ -590,7 +593,7 @@ function CompensationsPage() {
 												</span>
 											)}
 										</div>
-										<label className="w-full text-center font-bold text-[10px] text-gray-500 uppercase leading-tight">
+										<label className="w-full text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest leading-tight">
 											{selectedMatchData?.teamBName ||
 												t("compensations.teamBFallback")}
 										</label>
@@ -655,7 +658,7 @@ function CompensationsPage() {
 
 							{/* Reason Textarea */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-black text-black text-xs uppercase">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
 									<AlertTriangle className="h-4 w-4" />
 									{t("compensations.reason")}{" "}
 									<span className="font-normal text-gray-500">
@@ -692,7 +695,7 @@ function CompensationsPage() {
 							>
 								{isSubmitting ? (
 									<>
-										<Loader2 className="h-5 w-5 animate-spin" />
+										<InlineLoader size="md" />
 										{t("compensations.applying")}
 									</>
 								) : (
@@ -748,7 +751,7 @@ function CompensationsPage() {
 															{adj.userName}
 														</span>
 														{adj.isRecoveryCompensation && (
-															<span className="border border-yellow-300 bg-yellow-100 px-2 py-0.5 font-bold text-[10px] text-yellow-800 uppercase">
+															<span className="border border-yellow-300 bg-yellow-100 px-2 py-0.5 font-bold font-body text-[10px] text-yellow-800 uppercase tracking-widest">
 																{t("compensations.recovery")}
 															</span>
 														)}
@@ -861,7 +864,7 @@ function CompensationsPage() {
 									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ccff00] py-4 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-6 w-6 animate-spin" />
+										<InlineLoader size="lg" />
 									) : (
 										t("compensations.confirm")
 									)}

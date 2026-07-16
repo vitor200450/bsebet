@@ -1,10 +1,10 @@
 import {
 	CircleCheckIcon,
 	InfoIcon,
-	Loader2Icon,
 	OctagonXIcon,
 	TriangleAlertIcon,
 } from "lucide-react";
+import { InlineLoader } from "@/components/inline-loader";
 import { useTheme } from "next-themes";
 import type { ToasterProps } from "sonner";
 import { Toaster as Sonner } from "sonner";
@@ -21,7 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 				info: <InfoIcon className="size-4" />,
 				warning: <TriangleAlertIcon className="size-4" />,
 				error: <OctagonXIcon className="size-4" />,
-				loading: <Loader2Icon className="size-4 animate-spin" />,
+				loading: <InlineLoader size="sm" />,
 			}}
 			style={
 				{

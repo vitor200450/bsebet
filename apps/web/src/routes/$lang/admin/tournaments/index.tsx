@@ -8,7 +8,6 @@ import {
 	Edit2,
 	Globe,
 	Image as ImageIcon,
-	Loader2,
 	Plus,
 	Search,
 	Trash2,
@@ -20,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
 	copyTournament,
@@ -121,7 +121,7 @@ function AdminTournamentsPage() {
 						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full border-[3px] border-black px-4 py-2 font-bold text-black text-sm uppercase placeholder-gray-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none sm:w-64"
+						className="w-full border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-64"
 					/>
 					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 				</div>
@@ -329,7 +329,7 @@ function AdminTournamentsPage() {
 					<div className="overflow-x-auto">
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header - Hidden on small screens */}
-							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider md:grid">
+							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-bold font-body text-sm text-white uppercase tracking-widest md:grid">
 								<div className="col-span-4">{t("tournaments.tableInfo")}</div>
 								<div className="col-span-2">
 									{t("tournaments.tableDetails")}
@@ -376,26 +376,26 @@ function AdminTournamentsPage() {
 													)}
 												</div>
 												<div className="min-w-0">
-													<h3 className="break-words font-black text-black text-lg uppercase italic leading-none">
+													<h3 className="break-words font-black font-display text-black text-lg uppercase italic leading-none">
 														{tournament.name}
 													</h3>
-													<span className="rounded border border-gray-300 bg-gray-100 px-1 font-bold font-mono text-gray-500 text-xs">
+													<span className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[10px] text-gray-500 tracking-widest">
 														{tournament.slug}
 													</span>
 												</div>
 											</div>
 
 											{/* Details (Region, Format, Players) */}
-											<div className="flex w-full flex-row flex-wrap gap-2 md:col-span-2 md:flex-col md:gap-1">
+											<div className="flex w-full flex-row flex-wrap gap-2 md:col-span-2 md:flex-col md:gap-1.5">
 												{tournament.region && (
-													<span className="flex items-center gap-1 font-bold text-black text-xs uppercase">
-														<span className="h-2 w-2 rounded-full bg-blue-500" />{" "}
+													<span className="flex w-fit items-center gap-1.5 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-700 uppercase tracking-widest">
+														<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brawl-blue" />
 														{tournament.region}
 													</span>
 												)}
 												{tournament.format && (
 													<span
-														className="truncate font-bold text-gray-600 text-xs uppercase"
+														className="w-fit truncate rounded bg-gray-100 px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest"
 														title={tournament.format}
 													>
 														<span className="mr-1 md:hidden">
@@ -405,7 +405,7 @@ function AdminTournamentsPage() {
 													</span>
 												)}
 												{tournament.participantsCount && (
-													<span className="w-fit rounded bg-gray-200 px-1 font-mono text-[10px] text-gray-500">
+													<span className="flex w-fit items-center gap-1 rounded bg-gray-100 px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest tabular-nums">
 														{tournament.participantsCount}{" "}
 														{t("tournaments.teams")}
 													</span>
@@ -413,22 +413,22 @@ function AdminTournamentsPage() {
 											</div>
 
 											{/* Dates */}
-											<div className="flex w-full gap-2 font-bold text-gray-600 text-sm uppercase md:col-span-2 md:block">
+											<div className="flex w-full gap-2 md:col-span-2 md:block">
 												{tournament.startDate ? (
-													<div className="flex flex-row gap-x-2 md:flex-col">
+													<div className="flex w-fit flex-row flex-wrap items-center gap-x-2 gap-y-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest tabular-nums md:flex-col md:items-start">
 														<span>{formatDateUTC(tournament.startDate)}</span>
 														{tournament.endDate && (
-															<span className="text-gray-400 text-xs">
-																<span className="md:hidden">-</span>
+															<span className="text-gray-400">
+																<span className="md:hidden">- </span>
 																<span className="hidden md:inline">
-																	{t("tournaments.to")}
-																</span>{" "}
+																	{t("tournaments.to")}{" "}
+																</span>
 																{formatDateUTC(tournament.endDate)}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-gray-400 italic">
+													<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest italic">
 														{t("tournaments.tbd")}
 													</span>
 												)}
@@ -437,7 +437,7 @@ function AdminTournamentsPage() {
 											{/* Status Badge */}
 											<div className="flex w-full justify-start md:col-span-2 md:justify-center">
 												<span
-													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-black text-[10px] uppercase italic ${getStatusColor(
+													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-bold font-body text-[10px] uppercase tracking-widest italic ${getStatusColor(
 														tournament.status || "upcoming",
 													)}`}
 												>
@@ -490,7 +490,7 @@ function AdminTournamentsPage() {
 												</button>
 											</div>
 											{formData.logoUrl.startsWith("data:") && (
-												<p className="mt-1 w-full font-bold text-[10px] text-red-500 uppercase italic">
+												<p className="mt-1 w-full font-bold font-body text-[10px] text-red-500 uppercase tracking-widest italic">
 													⚠️ {t("tournaments.base64Warning")}{" "}
 													<Link
 														to={linkTo("/admin/migrate-logos")}
@@ -535,7 +535,7 @@ function AdminTournamentsPage() {
 							{/* Left Column */}
 							<div className="space-y-4">
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("tournaments.nameLabel")}
 									</label>
 									<input
@@ -549,7 +549,7 @@ function AdminTournamentsPage() {
 								</div>
 
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("tournaments.slugLabel")}
 									</label>
 									<div className="relative">
@@ -570,7 +570,7 @@ function AdminTournamentsPage() {
 
 								<div className="grid grid-cols-2 gap-4">
 									<div>
-										<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+										<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 											{t("tournaments.participantsLabel")}
 										</label>
 										<input
@@ -626,7 +626,7 @@ function AdminTournamentsPage() {
 								</div>
 
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("tournaments.statusLabel")}
 									</label>
 									<select
@@ -653,12 +653,12 @@ function AdminTournamentsPage() {
 
 								{/* Default Scoring Rules */}
 								<div className="space-y-3 border-[3px] border-black bg-gray-50 p-4">
-									<h3 className="flex items-center gap-2 font-black text-black text-sm uppercase">
+									<h3 className="flex items-center gap-2 font-black font-display text-black text-sm uppercase">
 										{t("tournaments.scoringRules")}
 									</h3>
 									<div className="grid grid-cols-2 gap-3">
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("tournaments.winner")}
 											</label>
 											<input
@@ -677,7 +677,7 @@ function AdminTournamentsPage() {
 											/>
 										</div>
 										<div>
-											<label className="mb-1 block font-bold text-[10px] text-gray-500 uppercase">
+											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("tournaments.exactScore")}
 											</label>
 											<input
@@ -699,7 +699,7 @@ function AdminTournamentsPage() {
 									<div className="grid grid-cols-2 gap-3">
 										<div>
 											<label
-												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 												title={t("tournaments.tier1Bonus")}
 											>
 												{t("tournaments.underdogTier1")}
@@ -721,7 +721,7 @@ function AdminTournamentsPage() {
 										</div>
 										<div>
 											<label
-												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 												title={t("tournaments.tier2Bonus")}
 											>
 												{t("tournaments.underdogTier2")}
@@ -745,7 +745,7 @@ function AdminTournamentsPage() {
 									<div className="grid grid-cols-2 gap-3">
 										<div>
 											<label
-												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 												title={t("tournaments.maxVotes")}
 											>
 												{t("tournaments.tier1Threshold")}
@@ -777,7 +777,7 @@ function AdminTournamentsPage() {
 										</div>
 										<div>
 											<label
-												className="mb-1 block font-bold text-[10px] text-gray-500 uppercase"
+												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
 												title={t("tournaments.maxVotes")}
 											>
 												{t("tournaments.tier2Threshold")}
@@ -808,7 +808,7 @@ function AdminTournamentsPage() {
 											/>
 										</div>
 									</div>
-									<p className="font-bold text-[10px] text-gray-500 uppercase">
+									<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("tournaments.autoFallback")}
 									</p>
 								</div>
@@ -824,7 +824,7 @@ function AdminTournamentsPage() {
 
 								{/* Logo Upload */}
 								<div>
-									<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 										{t("tournaments.logoUrlLabel")}
 									</label>
 									<div className="flex gap-2">
@@ -901,7 +901,7 @@ function AdminTournamentsPage() {
 									disabled={isSubmitting}
 									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black text-lg uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000] disabled:cursor-not-allowed disabled:opacity-70"
 								>
-									{isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />}
+									{isSubmitting && <InlineLoader size="md" />}
 									{t("tournaments.saveButton")}
 								</button>
 							</div>
@@ -936,7 +936,7 @@ function AdminTournamentsPage() {
 									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
 									{isSubmitting ? (
-										<Loader2 className="h-6 w-6 animate-spin" />
+										<InlineLoader size="lg" />
 									) : (
 										t("tournaments.deleteConfirmButton")
 									)}

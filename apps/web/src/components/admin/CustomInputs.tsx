@@ -46,13 +46,13 @@ export const CustomSelect = ({
 
 	return (
 		<div className="relative" ref={containerRef}>
-			<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+			<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 				{label}
 			</label>
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
-				className="flex h-[50px] w-full items-center justify-between border-[3px] border-black bg-white p-3 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
+				className="flex h-[50px] w-full items-center justify-between border-[3px] border-black bg-white p-3 font-bold font-display text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 			>
 				<span className={!value ? "font-normal text-gray-400" : ""}>
 					{selectedLabel || placeholder}
@@ -78,12 +78,12 @@ export const CustomSelect = ({
 									if (onConfirm) onConfirm(val);
 								}
 							}}
-							className="w-full border-2 border-gray-200 p-1 font-bold text-black text-sm uppercase placeholder:text-gray-300 focus:border-black focus:outline-none"
+							className="w-full border-2 border-gray-200 p-1 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-300 focus:border-black focus:outline-none"
 							onClick={(e) => e.stopPropagation()}
 						/>
 					</div>
 					{filteredOptions.length === 0 ? (
-						<div className="p-4 text-center font-bold text-gray-400 text-xs uppercase">
+						<div className="p-4 text-center font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
 							{t("customInputs.noResults")}
 						</div>
 					) : (
@@ -96,7 +96,7 @@ export const CustomSelect = ({
 									setIsOpen(false);
 									setSearchTerm("");
 								}}
-								className="w-full border-gray-100 border-b px-3 py-2 text-left font-bold text-black text-sm uppercase last:border-0 hover:bg-[#ccff00] hover:text-black"
+								className="w-full border-gray-100 border-b px-3 py-2 text-left font-bold font-display text-black text-sm uppercase last:border-0 hover:bg-[#ccff00] hover:text-black"
 							>
 								{opt.label}
 							</button>
@@ -188,13 +188,13 @@ export const CustomDatePicker = ({
 
 	return (
 		<div className="relative" ref={containerRef}>
-			<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+			<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 				{label}
 			</label>
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
-				className="flex h-[50px] w-full items-center justify-between border-[3px] border-black bg-white p-3 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
+				className="flex h-[50px] w-full items-center justify-between border-[3px] border-black bg-white p-3 font-bold font-display text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 			>
 				<span>{value || t("customInputs.selectDate")}</span>
 				<span className="text-xs">📅</span>
@@ -210,7 +210,7 @@ export const CustomDatePicker = ({
 						>
 							{t("customInputs.prevMonth")}
 						</button>
-						<span className="font-bold text-xs uppercase">
+						<span className="font-bold font-display text-xs uppercase">
 							{currentDate.toLocaleString("default", {
 								month: "long",
 								year: "numeric",
@@ -228,7 +228,7 @@ export const CustomDatePicker = ({
 						{(
 							t("customInputs.dayHeaders", { returnObjects: true }) as string[]
 						).map((d) => (
-							<div key={d} className="font-bold text-[10px] text-gray-400">
+							<div key={d} className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
 								{d}
 							</div>
 						))}
@@ -265,7 +265,7 @@ export const CustomDatePicker = ({
 									type="button"
 									onClick={() => !isDisabled && handleDateClick(day)}
 									disabled={!!isDisabled}
-									className={`rounded-sm p-1 font-bold text-xs ${
+									className={`rounded-sm p-1 font-bold font-body text-xs tabular-nums ${
 										isDisabled
 											? "cursor-not-allowed text-gray-300"
 											: "hover:bg-[#ccff00] hover:text-black"
@@ -293,7 +293,7 @@ export const CustomTimePicker = ({
 }) => {
 	return (
 		<div>
-			<label className="mb-1 ml-1 block font-black text-black text-xs uppercase">
+			<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
 				{label}
 			</label>
 			<div className="relative">
@@ -301,7 +301,7 @@ export const CustomTimePicker = ({
 					type="time"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
-					className="h-[42px] w-full border-[3px] border-black bg-white p-2 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
+					className="h-[42px] w-full border-[3px] border-black bg-white p-2 font-bold font-body text-black tabular-nums focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
 				/>
 				<span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 bg-white pl-1 text-xs">
 					⏰

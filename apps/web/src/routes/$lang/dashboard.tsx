@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { clsx } from "clsx";
 import {
 	Award,
-	BarChart3,
-	Calendar,
 	ChevronRight,
 	Clock,
 	Target,
@@ -15,7 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { MatchBetCard } from "@/components/MatchBetCard";
 import { MedalSummary } from "@/components/MedalSummary";
-import { TeamLogo } from "@/components/TeamLogo";
+import { PublicPageShell } from "@/components/PublicPageShell";
 import { getDashboardData } from "@/functions/get-dashboard-data";
 import { getUser } from "@/functions/get-user";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -82,32 +79,22 @@ function RouteComponent() {
 	const activeTournaments = data?.activeTournaments ?? [];
 
 	return (
-		<div className="relative min-h-screen bg-[#f0f0f0] pb-12">
-			{/* Paper texture overlay */}
-			<div
-				className="pointer-events-none fixed inset-0 opacity-[0.12] mix-blend-multiply"
-				style={{
-					backgroundImage:
-						'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-					backgroundRepeat: "repeat",
-				}}
-			/>
-
+		<PublicPageShell className="pb-12">
 			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
-				{/* Header - Clean & Modern */}
+				{/* Header */}
 				<div className="mb-10 md:mb-14">
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div>
-							<h1 className="font-black text-4xl text-[#121212] uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
+							<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl lg:text-6xl">
 								{t("title")}
 							</h1>
-							<p className="mt-2 font-bold text-gray-600 text-lg">
+							<p className="mt-2 font-bold font-display text-gray-600 text-lg">
 								{t("greeting", { name: displayName })} {t("subtitle")}
 							</p>
 						</div>
 						<Link
 							to={linkTo("/my-bets")}
-							className="group flex items-center gap-2 font-black text-[#2e5cff] text-sm uppercase tracking-wider transition-colors hover:text-[#121212]"
+							className="group flex items-center gap-2 font-black font-display text-brawl-blue text-sm uppercase tracking-wider transition-colors hover:text-ink"
 						>
 							{t("viewHistory")}
 							<ChevronRight
@@ -118,14 +105,11 @@ function RouteComponent() {
 					</div>
 				</div>
 
-				{/* Stats Grid - Clean cards with better hierarchy */}
+				{/* Stats */}
 				<section className="mb-10 md:mb-14">
-					<div className="mb-6 flex items-center gap-3">
-						<BarChart3 className="h-6 w-6 text-[#2e5cff]" strokeWidth={2.5} />
-						<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-							{t("stats.title")}
-						</h2>
-					</div>
+					<h2 className="mb-6 font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
+						{t("stats.title")}
+					</h2>
 
 					{isLoading ? (
 						<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -139,38 +123,34 @@ function RouteComponent() {
 					) : (
 						<div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
 							{/* Total Points */}
-							<div className="group relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
-								<div className="mb-3 flex items-center justify-between">
-									<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ffc700]">
-										<TrendingUp
-											className="h-5 w-5 text-black"
-											strokeWidth={2.5}
-										/>
-									</div>
+							<div className="relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-comic transition-all hover:shadow-comic-md">
+								<div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-brawl-yellow">
+									<TrendingUp
+										className="h-5 w-5 text-black"
+										strokeWidth={2.5}
+									/>
 								</div>
-								<div className="font-black text-3xl text-[#121212] md:text-4xl">
+								<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 									{stats.totalPoints}
 								</div>
-								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+								<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 									{t("stats.totalPoints")}
 								</div>
 							</div>
 
 							{/* Accuracy */}
-							<div className="group relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
-								<div className="mb-3 flex items-center justify-between">
-									<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#2e5cff]">
-										<Target className="h-5 w-5 text-white" strokeWidth={2.5} />
-									</div>
+							<div className="relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-comic transition-all hover:shadow-comic-md">
+								<div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-brawl-blue">
+									<Target className="h-5 w-5 text-white" strokeWidth={2.5} />
 								</div>
-								<div className="font-black text-3xl text-[#121212] md:text-4xl">
+								<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 									{stats.accuracy}
 									<span className="text-xl">%</span>
 								</div>
-								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+								<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 									{t("stats.hitRate")}
 								</div>
-								<div className="mt-1 font-medium text-[10px] text-gray-500">
+								<div className="mt-1 font-body font-medium text-[10px] text-gray-500">
 									{t("stats.correctCount", {
 										correct: stats.correctPredictions,
 										total: stats.totalBets,
@@ -179,63 +159,64 @@ function RouteComponent() {
 							</div>
 
 							{/* Perfect Picks */}
-							<div className="group relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
-								<div className="mb-3 flex items-center justify-between">
-									<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ccff00]">
-										<Award className="h-5 w-5 text-black" strokeWidth={2.5} />
-									</div>
+							<div className="relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-comic transition-all hover:shadow-comic-md">
+								<div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-electric-lime">
+									<Award className="h-5 w-5 text-black" strokeWidth={2.5} />
 								</div>
-								<div className="font-black text-3xl text-[#121212] md:text-4xl">
+								<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 									{stats.perfectPicks}
 								</div>
-								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+								<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 									{t("stats.perfectPicks")}
 								</div>
 							</div>
 
 							{/* Pending Bets */}
-							<div className="group relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[4px_4px_0_0_#000]">
-								<div className="mb-3 flex items-center justify-between">
-									<div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ff2e2e]">
-										<Clock className="h-5 w-5 text-white" strokeWidth={2.5} />
-									</div>
+							<div className="relative overflow-hidden rounded-lg border-2 border-black bg-white p-4 shadow-comic transition-all hover:shadow-comic-md">
+								<div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-brawl-red">
+									<Clock className="h-5 w-5 text-white" strokeWidth={2.5} />
 								</div>
-								<div className="font-black text-3xl text-[#121212] md:text-4xl">
+								<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 									{stats.pendingBets}
 								</div>
-								<div className="mt-1 font-bold text-[10px] text-gray-600 uppercase tracking-wider">
+								<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 									{t("stats.pendingBets")}
 								</div>
 							</div>
 						</div>
 					)}
 
-					{/* Additional Stats - Integrated into grid */}
+					{/* Additional Stats */}
 					{!isLoading && stats.totalBets > 0 && (
 						<div className="mt-4 grid grid-cols-2 gap-3 md:gap-4">
-							<div className="flex items-center gap-3 rounded-lg border-2 border-black bg-gradient-to-r from-purple-500 to-pink-500 p-3 shadow-[3px_3px_0_0_#000]">
-								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-white/20">
-									<span className="text-lg">🐕</span>
+							{/* Underdog highlight — broadcast callout, not a gradient */}
+							<div className="relative flex items-center gap-3 border-[3px] border-black bg-brawl-yellow p-4 shadow-comic-md">
+								<div className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-black bg-ink">
+									<Trophy
+										className="h-5 w-5 text-brawl-yellow"
+										strokeWidth={2.5}
+										fill="currentColor"
+									/>
 								</div>
-								<div>
-									<div className="font-black text-white text-xl">
+								<div className="min-w-0">
+									<div className="font-black font-body text-3xl text-ink tabular-nums leading-none tracking-tight">
 										{stats.underdogWins}
 									</div>
-									<div className="font-bold text-[10px] text-white/80 uppercase tracking-wider">
+									<div className="mt-1 font-body font-bold text-[10px] text-ink/70 uppercase tracking-widest">
 										{t("stats.underdogsWon")}
 									</div>
 								</div>
 							</div>
 
-							<div className="flex items-center gap-3 rounded-lg border-2 border-black bg-[#121212] p-3 shadow-[3px_3px_0_0_#000]">
-								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ccff00]">
+							<div className="flex items-center gap-3 self-center rounded-lg border-2 border-black bg-ink p-3 shadow-comic">
+								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-electric-lime">
 									<Zap className="h-4 w-4 text-black" strokeWidth={2.5} />
 								</div>
 								<div>
-									<div className="font-black text-white text-xl">
+									<div className="font-black font-body text-white text-xl tabular-nums">
 										{stats.totalBets}
 									</div>
-									<div className="font-bold text-[10px] text-white/70 uppercase tracking-wider">
+									<div className="font-body font-bold text-[10px] text-white/70 uppercase tracking-widest">
 										{t("stats.totalBets")}
 									</div>
 								</div>
@@ -244,20 +225,11 @@ function RouteComponent() {
 					)}
 				</section>
 
-				{/* Achievements Section */}
+				{/* Achievements */}
 				<section className="mb-10 md:mb-14">
-					<div className="mb-5 flex items-center gap-3">
-						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ffc700]">
-							<Trophy
-								className="h-5 w-5 text-black"
-								strokeWidth={2.5}
-								fill="currentColor"
-							/>
-						</div>
-						<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-							{t("stats.achievements")}
-						</h2>
-					</div>
+					<h2 className="mb-5 font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
+						{t("stats.achievements")}
+					</h2>
 					<MedalSummary
 						total={medalCounts?.total || 0}
 						gold={medalCounts?.gold || 0}
@@ -269,24 +241,19 @@ function RouteComponent() {
 							tournamentSlug: m.tournamentSlug,
 						}))}
 						userId={session?.user?.id}
+						hideHeader
 					/>
 				</section>
 
-				{/* Two Column Layout: Active Bets + Tournaments */}
+				{/* Active Bets + Tournaments */}
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-					{/* Active Bets - Takes 2/3 on desktop */}
 					<section className="lg:col-span-2">
 						<div className="mb-5 flex items-center gap-3">
-							<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2e5cff]">
-								<span className="material-symbols-outlined text-lg text-white">
-									sports_esports
-								</span>
-							</div>
-							<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
+							<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 								{t("stats.activeBets")}
 							</h2>
 							{activeBets.length > 0 && (
-								<span className="rounded-md bg-[#ccff00] px-2 py-0.5 font-black text-black text-xs">
+								<span className="rounded-md bg-electric-lime px-2 py-0.5 font-black font-display text-black text-xs">
 									{activeBets.length}
 								</span>
 							)}
@@ -328,22 +295,17 @@ function RouteComponent() {
 								))}
 							</div>
 						) : (
-							<div className="rounded-lg border-2 border-black bg-white p-8 text-center shadow-[3px_3px_0_0_#000]">
-								<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
-									<span className="material-symbols-outlined text-3xl text-gray-400">
-										inbox
-									</span>
-								</div>
-								<p className="mb-1 font-black text-[#121212] text-lg uppercase">
+							<div className="rounded-lg border-2 border-black bg-white p-8 text-center shadow-comic">
+								<p className="mb-1 font-black font-display text-ink text-lg uppercase italic">
 									{t("empty.noActive")}
 								</p>
-								<p className="mb-5 text-gray-600 text-sm">
+								<p className="mb-5 font-display text-gray-600 text-sm">
 									{t("empty.noBets")}
 								</p>
 								<Link to={linkTo("/")}>
 									<button
 										type="button"
-										className="rounded-lg border-2 border-black bg-[#ffc700] px-6 py-3 font-black text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
+										className="rounded-lg border-2 border-black bg-brawl-yellow px-6 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-comic transition-all hover:shadow-comic-sm active:shadow-none"
 									>
 										{t("stats.viewMatches")}
 									</button>
@@ -352,16 +314,10 @@ function RouteComponent() {
 						)}
 					</section>
 
-					{/* Active Tournaments - Takes 1/3 on desktop */}
 					<section>
-						<div className="mb-5 flex items-center gap-3">
-							<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ffc700]">
-								<Trophy className="h-5 w-5 text-black" strokeWidth={2.5} />
-							</div>
-							<h2 className="font-black text-[#121212] text-xl uppercase tracking-tight md:text-2xl">
-								{t("stats.tournaments")}
-							</h2>
-						</div>
+						<h2 className="mb-5 font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
+							{t("stats.tournaments")}
+						</h2>
 
 						{isLoading ? (
 							<div className="space-y-3">
@@ -379,7 +335,7 @@ function RouteComponent() {
 										key={tournament.id}
 										to={linkTo("/")}
 										search={{ tournament: tournament.slug }}
-										className="group flex items-center gap-3 rounded-lg border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#000] transition-all hover:bg-[#ffc700]/10 hover:shadow-[4px_4px_0_0_#000]"
+										className="group flex items-center gap-3 rounded-lg border-2 border-black bg-white p-3 shadow-comic transition-all hover:bg-brawl-yellow/10 hover:shadow-comic-md"
 									>
 										{tournament.logoUrl ? (
 											<img
@@ -388,7 +344,7 @@ function RouteComponent() {
 												className="h-10 w-10 rounded object-contain"
 											/>
 										) : (
-											<div className="flex h-10 w-10 items-center justify-center rounded bg-[#f0f0f0]">
+											<div className="flex h-10 w-10 items-center justify-center rounded bg-paper">
 												<Trophy
 													className="h-5 w-5 text-gray-400"
 													strokeWidth={2}
@@ -396,37 +352,30 @@ function RouteComponent() {
 											</div>
 										)}
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-bold text-[#121212] text-sm">
+											<p className="truncate font-bold font-display text-ink text-sm">
 												{tournament.name}
 											</p>
-											<p className="text-gray-500 text-xs">
+											<p className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("stats.viewMatches")}
 											</p>
 										</div>
 										<ChevronRight
-											className="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-[#121212]"
+											className="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-ink"
 											strokeWidth={2}
 										/>
 									</Link>
 								))}
 							</div>
 						) : (
-							<div className="rounded-lg border-2 border-black bg-white p-6 text-center shadow-[3px_3px_0_0_#000]">
-								<p className="font-bold text-gray-600 text-sm">
+							<div className="rounded-lg border-2 border-black bg-white p-6 text-center shadow-comic">
+								<p className="font-bold font-display text-gray-600 text-sm">
 									{t("stats.noActiveTournaments")}
 								</p>
 							</div>
 						)}
 					</section>
 				</div>
-
-				{/* Bottom decoration - subtle */}
-				<div className="mt-12 flex items-center justify-center gap-2 opacity-30">
-					<div className="h-px w-16 bg-black" />
-					<div className="h-2 w-2 rounded-sm bg-[#ccff00]" />
-					<div className="h-px w-16 bg-black" />
-				</div>
 			</div>
-		</div>
+		</PublicPageShell>
 	);
 }

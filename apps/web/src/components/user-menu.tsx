@@ -1,7 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { Trophy, User } from "lucide-react";
+import {
+	Globe,
+	LayoutDashboard,
+	LogOut,
+	Target,
+	Trophy,
+	User,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,7 +17,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -20,6 +27,67 @@ import { getUserMedalCounts } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";
 import { MedalCountSummary } from "./MiniMedalBadge";
 import { Skeleton } from "./ui/skeleton";
+
+function UserAvatar({
+	src,
+	name,
+	size = "md",
+	variant = "light",
+}: {
+	src?: string | null;
+	name?: string | null;
+	size?: "sm" | "md";
+	variant?: "light" | "dark";
+}) {
+	const dim = size === "sm" ? "h-9 w-9" : "h-10 w-10";
+	const iconDim = size === "sm" ? "h-4 w-4" : "h-5 w-5";
+
+	return (
+		<div
+			className={clsx(
+				"relative shrink-0 -skew-x-6 transform overflow-hidden border-[3px]",
+				dim,
+				variant === "dark"
+					? "border-white bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
+					: "border-black bg-white shadow-comic-sm",
+			)}
+		>
+			<div className="absolute inset-0 flex items-center justify-center">
+				{src ? (
+					<img src={src} alt={name ?? "User"} className="h-full w-full object-cover" />
+				) : (
+					<User
+						strokeWidth={2.5}
+						className={clsx(
+							iconDim,
+							variant === "dark" ? "text-white" : "text-black",
+						)}
+					/>
+				)}
+			</div>
+		</div>
+	);
+}
+
+function MenuActionItem({
+	icon: Icon,
+	label,
+	onClick,
+}: {
+	icon: LucideIcon;
+	label: string;
+	onClick: () => void;
+}) {
+	return (
+		<DropdownMenuItem
+			className="!text-black cursor-pointer gap-3 rounded-none px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-tight transition-all hover:bg-electric-lime hover:!text-black hover:**:!text-black hover:shadow-comic-sm focus:bg-electric-lime focus:!text-black focus:**:!text-black focus:shadow-comic-sm data-highlighted:bg-electric-lime data-highlighted:!text-black data-highlighted:**:!text-black data-highlighted:shadow-comic-sm [&_svg]:text-black hover:[&_svg]:!text-black focus:[&_svg]:!text-black data-highlighted:[&_svg]:!text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-comic-press"
+			onClick={onClick}
+		>
+			<Icon className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+			<span>{label}</span>
+		</DropdownMenuItem>
+	);
+}
 
 export default function UserMenu({
 	variant = "light",
@@ -41,7 +109,7 @@ export default function UserMenu({
 		queryKey: ["myProfile"],
 		queryFn: () => getMyProfile(),
 		enabled: !!session?.user?.id,
-		staleTime: 1000 * 60 * 5, // 5 min
+		staleTime: 1000 * 60 * 5,
 	});
 
 	const { data: medalCounts } = useQuery({
@@ -52,6 +120,7 @@ export default function UserMenu({
 	});
 
 	const displayName = profile?.nickname || session?.user?.name;
+	const avatarSrc = profile?.image ?? session?.user?.image;
 
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => {
@@ -89,11 +158,12 @@ export default function UserMenu({
 		return (
 			<Link {...routeTo("/login")}>
 				<button
+					type="button"
 					className={clsx(
-						"-skew-x-12 transform border-[3px] px-6 py-2 font-black text-sm uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+						"-skew-x-12 transform border-[3px] px-6 py-2 font-black font-display text-sm text-black uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
 						variant === "dark"
 							? "border-white bg-white text-black"
-							: "border-black bg-[#ccff00] text-black",
+							: "border-black bg-electric-lime text-black",
 					)}
 				>
 					<span className="inline-block skew-x-12 transform">
@@ -103,6 +173,35 @@ export default function UserMenu({
 			</Link>
 		);
 	}
+
+	const menuActions = [
+		{
+			icon: LayoutDashboard,
+			label: t("userMenu.commandCenter"),
+			onClick: () => navigate(routeTo("/dashboard")),
+		},
+		{
+			icon: User,
+			label: t("userMenu.label"),
+			onClick: () => navigate(routeTo("/profile")),
+		},
+		{
+			icon: Globe,
+			label: t("userMenu.viewPublic"),
+			onClick: () => {
+				const r = routeTo("/users/$userId");
+				navigate({
+					to: r.to,
+					params: { ...r.params, userId: session.user.id },
+				});
+			},
+		},
+		{
+			icon: Target,
+			label: t("userMenu.myBets"),
+			onClick: () => navigate(routeTo("/my-bets")),
+		},
+	];
 
 	return (
 		<DropdownMenu>
@@ -119,176 +218,88 @@ export default function UserMenu({
 							>
 								{displayName}
 							</span>
-
 							<div className="mt-0.5 flex items-center gap-2">
-								<span className="font-black text-[#ff2e2e] text-[9px] uppercase tracking-widest">
-									{totalPoints ?? 0} PTS
+								<span className="font-bold font-body text-[9px] text-brawl-red uppercase tracking-widest tabular-nums">
+									{t("userMenu.pointsShort", { count: totalPoints ?? 0 })}
 								</span>
 								{medalCounts && medalCounts.total > 0 && (
-									<span className="flex items-center gap-0.5 font-black text-[#FFD700] text-[9px] uppercase tracking-widest">
-										<Trophy className="h-3 w-3" fill="#FFD700" />
+									<span className="flex items-center gap-0.5 font-bold font-body text-[9px] text-brawl-yellow uppercase tracking-widest tabular-nums">
+										<Trophy className="h-3 w-3" fill="currentColor" />
 										{medalCounts.total}
 									</span>
 								)}
 							</div>
 						</div>
-						<div className="relative">
-							<div
-								className={clsx(
-									"relative h-8 w-8 -skew-x-6 transform overflow-hidden border-[3px] transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px] sm:h-10 sm:w-10",
-									variant === "dark"
-										? "border-white bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]"
-										: "border-black bg-white shadow-none",
-								)}
-							>
-								<div className="absolute inset-0 flex items-center justify-center">
-									{(profile?.image ?? session.user.image) ? (
-										<img
-											src={(profile?.image ?? session.user.image)!}
-											alt={displayName ?? "User"}
-											className="h-full w-full object-cover"
-										/>
-									) : (
-										<User
-											strokeWidth={2}
-											className={clsx(
-												"h-5 w-5 shrink-0 sm:h-8 sm:w-8",
-												variant === "dark" ? "text-white" : "text-black",
-											)}
-										/>
-									)}
-								</div>
-							</div>
+						<div className="relative transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px]">
+							<UserAvatar src={avatarSrc} name={displayName} variant={variant} />
 						</div>
 					</div>
 				}
 			/>
 			<DropdownMenuContent
 				align="end"
-				className="!text-black w-56 rounded-none border-[3px] border-black bg-white p-2 shadow-comic"
+				sideOffset={8}
+				className="!text-black w-[17.5rem] overflow-hidden rounded-none border-[3px] border-black bg-white p-0 shadow-comic-md sm:w-72"
 			>
-				<DropdownMenuGroup>
-					<DropdownMenuLabel className="!text-black pb-1 font-black font-display text-xs uppercase italic tracking-wider">
-						{t("userMenu.playerMenu")}
-					</DropdownMenuLabel>
-					<div className="mb-2 flex items-center gap-2 border border-black/10 bg-gray-50 p-2 sm:hidden">
-						<div
-							className={clsx(
-								"relative h-8 w-8 shrink-0 -skew-x-6 transform overflow-hidden border-[2px]",
-								variant === "dark"
-									? "border-white bg-black"
-									: "border-black bg-white",
-							)}
-						>
-							<div className="absolute inset-0 flex items-center justify-center">
-								{(profile?.image ?? session.user.image) ? (
-									<img
-										src={(profile?.image ?? session.user.image)!}
-										alt={displayName ?? "User"}
-										className="h-full w-full object-cover"
-									/>
-								) : (
-									<User
-										strokeWidth={2}
-										className={clsx(
-											"h-4 w-4",
-											variant === "dark" ? "text-white" : "text-black",
-										)}
-									/>
-								)}
-							</div>
-						</div>
-						<div className="flex min-w-0 flex-1 flex-col leading-none">
-							<span className="truncate font-black text-black text-sm uppercase italic tracking-tighter">
-								{displayName}
-							</span>
-							<div className="mt-0.5 flex items-center gap-2">
-								<span className="font-black text-[#ff2e2e] text-[9px] uppercase tracking-widest">
-									{totalPoints ?? 0} PTS
-								</span>
-								{medalCounts && medalCounts.total > 0 && (
-									<span className="flex items-center gap-0.5 font-black text-[#FFD700] text-[9px] uppercase tracking-widest">
-										<Trophy className="h-3 w-3" fill="#FFD700" />
-										{medalCounts.total}
-									</span>
-								)}
-							</div>
-						</div>
+				{/* Identity panel — avatar stays in header trigger only */}
+				<div className="border-black border-b-[3px] bg-charcoal p-3 text-white">
+					<div className="min-w-0">
+						<p className="truncate font-black font-display text-sm uppercase italic tracking-tighter">
+							{displayName}
+						</p>
+						<p className="mt-0.5 truncate font-bold font-body text-[10px] text-white/50">
+							{session.user.email}
+						</p>
 					</div>
-					<div className="mb-2 truncate border border-black/10 bg-gray-100 px-2 py-1 font-bold text-[10px] text-gray-400">
-						{session.user.email}
-					</div>
-					<DropdownMenuSeparator className="h-[2px] bg-black/10" />
 
-					{/* Medal Counts Section */}
-					{medalCounts && medalCounts.total > 0 && (
-						<>
-							<div className="px-2 py-2">
-								<div className="flex items-center justify-between border border-black/10 bg-gray-50 px-3 py-2">
-									<span className="flex items-center gap-1.5 font-black text-[10px] text-black/60 uppercase tracking-wider">
-										<Trophy
-											className="h-3.5 w-3.5 text-[#FFD700]"
-											fill="#FFD700"
-										/>
-										{t("userMenu.medals")}
-									</span>
+					<div className="mt-3 grid grid-cols-2 gap-2">
+						<div className="flex -skew-x-6 transform flex-col border-[2px] border-white/20 bg-panel-gray px-2.5 py-2">
+							<span className="skew-x-6 transform font-bold font-body text-[9px] text-white/50 uppercase tracking-widest">
+								{t("userMenu.pointsLabel")}
+							</span>
+							<span className="skew-x-6 transform font-black font-body text-lg text-brawl-red leading-none tracking-tighter tabular-nums">
+								{totalPoints ?? 0}
+							</span>
+						</div>
+						<div className="flex -skew-x-6 transform flex-col border-[2px] border-white/20 bg-panel-gray px-2.5 py-2">
+							<span className="skew-x-6 transform font-bold font-body text-[9px] text-white/50 uppercase tracking-widest">
+								{t("userMenu.medals")}
+							</span>
+							<div className="skew-x-6 transform mt-0.5 flex items-center gap-1.5">
+								{medalCounts && medalCounts.total > 0 ? (
 									<MedalCountSummary
 										gold={medalCounts.gold}
 										silver={medalCounts.silver}
 										bronze={medalCounts.bronze}
 										size="sm"
 									/>
-								</div>
+								) : (
+									<span className="font-black font-body text-lg text-white/30 leading-none tracking-tighter tabular-nums">
+										0
+									</span>
+								)}
 							</div>
-							<DropdownMenuSeparator className="h-[2px] bg-black/10" />
-						</>
-					)}
+						</div>
+					</div>
+				</div>
 
+				{/* Brand stripe */}
+				<div aria-hidden="true" className="flex h-1 w-full">
+					<div className="flex-1 bg-brawl-blue" />
+					<div className="flex-1 bg-bsen-red" />
+				</div>
+
+				<DropdownMenuGroup className="p-2">
+					{menuActions.map((action) => (
+						<MenuActionItem key={action.label} {...action} />
+					))}
+				</DropdownMenuGroup>
+
+				<DropdownMenuSeparator className="mx-0 h-[3px] bg-black" />
+
+				<div className="p-2 pt-1">
 					<DropdownMenuItem
-						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate(routeTo("/dashboard"))}
-					>
-						<span className="material-symbols-outlined mr-2 text-sm">
-							dashboard
-						</span>
-						{t("userMenu.commandCenter")}
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate(routeTo("/profile"))}
-					>
-						<span className="material-symbols-outlined mr-2 text-sm">
-							person
-						</span>
-						{t("userMenu.label")}
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => {
-							const r = routeTo("/users/$userId");
-							navigate({
-								to: r.to,
-								params: { ...r.params, userId: session.user.id },
-							});
-						}}
-					>
-						<span className="material-symbols-outlined mr-2 text-sm">
-							public
-						</span>
-						{t("userMenu.viewPublic")}
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						className="focus:!text-black !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ccff00]"
-						onClick={() => navigate(routeTo("/my-bets"))}
-					>
-						<span className="material-symbols-outlined mr-2 text-sm">
-							sports
-						</span>
-						{t("userMenu.myBets")}
-					</DropdownMenuItem>
-					<DropdownMenuSeparator className="h-[2px] bg-black/10" />
-					<DropdownMenuItem
-						className="focus:!text-white !text-black cursor-pointer p-2 font-black text-xs uppercase italic focus:bg-[#ff2e2e]"
+						className="!text-white cursor-pointer justify-center gap-2 rounded-none border-[2px] border-black bg-bsen-red px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-wider transition-all hover:!text-white hover:**:!text-white hover:bg-brawl-red focus:!text-white focus:**:!text-white focus:bg-brawl-red data-highlighted:!text-white data-highlighted:**:!text-white data-highlighted:bg-brawl-red active:translate-x-[1px] active:translate-y-[1px] [&_svg]:text-white hover:[&_svg]:!text-white focus:[&_svg]:!text-white data-highlighted:[&_svg]:!text-white"
 						onClick={() => {
 							authClient.signOut({
 								fetchOptions: {
@@ -299,9 +310,10 @@ export default function UserMenu({
 							});
 						}}
 					>
+						<LogOut className="h-4 w-4 shrink-0" strokeWidth={2.5} />
 						{t("userMenu.signOut")}
 					</DropdownMenuItem>
-				</DropdownMenuGroup>
+				</div>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
