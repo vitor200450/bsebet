@@ -3,6 +3,15 @@
 	"beta": "BETA",
 	"welcome": "BEM-VINDO",
 	"heroSubtitle": "Faça login para começar a palpitar",
+	"login": {
+		"title": "ENTRE NA",
+		"titleAccent": "ARENA",
+		"subtitle": "Um toque e você já está na disputa da rodada.",
+		"panelLabel": "ACESSO",
+		"panelHint": "Continue com sua conta Google",
+		"backToLanding": "Voltar ao início",
+		"error": "Não foi possível entrar. Tente de novo."
+	},
 	"hero": {
 		"title": "PALPITES",
 		"titleAccent": "DO CAMPEONATO",

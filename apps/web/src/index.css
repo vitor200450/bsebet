@@ -331,6 +331,20 @@
 	transition: background-color 160ms var(--ease-out);
 }
 
+/* Login Google CTA — comic press + fine-pointer hover */
+.login-google-cta {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	box-shadow: 6px 6px 0 #000;
+	transition:
+		transform 160ms var(--ease-out),
+		box-shadow 160ms var(--ease-out);
+}
+
+.login-google-cta:active:not(:disabled) {
+	transform: scale(0.97) translate(2px, 2px);
+	box-shadow: 2px 2px 0 #000;
+}
+
 @media (hover: hover) and (pointer: fine) {
 	.landing-cta-lime:hover {
 		filter: brightness(1.05);
@@ -363,11 +377,17 @@
 	.lb-row-hover:hover {
 		background-color: color-mix(in srgb, var(--color-tape) 60%, transparent);
 	}
+
+	.login-google-cta:hover:not(:disabled):not(:active) {
+		transform: translate(2px, 2px);
+		box-shadow: 4px 4px 0 #000;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.lb-avatar-hover,
-	.lb-row-hover {
+	.lb-row-hover,
+	.login-google-cta {
 		transition: none;
 	}
 }

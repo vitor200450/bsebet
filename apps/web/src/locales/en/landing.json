@@ -3,6 +3,15 @@
 	"beta": "BETA",
 	"welcome": "WELCOME",
 	"heroSubtitle": "Sign in to start picking",
+	"login": {
+		"title": "ENTER THE",
+		"titleAccent": "ARENA",
+		"subtitle": "One tap and you are already in this round.",
+		"panelLabel": "SIGN IN",
+		"panelHint": "Continue with your Google account",
+		"backToLanding": "Back to home",
+		"error": "Could not sign in. Try again."
+	},
 	"hero": {
 		"title": "CHAMPIONSHIP",
 		"titleAccent": "PICKS",
