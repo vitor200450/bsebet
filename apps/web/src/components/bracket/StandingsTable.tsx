@@ -201,7 +201,7 @@ export function StandingsTable({ standings }: { standings: Standing[] }) {
 							<tr>
 								<td
 									colSpan={4}
-									className="p-4 text-center font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest"
+									className="p-4 text-center font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest"
 								>
 									{t("bracketView.noMatches")}
 								</td>

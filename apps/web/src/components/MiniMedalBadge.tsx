@@ -146,7 +146,14 @@ export function MedalCountSummary({
 				)}
 			>
 				<Trophy size={sizeConfig[size].icon} />
-				<span className={cn("font-bold font-body tabular-nums", sizeConfig[size].font)}>0</span>
+				<span
+					className={cn(
+						"font-body font-bold tabular-nums",
+						sizeConfig[size].font,
+					)}
+				>
+					0
+				</span>
 			</div>
 		);
 	}
@@ -174,7 +181,10 @@ export function MedalCountSummary({
 			)}
 			{showTotal && totalMedals > 0 && (
 				<span
-					className={cn("ml-1 font-black font-body text-black tabular-nums", sizeConfig[size].font)}
+					className={cn(
+						"ml-1 font-black font-body text-black tabular-nums",
+						sizeConfig[size].font,
+					)}
 				>
 					({totalMedals})
 				</span>

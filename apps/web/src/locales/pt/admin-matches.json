@@ -121,6 +121,11 @@
 		"success": "Todas as palpites foram resetados! {{count}} palpites deletados.",
 		"error": "Erro ao resetar palpites do torneio"
 	},
+	"confirmation": {
+		"confirm": "Confirmar",
+		"cancel": "Cancelar",
+		"challengePrompt": "Digite {{name}} para confirmar"
+	},
 	"modal": {
 		"tournamentMustBeActive": "Defina o torneio como ativo antes de iniciar partidas ou registrar resultados.",
 		"tournamentUpcomingHint": "Torneio em breve: ative o torneio antes de registrar placar, vencedor ou resultado.",
@@ -200,6 +205,9 @@
 		"teamA": "Time A",
 		"teamB": "Time B",
 		"resetScore": "Resetar Placar",
+		"resetScoreTitle": "Resetar Placar",
+		"resetScoreDescription": "Isso irá limpar o placar e o vencedor atuais desta partida. Você poderá continuar marcando depois.",
+		"resetScoreConfirm": "Resetar Placar",
 		"defineWinner": "Definir Vencedor",
 		"slideToFinalize": "Deslize para finalizar",
 		"finalizeMatch": "Finalizar Partida",

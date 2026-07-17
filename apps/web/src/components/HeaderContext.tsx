@@ -53,9 +53,9 @@ export function useSetHeader(config?: HeaderConfig) {
 	}
 
 	useEffect(() => {
-		if (config) {
-			setConfig(config);
-			return () => setConfig(null);
-		}
+		if (!config) return;
+		// Replace in place — do not clear on unmount. Clearing caused the admin
+		// secondary header to collapse between route changes.
+		setConfig(config);
 	}, [config, setConfig]);
 }

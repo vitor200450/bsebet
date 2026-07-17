@@ -129,7 +129,7 @@ export function TournamentPodium({
 							)}
 						</div>
 						<div>
-							<p className="font-bold font-body text-[10px] text-white/60 uppercase tracking-widest">
+							<p className="font-body font-bold text-[10px] text-white/60 uppercase tracking-widest">
 								{t("podium.title")}
 							</p>
 							<h2 className="font-black font-display text-white text-xl uppercase italic tracking-tight md:text-2xl">

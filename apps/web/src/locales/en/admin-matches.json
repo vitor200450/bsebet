@@ -121,6 +121,11 @@
 		"success": "All picks have been reset! {{count}} picks deleted.",
 		"error": "Error resetting tournament picks"
 	},
+	"confirmation": {
+		"confirm": "Confirm",
+		"cancel": "Cancel",
+		"challengePrompt": "Type {{name}} to confirm"
+	},
 	"modal": {
 		"tournamentMustBeActive": "Set the tournament to active before starting matches or recording results.",
 		"tournamentUpcomingHint": "Tournament is still upcoming: activate it before saving scores, winners, or final results.",
@@ -200,6 +205,9 @@
 		"teamA": "Team A",
 		"teamB": "Team B",
 		"resetScore": "Reset Score",
+		"resetScoreTitle": "Reset Score",
+		"resetScoreDescription": "This will clear the current score and winner for this match. You can continue scoring afterward.",
+		"resetScoreConfirm": "Reset Score",
 		"defineWinner": "Set Winner",
 		"slideToFinalize": "Slide to finalize",
 		"finalizeMatch": "Finalize Match",

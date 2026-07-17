@@ -14,7 +14,12 @@
  */
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import {
+	AnimatePresence,
+	motion,
+	useInView,
+	useReducedMotion,
+} from "framer-motion";
 import { Crown, Star, Zap } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -1067,8 +1072,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateX(-48px) scale(0.92) rotate(-4deg)",
+										transform: "translateX(-48px) scale(0.92) rotate(-4deg)",
 									}
 						}
 						animate={{
@@ -1080,8 +1084,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateX(-32px) scale(0.94) rotate(-3deg)",
+										transform: "translateX(-32px) scale(0.94) rotate(-3deg)",
 									}
 						}
 						transition={{
@@ -1100,8 +1103,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateY(8px) scale(0.92) rotate(-12deg)",
+										transform: "translateY(8px) scale(0.92) rotate(-12deg)",
 									}
 						}
 						animate={{
@@ -1113,8 +1115,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateY(-6px) scale(0.94) rotate(8deg)",
+										transform: "translateY(-6px) scale(0.94) rotate(8deg)",
 									}
 						}
 						transition={
@@ -1150,8 +1151,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateX(48px) scale(0.92) rotate(4deg)",
+										transform: "translateX(48px) scale(0.92) rotate(4deg)",
 									}
 						}
 						animate={{
@@ -1163,8 +1163,7 @@ function PickArenaMatchup({ matchups }: { matchups: LandingMatchup[] }) {
 								? { opacity: 0 }
 								: {
 										opacity: 0,
-										transform:
-											"translateX(32px) scale(0.94) rotate(3deg)",
+										transform: "translateX(32px) scale(0.94) rotate(3deg)",
 									}
 						}
 						transition={{
@@ -1816,7 +1815,7 @@ export function LandingPage({
 									{step.title}
 								</h3>
 								<p
-									className="font-black text-white/70 text-sm leading-relaxed"
+									className="font-black text-sm text-white/70 leading-relaxed"
 									style={{ fontFamily: "var(--font-body)" }}
 								>
 									{step.desc}

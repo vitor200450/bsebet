@@ -286,12 +286,12 @@ Required in `.env` at project root:
 ## 18) Design Context
 
 ### Users
-Brazilian Brawl Stars esports fans — mostly young, mobile-first gamers who follow competitive tournaments. They visit BSEBET to predict match outcomes, climb leaderboards, and earn bragging rights within their community. Their context is social and time-sensitive: they check in before match days, make picks, then watch results roll in. The job to be done is **fast, confident prediction-making** with clear feedback on how they performed.
+International Brawl Stars esports fans — mostly young, mobile-first gamers who follow competitive tournaments worldwide. They visit BSEN Pickems to predict match outcomes, climb leaderboards, and earn bragging rights within their community. Their context is social and time-sensitive: they check in before match days, make picks, then watch results roll in. The job to be done is **fast, confident prediction-making** with clear feedback on how they performed.
 
 ### Brand Personality
 **Sharp, Competitive, Fun.**
 
-- **Voice**: Direct, energetic, sporty — like a broadcast commentator who's also your friend. Portuguese (Brazil) is the primary language.
+- **Voice**: Direct, energetic, sporty — like a broadcast commentator who's also your friend. Bilingual product (pt / en) with locale-aware copy via i18n.
 - **Tone**: Competitive hype mixed with playful fun. Every interaction should feel exciting but never stressful or manipulative. The app celebrates bold picks and rewards engagement.
 - **Emotional goals**: Users should feel the arena energy of a live esports broadcast — the thrill of making a call, the tension of watching scores, the satisfaction of climbing the leaderboard. But it should always stay fun and approachable, never punishing.
 

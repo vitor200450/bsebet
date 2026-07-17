@@ -250,7 +250,7 @@ export function ProfilePageContent({
 										</button>
 									</div>
 
-									<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+									<p className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("avatarNote")}
 									</p>
 
@@ -279,7 +279,7 @@ export function ProfilePageContent({
 
 							<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
-									<div className="mb-1 font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+									<div className="mb-1 font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("nameLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
@@ -295,7 +295,7 @@ export function ProfilePageContent({
 								</div>
 
 								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
-									<div className="mb-1 font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+									<div className="mb-1 font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("emailLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
@@ -311,7 +311,7 @@ export function ProfilePageContent({
 								</div>
 							</div>
 
-							<p className="mt-4 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+							<p className="mt-4 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 								{t("googleAccountNote")}
 							</p>
 						</div>
@@ -330,7 +330,7 @@ export function ProfilePageContent({
 
 							<div className="space-y-4">
 								<div>
-									<label className="mb-2 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+									<label className="mb-2 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("nicknameLabel")}
 									</label>
 									<div className="relative">
@@ -345,7 +345,7 @@ export function ProfilePageContent({
 											{nickname.length}/50
 										</span>
 									</div>
-									<p className="mt-2 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+									<p className="mt-2 font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 										{t("displayNameHint")}
 									</p>
 								</div>

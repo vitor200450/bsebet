@@ -6,20 +6,28 @@ import {
 	Calendar,
 	Copy,
 	Edit2,
-	Globe,
 	Image as ImageIcon,
 	Plus,
 	Search,
 	Trash2,
-	Trophy,
 	Upload,
 	X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { InlineLoader } from "@/components/inline-loader";
+import {
+	AdminFormActions,
+	AdminFormModal,
+} from "@/components/admin/AdminFormModal";
+import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
+import {
+	CustomDatePicker,
+	CustomSelect,
+} from "@/components/admin/CustomInputs";
+import { type Stage, StageBuilder } from "@/components/admin/StageBuilder";
+import { useSetHeader } from "@/components/HeaderContext";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
 	copyTournament,
@@ -27,12 +35,6 @@ import {
 	getTournaments,
 	saveTournament,
 } from "@/server/tournaments";
-import {
-	CustomDatePicker,
-	CustomSelect,
-} from "../../../../components/admin/CustomInputs";
-import { StageBuilder } from "../../../../components/admin/StageBuilder";
-import { useSetHeader } from "../../../../components/HeaderContext";
 
 export const Route = createFileRoute("/$lang/admin/tournaments/")({
 	component: AdminTournamentsPage,
@@ -114,14 +116,14 @@ function AdminTournamentsPage() {
 	useSetHeader({
 		title: t("tournaments.title"),
 		actions: (
-			<div className="flex w-full flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+			<div className="flex h-11 w-full flex-col-reverse items-stretch gap-2 max-sm:h-auto sm:w-auto sm:flex-row sm:items-center sm:gap-4">
 				<div className="relative w-full sm:w-auto">
 					<input
 						type="text"
 						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-64"
+						className="h-11 w-full border-[3px] border-black bg-white px-4 py-0 pr-10 font-body font-bold text-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-64"
 					/>
 					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 				</div>
@@ -150,7 +152,7 @@ function AdminTournamentsPage() {
 						});
 						setIsModalOpen(true);
 					}}
-					className="flex w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-2 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
+					className="flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-0 font-black font-display text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
 				>
 					<Plus className="h-5 w-5" strokeWidth={3} />
 					<span className="inline">{t("tournaments.create")}</span>
@@ -329,7 +331,7 @@ function AdminTournamentsPage() {
 					<div className="overflow-x-auto">
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header - Hidden on small screens */}
-							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-bold font-body text-sm text-white uppercase tracking-widest md:grid">
+							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-body font-bold text-sm text-white uppercase tracking-widest md:grid">
 								<div className="col-span-4">{t("tournaments.tableInfo")}</div>
 								<div className="col-span-2">
 									{t("tournaments.tableDetails")}
@@ -379,7 +381,7 @@ function AdminTournamentsPage() {
 													<h3 className="break-words font-black font-display text-black text-lg uppercase italic leading-none">
 														{tournament.name}
 													</h3>
-													<span className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[10px] text-gray-500 tracking-widest">
+													<span className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-body font-bold text-[10px] text-gray-500 tracking-widest">
 														{tournament.slug}
 													</span>
 												</div>
@@ -388,14 +390,14 @@ function AdminTournamentsPage() {
 											{/* Details (Region, Format, Players) */}
 											<div className="flex w-full flex-row flex-wrap gap-2 md:col-span-2 md:flex-col md:gap-1.5">
 												{tournament.region && (
-													<span className="flex w-fit items-center gap-1.5 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-700 uppercase tracking-widest">
+													<span className="flex w-fit items-center gap-1.5 rounded bg-paper px-2 py-1 font-body font-bold text-[10px] text-gray-700 uppercase tracking-widest">
 														<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brawl-blue" />
 														{tournament.region}
 													</span>
 												)}
 												{tournament.format && (
 													<span
-														className="w-fit truncate rounded bg-gray-100 px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest"
+														className="w-fit truncate rounded bg-gray-100 px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest"
 														title={tournament.format}
 													>
 														<span className="mr-1 md:hidden">
@@ -405,7 +407,7 @@ function AdminTournamentsPage() {
 													</span>
 												)}
 												{tournament.participantsCount && (
-													<span className="flex w-fit items-center gap-1 rounded bg-gray-100 px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest tabular-nums">
+													<span className="flex w-fit items-center gap-1 rounded bg-gray-100 px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tabular-nums tracking-widest">
 														{tournament.participantsCount}{" "}
 														{t("tournaments.teams")}
 													</span>
@@ -415,7 +417,7 @@ function AdminTournamentsPage() {
 											{/* Dates */}
 											<div className="flex w-full gap-2 md:col-span-2 md:block">
 												{tournament.startDate ? (
-													<div className="flex w-fit flex-row flex-wrap items-center gap-x-2 gap-y-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest tabular-nums md:flex-col md:items-start">
+													<div className="flex w-fit flex-row flex-wrap items-center gap-x-2 gap-y-1 rounded bg-paper px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tabular-nums tracking-widest md:flex-col md:items-start">
 														<span>{formatDateUTC(tournament.startDate)}</span>
 														{tournament.endDate && (
 															<span className="text-gray-400">
@@ -428,7 +430,7 @@ function AdminTournamentsPage() {
 														)}
 													</div>
 												) : (
-													<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest italic">
+													<span className="font-body font-bold text-[10px] text-gray-400 uppercase italic tracking-widest">
 														{t("tournaments.tbd")}
 													</span>
 												)}
@@ -437,7 +439,7 @@ function AdminTournamentsPage() {
 											{/* Status Badge */}
 											<div className="flex w-full justify-start md:col-span-2 md:justify-center">
 												<span
-													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-bold font-body text-[10px] uppercase tracking-widest italic ${getStatusColor(
+													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-body font-bold text-[10px] uppercase italic tracking-widest ${getStatusColor(
 														tournament.status || "upcoming",
 													)}`}
 												>
@@ -490,7 +492,7 @@ function AdminTournamentsPage() {
 												</button>
 											</div>
 											{formData.logoUrl.startsWith("data:") && (
-												<p className="mt-1 w-full font-bold font-body text-[10px] text-red-500 uppercase tracking-widest italic">
+												<p className="mt-1 w-full font-body font-bold text-[10px] text-red-500 uppercase italic tracking-widest">
 													⚠️ {t("tournaments.base64Warning")}{" "}
 													<Link
 														to={linkTo("/admin/migrate-logos")}
@@ -509,497 +511,403 @@ function AdminTournamentsPage() {
 				</div>
 			</div>
 
-			{/* CREATE/EDIT MODAL */}
-			{isModalOpen && (
-				<div className="fade-in fixed inset-0 z-[100] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="fade-in zoom-in-95 relative max-h-[90vh] w-full max-w-5xl animate-in overflow-y-auto border-[4px] border-black bg-white shadow-[10px_10px_0px_0px_#000] duration-200">
-						{/* Modal Header */}
-						<div className="sticky top-0 z-50 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
-							<h2 className="font-black text-lg text-white uppercase italic">
-								{formData.id
-									? t("tournaments.editTitle")
-									: t("tournaments.createTitle")}
-							</h2>
-							<button
-								onClick={() => setIsModalOpen(false)}
-								className="rounded-sm border-2 border-white bg-black p-1 text-white transition-colors hover:bg-[#ff2e2e]"
-							>
-								<X className="h-4 w-4" strokeWidth={2} />
-							</button>
+			<AdminFormModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				title={
+					formData.id
+						? t("tournaments.editTitle")
+						: t("tournaments.createTitle")
+				}
+				onSubmit={handleSave}
+				size="xl"
+				formId="tournament-form"
+				footer={
+					<AdminFormActions
+						onCancel={() => setIsModalOpen(false)}
+						cancelLabel={t("common:actions.cancel")}
+						submitLabel={t("tournaments.saveButton")}
+						isSubmitting={isSubmitting}
+						submitIcon={<Plus strokeWidth={4} className="h-5 w-5" />}
+					/>
+				}
+			>
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+					<div className="space-y-4">
+						<div>
+							<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+								{t("tournaments.nameLabel")}
+							</label>
+							<input
+								required
+								type="text"
+								value={formData.name}
+								onChange={(e) => handleNameChange(e.target.value)}
+								className="w-full border-[3px] border-black bg-white p-3 font-black font-display text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:font-bold placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-electric-lime"
+								placeholder={t("tournaments.namePlaceholder")}
+							/>
 						</div>
 
-						<form
-							onSubmit={handleSave}
-							className="grid grid-cols-1 gap-8 p-6 md:grid-cols-2"
-						>
-							{/* Left Column */}
-							<div className="space-y-4">
+						<div>
+							<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+								{t("tournaments.slugLabel")}
+							</label>
+							<div className="relative">
+								<input
+									type="text"
+									value={formData.slug}
+									onChange={(e) =>
+										setFormData((prev) => ({
+											...prev,
+											slug: generateSlug(e.target.value),
+										}))
+									}
+									className="w-full border-[3px] border-black bg-white p-3 pr-10 font-body text-black text-sm tabular-nums focus:border-black focus:outline-none focus:ring-4 focus:ring-electric-lime"
+								/>
+								<Copy className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-black" />
+							</div>
+						</div>
+
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+									{t("tournaments.participantsLabel")}
+								</label>
+								<input
+									type="number"
+									value={formData.participantsCount}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											participantsCount: e.target.value,
+										})
+									}
+									className="w-full border-[3px] border-black bg-white p-2 font-body font-bold text-black tabular-nums focus:outline-none focus:ring-4 focus:ring-electric-lime"
+									placeholder={t("tournaments.participantsPlaceholder")}
+								/>
+							</div>
+							<CustomSelect
+								label={t("tournaments.regionLabel")}
+								value={formData.region}
+								onChange={(val) => setFormData({ ...formData, region: val })}
+								options={[
+									{
+										value: "Global",
+										label: t("tournaments.regions.global"),
+									},
+									{ value: "NA", label: t("tournaments.regions.na") },
+									{ value: "EMEA", label: t("tournaments.regions.emea") },
+									{ value: "SA", label: t("tournaments.regions.sa") },
+									{ value: "CN", label: t("tournaments.regions.cn") },
+									{ value: "EA", label: t("tournaments.regions.ea") },
+									{ value: "SEA", label: t("tournaments.regions.sea") },
+									{ value: "SAS", label: t("tournaments.regions.sas") },
+								]}
+							/>
+						</div>
+
+						<div className="grid grid-cols-2 gap-4">
+							<CustomDatePicker
+								label={t("tournaments.startDate")}
+								value={formData.startDate}
+								onChange={(val) => setFormData({ ...formData, startDate: val })}
+							/>
+							<CustomDatePicker
+								label={t("tournaments.endDate")}
+								value={formData.endDate}
+								onChange={(val) => setFormData({ ...formData, endDate: val })}
+							/>
+						</div>
+
+						<CustomSelect
+							label={t("tournaments.statusLabel")}
+							value={formData.status}
+							onChange={(val) =>
+								setFormData({
+									...formData,
+									status: val as "upcoming" | "active" | "finished",
+								})
+							}
+							searchable={false}
+							options={[
+								{
+									value: "upcoming",
+									label: t("tournaments.statusUpcoming"),
+								},
+								{
+									value: "active",
+									label: t("tournaments.statusActive"),
+								},
+								{
+									value: "finished",
+									label: t("tournaments.statusFinished"),
+								},
+							]}
+						/>
+
+						<div className="space-y-3 border-[3px] border-black bg-paper p-4">
+							<h3 className="flex items-center gap-2 font-black font-display text-black text-sm uppercase italic">
+								{t("tournaments.scoringRules")}
+							</h3>
+							<div className="grid grid-cols-2 gap-3">
 								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("tournaments.nameLabel")}
+									<label className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+										{t("tournaments.winner")}
 									</label>
 									<input
-										required
-										type="text"
-										value={formData.name}
-										onChange={(e) => handleNameChange(e.target.value)}
-										className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-										placeholder={t("tournaments.namePlaceholder")}
-									/>
-								</div>
-
-								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("tournaments.slugLabel")}
-									</label>
-									<div className="relative">
-										<input
-											type="text"
-											value={formData.slug}
-											onChange={(e) =>
-												setFormData((prev) => ({
-													...prev,
-													slug: generateSlug(e.target.value),
-												}))
-											}
-											className="w-full border-[3px] border-black bg-white p-3 pr-10 font-mono text-black text-sm focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-										/>
-										<Copy className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-black" />
-									</div>
-								</div>
-
-								<div className="grid grid-cols-2 gap-4">
-									<div>
-										<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-											{t("tournaments.participantsLabel")}
-										</label>
-										<input
-											type="number"
-											value={formData.participantsCount}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													participantsCount: e.target.value,
-												})
-											}
-											className="w-full border-[3px] border-black bg-white p-2 font-bold text-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-											placeholder={t("tournaments.participantsPlaceholder")}
-										/>
-									</div>
-									<CustomSelect
-										label={t("tournaments.regionLabel")}
-										value={formData.region}
-										onChange={(val) =>
-											setFormData({ ...formData, region: val })
-										}
-										options={[
-											{
-												value: "Global",
-												label: t("tournaments.regions.global"),
-											},
-											{ value: "NA", label: t("tournaments.regions.na") },
-											{ value: "EMEA", label: t("tournaments.regions.emea") },
-											{ value: "SA", label: t("tournaments.regions.sa") },
-											{ value: "CN", label: t("tournaments.regions.cn") },
-											{ value: "EA", label: t("tournaments.regions.ea") },
-											{ value: "SEA", label: t("tournaments.regions.sea") },
-											{ value: "SAS", label: t("tournaments.regions.sas") },
-										]}
-									/>
-								</div>
-
-								<div className="grid grid-cols-2 gap-4">
-									<CustomDatePicker
-										label={t("tournaments.startDate")}
-										value={formData.startDate}
-										onChange={(val) =>
-											setFormData({ ...formData, startDate: val })
-										}
-									/>
-									<CustomDatePicker
-										label={t("tournaments.endDate")}
-										value={formData.endDate}
-										onChange={(val) =>
-											setFormData({ ...formData, endDate: val })
-										}
-									/>
-								</div>
-
-								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("tournaments.statusLabel")}
-									</label>
-									<select
-										value={formData.status}
+										type="number"
+										value={formData.scoringRules.winner}
 										onChange={(e) =>
 											setFormData({
 												...formData,
-												status: e.target.value as any,
+												scoringRules: {
+													...formData.scoringRules,
+													winner: Number(e.target.value),
+												},
 											})
 										}
-										className="w-full cursor-pointer border-[3px] border-black bg-white p-3 font-bold text-black uppercase focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-									>
-										<option value="upcoming">
-											{t("tournaments.statusUpcoming")}
-										</option>
-										<option value="active">
-											{t("tournaments.statusActive")}
-										</option>
-										<option value="finished">
-											{t("tournaments.statusFinished")}
-										</option>
-									</select>
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
 								</div>
-
-								{/* Default Scoring Rules */}
-								<div className="space-y-3 border-[3px] border-black bg-gray-50 p-4">
-									<h3 className="flex items-center gap-2 font-black font-display text-black text-sm uppercase">
-										{t("tournaments.scoringRules")}
-									</h3>
-									<div className="grid grid-cols-2 gap-3">
-										<div>
-											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
-												{t("tournaments.winner")}
-											</label>
-											<input
-												type="number"
-												value={formData.scoringRules.winner}
-												onChange={(e) =>
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															winner: Number(e.target.value),
-														},
-													})
-												}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-										<div>
-											<label className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
-												{t("tournaments.exactScore")}
-											</label>
-											<input
-												type="number"
-												value={formData.scoringRules.exact}
-												onChange={(e) =>
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															exact: Number(e.target.value),
-														},
-													})
-												}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-									</div>
-									<div className="grid grid-cols-2 gap-3">
-										<div>
-											<label
-												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
-												title={t("tournaments.tier1Bonus")}
-											>
-												{t("tournaments.underdogTier1")}
-											</label>
-											<input
-												type="number"
-												value={formData.scoringRules.underdog_25}
-												onChange={(e) =>
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															underdog_25: Number(e.target.value),
-														},
-													})
-												}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-										<div>
-											<label
-												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
-												title={t("tournaments.tier2Bonus")}
-											>
-												{t("tournaments.underdogTier2")}
-											</label>
-											<input
-												type="number"
-												value={formData.scoringRules.underdog_50}
-												onChange={(e) =>
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															underdog_50: Number(e.target.value),
-														},
-													})
-												}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-									</div>
-									<div className="grid grid-cols-2 gap-3">
-										<div>
-											<label
-												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
-												title={t("tournaments.maxVotes")}
-											>
-												{t("tournaments.tier1Threshold")}
-											</label>
-											<input
-												type="number"
-												min={1}
-												max={100}
-												step={1}
-												value={Math.round(
-													(formData.scoringRules.underdog_tier1_max_pct ??
-														0.25) * 100,
-												)}
-												onChange={(e) => {
-													const parsed = Number(e.target.value);
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															underdog_tier1_max_pct:
-																Number.isFinite(parsed) && parsed > 0
-																	? parsed / 100
-																	: 0.25,
-														},
-													});
-												}}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-										<div>
-											<label
-												className="mb-1 block font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest"
-												title={t("tournaments.maxVotes")}
-											>
-												{t("tournaments.tier2Threshold")}
-											</label>
-											<input
-												type="number"
-												min={1}
-												max={100}
-												step={1}
-												value={Math.round(
-													(formData.scoringRules.underdog_tier2_max_pct ??
-														0.5) * 100,
-												)}
-												onChange={(e) => {
-													const parsed = Number(e.target.value);
-													setFormData({
-														...formData,
-														scoringRules: {
-															...formData.scoringRules,
-															underdog_tier2_max_pct:
-																Number.isFinite(parsed) && parsed > 0
-																	? parsed / 100
-																	: 0.5,
-														},
-													});
-												}}
-												className="w-full border-2 border-black bg-white p-2 font-bold text-black text-sm"
-											/>
-										</div>
-									</div>
-									<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
-										{t("tournaments.autoFallback")}
-									</p>
+								<div>
+									<label className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+										{t("tournaments.exactScore")}
+									</label>
+									<input
+										type="number"
+										value={formData.scoringRules.exact}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												scoringRules: {
+													...formData.scoringRules,
+													exact: Number(e.target.value),
+												},
+											})
+										}
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
 								</div>
 							</div>
-
-							{/* Right Column */}
-							<div className="flex flex-col gap-4">
-								{/* Stages Builder */}
-								<StageBuilder
-									stages={formData.stages}
-									onChange={(stages) => setFormData({ ...formData, stages })}
-								/>
-
-								{/* Logo Upload */}
+							<div className="grid grid-cols-2 gap-3">
 								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("tournaments.logoUrlLabel")}
+									<label
+										className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest"
+										title={t("tournaments.tier1Bonus")}
+									>
+										{t("tournaments.underdogTier1")}
 									</label>
-									<div className="flex gap-2">
-										<div className="relative flex-1">
-											<ImageIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-											<input
-												type="text"
-												value={
-													formData.logoUrl.startsWith("data:")
-														? t("tournaments.base64Display")
-														: formData.logoUrl
-												}
-												readOnly={formData.logoUrl.startsWith("data:")}
-												onChange={(e) =>
-													setFormData({ ...formData, logoUrl: e.target.value })
-												}
-												className={`w-full border-[3px] border-black p-2 pl-9 font-mono text-black text-xs focus:border-black focus:outline-none ${
-													formData.logoUrl.startsWith("data:")
-														? "bg-gray-100 text-gray-400 italic"
-														: "bg-white"
-												}`}
-												placeholder={t("tournaments.logoPlaceholder")}
-											/>
-											{formData.logoUrl.startsWith("data:") && (
-												<button
-													type="button"
-													onClick={() =>
-														setFormData({ ...formData, logoUrl: "" })
-													}
-													className="absolute top-1/2 right-2 -translate-y-1/2 border-2 border-black bg-white p-0.5 hover:bg-red-50"
-												>
-													<X className="h-3 w-3 text-red-500" />
-												</button>
-											)}
-										</div>
-										<input
-											type="file"
-											accept="image/*"
-											className="hidden"
-											ref={fileInputRef}
-											onChange={handleFileUpload}
-										/>
+									<input
+										type="number"
+										value={formData.scoringRules.underdog_25}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												scoringRules: {
+													...formData.scoringRules,
+													underdog_25: Number(e.target.value),
+												},
+											})
+										}
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
+								</div>
+								<div>
+									<label
+										className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest"
+										title={t("tournaments.tier2Bonus")}
+									>
+										{t("tournaments.underdogTier2")}
+									</label>
+									<input
+										type="number"
+										value={formData.scoringRules.underdog_50}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												scoringRules: {
+													...formData.scoringRules,
+													underdog_50: Number(e.target.value),
+												},
+											})
+										}
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
+								</div>
+							</div>
+							<div className="grid grid-cols-2 gap-3">
+								<div>
+									<label
+										className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest"
+										title={t("tournaments.maxVotes")}
+									>
+										{t("tournaments.tier1Threshold")}
+									</label>
+									<input
+										type="number"
+										min={1}
+										max={100}
+										step={1}
+										value={Math.round(
+											(formData.scoringRules.underdog_tier1_max_pct ?? 0.25) *
+												100,
+										)}
+										onChange={(e) => {
+											const parsed = Number(e.target.value);
+											setFormData({
+												...formData,
+												scoringRules: {
+													...formData.scoringRules,
+													underdog_tier1_max_pct:
+														Number.isFinite(parsed) && parsed > 0
+															? parsed / 100
+															: 0.25,
+												},
+											});
+										}}
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
+								</div>
+								<div>
+									<label
+										className="mb-1 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest"
+										title={t("tournaments.maxVotes")}
+									>
+										{t("tournaments.tier2Threshold")}
+									</label>
+									<input
+										type="number"
+										min={1}
+										max={100}
+										step={1}
+										value={Math.round(
+											(formData.scoringRules.underdog_tier2_max_pct ?? 0.5) *
+												100,
+										)}
+										onChange={(e) => {
+											const parsed = Number(e.target.value);
+											setFormData({
+												...formData,
+												scoringRules: {
+													...formData.scoringRules,
+													underdog_tier2_max_pct:
+														Number.isFinite(parsed) && parsed > 0
+															? parsed / 100
+															: 0.5,
+												},
+											});
+										}}
+										className="w-full border-2 border-black bg-white p-2 font-body font-bold text-black text-sm tabular-nums"
+									/>
+								</div>
+							</div>
+							<p className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+								{t("tournaments.autoFallback")}
+							</p>
+						</div>
+					</div>
+
+					<div className="flex flex-col gap-4">
+						<StageBuilder
+							stages={formData.stages}
+							onChange={(stages) => setFormData({ ...formData, stages })}
+						/>
+
+						<div>
+							<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+								{t("tournaments.logoUrlLabel")}
+							</label>
+							<div className="flex gap-2">
+								<div className="relative flex-1">
+									<ImageIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+									<input
+										type="text"
+										value={
+											formData.logoUrl.startsWith("data:")
+												? t("tournaments.base64Display")
+												: formData.logoUrl
+										}
+										readOnly={formData.logoUrl.startsWith("data:")}
+										onChange={(e) =>
+											setFormData({ ...formData, logoUrl: e.target.value })
+										}
+										className={clsx(
+											"w-full border-[3px] border-black p-2 pl-9 font-body text-black text-xs focus:border-black focus:outline-none focus:ring-4 focus:ring-electric-lime",
+											formData.logoUrl.startsWith("data:")
+												? "bg-paper text-gray-400 italic"
+												: "bg-white",
+										)}
+										placeholder={t("tournaments.logoPlaceholder")}
+									/>
+									{formData.logoUrl.startsWith("data:") && (
 										<button
 											type="button"
-											onClick={() => fileInputRef.current?.click()}
-											className="border-[3px] border-black bg-black px-3 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:bg-[#2e5cff] active:translate-y-[2px] active:shadow-none"
+											onClick={() => setFormData({ ...formData, logoUrl: "" })}
+											className="absolute top-1/2 right-2 -translate-y-1/2 border-2 border-black bg-white p-0.5 text-brawl-red hover:bg-red-50"
 										>
-											<Upload className="h-4 w-4" />
+											<X className="h-3 w-3" />
 										</button>
-									</div>
-									{formData.logoUrl && (
-										<div className="mt-2 flex justify-center border-2 border-black border-dashed bg-gray-50 p-4">
-											<img
-												src={formData.logoUrl}
-												alt="Preview"
-												className="h-24 w-24 object-contain"
-											/>
-										</div>
 									)}
 								</div>
-							</div>
-
-							{/* Footer */}
-							<div className="col-span-1 mt-8 flex gap-3 border-gray-100 border-t-2 pt-4 md:col-span-2">
+								<input
+									type="file"
+									accept="image/*"
+									className="hidden"
+									ref={fileInputRef}
+									onChange={handleFileUpload}
+								/>
 								<button
 									type="button"
-									onClick={() => setIsModalOpen(false)}
-									className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase transition-colors hover:bg-gray-100"
+									onClick={() => fileInputRef.current?.click()}
+									className="border-[3px] border-black bg-black px-3 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:bg-brawl-blue active:translate-y-[2px] active:shadow-none"
 								>
-									{t("common:actions.cancel")}
-								</button>
-								<button
-									type="submit"
-									disabled={isSubmitting}
-									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black text-lg uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000] disabled:cursor-not-allowed disabled:opacity-70"
-								>
-									{isSubmitting && <InlineLoader size="md" />}
-									{t("tournaments.saveButton")}
+									<Upload className="h-4 w-4" />
 								</button>
 							</div>
-						</form>
-					</div>
-				</div>
-			)}
-
-			{/* DELETE CONFIRMATION MODAL */}
-			{isDeleteModalOpen && itemToDelete && (
-				<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
-						<div className="flex items-center gap-3 border-black border-b-[4px] bg-[#ff2e2e] p-4">
-							<div className="border-[3px] border-black bg-white p-1">
-								<Trash2 className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
-							</div>
-							<h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
-								{t("tournaments.deleteTitle")}
-							</h3>
-						</div>
-
-						<div className="p-6">
-							<p className="mb-4 font-bold text-black text-lg">
-								{t("tournaments.deleteConfirm")}{" "}
-								<span className="font-black italic">{itemToDelete.name}</span>?
-							</p>
-
-							<div className="flex flex-col gap-3">
-								<button
-									onClick={confirmDelete}
-									disabled={isSubmitting}
-									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-								>
-									{isSubmitting ? (
-										<InlineLoader size="lg" />
-									) : (
-										t("tournaments.deleteConfirmButton")
-									)}
-								</button>
-								<button
-									onClick={() => setIsDeleteModalOpen(false)}
-									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-							</div>
+							{formData.logoUrl && (
+								<div className="mt-2 flex justify-center border-2 border-black border-dashed bg-tape p-4">
+									<img
+										src={formData.logoUrl}
+										alt=""
+										className="h-24 w-24 object-contain"
+									/>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
-			)}
-			{/* DUPLICATE CONFIRMATION MODAL */}
-			{isDuplicateModalOpen && itemToDuplicate && (
-				<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
-						<div className="flex items-center gap-3 border-black border-b-[4px] bg-[#ccff00] p-4">
-							<div className="border-[3px] border-black bg-white p-1">
-								<Copy className="h-6 w-6 stroke-[3px] text-black" />
-							</div>
-							<h3 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-								{t("tournaments.duplicateTitle")}
-							</h3>
-						</div>
+			</AdminFormModal>
 
-						<div className="p-6">
-							<p className="mb-4 font-bold text-black text-lg">
-								{t("tournaments.duplicateConfirm")}{" "}
-								<span className="font-black italic">
-									{itemToDuplicate.name}
-								</span>
-								?
-							</p>
+			<ConfirmationModal
+				isOpen={isDeleteModalOpen && !!itemToDelete}
+				onClose={() => setIsDeleteModalOpen(false)}
+				onConfirm={confirmDelete}
+				title={t("tournaments.deleteTitle")}
+				description={
+					itemToDelete
+						? `${t("tournaments.deleteConfirm")} ${itemToDelete.name}?`
+						: ""
+				}
+				confirmLabel={t("tournaments.deleteConfirmButton")}
+				cancelLabel={t("common:actions.cancel")}
+				isLoading={isSubmitting}
+				variant="danger"
+			/>
 
-							<div className="mb-6 rounded border-2 border-yellow-200 bg-yellow-50 p-3 font-bold text-sm text-yellow-800">
-								{t("tournaments.duplicateWarning1")}
-								<span className="ml-1 underline">
-									{t("tournaments.duplicateWarning2")}
-								</span>
-								.
-							</div>
-
-							<div className="flex flex-col gap-3">
-								<button
-									onClick={confirmDuplicate}
-									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ccff00] py-4 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-								>
-									{t("tournaments.duplicateConfirmButton")}
-								</button>
-								<button
-									onClick={() => setIsDuplicateModalOpen(false)}
-									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
+			<ConfirmationModal
+				isOpen={isDuplicateModalOpen && !!itemToDuplicate}
+				onClose={() => setIsDuplicateModalOpen(false)}
+				onConfirm={confirmDuplicate}
+				title={t("tournaments.duplicateTitle")}
+				description={
+					itemToDuplicate
+						? `${t("tournaments.duplicateConfirm")} ${itemToDuplicate.name}? ${t("tournaments.duplicateWarning1")} ${t("tournaments.duplicateWarning2")}.`
+						: ""
+				}
+				confirmLabel={t("tournaments.duplicateConfirmButton")}
+				cancelLabel={t("common:actions.cancel")}
+				variant="warning"
+			/>
 		</div>
 	);
 }

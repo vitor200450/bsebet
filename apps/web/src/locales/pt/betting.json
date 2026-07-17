@@ -26,11 +26,15 @@
 	},
 	"empty": {
 		"noTournament": "Nenhum Torneio Disponível",
+		"noTournamentHint": "Volte em breve para acompanhar novos torneios.",
 		"noMatches": "Os jogos de hoje já começaram ou ainda não foram agendados.",
 		"title": "Sem Partidas",
 		"now": "Agora",
 		"waiting": "Aguardando",
 		"waitNextMatchDay": "Aguarde o próximo match day."
+	},
+	"loading": {
+		"tournament": "Carregando torneio..."
 	},
 	"review": {
 		"title": "{{tournament}} - REVISÃO",

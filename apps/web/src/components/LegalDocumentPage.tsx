@@ -24,7 +24,7 @@ export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
 		<div className="page-canvas">
 			<div className="relative z-10 mx-auto max-w-3xl px-4 py-12 sm:px-8 sm:py-16">
 				<header className="mb-10 border-black border-b-4 pb-6">
-					<p className="font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
+					<p className="font-body font-bold text-gray-500 text-xs uppercase tracking-widest">
 						{t(`${document}.eyebrow`)}
 					</p>
 					<h1 className="mt-3 font-black font-display text-4xl text-black uppercase italic tracking-tighter sm:text-5xl">
@@ -33,7 +33,7 @@ export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
 					<p className="mt-4 font-bold font-display text-gray-600 text-sm">
 						{t(`${document}.lastUpdated`)}
 					</p>
-					<p className="mt-4 font-medium font-display text-base text-gray-700 leading-relaxed">
+					<p className="mt-4 font-display font-medium text-base text-gray-700 leading-relaxed">
 						{t(`${document}.intro`)}
 					</p>
 				</header>

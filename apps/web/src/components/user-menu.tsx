@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { clsx } from "clsx";
+import type { LucideIcon } from "lucide-react";
 import {
 	Globe,
 	LayoutDashboard,
@@ -9,7 +10,6 @@ import {
 	Trophy,
 	User,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -54,7 +54,11 @@ function UserAvatar({
 		>
 			<div className="absolute inset-0 flex items-center justify-center">
 				{src ? (
-					<img src={src} alt={name ?? "User"} className="h-full w-full object-cover" />
+					<img
+						src={src}
+						alt={name ?? "User"}
+						className="h-full w-full object-cover"
+					/>
 				) : (
 					<User
 						strokeWidth={2.5}
@@ -80,7 +84,7 @@ function MenuActionItem({
 }) {
 	return (
 		<DropdownMenuItem
-			className="!text-black cursor-pointer gap-3 rounded-none px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-tight transition-all hover:bg-electric-lime hover:!text-black hover:**:!text-black hover:shadow-comic-sm focus:bg-electric-lime focus:!text-black focus:**:!text-black focus:shadow-comic-sm data-highlighted:bg-electric-lime data-highlighted:!text-black data-highlighted:**:!text-black data-highlighted:shadow-comic-sm [&_svg]:text-black hover:[&_svg]:!text-black focus:[&_svg]:!text-black data-highlighted:[&_svg]:!text-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-comic-press"
+			className="!text-black hover:!text-black hover:**:!text-black focus:!text-black focus:**:!text-black data-highlighted:!text-black data-highlighted:**:!text-black hover:[&_svg]:!text-black focus:[&_svg]:!text-black data-highlighted:[&_svg]:!text-black cursor-pointer gap-3 rounded-none px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-tight transition-all hover:bg-electric-lime hover:shadow-comic-sm focus:bg-electric-lime focus:shadow-comic-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-comic-press data-highlighted:bg-electric-lime data-highlighted:shadow-comic-sm [&_svg]:text-black"
 			onClick={onClick}
 		>
 			<Icon className="h-4 w-4 shrink-0" strokeWidth={2.5} />
@@ -160,7 +164,7 @@ export default function UserMenu({
 				<button
 					type="button"
 					className={clsx(
-						"-skew-x-12 transform border-[3px] px-6 py-2 font-black font-display text-sm text-black uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+						"-skew-x-12 transform border-[3px] px-6 py-2 font-black font-display text-black text-sm uppercase italic shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
 						variant === "dark"
 							? "border-white bg-white text-black"
 							: "border-black bg-electric-lime text-black",
@@ -219,11 +223,11 @@ export default function UserMenu({
 								{displayName}
 							</span>
 							<div className="mt-0.5 flex items-center gap-2">
-								<span className="font-bold font-body text-[9px] text-brawl-red uppercase tracking-widest tabular-nums">
+								<span className="font-body font-bold text-[9px] text-brawl-red uppercase tabular-nums tracking-widest">
 									{t("userMenu.pointsShort", { count: totalPoints ?? 0 })}
 								</span>
 								{medalCounts && medalCounts.total > 0 && (
-									<span className="flex items-center gap-0.5 font-bold font-body text-[9px] text-brawl-yellow uppercase tracking-widest tabular-nums">
+									<span className="flex items-center gap-0.5 font-body font-bold text-[9px] text-brawl-yellow uppercase tabular-nums tracking-widest">
 										<Trophy className="h-3 w-3" fill="currentColor" />
 										{medalCounts.total}
 									</span>
@@ -231,7 +235,11 @@ export default function UserMenu({
 							</div>
 						</div>
 						<div className="relative transition-transform group-hover:scale-105 group-active:translate-x-[2px] group-active:translate-y-[2px]">
-							<UserAvatar src={avatarSrc} name={displayName} variant={variant} />
+							<UserAvatar
+								src={avatarSrc}
+								name={displayName}
+								variant={variant}
+							/>
 						</div>
 					</div>
 				}
@@ -247,25 +255,25 @@ export default function UserMenu({
 						<p className="truncate font-black font-display text-sm uppercase italic tracking-tighter">
 							{displayName}
 						</p>
-						<p className="mt-0.5 truncate font-bold font-body text-[10px] text-white/50">
+						<p className="mt-0.5 truncate font-body font-bold text-[10px] text-white/50">
 							{session.user.email}
 						</p>
 					</div>
 
 					<div className="mt-3 grid grid-cols-2 gap-2">
 						<div className="flex -skew-x-6 transform flex-col border-[2px] border-white/20 bg-panel-gray px-2.5 py-2">
-							<span className="skew-x-6 transform font-bold font-body text-[9px] text-white/50 uppercase tracking-widest">
+							<span className="skew-x-6 transform font-body font-bold text-[9px] text-white/50 uppercase tracking-widest">
 								{t("userMenu.pointsLabel")}
 							</span>
-							<span className="skew-x-6 transform font-black font-body text-lg text-brawl-red leading-none tracking-tighter tabular-nums">
+							<span className="skew-x-6 transform font-black font-body text-brawl-red text-lg tabular-nums leading-none tracking-tighter">
 								{totalPoints ?? 0}
 							</span>
 						</div>
 						<div className="flex -skew-x-6 transform flex-col border-[2px] border-white/20 bg-panel-gray px-2.5 py-2">
-							<span className="skew-x-6 transform font-bold font-body text-[9px] text-white/50 uppercase tracking-widest">
+							<span className="skew-x-6 transform font-body font-bold text-[9px] text-white/50 uppercase tracking-widest">
 								{t("userMenu.medals")}
 							</span>
-							<div className="skew-x-6 transform mt-0.5 flex items-center gap-1.5">
+							<div className="mt-0.5 flex skew-x-6 transform items-center gap-1.5">
 								{medalCounts && medalCounts.total > 0 ? (
 									<MedalCountSummary
 										gold={medalCounts.gold}
@@ -274,7 +282,7 @@ export default function UserMenu({
 										size="sm"
 									/>
 								) : (
-									<span className="font-black font-body text-lg text-white/30 leading-none tracking-tighter tabular-nums">
+									<span className="font-black font-body text-lg text-white/30 tabular-nums leading-none tracking-tighter">
 										0
 									</span>
 								)}
@@ -299,7 +307,7 @@ export default function UserMenu({
 
 				<div className="p-2 pt-1">
 					<DropdownMenuItem
-						className="!text-white cursor-pointer justify-center gap-2 rounded-none border-[2px] border-black bg-bsen-red px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-wider transition-all hover:!text-white hover:**:!text-white hover:bg-brawl-red focus:!text-white focus:**:!text-white focus:bg-brawl-red data-highlighted:!text-white data-highlighted:**:!text-white data-highlighted:bg-brawl-red active:translate-x-[1px] active:translate-y-[1px] [&_svg]:text-white hover:[&_svg]:!text-white focus:[&_svg]:!text-white data-highlighted:[&_svg]:!text-white"
+						className="!text-white hover:!text-white hover:**:!text-white focus:!text-white focus:**:!text-white data-highlighted:!text-white data-highlighted:**:!text-white hover:[&_svg]:!text-white focus:[&_svg]:!text-white data-highlighted:[&_svg]:!text-white cursor-pointer justify-center gap-2 rounded-none border-[2px] border-black bg-bsen-red px-3 py-2.5 font-black font-display text-xs uppercase italic tracking-wider transition-all hover:bg-brawl-red focus:bg-brawl-red active:translate-x-[1px] active:translate-y-[1px] data-highlighted:bg-brawl-red [&_svg]:text-white"
 						onClick={() => {
 							authClient.signOut({
 								fetchOptions: {

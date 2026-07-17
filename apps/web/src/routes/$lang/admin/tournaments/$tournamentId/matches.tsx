@@ -32,7 +32,6 @@ import {
 } from "@/server/tournament-teams";
 import { getTournament } from "@/server/tournaments";
 import { BracketEditor } from "../../../../../components/admin/BracketEditor";
-import { DeleteModal } from "../../../../../components/admin/DeleteModal";
 import { MatchDaysManager } from "../../../../../components/admin/MatchDaysManager";
 import { MatchModal } from "../../../../../components/admin/MatchModal";
 import { TournamentSeedingManager } from "../../../../../components/admin/TournamentSeedingManager";
@@ -642,7 +641,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.groupStage")}
 							</h2>
-							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
+							<p className="font-body font-bold text-gray-500 text-sm tracking-wide">
 								{t("matchBuilder.groupStageDescription")}
 							</p>
 						</div>
@@ -703,7 +702,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.swissStage")}
 							</h2>
-							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
+							<p className="font-body font-bold text-gray-500 text-sm tracking-wide">
 								{t("matches.swissStageDescription")}
 							</p>
 						</div>
@@ -783,12 +782,12 @@ function TournamentMatchesPage() {
 										<div key={roundIdx} className="mb-8 last:mb-0">
 											<div className="mb-3 flex items-center gap-3">
 												<div className="inline-block -skew-x-6 border-2 border-black bg-black px-3 py-1">
-													<span className="block skew-x-6 font-bold font-body text-[#ccff00] text-xs uppercase tracking-widest">
+													<span className="block skew-x-6 font-body font-bold text-[#ccff00] text-xs uppercase tracking-widest">
 														Rodada {roundIdx + 1}
 													</span>
 												</div>
 												<div className="h-0.5 flex-1 bg-black/10" />
-												<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
+												<span className="font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
 													{
 														rounds[roundIdx].filter(
 															(m: any) => m.status === "finished",
@@ -816,12 +815,12 @@ function TournamentMatchesPage() {
 															className="group relative flex cursor-pointer flex-col border-[2px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5"
 														>
 															{isLive && (
-																<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-brawl-red px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-brawl-red px-1.5 py-0.5 font-body font-bold text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 																	AO VIVO
 																</div>
 															)}
 															{isFinished && (
-																<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-bold font-body text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+																<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-body font-bold text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 																	FINAL
 																</div>
 															)}
@@ -925,7 +924,7 @@ function TournamentMatchesPage() {
 							<h2 className="font-black text-2xl text-black uppercase italic">
 								{t("matches.playoffs")}
 							</h2>
-							<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
+							<p className="font-body font-bold text-gray-500 text-sm tracking-wide">
 								{t("matchBuilder.description")}
 							</p>
 						</div>
@@ -1101,14 +1100,14 @@ function TournamentMatchesPage() {
 													>
 														<div className="flex items-center justify-between border-black border-b-2 bg-gray-100 px-3 py-2 text-black">
 															<div className="flex items-center gap-2">
-																<span className="font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
+																<span className="font-body font-bold text-gray-500 text-xs uppercase tracking-widest">
 																	{new Date(match.startTime).toLocaleTimeString(
 																		[],
 																		{ hour: "2-digit", minute: "2-digit" },
 																	)}
 																</span>
 																<div className="flex flex-col">
-																	<span className="w-fit rounded-full bg-black px-2 font-bold font-body text-[10px] text-white uppercase tracking-widest">
+																	<span className="w-fit rounded-full bg-black px-2 font-body font-bold text-[10px] text-white uppercase tracking-widest">
 																		{stages.find(
 																			(s) =>
 																				s.id === match.stageId ||
@@ -1123,7 +1122,7 @@ function TournamentMatchesPage() {
 																		</span>
 																	)}
 																	{match.startTime ? (
-																		<div className="mt-1 font-bold font-body text-[9px] text-gray-600 tracking-widest">
+																		<div className="mt-1 font-body font-bold text-[9px] text-gray-600 tracking-widest">
 																			📅{" "}
 																			{new Date(
 																				match.startTime,
@@ -1141,23 +1140,23 @@ function TournamentMatchesPage() {
 																			})}
 																		</div>
 																	) : (
-																		<div className="mt-1 font-bold font-body text-[9px] text-red-500 tracking-widest">
+																		<div className="mt-1 font-body font-bold text-[9px] text-red-500 tracking-widest">
 																			⚠️ {t("matches.noDateSet")}
 																		</div>
 																	)}
 																	<div className="mt-1">
 																		{match.resultType === "wo" &&
 																			match.status === "finished" && (
-																				<span className="mr-1 border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
+																				<span className="mr-1 border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-body font-bold text-[9px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 																					W.O.
 																				</span>
 																			)}
 																		{match.isBettingEnabled ? (
-																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-bold font-body text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
+																			<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-body font-bold text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 																				{t("matches.betsOpen")}
 																			</span>
 																		) : (
-																			<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+																			<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 																				{t("matches.betsClosed")}
 																			</span>
 																		)}
@@ -1195,7 +1194,7 @@ function TournamentMatchesPage() {
 																				className="h-full w-full object-contain"
 																			/>
 																		) : (
-																			<span className="font-bold font-body text-gray-400 text-xs tracking-widest">
+																			<span className="font-body font-bold text-gray-400 text-xs tracking-widest">
 																				?
 																			</span>
 																		)}
@@ -1256,7 +1255,7 @@ function TournamentMatchesPage() {
 																				className="h-full w-full object-contain"
 																			/>
 																		) : (
-																			<span className="font-bold font-body text-gray-400 text-xs tracking-widest">
+																			<span className="font-body font-bold text-gray-400 text-xs tracking-widest">
 																				?
 																			</span>
 																		)}
@@ -1362,16 +1361,19 @@ function TournamentMatchesPage() {
 				}
 			/>
 
-			<DeleteModal
+			<ConfirmationModal
 				isOpen={isDeleteModalOpen}
 				onClose={() => {
 					setIsDeleteModalOpen(false);
 					setMatchToDelete(null);
 				}}
 				onConfirm={handleDeleteMatch}
-				isDeleting={isDeleting}
+				isLoading={isDeleting}
 				title={t("matches.deleteTitle")}
 				description={t("matches.deleteDescription")}
+				confirmLabel={t("common:actions.delete")}
+				cancelLabel={t("common:actions.cancel")}
+				variant="danger"
 			/>
 
 			<ConfirmationModal
@@ -1430,6 +1432,7 @@ function TournamentMatchesPage() {
 				confirmLabel={t("reset.tournamentConfirm")}
 				cancelLabel={t("reset.cancelLabel")}
 				variant="danger"
+				challengeText={tournament.name}
 			/>
 
 			<ConfirmationModal
@@ -1441,7 +1444,8 @@ function TournamentMatchesPage() {
 				description={t("resetBets.description")}
 				confirmLabel={t("resetBets.confirmLabel")}
 				cancelLabel={t("resetBets.cancelLabel")}
-				variant="warning"
+				variant="danger"
+				challengeText={tournament.name}
 			/>
 		</div>
 	);

@@ -12,7 +12,7 @@ Page overrides (future): `design-system/pages/<page>.md` override this file when
 | :--- | :--- |
 | **Name** | BSEN Pickems |
 | **Product** | Esports prediction / pick'em (Brawl Stars) |
-| **Audience** | Brazilian Brawl Stars fans, mobile-first, match-day context |
+| **Audience** | International Brawl Stars esports fans, mobile-first, match-day context (pt + en) |
 | **Reference** | [Brawl Stars Championship](https://event.supercell.com/brawlstars/pt) |
 | **Style** | Championship Broadcast + Neo Brutal product |
 | **Mode** | Light-first; selective dark broadcast panels |

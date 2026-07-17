@@ -167,7 +167,7 @@ export function MatchDaysManager({
 				</h3>
 				<div className="flex items-end gap-4">
 					<div className="flex-1">
-						<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
+						<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
 							{t("matchDays.nameLabel")}
 						</label>
 						<input
@@ -225,7 +225,7 @@ export function MatchDaysManager({
 								<div className="space-y-4">
 									<div className="flex items-end gap-4">
 										<div className="flex-1">
-											<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
+											<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
 												{t("matchDays.editNameLabel")}
 											</label>
 											<input
@@ -313,13 +313,13 @@ export function MatchDaysManager({
 											</h4>
 											<div className="mt-1 flex items-center gap-2">
 												<span
-													className={`rounded-full border-2 px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest ${getStatusColor(
+													className={`rounded-full border-2 px-2 py-0.5 font-body font-bold text-[10px] uppercase tracking-widest ${getStatusColor(
 														day.status,
 													)}`}
 												>
 													{getStatusLabel(day.status)}
 												</span>
-												<span className="font-bold text-gray-400 text-xs font-body tracking-widest">
+												<span className="font-body font-bold text-gray-400 text-xs tracking-widest">
 													{t("matchDays.matchCount", {
 														count: day.matches.length,
 													})}
@@ -332,19 +332,19 @@ export function MatchDaysManager({
 										{/* Betting Status Indicator - Based on Match Day Status */}
 										<div className="mr-2 flex flex-col items-end">
 											{day.status === "open" ? (
-												<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-bold font-body text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
+												<span className="border border-black bg-[#ccff00] px-1.5 py-0.5 font-body font-bold text-[9px] text-black uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 													{t("matchDays.betsOpenBadge")}
 												</span>
 											) : day.status === "locked" ? (
-												<span className="border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest">
+												<span className="border border-black bg-[#ff2e2e] px-1.5 py-0.5 font-body font-bold text-[9px] text-white uppercase tracking-widest">
 													{t("matchDays.betsClosedBadge")}
 												</span>
 											) : day.status === "finished" ? (
-												<span className="border border-black bg-black px-1.5 py-0.5 font-bold font-body text-[9px] text-white uppercase tracking-widest">
+												<span className="border border-black bg-black px-1.5 py-0.5 font-body font-bold text-[9px] text-white uppercase tracking-widest">
 													{t("matchDays.finishedBadge")}
 												</span>
 											) : (
-												<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+												<span className="border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 													{t("matchDays.draftBadge")}
 												</span>
 											)}

@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
+import { clsx } from "clsx";
 import BRFlag from "country-flag-icons/react/3x2/BR";
 import USFlag from "country-flag-icons/react/3x2/US";
-import { clsx } from "clsx";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -59,7 +59,7 @@ export function LanguageSwitcher({
 							language: t(`language.${code}`),
 						})}
 						className={clsx(
-							"skew-x-6 transform flex items-center gap-1.5 px-2 py-1.5 font-black text-[10px] uppercase tracking-wider transition-all active:translate-y-[1px] md:px-3 md:py-2 md:text-xs",
+							"flex skew-x-6 transform items-center gap-1.5 px-2 py-1.5 font-black text-[10px] uppercase tracking-wider transition-all active:translate-y-[1px] md:px-3 md:py-2 md:text-xs",
 							isActive
 								? "bg-electric-lime text-black"
 								: variant === "dark"

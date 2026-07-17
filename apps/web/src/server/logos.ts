@@ -5,11 +5,43 @@ import { z } from "zod";
 import {
 	base64ToBuffer,
 	deleteLogoFromR2,
+	getPendingTeamLogoKey,
 	getTeamLogoKey,
 	getTournamentLogoKey,
 	isBase64DataUrl,
 	uploadLogoToR2,
 } from "./r2";
+
+/**
+ * Converte uma imagem Base64 em URL pública no R2 imediatamente.
+ * Usa path pending (não exige teamId) e não altera o banco —
+ * o formulário só guarda a URL e salva junto com o time.
+ */
+const uploadTeamLogoImageFn = createServerFn({ method: "POST" }).handler(
+	async (ctx: any) => {
+		const data = z
+			.object({
+				imageBase64: z.string(),
+			})
+			.parse(ctx.data);
+
+		if (!isBase64DataUrl(data.imageBase64)) {
+			throw new Error("Invalid image format");
+		}
+
+		const { buffer, contentType } = base64ToBuffer(data.imageBase64);
+		const extension = contentType.split("/")[1] || "png";
+		const key = getPendingTeamLogoKey(extension);
+
+		const { publicUrl } = await uploadLogoToR2(key, buffer, contentType);
+
+		return { logoUrl: `${publicUrl}?t=${Date.now()}` };
+	},
+);
+
+export const uploadTeamLogoImage = uploadTeamLogoImageFn as unknown as (opts: {
+	data: { imageBase64: string };
+}) => Promise<{ logoUrl: string }>;
 
 /**
  * Endpoint para upload de logo de time

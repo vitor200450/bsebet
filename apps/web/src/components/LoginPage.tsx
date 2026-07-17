@@ -219,7 +219,7 @@ export function LoginPage({ lang }: LoginPageProps) {
 
 						<div className="relative space-y-6 p-6 pt-8 sm:p-8 sm:pt-10">
 							<div className="space-y-2">
-								<p className="font-bold font-body text-[11px] text-gray-500 uppercase tracking-widest">
+								<p className="font-body font-bold text-[11px] text-gray-500 uppercase tracking-widest">
 									{t("login.panelHint")}
 								</p>
 								<div className="h-[3px] w-12 bg-bsen-red" aria-hidden="true" />
@@ -305,7 +305,7 @@ export function LoginPage({ lang }: LoginPageProps) {
 												: { opacity: 0, transform: "translateY(4px)" }
 										}
 										transition={{ duration: 0.18, ease }}
-										className="border-2 border-black bg-bsen-red px-3 py-2 font-bold font-body text-white text-xs uppercase tracking-wide"
+										className="border-2 border-black bg-bsen-red px-3 py-2 font-body font-bold text-white text-xs uppercase tracking-wide"
 									>
 										{error}
 									</motion.p>

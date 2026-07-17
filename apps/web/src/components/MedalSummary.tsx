@@ -75,7 +75,7 @@ export function MedalSummary({
 			<Link
 				{...routeTo("/users/$userId")}
 				params={{ userId, lang }}
-				className="group flex items-center gap-1 font-black font-display text-brawl-blue text-[10px] uppercase tracking-wider transition-colors hover:text-ink"
+				className="group flex items-center gap-1 font-black font-display text-[10px] text-brawl-blue uppercase tracking-wider transition-colors hover:text-ink"
 			>
 				{t("medals.viewAll")}
 				<ChevronRight
@@ -100,9 +100,7 @@ export function MedalSummary({
 					{viewAllLink}
 				</div>
 			) : (
-				viewAllLink && (
-					<div className="flex justify-end">{viewAllLink}</div>
-				)
+				viewAllLink && <div className="flex justify-end">{viewAllLink}</div>
 			)}
 
 			{!hasMedals ? (
@@ -115,7 +113,7 @@ export function MedalSummary({
 						<p className="font-black font-display text-black/60 text-sm uppercase italic">
 							{t("medals.empty")}
 						</p>
-						<p className="font-bold font-body text-[10px] text-black/40 uppercase tracking-widest">
+						<p className="font-body font-bold text-[10px] text-black/40 uppercase tracking-widest">
 							{t("medals.emptySubtitle")}
 						</p>
 					</div>
@@ -148,7 +146,7 @@ export function MedalSummary({
 							</span>
 							<span
 								className={cn(
-									"font-bold font-body text-[8px] uppercase tracking-widest",
+									"font-body font-bold text-[8px] uppercase tracking-widest",
 									tierConfig.gold.text,
 								)}
 							>
@@ -179,7 +177,7 @@ export function MedalSummary({
 							</span>
 							<span
 								className={cn(
-									"font-bold font-body text-[8px] uppercase tracking-widest",
+									"font-body font-bold text-[8px] uppercase tracking-widest",
 									tierConfig.silver.text,
 								)}
 							>
@@ -210,7 +208,7 @@ export function MedalSummary({
 							</span>
 							<span
 								className={cn(
-									"font-bold font-body text-[8px] uppercase tracking-widest",
+									"font-body font-bold text-[8px] uppercase tracking-widest",
 									tierConfig.bronze.text,
 								)}
 							>
@@ -223,17 +221,19 @@ export function MedalSummary({
 					<div className="flex items-center justify-center">
 						<div className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 shadow-[3px_3px_0_0_#000]">
 							<Trophy className="h-4 w-4 text-[#FFD700]" fill="#FFD700" />
-							<span className="font-bold font-body text-sm text-white uppercase tracking-widest">
+							<span className="font-body font-bold text-sm text-white uppercase tracking-widest">
 								{t("medals.total")}
 							</span>
-							<span className="font-black font-body text-[#FFD700] text-xl tabular-nums">{total}</span>
+							<span className="font-black font-body text-[#FFD700] text-xl tabular-nums">
+								{total}
+							</span>
 						</div>
 					</div>
 
 					{/* Recent Medals */}
 					{recentMedals && recentMedals.length > 0 && (
 						<div className="space-y-2">
-							<h4 className="font-bold font-body text-[10px] text-black/60 uppercase tracking-widest">
+							<h4 className="font-body font-bold text-[10px] text-black/60 uppercase tracking-widest">
 								{t("medals.latest")}
 							</h4>
 							<div className="space-y-2">

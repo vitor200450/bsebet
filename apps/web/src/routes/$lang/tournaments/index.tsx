@@ -67,7 +67,7 @@ function TournamentsPage() {
 						</div>
 						<div className="flex items-center gap-2 text-gray-500">
 							<Trophy className="h-5 w-5" strokeWidth={2} />
-							<span className="font-bold font-body text-[10px] uppercase tracking-widest">
+							<span className="font-body font-bold text-[10px] uppercase tracking-widest">
 								{t("browse.totalCount", { count: tournaments.length })}
 							</span>
 						</div>
@@ -206,7 +206,7 @@ function TournamentCard({
 					{tournament.region && (
 						<div className="absolute top-3 left-3 flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 shadow-sm">
 							<MapPin className="h-3 w-3 text-gray-600" strokeWidth={2} />
-							<span className="font-bold font-body text-[10px] text-gray-700 uppercase tracking-widest">
+							<span className="font-body font-bold text-[10px] text-gray-700 uppercase tracking-widest">
 								{tournament.region}
 							</span>
 						</div>
@@ -232,12 +232,12 @@ function TournamentCard({
 				<div className="px-4 pt-12 pb-4">
 					{/* Meta */}
 					<div className="mb-3 flex flex-wrap items-center gap-2">
-						<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+						<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 							<Calendar className="h-3 w-3" strokeWidth={2} />
 							{formatDateRange(tournament.startDate, tournament.endDate)}
 						</span>
 						{tournament.participantsCount && (
-							<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+							<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 								<Users className="h-3 w-3" strokeWidth={2} />
 								{tournament.participantsCount} {t("browse.teams")}
 							</span>
@@ -250,7 +250,7 @@ function TournamentCard({
 					</h2>
 
 					{tournament.format && (
-						<p className="mb-4 font-bold font-body text-gray-400 text-xs uppercase tracking-widest">
+						<p className="mb-4 font-body font-bold text-gray-400 text-xs uppercase tracking-widest">
 							{tournament.format}
 						</p>
 					)}

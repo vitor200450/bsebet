@@ -1,5 +1,6 @@
 import { Calendar, Check, Lock, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { BettingEmptyState } from "@/components/BettingEmptyState";
 import { PublicPageShell } from "@/components/PublicPageShell";
 
 interface MatchDay {
@@ -212,19 +213,12 @@ export function MatchDaySelector({
 
 				{/* No Match Days Message */}
 				{matchDays.length === 0 && (
-					<div className="py-12 text-center">
-						<div className="inline-block rounded-lg border-2 border-black bg-white p-8 shadow-[6px_6px_0px_0px_#000]">
-							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-black bg-tape">
-								<Calendar className="h-8 w-8 text-gray-400" strokeWidth={3} />
-							</div>
-							<h3 className="mb-2 font-black font-display text-ink text-xl uppercase italic">
-								{t("matchDay.noMatchDayTitle")}
-							</h3>
-							<p className="text-gray-600 text-sm">
-								{t("matchDay.noMatchDay")}
-							</p>
-						</div>
-					</div>
+					<BettingEmptyState
+						layout="embedded"
+						icon="calendar_month"
+						title={t("matchDay.noMatchDayTitle")}
+						description={t("matchDay.noMatchDay")}
+					/>
 				)}
 			</div>
 		</PublicPageShell>

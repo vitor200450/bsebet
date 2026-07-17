@@ -4,7 +4,7 @@ interface TeamLogoProps {
 	teamName: string;
 	logoUrl?: string | null;
 	className?: string;
-	size?: "xs" | "sm" | "md" | "lg" | "xl";
+	size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 }
 
 const sizeClasses = {
@@ -13,6 +13,7 @@ const sizeClasses = {
 	md: "w-8 h-8",
 	lg: "w-12 h-12",
 	xl: "w-16 h-16",
+	"2xl": "w-40 h-40",
 };
 
 /**
@@ -31,11 +32,20 @@ export function TeamLogo({
 }: TeamLogoProps) {
 	const [error, setError] = useState(false);
 
+	const fallbackTextClass =
+		size === "2xl"
+			? "text-4xl"
+			: size === "xl"
+				? "text-lg"
+				: size === "lg"
+					? "text-sm"
+					: "text-xs";
+
 	// Fallback se não tiver logo ou der erro
 	if (!logoUrl || error) {
 		return (
 			<div
-				className={`${sizeClasses[size]} flex items-center justify-center rounded-sm bg-gray-200 font-bold text-gray-500 text-xs ${className}`}
+				className={`${sizeClasses[size]} flex items-center justify-center rounded-sm bg-gray-200 font-bold text-gray-500 ${fallbackTextClass} ${className}`}
 				title={teamName}
 			>
 				{teamName.charAt(0).toUpperCase()}

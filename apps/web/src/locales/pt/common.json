@@ -19,6 +19,8 @@
 		"adminTeams": "Times",
 		"adminTournaments": "Torneios",
 		"adminCompensations": "Compensação",
+		"adminGroupSetup": "Preparar",
+		"adminGroupManage": "Gerir",
 		"adminLive": "Ao Vivo",
 		"live": "AO VIVO",
 		"profile": "Perfil",
@@ -37,6 +39,7 @@
 	"actions": {
 		"save": "Salvar",
 		"cancel": "Cancelar",
+		"close": "Fechar",
 		"confirm": "Confirmar",
 		"delete": "Excluir",
 		"edit": "Editar",

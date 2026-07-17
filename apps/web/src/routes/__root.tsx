@@ -69,7 +69,7 @@ function RootDocument() {
 								<SiteFooter variant={footerConfig.variant} />
 							) : null}
 						</div>
-						<Toaster richColors />
+						<Toaster />
 					</HeaderProvider>
 				</I18nRootProvider>
 				<Scripts />

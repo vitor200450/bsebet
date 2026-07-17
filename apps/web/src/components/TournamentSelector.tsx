@@ -199,7 +199,7 @@ export function TournamentSelector({
 
 									<div className="grid grid-cols-2 gap-3">
 										<div className="flex flex-col gap-1">
-											<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+											<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("selector.startDate")}
 											</span>
 											<div className="flex items-center gap-2 rounded-md border-2 border-black bg-white px-3 py-1.5 font-bold font-display text-ink text-sm shadow-[2px_2px_0px_0px_#000]">
@@ -223,7 +223,7 @@ export function TournamentSelector({
 										</div>
 
 										<div className="flex flex-col gap-1">
-											<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+											<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 												{t("selector.currentPhase")}
 											</span>
 											<div

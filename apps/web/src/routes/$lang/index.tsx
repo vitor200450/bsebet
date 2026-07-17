@@ -2,10 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { clsx } from "clsx";
 import { and, asc, eq, inArray, like, not } from "drizzle-orm";
-import { Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BetSplitBar } from "@/components/BetSplitBar";
+import { BettingEmptyState } from "@/components/BettingEmptyState";
 import { InlineLoader } from "@/components/inline-loader";
 import { useLangLink } from "@/i18n/useLangLink";
 import { deriveMatchFormat } from "@/lib/utils";
@@ -3539,24 +3539,12 @@ function Home() {
 	// Show empty state if no tournaments
 	if (tournaments.length === 0) {
 		return (
-			<PublicPageShell className="flex items-center justify-center p-6">
-				<div className="relative z-10 w-full max-w-md text-center">
-					<div className="relative inline-block w-full overflow-hidden border-[4px] border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000]">
-						{/* Corner decorations */}
-						<div className="absolute -top-2 -right-2 h-4 w-4 border-2 border-black bg-[#ccff00]" />
-						<div className="absolute -bottom-2 -left-2 h-4 w-4 border-2 border-black bg-brawl-red" />
-
-						<div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-[3px] border-black bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-							<Trophy className="h-10 w-10 text-gray-300" strokeWidth={3} />
-						</div>
-						<h3 className="mb-3 -skew-x-12 transform font-black font-display text-black text-xl uppercase italic tracking-tighter md:text-3xl">
-							Carregando torneio...
-						</h3>
-						<p className="font-bold font-body text-gray-500 text-sm uppercase leading-relaxed tracking-widest">
-							Volte em breve para acompanhar <br /> novos torneios competitivos!
-						</p>
-					</div>
-				</div>
+			<PublicPageShell>
+				<BettingEmptyState
+					icon="emoji_events"
+					title={t("empty.noTournament")}
+					description={t("empty.noTournamentHint")}
+				/>
 			</PublicPageShell>
 		);
 	}
@@ -3572,7 +3560,7 @@ function Home() {
 				<div className="relative z-10 space-y-4 text-center">
 					<InlineLoader size="xl" className="mx-auto" />
 					<h2 className="animate-pulse font-black font-display text-2xl text-black uppercase italic">
-						{t("empty.noTournament")}
+						{t("loading.tournament")}
 					</h2>
 				</div>
 			</PublicPageShell>

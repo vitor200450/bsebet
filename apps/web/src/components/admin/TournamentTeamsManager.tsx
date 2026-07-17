@@ -21,18 +21,18 @@ interface TournamentTeamsManagerProps {
 const getRegionColor = (region: string) => {
 	switch (region) {
 		case "NA":
-			return "bg-[#2e5cff] text-white shadow-[1px_1px_0px_0px_#000]";
+			return "bg-[#85BA3A] text-black shadow-[1px_1px_0px_0px_#000]";
 		case "EMEA":
-			return "bg-[#9b59b6] text-white shadow-[1px_1px_0px_0px_#000]";
+			return "bg-[#0997DE] text-white shadow-[1px_1px_0px_0px_#000]";
 		case "CN":
 			return "bg-[#ff2e2e] text-white shadow-[1px_1px_0px_0px_#000]";
 		case "EA":
-			return "bg-[#ff9f43] text-black shadow-[1px_1px_0px_0px_#000]";
+			return "bg-[#EC00AC] text-white shadow-[1px_1px_0px_0px_#000]";
 		case "SEA":
 			return "bg-[#1dd1a1] text-black shadow-[1px_1px_0px_0px_#000]";
 		case "SA":
 		default:
-			return "bg-[#ffc700] text-black shadow-[1px_1px_0px_0px_#000]";
+			return "bg-[#E24C3C] text-white shadow-[1px_1px_0px_0px_#000]";
 	}
 };
 
@@ -49,7 +49,6 @@ export function TournamentTeamsManager({
 	const [sortOrder, setSortOrder] = useState<"name" | "region" | "recent">(
 		"name",
 	);
-	const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
 	useEffect(() => {
 		if (pendingTeamIds.length > 0) {
@@ -102,9 +101,6 @@ export function TournamentTeamsManager({
 		<div className="space-y-6">
 			<div className="flex items-end gap-4 border-2 border-black bg-gray-50 p-4">
 				<div className="flex-1">
-					<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-						{t("teams.addTitle")}
-					</label>
 					<CustomSelect
 						label={t("teams.selectTeam")}
 						value={selectedTeamId}
@@ -135,45 +131,21 @@ export function TournamentTeamsManager({
 						</span>
 					</h3>
 
-					<div className="relative z-10">
-						<button
-							type="button"
-							onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-							className="relative flex min-w-[120px] items-center gap-2 border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold text-black text-xs uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-						>
-							<span className="mr-1 text-gray-400">{t("teams.sortLabel")}</span>
-							{sortOrder === "recent"
-								? t("teams.sortRecent")
-								: sortOrder === "name"
-									? t("teams.sortAZ")
-									: t("teams.sortRegion")}
-							<div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
-								<span className="text-[10px]">▼</span>
-							</div>
-						</button>
-
-						{isSortDropdownOpen && (
-							<div className="absolute top-full right-0 z-50 mt-1 w-full border-[3px] border-black bg-white py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-								{[
-									{ id: "name", label: t("teams.sortAZ") },
-									{ id: "region", label: t("teams.sortRegion") },
-									{ id: "recent", label: t("teams.sortRecent") },
-								].map((opt) => (
-									<button
-										key={opt.id}
-										onClick={() => {
-											setSortOrder(opt.id as any);
-											setIsSortDropdownOpen(false);
-										}}
-										className={`w-full px-4 py-2 text-left font-bold text-black text-xs uppercase transition-colors hover:bg-[#ccff00] ${
-											sortOrder === opt.id ? "bg-gray-100" : ""
-										}`}
-									>
-										{opt.label}
-									</button>
-								))}
-							</div>
-						)}
+					<div className="w-[160px]">
+						<CustomSelect
+							value={sortOrder}
+							onChange={(val) =>
+								setSortOrder(val as "name" | "region" | "recent")
+							}
+							searchable={false}
+							size="compact"
+							placeholder={t("teams.sortLabel")}
+							options={[
+								{ value: "name", label: t("teams.sortAZ") },
+								{ value: "region", label: t("teams.sortRegion") },
+								{ value: "recent", label: t("teams.sortRecent") },
+							]}
+						/>
 					</div>
 				</div>
 
@@ -208,7 +180,7 @@ export function TournamentTeamsManager({
 										</h4>
 										{team.region && (
 											<span
-												className={`flex w-fit items-center gap-1 rounded-full border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest ${getRegionColor(
+												className={`flex w-fit items-center gap-1 rounded-full border-2 border-black px-2 py-0.5 font-body font-bold text-[10px] uppercase tracking-widest ${getRegionColor(
 													team.region,
 												)}`}
 											>

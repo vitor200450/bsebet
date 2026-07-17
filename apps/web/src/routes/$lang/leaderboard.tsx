@@ -156,12 +156,10 @@ function LeaderboardPage() {
 		const smooth = !prefersReducedMotion();
 
 		if (currentUserEntry.rank <= 3) {
-			document
-				.getElementById("leaderboard-podium")
-				?.scrollIntoView({
-					behavior: smooth ? "smooth" : "auto",
-					block: "center",
-				});
+			document.getElementById("leaderboard-podium")?.scrollIntoView({
+				behavior: smooth ? "smooth" : "auto",
+				block: "center",
+			});
 			setHighlightUserId(currentUserEntry.userId);
 			return;
 		}
@@ -226,7 +224,9 @@ function LeaderboardPage() {
 			label:
 				tab === "global" ? t("columns.medals") : t("columns.decisiveMatch"),
 			desc:
-				tab === "global" ? t("columns.tiebreaker4") : t("columns.tiebreakerFinal"),
+				tab === "global"
+					? t("columns.tiebreaker4")
+					: t("columns.tiebreakerFinal"),
 			color: "bg-yellow-300 text-black",
 		},
 		...(tab === "season"
@@ -317,7 +317,7 @@ function LeaderboardPage() {
 
 						{tab === "season" && activeTournament && (
 							<div className="rounded-xl border-2 border-black bg-white p-3 shadow-comic">
-								<p className="mb-3 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+								<p className="mb-3 font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 									{t("selectTournament")}
 								</p>
 								<div className="mb-3 flex flex-col items-center gap-2">
@@ -343,7 +343,7 @@ function LeaderboardPage() {
 											/>
 										)}
 									</div>
-									<span className="max-w-full truncate rounded-lg border-2 border-black bg-ink px-3 py-1.5 text-center font-black font-display text-xs text-white uppercase">
+									<span className="max-w-full truncate rounded-lg border-2 border-black bg-ink px-3 py-1.5 text-center font-black font-display text-white text-xs uppercase">
 										{activeTournament.name}
 									</span>
 								</div>
@@ -407,7 +407,7 @@ function LeaderboardPage() {
 							</div>
 
 							<div className="rounded-xl border-2 border-black bg-white p-3 shadow-comic">
-								<p className="mb-3 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+								<p className="mb-3 font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 									{t("legend")}
 								</p>
 								<LegendList />
@@ -448,7 +448,7 @@ function LeaderboardPage() {
 											<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
 												{t("restOfBoard")}
 											</h2>
-											<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest tabular-nums">
+											<span className="font-body font-bold text-[10px] text-gray-500 uppercase tabular-nums tracking-widest">
 												{t("showingRange", {
 													from: pageStart + 4,
 													to: Math.min(
@@ -462,16 +462,16 @@ function LeaderboardPage() {
 
 										<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-comic">
 											<div className="hidden items-center gap-2 border-black/10 border-b bg-tape px-3 py-2 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_auto_5.5rem]">
-												<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+												<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 													{t("columns.position")}
 												</span>
-												<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+												<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 													{t("columns.player")}
 												</span>
-												<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+												<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 													{t("legend")}
 												</span>
-												<span className="text-right font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+												<span className="text-right font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 													{t("columns.score")}
 												</span>
 											</div>
@@ -556,14 +556,14 @@ function CriteriaList({ items }: { items: CriteriaItem[] }) {
 				>
 					<div
 						className={clsx(
-							"mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-black box-border font-black font-body text-[10px] tabular-nums",
+							"mt-0.5 box-border flex h-5 w-5 shrink-0 items-center justify-center rounded border border-black font-black font-body text-[10px] tabular-nums",
 							c.color,
 						)}
 					>
 						{c.num}
 					</div>
 					<div className="min-w-0">
-						<p className="font-bold font-body text-[11px] text-ink uppercase tracking-widest">
+						<p className="font-body font-bold text-[11px] text-ink uppercase tracking-widest">
 							{c.label}
 						</p>
 						<p className="font-body font-medium text-[10px] text-gray-500">
@@ -588,7 +588,7 @@ function LegendList() {
 						0
 					</span>
 				</div>
-				<span className="font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+				<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 					{t("columns.perfect")}
 				</span>
 			</div>
@@ -601,7 +601,7 @@ function LegendList() {
 						0
 					</span>
 				</div>
-				<span className="font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+				<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 					{t("columns.hits")}
 				</span>
 			</div>
@@ -611,7 +611,7 @@ function LegendList() {
 						70%
 					</span>
 				</div>
-				<span className="font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+				<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 					{t("columns.hitRate")}
 				</span>
 			</div>
@@ -622,7 +622,7 @@ function LegendList() {
 						0
 					</span>
 				</div>
-				<span className="font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+				<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 					{t("columns.underdogs")}
 				</span>
 			</div>
@@ -632,7 +632,7 @@ function LegendList() {
 					<MiniMedalBadge tier="2nd" size="sm" />
 					<MiniMedalBadge tier="3rd" size="sm" />
 				</div>
-				<span className="font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+				<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 					{t("columns.medals")}
 				</span>
 			</div>
@@ -704,10 +704,8 @@ function StatPills({ entry }: { entry: LeaderboardEntry }) {
 					{entry.perfectPicks}
 				</span>
 			</div>
-			<div
-				className={clsx(pill, "box-border border border-black/20 bg-white")}
-			>
-				<span className="font-black font-body text-[10px] leading-none text-green-600">
+			<div className={clsx(pill, "box-border border border-black/20 bg-white")}>
+				<span className="font-black font-body text-[10px] text-green-600 leading-none">
 					✓
 				</span>
 				<span className="font-black font-body text-[10px] text-black tabular-nums">
@@ -887,13 +885,13 @@ function PodiumSection({
 				<div className="mb-2 text-center">
 					<span
 						className={clsx(
-							"block font-black font-body leading-none text-ink tabular-nums",
+							"block font-black font-body text-ink tabular-nums leading-none",
 							rank === 1 ? "text-3xl" : "text-2xl",
 						)}
 					>
 						{entry.totalPoints}
 					</span>
-					<span className="block font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+					<span className="block font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 						{t("pts")}
 					</span>
 				</div>
@@ -912,7 +910,7 @@ function PodiumSection({
 				<div className="mb-2 flex min-h-5 justify-center">
 					{tiebreakerReason && (
 						<div className="inline-flex items-center rounded border border-black bg-electric-lime px-2 py-0.5 shadow-comic-sm">
-							<span className="font-bold font-body text-[9px] text-black uppercase tracking-widest">
+							<span className="font-body font-bold text-[9px] text-black uppercase tracking-widest">
 								{tiebreakerReason}
 							</span>
 						</div>
@@ -933,7 +931,7 @@ function PodiumSection({
 				>
 					<span
 						className={clsx(
-							"absolute bottom-1 left-1/2 -translate-x-1/2 select-none font-black font-body italic tracking-tighter tabular-nums",
+							"absolute bottom-1 left-1/2 -translate-x-1/2 select-none font-black font-body italic tabular-nums tracking-tighter",
 							rank === 3 ? "-skew-x-1" : "skew-x-1",
 							cfg.rankSize,
 							cfg.rankColor,
@@ -962,11 +960,7 @@ function PodiumSection({
 				tiebreakerReason={secondTiebreaker}
 			/>
 			<PodiumColumn entry={first} rank={1} />
-			<PodiumColumn
-				entry={third}
-				rank={3}
-				tiebreakerReason={thirdTiebreaker}
-			/>
+			<PodiumColumn entry={third} rank={3} tiebreakerReason={thirdTiebreaker} />
 		</div>
 	);
 }
@@ -1037,7 +1031,7 @@ function LeaderboardRow({
 							{entry.name}
 						</Link>
 						{isCurrentUser && (
-							<span className="shrink-0 rounded border border-black bg-electric-lime px-1.5 py-0.5 font-bold font-body text-[9px] text-ink uppercase tracking-widest">
+							<span className="shrink-0 rounded border border-black bg-electric-lime px-1.5 py-0.5 font-body font-bold text-[9px] text-ink uppercase tracking-widest">
 								{t("you")}
 							</span>
 						)}
@@ -1053,10 +1047,10 @@ function LeaderboardRow({
 			</div>
 
 			<div className="shrink-0 text-right">
-				<span className="block font-black font-body text-ink text-lg leading-none tabular-nums">
+				<span className="block font-black font-body text-ink text-lg tabular-nums leading-none">
 					{entry.totalPoints}
 				</span>
-				<span className="block font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+				<span className="block font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 					{t("pts")}
 				</span>
 			</div>

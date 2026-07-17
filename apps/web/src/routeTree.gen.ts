@@ -20,6 +20,7 @@ import { Route as LangLoginRouteImport } from './routes/$lang/login'
 import { Route as LangLeaderboardRouteImport } from './routes/$lang/leaderboard'
 import { Route as LangLandingRouteImport } from './routes/$lang/landing'
 import { Route as LangDashboardRouteImport } from './routes/$lang/dashboard'
+import { Route as LangAdminRouteImport } from './routes/$lang/admin'
 import { Route as Lang_layoutRouteImport } from './routes/$lang/__layout'
 import { Route as LangTournamentsIndexRouteImport } from './routes/$lang/tournaments/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
@@ -91,6 +92,11 @@ const LangDashboardRoute = LangDashboardRouteImport.update({
   path: '/$lang/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangAdminRoute = LangAdminRouteImport.update({
+  id: '/$lang/admin',
+  path: '/$lang/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Lang_layoutRoute = Lang_layoutRouteImport.update({
   id: '/$lang/__layout',
   path: '/$lang',
@@ -127,29 +133,29 @@ const LangTeamsTeamIdRoute = LangTeamsTeamIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const LangAdminUsersRoute = LangAdminUsersRouteImport.update({
-  id: '/$lang/admin/users',
-  path: '/$lang/admin/users',
-  getParentRoute: () => rootRouteImport,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminTournamentsRoute = LangAdminTournamentsRouteImport.update({
-  id: '/$lang/admin/tournaments',
-  path: '/$lang/admin/tournaments',
-  getParentRoute: () => rootRouteImport,
+  id: '/tournaments',
+  path: '/tournaments',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminTeamsRoute = LangAdminTeamsRouteImport.update({
-  id: '/$lang/admin/teams',
-  path: '/$lang/admin/teams',
-  getParentRoute: () => rootRouteImport,
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminMigrateLogosRoute = LangAdminMigrateLogosRouteImport.update({
-  id: '/$lang/admin/migrate-logos',
-  path: '/$lang/admin/migrate-logos',
-  getParentRoute: () => rootRouteImport,
+  id: '/migrate-logos',
+  path: '/migrate-logos',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminCompensationsRoute = LangAdminCompensationsRouteImport.update({
-  id: '/$lang/admin/compensations',
-  path: '/$lang/admin/compensations',
-  getParentRoute: () => rootRouteImport,
+  id: '/compensations',
+  path: '/compensations',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminTournamentsIndexRoute =
   LangAdminTournamentsIndexRouteImport.update({
@@ -158,9 +164,9 @@ const LangAdminTournamentsIndexRoute =
     getParentRoute: () => LangAdminTournamentsRoute,
   } as any)
 const LangAdminLiveMatchIdRoute = LangAdminLiveMatchIdRouteImport.update({
-  id: '/$lang/admin/live/$matchId',
-  path: '/$lang/admin/live/$matchId',
-  getParentRoute: () => rootRouteImport,
+  id: '/live/$matchId',
+  path: '/live/$matchId',
+  getParentRoute: () => LangAdminRoute,
 } as any)
 const LangAdminTournamentsTournamentIdMatchesRoute =
   LangAdminTournamentsTournamentIdMatchesRouteImport.update({
@@ -172,6 +178,7 @@ const LangAdminTournamentsTournamentIdMatchesRoute =
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/$lang': typeof Lang_layoutRoute
+  '/$lang/admin': typeof LangAdminRouteWithChildren
   '/$lang/dashboard': typeof LangDashboardRoute
   '/$lang/landing': typeof LangLandingRoute
   '/$lang/leaderboard': typeof LangLeaderboardRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/$lang': typeof LangIndexRoute
+  '/$lang/admin': typeof LangAdminRouteWithChildren
   '/$lang/dashboard': typeof LangDashboardRoute
   '/$lang/landing': typeof LangLandingRoute
   '/$lang/leaderboard': typeof LangLeaderboardRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
   '/$lang/__layout': typeof Lang_layoutRoute
+  '/$lang/admin': typeof LangAdminRouteWithChildren
   '/$lang/dashboard': typeof LangDashboardRoute
   '/$lang/landing': typeof LangLandingRoute
   '/$lang/leaderboard': typeof LangLeaderboardRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/$'
     | '/$lang'
+    | '/$lang/admin'
     | '/$lang/dashboard'
     | '/$lang/landing'
     | '/$lang/leaderboard'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
   to:
     | '/$'
     | '/$lang'
+    | '/$lang/admin'
     | '/$lang/dashboard'
     | '/$lang/landing'
     | '/$lang/leaderboard'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/$'
     | '/$lang/__layout'
+    | '/$lang/admin'
     | '/$lang/dashboard'
     | '/$lang/landing'
     | '/$lang/leaderboard'
@@ -338,6 +350,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   Lang_layoutRoute: typeof Lang_layoutRoute
+  LangAdminRoute: typeof LangAdminRouteWithChildren
   LangDashboardRoute: typeof LangDashboardRoute
   LangLandingRoute: typeof LangLandingRoute
   LangLeaderboardRoute: typeof LangLeaderboardRoute
@@ -348,16 +361,10 @@ export interface RootRouteChildren {
   LangTermsRoute: typeof LangTermsRoute
   LangTournamentsRoute: typeof LangTournamentsRouteWithChildren
   LangIndexRoute: typeof LangIndexRoute
-  LangAdminCompensationsRoute: typeof LangAdminCompensationsRoute
-  LangAdminMigrateLogosRoute: typeof LangAdminMigrateLogosRoute
-  LangAdminTeamsRoute: typeof LangAdminTeamsRoute
-  LangAdminTournamentsRoute: typeof LangAdminTournamentsRouteWithChildren
-  LangAdminUsersRoute: typeof LangAdminUsersRoute
   LangTeamsTeamIdRoute: typeof LangTeamsTeamIdRoute
   LangUsersUserIdRoute: typeof LangUsersUserIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
-  LangAdminLiveMatchIdRoute: typeof LangAdminLiveMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -439,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/admin': {
+      id: '/$lang/admin'
+      path: '/$lang/admin'
+      fullPath: '/$lang/admin'
+      preLoaderRoute: typeof LangAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$lang/__layout': {
       id: '/$lang/__layout'
       path: '/$lang'
@@ -490,38 +504,38 @@ declare module '@tanstack/react-router' {
     }
     '/$lang/admin/users': {
       id: '/$lang/admin/users'
-      path: '/$lang/admin/users'
+      path: '/users'
       fullPath: '/$lang/admin/users'
       preLoaderRoute: typeof LangAdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/tournaments': {
       id: '/$lang/admin/tournaments'
-      path: '/$lang/admin/tournaments'
+      path: '/tournaments'
       fullPath: '/$lang/admin/tournaments'
       preLoaderRoute: typeof LangAdminTournamentsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/teams': {
       id: '/$lang/admin/teams'
-      path: '/$lang/admin/teams'
+      path: '/teams'
       fullPath: '/$lang/admin/teams'
       preLoaderRoute: typeof LangAdminTeamsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/migrate-logos': {
       id: '/$lang/admin/migrate-logos'
-      path: '/$lang/admin/migrate-logos'
+      path: '/migrate-logos'
       fullPath: '/$lang/admin/migrate-logos'
       preLoaderRoute: typeof LangAdminMigrateLogosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/compensations': {
       id: '/$lang/admin/compensations'
-      path: '/$lang/admin/compensations'
+      path: '/compensations'
       fullPath: '/$lang/admin/compensations'
       preLoaderRoute: typeof LangAdminCompensationsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/tournaments/': {
       id: '/$lang/admin/tournaments/'
@@ -532,10 +546,10 @@ declare module '@tanstack/react-router' {
     }
     '/$lang/admin/live/$matchId': {
       id: '/$lang/admin/live/$matchId'
-      path: '/$lang/admin/live/$matchId'
+      path: '/live/$matchId'
       fullPath: '/$lang/admin/live/$matchId'
       preLoaderRoute: typeof LangAdminLiveMatchIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof LangAdminRoute
     }
     '/$lang/admin/tournaments/$tournamentId/matches': {
       id: '/$lang/admin/tournaments/$tournamentId/matches'
@@ -546,20 +560,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface LangTournamentsRouteChildren {
-  LangTournamentsSlugRoute: typeof LangTournamentsSlugRoute
-  LangTournamentsIndexRoute: typeof LangTournamentsIndexRoute
-}
-
-const LangTournamentsRouteChildren: LangTournamentsRouteChildren = {
-  LangTournamentsSlugRoute: LangTournamentsSlugRoute,
-  LangTournamentsIndexRoute: LangTournamentsIndexRoute,
-}
-
-const LangTournamentsRouteWithChildren = LangTournamentsRoute._addFileChildren(
-  LangTournamentsRouteChildren,
-)
 
 interface LangAdminTournamentsRouteChildren {
   LangAdminTournamentsIndexRoute: typeof LangAdminTournamentsIndexRoute
@@ -575,9 +575,46 @@ const LangAdminTournamentsRouteChildren: LangAdminTournamentsRouteChildren = {
 const LangAdminTournamentsRouteWithChildren =
   LangAdminTournamentsRoute._addFileChildren(LangAdminTournamentsRouteChildren)
 
+interface LangAdminRouteChildren {
+  LangAdminCompensationsRoute: typeof LangAdminCompensationsRoute
+  LangAdminMigrateLogosRoute: typeof LangAdminMigrateLogosRoute
+  LangAdminTeamsRoute: typeof LangAdminTeamsRoute
+  LangAdminTournamentsRoute: typeof LangAdminTournamentsRouteWithChildren
+  LangAdminUsersRoute: typeof LangAdminUsersRoute
+  LangAdminLiveMatchIdRoute: typeof LangAdminLiveMatchIdRoute
+}
+
+const LangAdminRouteChildren: LangAdminRouteChildren = {
+  LangAdminCompensationsRoute: LangAdminCompensationsRoute,
+  LangAdminMigrateLogosRoute: LangAdminMigrateLogosRoute,
+  LangAdminTeamsRoute: LangAdminTeamsRoute,
+  LangAdminTournamentsRoute: LangAdminTournamentsRouteWithChildren,
+  LangAdminUsersRoute: LangAdminUsersRoute,
+  LangAdminLiveMatchIdRoute: LangAdminLiveMatchIdRoute,
+}
+
+const LangAdminRouteWithChildren = LangAdminRoute._addFileChildren(
+  LangAdminRouteChildren,
+)
+
+interface LangTournamentsRouteChildren {
+  LangTournamentsSlugRoute: typeof LangTournamentsSlugRoute
+  LangTournamentsIndexRoute: typeof LangTournamentsIndexRoute
+}
+
+const LangTournamentsRouteChildren: LangTournamentsRouteChildren = {
+  LangTournamentsSlugRoute: LangTournamentsSlugRoute,
+  LangTournamentsIndexRoute: LangTournamentsIndexRoute,
+}
+
+const LangTournamentsRouteWithChildren = LangTournamentsRoute._addFileChildren(
+  LangTournamentsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   Lang_layoutRoute: Lang_layoutRoute,
+  LangAdminRoute: LangAdminRouteWithChildren,
   LangDashboardRoute: LangDashboardRoute,
   LangLandingRoute: LangLandingRoute,
   LangLeaderboardRoute: LangLeaderboardRoute,
@@ -588,16 +625,10 @@ const rootRouteChildren: RootRouteChildren = {
   LangTermsRoute: LangTermsRoute,
   LangTournamentsRoute: LangTournamentsRouteWithChildren,
   LangIndexRoute: LangIndexRoute,
-  LangAdminCompensationsRoute: LangAdminCompensationsRoute,
-  LangAdminMigrateLogosRoute: LangAdminMigrateLogosRoute,
-  LangAdminTeamsRoute: LangAdminTeamsRoute,
-  LangAdminTournamentsRoute: LangAdminTournamentsRouteWithChildren,
-  LangAdminUsersRoute: LangAdminUsersRoute,
   LangTeamsTeamIdRoute: LangTeamsTeamIdRoute,
   LangUsersUserIdRoute: LangUsersUserIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
-  LangAdminLiveMatchIdRoute: LangAdminLiveMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

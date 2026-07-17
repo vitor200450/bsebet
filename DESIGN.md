@@ -6,13 +6,13 @@
 
 ## 1. Visual Theme & Atmosphere
 
-BSEN Pickems is a public esports prediction product, not a gambling-adjacent experience. The visual system should feel like a trusted competitive broadcast companion: loud enough for match-day hype, structured enough for news credibility, and clear enough for fast mobile decisions.
+BSEN Pickems is a public international esports prediction product, not a gambling-adjacent experience. The visual system should feel like a trusted competitive broadcast companion: loud enough for match-day hype, structured enough for news credibility, and clear enough for fast mobile decisions across Portuguese and English locales.
 
 Direction merges Neo Brutalism (thick borders, hard offset shadows, mechanical press) with cues from [event.supercell.com/brawlstars](https://event.supercell.com/brawlstars/pt): deep tactical surfaces, electric lime CTAs, championship red emphasis, bold monospace display type, and sharp rectangular geometry.
 
 ### Scene
 
-A young Brawl Stars esports fan checks a phone between social posts and livestream moments on match day, often in bright ambient light, needing to make a quick team pick with confidence. The UI favors high-contrast light-first product surfaces with selective dark broadcast panels for dramatic moments.
+A young Brawl Stars esports fan anywhere in the world checks a phone between social posts and livestream moments on match day, often in bright ambient light, needing to make a quick team pick with confidence. The UI favors high-contrast light-first product surfaces with selective dark broadcast panels for dramatic moments — locale-aware copy (pt / en) without changing the visual language.
 
 ### Design Keywords
 
@@ -176,10 +176,10 @@ Reference implementations: `apps/web/src/routes/$lang/admin/tournaments/index.ts
 
 ### Copy Rules
 
-- Primary public vocabulary: **prediction**, **pick**, **pick'em**, **palpite**, **escolha**, **placar**, **ranking**, **leaderboard**.
+- Primary public vocabulary: **prediction**, **pick**, **pick'em**, **palpite**, **escolha**, **placar**, **ranking**, **leaderboard** — use locale-appropriate terms via i18n, never hardcoded strings.
 - Avoid financial or gambling-coded vocabulary across UI, docs, translation keys, labels, routes when public-facing, and marketing copy.
 - Do not use em dashes in UI copy.
-- Keep Portuguese energetic and natural, not literal English.
+- Portuguese (pt): keep energetic and natural, not literal English. English (en): direct, sporty broadcast tone — same energy, not a word-for-word translation.
 
 ## 4. Layout & Geometry
 
@@ -280,7 +280,7 @@ Before shipping any public-facing screen, check:
 3. No manipulative urgency. Lock times are informational, not pressure tactics.
 4. All colored surfaces have explicit readable text color.
 5. Portuguese and English translations are both present.
-6. The experience reads as community predictions connected to esports news.
+6. The experience reads as community predictions for international Brawl Stars esports fans.
 
 ## 9. Anti-Patterns
 

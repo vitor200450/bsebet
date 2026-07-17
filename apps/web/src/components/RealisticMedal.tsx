@@ -315,8 +315,10 @@ export function TrophyCase({ medals, className }: TrophyCaseProps) {
 					{t("medals.trophyCase")}
 				</h2>
 				<div className="ml-auto flex items-center gap-1 rounded-full border-2 border-black bg-black px-3 py-1">
-					<span className="font-black font-body text-sm text-white tabular-nums">{medals.length}</span>
-					<span className="font-bold font-body text-[10px] text-white/60 uppercase tracking-widest">
+					<span className="font-black font-body text-sm text-white tabular-nums">
+						{medals.length}
+					</span>
+					<span className="font-body font-bold text-[10px] text-white/60 uppercase tracking-widest">
 						{t("medals.medalCount")}
 					</span>
 				</div>

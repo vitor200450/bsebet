@@ -103,6 +103,13 @@ export function getTeamLogoKey(teamId: number, extension = "png"): string {
 }
 
 /**
+ * Generate a temporary R2 key for a logo uploaded before the team exists / is saved
+ */
+export function getPendingTeamLogoKey(extension = "png"): string {
+	return `teams/pending/${crypto.randomUUID()}/logo.${extension}`;
+}
+
+/**
  * Generate the R2 key for a tournament logo
  */
 export function getTournamentLogoKey(

@@ -19,6 +19,8 @@
 		"adminTeams": "Teams",
 		"adminTournaments": "Tournaments",
 		"adminCompensations": "Compensations",
+		"adminGroupSetup": "Setup",
+		"adminGroupManage": "Manage",
 		"adminLive": "Live",
 		"live": "LIVE",
 		"profile": "Profile",
@@ -37,6 +39,7 @@
 	"actions": {
 		"save": "Save",
 		"cancel": "Cancel",
+		"close": "Close",
 		"confirm": "Confirm",
 		"delete": "Delete",
 		"edit": "Edit",

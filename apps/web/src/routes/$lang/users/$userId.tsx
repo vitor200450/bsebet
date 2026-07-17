@@ -152,15 +152,15 @@ function UserProfilePage() {
 								</div>
 
 								<div className="mt-8 mb-2 -rotate-2 border-[2px] border-black bg-[#ffc700] px-4 py-1 shadow-[2px_2px_0_0_#000]">
-								<p className="font-bold font-body text-black text-xs uppercase tracking-[0.2em]">
-									PLAYER
-								</p>
+									<p className="font-body font-bold text-black text-xs uppercase tracking-[0.2em]">
+										PLAYER
+									</p>
 								</div>
 
 								<h2 className="mt-2 mb-1 w-full skew-x-[-6deg] truncate text-center font-black font-display text-3xl text-black uppercase italic tracking-tighter">
 									{user.nickname ?? user.name}
 								</h2>
-								<p className="mt-2 font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+								<p className="mt-2 font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 									{t("memberSince")} {memberSince}
 								</p>
 							</div>
@@ -198,7 +198,7 @@ function UserProfilePage() {
 									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.totalPoints}
 									</div>
-									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+									<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("totalPoints")}
 									</div>
 								</div>
@@ -216,7 +216,7 @@ function UserProfilePage() {
 										{stats.accuracy}
 										<span className="text-xl">%</span>
 									</div>
-									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+									<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("hitRate")}
 									</div>
 								</div>
@@ -233,7 +233,7 @@ function UserProfilePage() {
 									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.perfectPicks}
 									</div>
-									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+									<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("exactScores")}
 									</div>
 								</div>
@@ -250,7 +250,7 @@ function UserProfilePage() {
 									<div className="mb-1 font-black font-body text-3xl text-white tabular-nums md:text-4xl">
 										{stats.underdogWins}
 									</div>
-									<div className="mt-1 font-bold font-body text-[10px] text-white/80 uppercase tracking-widest">
+									<div className="mt-1 font-body font-bold text-[10px] text-white/80 uppercase tracking-widest">
 										{t("stats.underdogs")}
 									</div>
 								</div>
@@ -267,7 +267,7 @@ function UserProfilePage() {
 									<div className="font-black font-body text-3xl text-ink tabular-nums md:text-4xl">
 										{stats.totalBets}
 									</div>
-									<div className="mt-1 font-bold font-body text-[10px] text-gray-600 uppercase tracking-widest">
+									<div className="mt-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 										{t("totalBets")}
 									</div>
 								</div>

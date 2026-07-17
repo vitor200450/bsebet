@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BettingEmptyState } from "@/components/BettingEmptyState";
 import { useLangLink } from "@/i18n/useLangLink";
 import type { Match, Prediction } from "./bracket/types";
 import { TeamLogo } from "./TeamLogo";
@@ -281,46 +282,34 @@ export function BettingCarousel({
 
 	if (!currentMatch)
 		return (
-			<div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-transparent p-6 text-ink">
-				<div className="relative z-10 w-full max-w-sm">
-					<div className="flex flex-col items-center rounded-lg border-2 border-black bg-white p-8 text-center shadow-comic-md">
-						<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-black bg-tape shadow-comic-sm">
-							<span className="material-symbols-outlined text-2xl text-gray-500">
-								calendar_clock
+			<BettingEmptyState
+				icon="calendar_clock"
+				title={t("empty.title")}
+				titleAccent={t("empty.now")}
+				description={t("empty.noMatches")}
+				action={
+					(Object.keys(predictions).length > 0 || hasUserBets) &&
+					onShowReview ? (
+						<button
+							type="button"
+							onClick={onShowReview}
+							className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-brawl-red py-3 font-black font-display text-white uppercase shadow-comic transition-all hover:shadow-comic-md active:translate-y-0.5 active:shadow-none"
+						>
+							<span className="material-symbols-outlined text-lg">
+								rate_review
 							</span>
+							{t("reviewBets")}
+						</button>
+					) : (
+						<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
+							<span className="material-symbols-outlined text-sm">
+								hourglass_empty
+							</span>
+							{t("empty.waiting")}
 						</div>
-
-						<h2 className="mb-2 font-black font-display text-2xl text-ink uppercase italic">
-							{t("empty.title")}{" "}
-							<span className="text-brawl-red">{t("empty.now")}</span>
-						</h2>
-
-						<p className="mb-6 font-bold font-display text-gray-600 text-sm">
-							{t("empty.noMatches")}
-						</p>
-
-						{(Object.keys(predictions).length > 0 || hasUserBets) &&
-						onShowReview ? (
-							<button
-								onClick={onShowReview}
-								className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-brawl-red py-3 font-black font-display text-white uppercase shadow-comic transition-all hover:shadow-comic-md active:translate-y-0.5 active:shadow-none"
-							>
-								<span className="material-symbols-outlined text-lg">
-									rate_review
-								</span>
-								{t("reviewBets")}
-							</button>
-						) : (
-							<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
-								<span className="material-symbols-outlined text-sm">
-									hourglass_empty
-								</span>
-								{t("empty.waiting")}
-							</div>
-						)}
-					</div>
-				</div>
-			</div>
+					)
+				}
+			/>
 		);
 
 	return (

@@ -1,9 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { AlertCircle, Check, X } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import {
+	AdminFormActions,
+	AdminFormModal,
+} from "@/components/admin/AdminFormModal";
 import { InlineLoader } from "@/components/inline-loader";
 import { deriveMatchFormat } from "@/lib/utils";
 import {
@@ -794,96 +798,100 @@ export function MatchModal({
 		}
 	};
 
-	if (!isOpen) return null;
+	const isBusy = isSubmitting || saveStatus === "saving";
 
 	return (
-		<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-			<div className="zoom-in-95 relative max-h-[90vh] w-full max-w-4xl animate-in overflow-y-auto border-[4px] border-black bg-white shadow-[10px_10px_0px_0px_#000] duration-200">
-				<div className="sticky top-0 z-10 flex items-center justify-between border-black border-b-[4px] bg-[#ccff00] p-3">
-					<div className="flex items-center gap-3">
-						<h2 className="font-black text-black text-lg uppercase italic">
-							{matchToEdit ? t("modal.editMatch") : t("modal.createMatch")}
-						</h2>
-						{/* Auto-save status indicator */}
-						{matchToEdit && (
-							<div className="flex items-center gap-1.5">
-								{saveStatus === "saving" && (
-									<div className="flex items-center gap-1 font-bold text-black/60 text-xs">
-										<InlineLoader size="xs" />
-										<span>{t("modal.saving")}</span>
-									</div>
-								)}
-								{saveStatus === "saved" && (
-									<div className="flex items-center gap-1 font-bold text-green-700 text-xs">
-										<Check className="h-3 w-3" />
-										<span>{t("modal.saved")}</span>
-									</div>
-								)}
-								{saveStatus === "error" && (
-									<div className="flex items-center gap-1 font-bold text-red-600 text-xs">
-										<AlertCircle className="h-3 w-3" />
-										<span>{t("modal.errorStatus")}</span>
-									</div>
-								)}
+		<AdminFormModal
+			isOpen={isOpen}
+			onClose={handleClose}
+			title={matchToEdit ? t("modal.editMatch") : t("modal.createMatch")}
+			onSubmit={handleSubmit}
+			size="lg"
+			formId="match-form"
+			zIndexClassName="z-[200]"
+			headerVariant="lime"
+			closeDisabled={isBusy}
+			titleExtra={
+				matchToEdit ? (
+					<div className="flex items-center gap-1.5">
+						{saveStatus === "saving" && (
+							<div className="flex items-center gap-1 font-body font-bold text-black/60 text-xs uppercase tracking-widest">
+								<InlineLoader size="xs" />
+								<span>{t("modal.saving")}</span>
+							</div>
+						)}
+						{saveStatus === "saved" && (
+							<div className="flex items-center gap-1 font-body font-bold text-green-700 text-xs uppercase tracking-widest">
+								<Check className="h-3 w-3" />
+								<span>{t("modal.saved")}</span>
+							</div>
+						)}
+						{saveStatus === "error" && (
+							<div className="flex items-center gap-1 font-body font-bold text-brawl-red text-xs uppercase tracking-widest">
+								<AlertCircle className="h-3 w-3" />
+								<span>{t("modal.errorStatus")}</span>
 							</div>
 						)}
 					</div>
-					<button
-						onClick={handleClose}
-						disabled={isSubmitting || saveStatus === "saving"}
-						className="bg-black p-1 text-white transition-colors hover:bg-[#ff2e2e] disabled:opacity-50"
-					>
-						{isSubmitting || saveStatus === "saving" ? (
-							<InlineLoader size="sm" />
-						) : (
-							<X className="h-4 w-4" strokeWidth={3} />
-						)}
-					</button>
-				</div>
-
-				<form onSubmit={handleSubmit} className="space-y-6 p-6 pb-10">
-					{/* 1. RESULTS & SCORES - MOVED TO TOP FOR VISIBILITY */}
-					{matchToEdit && (
-						<div className="space-y-4 border-[3px] border-black bg-[#ccff00]/5 p-5 shadow-[4px_4px_0px_0px_#000]">
-							<div className="flex items-center justify-between">
-								<h3 className="flex items-center gap-2 font-black text-black text-sm uppercase italic">
-									<span className="h-2.5 w-2.5 animate-pulse rounded-full bg-black" />{" "}
-									{t("modal.resultScores")}
-								</h3>
-								<div className="flex items-center gap-2">
-									<button
-										type="button"
-										onClick={() =>
-											setFormData((prev) => ({
-												...prev,
-												resultType: prev.resultType === "wo" ? "normal" : "wo",
-												status:
-													prev.resultType === "wo" ? prev.status : "finished",
-												isBettingEnabled:
-													prev.resultType === "wo"
-														? prev.isBettingEnabled
-														: false,
-											}))
-										}
-										className={clsx(
-											"border-2 border-black px-2 py-0.5 font-bold font-body text-[10px] uppercase tracking-widest transition-colors",
-											formData.resultType === "wo"
-												? "bg-[#ff2e2e] text-white"
-												: "bg-white text-black hover:bg-gray-100",
-										)}
-									>
-										{t("modal.wo")}
-									</button>
-									<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
-										{t("modal.statusLabel")}
-									</label>
-									<select
+				) : null
+			}
+			footer={
+				<AdminFormActions
+					onCancel={handleClose}
+					cancelLabel={t("common:actions.cancel")}
+					submitLabel={matchToEdit ? t("modal.done") : t("modal.createMatch")}
+					isSubmitting={isBusy}
+					hideCancel
+					submitIcon={matchToEdit ? <Check className="h-5 w-5" /> : undefined}
+					submitClassName={
+						matchToEdit
+							? "bg-white text-ink hover:bg-gray-100"
+							: "bg-black text-white hover:bg-electric-lime hover:text-ink"
+					}
+				/>
+			}
+		>
+			<div className="space-y-6">
+				{/* 1. RESULTS & SCORES - MOVED TO TOP FOR VISIBILITY */}
+				{matchToEdit && (
+					<div className="space-y-4 border-[3px] border-black bg-[#ccff00]/5 p-5 shadow-[4px_4px_0px_0px_#000]">
+						<div className="flex items-center justify-between">
+							<h3 className="flex items-center gap-2 font-black text-black text-sm uppercase italic">
+								<span className="h-2.5 w-2.5 animate-pulse rounded-full bg-black" />{" "}
+								{t("modal.resultScores")}
+							</h3>
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={() =>
+										setFormData((prev) => ({
+											...prev,
+											resultType: prev.resultType === "wo" ? "normal" : "wo",
+											status:
+												prev.resultType === "wo" ? prev.status : "finished",
+											isBettingEnabled:
+												prev.resultType === "wo"
+													? prev.isBettingEnabled
+													: false,
+										}))
+									}
+									className={clsx(
+										"border-2 border-black px-2 py-0.5 font-body font-bold text-[10px] uppercase tracking-widest transition-colors",
+										formData.resultType === "wo"
+											? "bg-[#ff2e2e] text-white"
+											: "bg-white text-black hover:bg-gray-100",
+									)}
+								>
+									{t("modal.wo")}
+								</button>
+								<label className="font-body font-bold text-[10px] text-black uppercase tracking-widest">
+									{t("modal.statusLabel")}
+								</label>
+								<div className="w-[140px]">
+									<CustomSelect
 										value={formData.status}
-										onChange={(e) => {
-											const status = e.target.value as
-												| "scheduled"
-												| "live"
-												| "finished";
+										onChange={(val) => {
+											const status = val as "scheduled" | "live" | "finished";
 											setFormData((prev) => ({
 												...prev,
 												status,
@@ -895,694 +903,667 @@ export function MatchModal({
 													status !== "finished" ? "normal" : prev.resultType,
 											}));
 										}}
-										className="border-2 border-black bg-black px-2 py-0.5 font-black font-display text-[#ccff00] text-[10px] uppercase focus:outline-none"
-									>
-										<option value="scheduled">
-											{t("modal.statusScheduled")}
-										</option>
-										<option value="live">{t("modal.statusLive")}</option>
-										<option value="finished">
-											{t("modal.statusFinished")}
-										</option>
-									</select>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-2 gap-8">
-								{/* Score A */}
-								<div className="space-y-1">
-									<div className="mb-1 flex items-center gap-2">
-										<div className="h-3 w-3 rounded-full border border-black bg-brawl-blue shadow-[1px_1px_0px_0px_#000]" />
-										<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
-											{matchToEdit?.teamA?.name || t("modal.teamA")}
-										</label>
-										{formData.winnerId === resolvedTeamAId && (
-											<span className="ml-auto font-bold font-body text-[9px] text-green-600 uppercase tracking-widest">
-												{t("modal.winnerBadge")}
-											</span>
-										)}
-									</div>
-									<input
-										type="number"
-										min="0"
-										value={formData.scoreA}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												scoreA: Number(e.target.value),
-											})
-										}
-										className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-									/>
-									{matchToEdit?.tournament?.format && (
-										<p className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
-											{t("modal.max")}{" "}
-											{Math.ceil(
-												(matchToEdit.tournament.format
-													.toLowerCase()
-													.includes("bo3")
-													? 3
-													: matchToEdit.tournament.format
-																.toLowerCase()
-																.includes("bo7")
-														? 7
-														: 5) / 2,
-											)}{" "}
-											{t("modal.wins")}
-										</p>
-									)}
-								</div>
-
-								{/* Score B */}
-								<div className="space-y-1">
-									<div className="mb-1 flex items-center gap-2">
-										<div className="h-3 w-3 rounded-full border border-black bg-brawl-red shadow-[1px_1px_0px_0px_#000]" />
-										<label className="font-bold font-body text-[10px] text-black uppercase tracking-widest">
-											{matchToEdit?.teamB?.name || t("modal.teamB")}
-										</label>
-										{formData.winnerId === resolvedTeamBId && (
-											<span className="ml-auto font-bold font-body text-[9px] text-green-600 uppercase tracking-widest">
-												{t("modal.winnerBadge")}
-											</span>
-										)}
-									</div>
-									<input
-										type="number"
-										min="0"
-										value={formData.scoreB}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												scoreB: Number(e.target.value),
-											})
-										}
-										className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-									/>
-									{matchToEdit?.tournament?.format && (
-										<p className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
-											{t("modal.max")}{" "}
-											{Math.ceil(
-												(matchToEdit.tournament.format
-													.toLowerCase()
-													.includes("bo3")
-													? 3
-													: matchToEdit.tournament.format
-																.toLowerCase()
-																.includes("bo7")
-														? 7
-														: 5) / 2,
-											)}{" "}
-											{t("modal.wins")}
-										</p>
-									)}
-								</div>
-							</div>
-
-							{formData.status === "finished" && (
-								<div className="slide-in-from-top-2 animate-in pt-2 duration-300">
-									<label className="mb-2 ml-1 block font-bold font-body text-[10px] text-black uppercase tracking-widest italic">
-										{t("modal.autoWinner")}
-									</label>
-									<div className="grid grid-cols-2 gap-3">
-										<button
-											type="button"
-											onClick={() =>
-												setFormData({
-													...formData,
-													winnerId: resolvedTeamAId,
-												})
-											}
-											className={clsx(
-												"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
-												formData.winnerId === resolvedTeamAId
-													? "-translate-y-1 bg-brawl-blue text-white shadow-[4px_4px_0px_0px_#000]"
-													: "bg-white text-black hover:bg-gray-50",
-											)}
-											disabled={!resolvedTeamAId}
-										>
-											{formData.winnerId === resolvedTeamAId && (
-												<Check className="h-4 w-4" />
-											)}
-											{matchToEdit?.teamA?.name || t("modal.teamA")}
-										</button>
-										<button
-											type="button"
-											onClick={() =>
-												setFormData({
-													...formData,
-													winnerId: resolvedTeamBId,
-												})
-											}
-											className={clsx(
-												"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
-												formData.winnerId === resolvedTeamBId
-													? "-translate-y-1 bg-brawl-red text-white shadow-[4px_4px_0px_0px_#000]"
-													: "bg-white text-black hover:bg-gray-50",
-											)}
-											disabled={!resolvedTeamBId}
-										>
-											{formData.winnerId === resolvedTeamBId && (
-												<Check className="h-4 w-4" />
-											)}
-											{matchToEdit?.teamB?.name || t("modal.teamB")}
-										</button>
-									</div>
-									{canAutoResolveOneSidedWalkover && (
-										<p className="mt-3 flex items-center gap-1 font-bold font-body text-[9px] text-blue-700 uppercase tracking-widest">
-											<AlertCircle className="h-3 w-3" />
-											{t("modal.woDescription")}
-										</p>
-									)}
-									{canAutoResolveOneSidedWalkover && formData.winnerId && (
-										<button
-											type="button"
-											onClick={() =>
-												setFormData({
-													...formData,
-													winnerId: null,
-													scoreA: 0,
-													scoreB: 0,
-												})
-											}
-											className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-yellow-300"
-										>
-											{t("modal.clearWinner")}
-										</button>
-									)}
-									{canShowRefreshWalkoverWinner && (
-										<button
-											type="button"
-											onClick={handleRefreshWalkoverWinner}
-											disabled={
-												!canRefreshWalkoverWinner || isRefreshingWalkoverWinner
-											}
-											className="mt-2 w-full border-2 border-black bg-blue-100 px-2 py-2 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-blue-200 disabled:opacity-60"
-										>
-											{isRefreshingWalkoverWinner ? (
-												<span className="inline-flex items-center gap-1">
-													<InlineLoader size="xs" />
-													{t("modal.updating")}
-												</span>
-											) : (
-												t("modal.refreshWoWinner")
-											)}
-										</button>
-									)}
-									{canShowRefreshWalkoverWinner &&
-										!canRefreshWalkoverWinner && (
-											<p className="mt-1 text-center font-bold font-body text-[9px] text-gray-600 uppercase tracking-widest">
-												{t("modal.refreshInfo")}
-											</p>
-										)}
-									{!formData.winnerId && !canAutoResolveOneSidedWalkover ? (
-										<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
-											<p className="flex items-center gap-2 font-bold font-body text-[10px] text-red-600 uppercase tracking-widest">
-												<AlertCircle className="h-4 w-4" />
-												{t("modal.errorNoWinner")}
-											</p>
-											<p className="mt-1 text-[9px] text-red-600">
-												{t("modal.errorNoWinnerDetail")}
-											</p>
-										</div>
-									) : (
-										<p className="mt-3 flex items-center gap-1 font-bold font-body text-[9px] text-red-500 uppercase tracking-widest">
-											<AlertCircle className="h-3 w-3" />
-											{t("modal.finalizeWarning")}
-										</p>
-									)}
-								</div>
-							)}
-						</div>
-					)}
-
-					<div className="h-[2px] w-full bg-black/10" />
-					{/* Bracket Configuration (Added) - Only for Non-Group Matches */}
-					{formData.bracketSide !== "groups" && (
-						<div className="space-y-3 border-2 border-black bg-gray-100 p-4">
-							<h3 className="flex items-center gap-2 font-bold text-black text-xs uppercase">
-								<span className="h-2 w-2 rounded-full bg-black" />{" "}
-								{t("modal.bracketPlacement")}
-							</h3>
-							<div
-								className={clsx(
-									"grid gap-3",
-									stages.find((s) => s.id === formData.stageId)?.type ===
-										"Double Elimination"
-										? "grid-cols-3"
-										: "grid-cols-2",
-								)}
-							>
-								{stages.find((s) => s.id === formData.stageId)?.type ===
-									"Double Elimination" && (
-									<CustomSelect
-										label={t("modal.side")}
-										value={formData.bracketSide}
-										onChange={(val) =>
-											setFormData({ ...formData, bracketSide: val })
-										}
+										searchable={false}
+										size="compact"
 										options={[
-											{ value: "upper", label: t("modal.upperBracket") },
-											{ value: "lower", label: t("modal.lowerBracket") },
-											{ value: "grand_final", label: t("modal.grandFinal") },
+											{
+												value: "scheduled",
+												label: t("modal.statusScheduled"),
+											},
+											{ value: "live", label: t("modal.statusLive") },
+											{
+												value: "finished",
+												label: t("modal.statusFinished"),
+											},
 										]}
 									/>
-								)}
-								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("modal.roundNumber")}
-									</label>
-									<input
-										type="number"
-										value={formData.roundIndex}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												roundIndex: Number(e.target.value),
-											})
-										}
-										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-									/>
-									<p className="mt-1 font-bold font-body text-[9px] text-gray-500 leading-tight tracking-widest">
-										{t("modal.roundHint")}
-									</p>
-								</div>
-								<div>
-									<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-										{t("modal.displayOrder")}
-									</label>
-									<input
-										type="number"
-										value={formData.displayOrder}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												displayOrder: Number(e.target.value),
-											})
-										}
-										className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-									/>
-									<p className="mt-1 font-bold font-body text-[9px] text-gray-500 leading-tight tracking-widest">
-										{t("modal.verticalPosHint")}
-									</p>
 								</div>
 							</div>
 						</div>
-					)}
-					<div className="grid grid-cols-2 gap-4">
-						{/* Stage Selection */}
-						<CustomSelect
-							label={t("modal.stage")}
-							value={formData.stageId}
-							onChange={(val) =>
-								setFormData({ ...formData, stageId: val, label: val })
-							}
-							options={stages.map((s) => ({ value: s.id, label: s.name }))}
-						/>
 
-						{/* Match Day Selection - Optional but recommended */}
-						<CustomSelect
-							label={t("modal.matchDay")}
-							value={formData.matchDayId ? String(formData.matchDayId) : ""}
-							onChange={(val) => {
-								const dayId = Number(val);
-								const day = matchDays.find((d) => d.id === dayId);
-								let dateStr = "";
-								if (day) {
-									const dayDate = new Date(day.date);
-									const year = dayDate.getFullYear();
-									const month = String(dayDate.getMonth() + 1).padStart(2, "0");
-									const d = String(dayDate.getDate()).padStart(2, "0");
-									dateStr = `${year}-${month}-${d}`;
-								}
-								setFormData({
-									...formData,
-									matchDayId: val ? dayId : null,
-									date: day ? dateStr : formData.date,
-								});
-							}}
-							options={[
-								{ value: "", label: t("modal.selectDay") },
-								...matchDays.map((day) => ({
-									value: String(day.id),
-									label: `${day.label} (${new Date(day.date).toLocaleDateString(
-										[],
-										{
-											month: "short",
-											day: "numeric",
-										},
-									)})`,
-								})),
-							]}
-						/>
-					</div>
+						<div className="grid grid-cols-2 gap-8">
+							{/* Score A */}
+							<div className="space-y-1">
+								<div className="mb-1 flex items-center gap-2">
+									<div className="h-3 w-3 rounded-full border border-black bg-brawl-blue shadow-[1px_1px_0px_0px_#000]" />
+									<label className="font-body font-bold text-[10px] text-black uppercase tracking-widest">
+										{matchToEdit?.teamA?.name || t("modal.teamA")}
+									</label>
+									{formData.winnerId === resolvedTeamAId && (
+										<span className="ml-auto font-body font-bold text-[9px] text-green-600 uppercase tracking-widest">
+											{t("modal.winnerBadge")}
+										</span>
+									)}
+								</div>
+								<input
+									type="number"
+									min="0"
+									value={formData.scoreA}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											scoreA: Number(e.target.value),
+										})
+									}
+									className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+								/>
+								{matchToEdit?.tournament?.format && (
+									<p className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
+										{t("modal.max")}{" "}
+										{Math.ceil(
+											(matchToEdit.tournament.format
+												.toLowerCase()
+												.includes("bo3")
+												? 3
+												: matchToEdit.tournament.format
+															.toLowerCase()
+															.includes("bo7")
+													? 7
+													: 5) / 2,
+										)}{" "}
+										{t("modal.wins")}
+									</p>
+								)}
+							</div>
 
-					<div>
-						<label className="mb-1 ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-							{t("modal.matchName")}
-						</label>
-						<input
-							type="text"
-							placeholder={t("modal.matchNamePlaceholder")}
-							value={formData.name}
-							onChange={(e) =>
-								setFormData({ ...formData, name: e.target.value })
-							}
-							className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-						/>
-					</div>
-
-					<div className="flex items-center justify-between border-2 border-black bg-gray-50 p-3">
-						<div className="flex flex-col">
-							<label className="font-bold font-body text-black text-xs uppercase tracking-widest">
-								{t("modal.enableBetting")}
-							</label>
-							<p className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
-								{t("modal.enableBettingDesc")}
-							</p>
+							{/* Score B */}
+							<div className="space-y-1">
+								<div className="mb-1 flex items-center gap-2">
+									<div className="h-3 w-3 rounded-full border border-black bg-brawl-red shadow-[1px_1px_0px_0px_#000]" />
+									<label className="font-body font-bold text-[10px] text-black uppercase tracking-widest">
+										{matchToEdit?.teamB?.name || t("modal.teamB")}
+									</label>
+									{formData.winnerId === resolvedTeamBId && (
+										<span className="ml-auto font-body font-bold text-[9px] text-green-600 uppercase tracking-widest">
+											{t("modal.winnerBadge")}
+										</span>
+									)}
+								</div>
+								<input
+									type="number"
+									min="0"
+									value={formData.scoreB}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											scoreB: Number(e.target.value),
+										})
+									}
+									className="w-full border-[3px] border-black bg-white p-3 font-black text-3xl text-black tabular-nums shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+								/>
+								{matchToEdit?.tournament?.format && (
+									<p className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
+										{t("modal.max")}{" "}
+										{Math.ceil(
+											(matchToEdit.tournament.format
+												.toLowerCase()
+												.includes("bo3")
+												? 3
+												: matchToEdit.tournament.format
+															.toLowerCase()
+															.includes("bo7")
+													? 7
+													: 5) / 2,
+										)}{" "}
+										{t("modal.wins")}
+									</p>
+								)}
+							</div>
 						</div>
-						<button
-							type="button"
-							onClick={() =>
-								setFormData({
-									...formData,
-									isBettingEnabled: !formData.isBettingEnabled,
-								})
-							}
+
+						{formData.status === "finished" && (
+							<div className="slide-in-from-top-2 animate-in pt-2 duration-300">
+								<label className="mb-2 ml-1 block font-body font-bold text-[10px] text-black uppercase italic tracking-widest">
+									{t("modal.autoWinner")}
+								</label>
+								<div className="grid grid-cols-2 gap-3">
+									<button
+										type="button"
+										onClick={() =>
+											setFormData({
+												...formData,
+												winnerId: resolvedTeamAId,
+											})
+										}
+										className={clsx(
+											"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
+											formData.winnerId === resolvedTeamAId
+												? "-translate-y-1 bg-brawl-blue text-white shadow-[4px_4px_0px_0px_#000]"
+												: "bg-white text-black hover:bg-gray-50",
+										)}
+										disabled={!resolvedTeamAId}
+									>
+										{formData.winnerId === resolvedTeamAId && (
+											<Check className="h-4 w-4" />
+										)}
+										{matchToEdit?.teamA?.name || t("modal.teamA")}
+									</button>
+									<button
+										type="button"
+										onClick={() =>
+											setFormData({
+												...formData,
+												winnerId: resolvedTeamBId,
+											})
+										}
+										className={clsx(
+											"flex items-center justify-center gap-2 border-[3px] border-black py-3 font-black text-xs uppercase transition-all",
+											formData.winnerId === resolvedTeamBId
+												? "-translate-y-1 bg-brawl-red text-white shadow-[4px_4px_0px_0px_#000]"
+												: "bg-white text-black hover:bg-gray-50",
+										)}
+										disabled={!resolvedTeamBId}
+									>
+										{formData.winnerId === resolvedTeamBId && (
+											<Check className="h-4 w-4" />
+										)}
+										{matchToEdit?.teamB?.name || t("modal.teamB")}
+									</button>
+								</div>
+								{canAutoResolveOneSidedWalkover && (
+									<p className="mt-3 flex items-center gap-1 font-body font-bold text-[9px] text-blue-700 uppercase tracking-widest">
+										<AlertCircle className="h-3 w-3" />
+										{t("modal.woDescription")}
+									</p>
+								)}
+								{canAutoResolveOneSidedWalkover && formData.winnerId && (
+									<button
+										type="button"
+										onClick={() =>
+											setFormData({
+												...formData,
+												winnerId: null,
+												scoreA: 0,
+												scoreB: 0,
+											})
+										}
+										className="mt-2 w-full border-2 border-black bg-yellow-200 px-2 py-2 font-body font-bold text-[10px] text-black uppercase tracking-widest hover:bg-yellow-300"
+									>
+										{t("modal.clearWinner")}
+									</button>
+								)}
+								{canShowRefreshWalkoverWinner && (
+									<button
+										type="button"
+										onClick={handleRefreshWalkoverWinner}
+										disabled={
+											!canRefreshWalkoverWinner || isRefreshingWalkoverWinner
+										}
+										className="mt-2 w-full border-2 border-black bg-blue-100 px-2 py-2 font-body font-bold text-[10px] text-black uppercase tracking-widest hover:bg-blue-200 disabled:opacity-60"
+									>
+										{isRefreshingWalkoverWinner ? (
+											<span className="inline-flex items-center gap-1">
+												<InlineLoader size="xs" />
+												{t("modal.updating")}
+											</span>
+										) : (
+											t("modal.refreshWoWinner")
+										)}
+									</button>
+								)}
+								{canShowRefreshWalkoverWinner && !canRefreshWalkoverWinner && (
+									<p className="mt-1 text-center font-body font-bold text-[9px] text-gray-600 uppercase tracking-widest">
+										{t("modal.refreshInfo")}
+									</p>
+								)}
+								{!formData.winnerId && !canAutoResolveOneSidedWalkover ? (
+									<div className="slide-in-from-top-2 mt-3 animate-in border-[3px] border-red-500 bg-red-500/10 p-3 duration-300">
+										<p className="flex items-center gap-2 font-body font-bold text-[10px] text-red-600 uppercase tracking-widest">
+											<AlertCircle className="h-4 w-4" />
+											{t("modal.errorNoWinner")}
+										</p>
+										<p className="mt-1 text-[9px] text-red-600">
+											{t("modal.errorNoWinnerDetail")}
+										</p>
+									</div>
+								) : (
+									<p className="mt-3 flex items-center gap-1 font-body font-bold text-[9px] text-red-500 uppercase tracking-widest">
+										<AlertCircle className="h-3 w-3" />
+										{t("modal.finalizeWarning")}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+				)}
+
+				<div className="h-[2px] w-full bg-black/10" />
+				{/* Bracket Configuration (Added) - Only for Non-Group Matches */}
+				{formData.bracketSide !== "groups" && (
+					<div className="space-y-3 border-2 border-black bg-gray-100 p-4">
+						<h3 className="flex items-center gap-2 font-bold text-black text-xs uppercase">
+							<span className="h-2 w-2 rounded-full bg-black" />{" "}
+							{t("modal.bracketPlacement")}
+						</h3>
+						<div
 							className={clsx(
-								"relative h-6 w-12 border-2 border-black transition-colors duration-200",
-								formData.isBettingEnabled ? "bg-[#ccff00]" : "bg-gray-300",
+								"grid gap-3",
+								stages.find((s) => s.id === formData.stageId)?.type ===
+									"Double Elimination"
+									? "grid-cols-3"
+									: "grid-cols-2",
 							)}
 						>
-							<div
-								className={clsx(
-									"absolute top-0.5 h-4 w-4 bg-black transition-all duration-200",
-									formData.isBettingEnabled ? "left-[24px]" : "left-0.5",
-								)}
-							/>
-						</button>
-					</div>
-
-					{/* Date Time */}
-					<div className="grid grid-cols-2 gap-4">
-						<CustomDatePicker
-							label={t("modal.date")}
-							value={formData.date}
-							onChange={(val) => setFormData({ ...formData, date: val })}
-						/>
-						<CustomTimePicker
-							label={t("modal.time")}
-							value={formData.time}
-							onChange={(val) => setFormData({ ...formData, time: val })}
-						/>
-					</div>
-
-					<div className="grid grid-cols-2 gap-4">
-						{/* Team A */}
-						<div className="space-y-2">
-							<label className="ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-								{t("modal.teamASource")}
-							</label>
-							<div className="mb-2 flex gap-2">
-								{(["team", "match", "group"] as const)
-									.filter(
-										(type) =>
-											!(
-												(isSwissStage || isPlayoffAfterSwiss) &&
-												type !== "team"
-											),
-									)
-									.map((type) => (
-										<button
-											key={type}
-											type="button"
-											onClick={() =>
-												setFormData({ ...formData, teamAType: type })
-											}
-											className={`flex-1 border-2 border-black py-1 font-bold font-body text-[10px] uppercase tracking-widest ${
-												formData.teamAType === type
-													? "bg-black text-white"
-													: "bg-white text-gray-500 hover:bg-gray-100"
-											}`}
-										>
-											{type}
-										</button>
-									))}
-							</div>
-
-							{formData.teamAType === "team" && (
+							{stages.find((s) => s.id === formData.stageId)?.type ===
+								"Double Elimination" && (
 								<CustomSelect
-									label=""
-									value={formData.teamA}
-									onChange={(val) => setFormData({ ...formData, teamA: val })}
-									options={filteredTeams.map((t) => ({
-										value: String(t.id),
-										label:
-											t.name +
-											(isSwissStage && swissTeamRecords
-												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
-												: isPlayoffAfterSwiss && swissStageData
-													? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
-													: ""),
-									}))}
+									label={t("modal.side")}
+									value={formData.bracketSide}
+									onChange={(val) =>
+										setFormData({ ...formData, bracketSide: val })
+									}
+									options={[
+										{ value: "upper", label: t("modal.upperBracket") },
+										{ value: "lower", label: t("modal.lowerBracket") },
+										{ value: "grand_final", label: t("modal.grandFinal") },
+									]}
 								/>
 							)}
-
-							{formData.teamAType === "match" && (
-								<div className="space-y-2">
-									<CustomSelect
-										label={t("modal.sourceMatch")}
-										value={
-											formData.teamAPreviousMatchId
-												? String(formData.teamAPreviousMatchId)
-												: ""
-										}
-										onChange={(val) =>
-											setFormData({
-												...formData,
-												teamAPreviousMatchId: val ? Number(val) : null,
-											})
-										}
-										options={matches.map((m) => ({
-											value: String(m.id),
-											label: `${m.name || m.label || "Match"} - ${
-												m.teamA?.name || m.labelTeamA
-											} vs ${m.teamB?.name || m.labelTeamB}`,
-										}))}
-									/>
-									<div className="flex border-2 border-black bg-gray-100 p-1">
-										{(["winner", "loser"] as const).map((res) => (
-											<button
-												key={res}
-												type="button"
-												onClick={() =>
-													setFormData({
-														...formData,
-														teamAPreviousMatchResult: res,
-													})
-												}
-												className={`flex-1 py-1 font-bold text-xs uppercase ${
-													formData.teamAPreviousMatchResult === res
-														? res === "winner"
-															? "border-2 border-black bg-[#ccff00] text-black"
-															: "border-2 border-black bg-[#ff2e2e] text-white"
-														: "text-gray-400"
-												}`}
-											>
-												{res}
-											</button>
-										))}
-									</div>
-								</div>
-							)}
-
-							{formData.teamAType === "group" && (
-								<div className="grid grid-cols-2 gap-2">
-									<CustomSelect
-										label={t("modal.group")}
-										value={formData.teamAGroup}
-										onChange={(val) =>
-											setFormData({ ...formData, teamAGroup: val })
-										}
-										options={Array.from({ length: groupsCount }, (_, i) =>
-											String.fromCharCode(65 + i),
-										).map((g) => ({
-											value: g,
-											label: `Group ${g}`,
-										}))}
-									/>
-									<CustomSelect
-										label={t("modal.placement")}
-										value={formData.teamAPlacement}
-										onChange={(val) =>
-											setFormData({ ...formData, teamAPlacement: val })
-										}
-										options={Array.from(
-											{ length: advancingPerGroup },
-											(_, i) => ({
-												value: String(i + 1),
-												label: t(`modal.placement${i + 1}` as const),
-											}),
-										)}
-									/>
-								</div>
-							)}
-						</div>
-
-						{/* Team B */}
-						<div className="space-y-2">
-							<label className="ml-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-								{t("modal.teamBSource")}
-							</label>
-							<div className="mb-2 flex gap-2">
-								{(["team", "match", "group"] as const)
-									.filter(
-										(type) =>
-											!(
-												(isSwissStage || isPlayoffAfterSwiss) &&
-												type !== "team"
-											),
-									)
-									.map((type) => (
-										<button
-											key={type}
-											type="button"
-											onClick={() =>
-												setFormData({ ...formData, teamBType: type })
-											}
-											className={`flex-1 border-2 border-black py-1 font-bold font-body text-[10px] uppercase tracking-widest ${
-												formData.teamBType === type
-													? "bg-black text-white"
-													: "bg-white text-gray-500 hover:bg-gray-100"
-											}`}
-										>
-											{type}
-										</button>
-									))}
-							</div>
-
-							{formData.teamBType === "team" && (
-								<CustomSelect
-									label=""
-									value={formData.teamB}
-									onChange={(val) => setFormData({ ...formData, teamB: val })}
-									options={filteredTeams.map((t) => ({
-										value: String(t.id),
-										label:
-											t.name +
-											(isSwissStage && swissTeamRecords
-												? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
-												: isPlayoffAfterSwiss && swissStageData
-													? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
-													: ""),
-									}))}
+							<div>
+								<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+									{t("modal.roundNumber")}
+								</label>
+								<input
+									type="number"
+									value={formData.roundIndex}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											roundIndex: Number(e.target.value),
+										})
+									}
+									className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
 								/>
-							)}
-
-							{formData.teamBType === "match" && (
-								<div className="space-y-2">
-									<CustomSelect
-										label={t("modal.sourceMatch")}
-										value={
-											formData.teamBPreviousMatchId
-												? String(formData.teamBPreviousMatchId)
-												: ""
-										}
-										onChange={(val) =>
-											setFormData({
-												...formData,
-												teamBPreviousMatchId: val ? Number(val) : null,
-											})
-										}
-										options={matches.map((m) => ({
-											value: String(m.id),
-											label: `${m.name || m.label || "Match"} - ${
-												m.teamA?.name || m.labelTeamA
-											} vs ${m.teamB?.name || m.labelTeamB}`,
-										}))}
-									/>
-									<div className="flex border-2 border-black bg-gray-100 p-1">
-										{(["winner", "loser"] as const).map((res) => (
-											<button
-												key={res}
-												type="button"
-												onClick={() =>
-													setFormData({
-														...formData,
-														teamBPreviousMatchResult: res,
-													})
-												}
-												className={`flex-1 py-1 font-bold text-xs uppercase ${
-													formData.teamBPreviousMatchResult === res
-														? res === "winner"
-															? "border-2 border-black bg-[#ccff00] text-black"
-															: "border-2 border-black bg-[#ff2e2e] text-white"
-														: "text-gray-400"
-												}`}
-											>
-												{res}
-											</button>
-										))}
-									</div>
-								</div>
-							)}
-
-							{formData.teamBType === "group" && (
-								<div className="grid grid-cols-2 gap-2">
-									<CustomSelect
-										label={t("modal.group")}
-										value={formData.teamBGroup}
-										onChange={(val) =>
-											setFormData({ ...formData, teamBGroup: val })
-										}
-										options={Array.from({ length: groupsCount }, (_, i) =>
-											String.fromCharCode(65 + i),
-										).map((g) => ({
-											value: g,
-											label: `Group ${g}`,
-										}))}
-									/>
-									<CustomSelect
-										label={t("modal.placement")}
-										value={formData.teamBPlacement}
-										onChange={(val) =>
-											setFormData({ ...formData, teamBPlacement: val })
-										}
-										options={Array.from(
-											{ length: advancingPerGroup },
-											(_, i) => ({
-												value: String(i + 1),
-												label: t(`modal.placement${i + 1}` as const),
-											}),
-										)}
-									/>
-								</div>
-							)}
+								<p className="mt-1 font-body font-bold text-[9px] text-gray-500 leading-tight tracking-widest">
+									{t("modal.roundHint")}
+								</p>
+							</div>
+							<div>
+								<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+									{t("modal.displayOrder")}
+								</label>
+								<input
+									type="number"
+									value={formData.displayOrder}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											displayOrder: Number(e.target.value),
+										})
+									}
+									className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+								/>
+								<p className="mt-1 font-body font-bold text-[9px] text-gray-500 leading-tight tracking-widest">
+									{t("modal.verticalPosHint")}
+								</p>
+							</div>
 						</div>
 					</div>
+				)}
+				<div className="grid grid-cols-2 gap-4">
+					{/* Stage Selection */}
+					<CustomSelect
+						label={t("modal.stage")}
+						value={formData.stageId}
+						onChange={(val) =>
+							setFormData({ ...formData, stageId: val, label: val })
+						}
+						options={stages.map((s) => ({ value: s.id, label: s.name }))}
+					/>
 
+					{/* Match Day Selection - Optional but recommended */}
+					<CustomSelect
+						label={t("modal.matchDay")}
+						value={formData.matchDayId ? String(formData.matchDayId) : ""}
+						onChange={(val) => {
+							const dayId = Number(val);
+							const day = matchDays.find((d) => d.id === dayId);
+							let dateStr = "";
+							if (day) {
+								const dayDate = new Date(day.date);
+								const year = dayDate.getFullYear();
+								const month = String(dayDate.getMonth() + 1).padStart(2, "0");
+								const d = String(dayDate.getDate()).padStart(2, "0");
+								dateStr = `${year}-${month}-${d}`;
+							}
+							setFormData({
+								...formData,
+								matchDayId: val ? dayId : null,
+								date: day ? dateStr : formData.date,
+							});
+						}}
+						options={[
+							{ value: "", label: t("modal.selectDay") },
+							...matchDays.map((day) => ({
+								value: String(day.id),
+								label: `${day.label} (${new Date(day.date).toLocaleDateString(
+									[],
+									{
+										month: "short",
+										day: "numeric",
+									},
+								)})`,
+							})),
+						]}
+					/>
+				</div>
+
+				<div>
+					<label className="mb-1 ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+						{t("modal.matchName")}
+					</label>
+					<input
+						type="text"
+						placeholder={t("modal.matchNamePlaceholder")}
+						value={formData.name}
+						onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+						className="w-full border-[3px] border-black bg-white p-2 font-bold text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+					/>
+				</div>
+
+				<div className="flex items-center justify-between border-2 border-black bg-gray-50 p-3">
+					<div className="flex flex-col">
+						<label className="font-body font-bold text-black text-xs uppercase tracking-widest">
+							{t("modal.enableBetting")}
+						</label>
+						<p className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+							{t("modal.enableBettingDesc")}
+						</p>
+					</div>
 					<button
-						type="submit"
-						disabled={isSubmitting || saveStatus === "saving"}
+						type="button"
+						onClick={() =>
+							setFormData({
+								...formData,
+								isBettingEnabled: !formData.isBettingEnabled,
+							})
+						}
 						className={clsx(
-							"mt-4 flex w-full items-center justify-center gap-2 border-[3px] border-black py-3 font-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
-							matchToEdit
-								? "bg-white text-black hover:bg-gray-100"
-								: "bg-black text-white hover:bg-[#ccff00] hover:text-black",
+							"relative h-6 w-12 border-2 border-black transition-colors duration-200",
+							formData.isBettingEnabled ? "bg-[#ccff00]" : "bg-gray-300",
 						)}
 					>
-						{isSubmitting ? (
-							<InlineLoader size="md" />
-						) : matchToEdit ? (
-							<>
-								<Check className="h-5 w-5" />
-								{t("modal.done")}
-							</>
-						) : (
-							t("modal.createMatch")
-						)}
+						<div
+							className={clsx(
+								"absolute top-0.5 h-4 w-4 bg-black transition-all duration-200",
+								formData.isBettingEnabled ? "left-[24px]" : "left-0.5",
+							)}
+						/>
 					</button>
-				</form>
+				</div>
+
+				{/* Date Time */}
+				<div className="grid grid-cols-2 gap-4">
+					<CustomDatePicker
+						label={t("modal.date")}
+						value={formData.date}
+						onChange={(val) => setFormData({ ...formData, date: val })}
+					/>
+					<CustomTimePicker
+						label={t("modal.time")}
+						value={formData.time}
+						onChange={(val) => setFormData({ ...formData, time: val })}
+					/>
+				</div>
+
+				<div className="grid grid-cols-2 gap-4">
+					{/* Team A */}
+					<div className="space-y-2">
+						<label className="ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+							{t("modal.teamASource")}
+						</label>
+						<div className="mb-2 flex gap-2">
+							{(["team", "match", "group"] as const)
+								.filter(
+									(type) =>
+										!((isSwissStage || isPlayoffAfterSwiss) && type !== "team"),
+								)
+								.map((type) => (
+									<button
+										key={type}
+										type="button"
+										onClick={() =>
+											setFormData({ ...formData, teamAType: type })
+										}
+										className={`flex-1 border-2 border-black py-1 font-body font-bold text-[10px] uppercase tracking-widest ${
+											formData.teamAType === type
+												? "bg-black text-white"
+												: "bg-white text-gray-500 hover:bg-gray-100"
+										}`}
+									>
+										{type}
+									</button>
+								))}
+						</div>
+
+						{formData.teamAType === "team" && (
+							<CustomSelect
+								label=""
+								value={formData.teamA}
+								onChange={(val) => setFormData({ ...formData, teamA: val })}
+								options={filteredTeams.map((t) => ({
+									value: String(t.id),
+									label:
+										t.name +
+										(isSwissStage && swissTeamRecords
+											? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
+											: isPlayoffAfterSwiss && swissStageData
+												? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
+												: ""),
+								}))}
+							/>
+						)}
+
+						{formData.teamAType === "match" && (
+							<div className="space-y-2">
+								<CustomSelect
+									label={t("modal.sourceMatch")}
+									value={
+										formData.teamAPreviousMatchId
+											? String(formData.teamAPreviousMatchId)
+											: ""
+									}
+									onChange={(val) =>
+										setFormData({
+											...formData,
+											teamAPreviousMatchId: val ? Number(val) : null,
+										})
+									}
+									options={matches.map((m) => ({
+										value: String(m.id),
+										label: `${m.name || m.label || "Match"} - ${
+											m.teamA?.name || m.labelTeamA
+										} vs ${m.teamB?.name || m.labelTeamB}`,
+									}))}
+								/>
+								<div className="flex border-2 border-black bg-gray-100 p-1">
+									{(["winner", "loser"] as const).map((res) => (
+										<button
+											key={res}
+											type="button"
+											onClick={() =>
+												setFormData({
+													...formData,
+													teamAPreviousMatchResult: res,
+												})
+											}
+											className={`flex-1 py-1 font-bold text-xs uppercase ${
+												formData.teamAPreviousMatchResult === res
+													? res === "winner"
+														? "border-2 border-black bg-[#ccff00] text-black"
+														: "border-2 border-black bg-[#ff2e2e] text-white"
+													: "text-gray-400"
+											}`}
+										>
+											{res}
+										</button>
+									))}
+								</div>
+							</div>
+						)}
+
+						{formData.teamAType === "group" && (
+							<div className="grid grid-cols-2 gap-2">
+								<CustomSelect
+									label={t("modal.group")}
+									value={formData.teamAGroup}
+									onChange={(val) =>
+										setFormData({ ...formData, teamAGroup: val })
+									}
+									options={Array.from({ length: groupsCount }, (_, i) =>
+										String.fromCharCode(65 + i),
+									).map((g) => ({
+										value: g,
+										label: `Group ${g}`,
+									}))}
+								/>
+								<CustomSelect
+									label={t("modal.placement")}
+									value={formData.teamAPlacement}
+									onChange={(val) =>
+										setFormData({ ...formData, teamAPlacement: val })
+									}
+									options={Array.from(
+										{ length: advancingPerGroup },
+										(_, i) => ({
+											value: String(i + 1),
+											label: t(`modal.placement${i + 1}` as const),
+										}),
+									)}
+								/>
+							</div>
+						)}
+					</div>
+
+					{/* Team B */}
+					<div className="space-y-2">
+						<label className="ml-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+							{t("modal.teamBSource")}
+						</label>
+						<div className="mb-2 flex gap-2">
+							{(["team", "match", "group"] as const)
+								.filter(
+									(type) =>
+										!((isSwissStage || isPlayoffAfterSwiss) && type !== "team"),
+								)
+								.map((type) => (
+									<button
+										key={type}
+										type="button"
+										onClick={() =>
+											setFormData({ ...formData, teamBType: type })
+										}
+										className={`flex-1 border-2 border-black py-1 font-body font-bold text-[10px] uppercase tracking-widest ${
+											formData.teamBType === type
+												? "bg-black text-white"
+												: "bg-white text-gray-500 hover:bg-gray-100"
+										}`}
+									>
+										{type}
+									</button>
+								))}
+						</div>
+
+						{formData.teamBType === "team" && (
+							<CustomSelect
+								label=""
+								value={formData.teamB}
+								onChange={(val) => setFormData({ ...formData, teamB: val })}
+								options={filteredTeams.map((t) => ({
+									value: String(t.id),
+									label:
+										t.name +
+										(isSwissStage && swissTeamRecords
+											? ` (${swissTeamRecords.byTeamId[t.id]?.record ?? "?"})`
+											: isPlayoffAfterSwiss && swissStageData
+												? ` (${swissStageData.byTeamId[t.id]?.record ?? "?"})`
+												: ""),
+								}))}
+							/>
+						)}
+
+						{formData.teamBType === "match" && (
+							<div className="space-y-2">
+								<CustomSelect
+									label={t("modal.sourceMatch")}
+									value={
+										formData.teamBPreviousMatchId
+											? String(formData.teamBPreviousMatchId)
+											: ""
+									}
+									onChange={(val) =>
+										setFormData({
+											...formData,
+											teamBPreviousMatchId: val ? Number(val) : null,
+										})
+									}
+									options={matches.map((m) => ({
+										value: String(m.id),
+										label: `${m.name || m.label || "Match"} - ${
+											m.teamA?.name || m.labelTeamA
+										} vs ${m.teamB?.name || m.labelTeamB}`,
+									}))}
+								/>
+								<div className="flex border-2 border-black bg-gray-100 p-1">
+									{(["winner", "loser"] as const).map((res) => (
+										<button
+											key={res}
+											type="button"
+											onClick={() =>
+												setFormData({
+													...formData,
+													teamBPreviousMatchResult: res,
+												})
+											}
+											className={`flex-1 py-1 font-bold text-xs uppercase ${
+												formData.teamBPreviousMatchResult === res
+													? res === "winner"
+														? "border-2 border-black bg-[#ccff00] text-black"
+														: "border-2 border-black bg-[#ff2e2e] text-white"
+													: "text-gray-400"
+											}`}
+										>
+											{res}
+										</button>
+									))}
+								</div>
+							</div>
+						)}
+
+						{formData.teamBType === "group" && (
+							<div className="grid grid-cols-2 gap-2">
+								<CustomSelect
+									label={t("modal.group")}
+									value={formData.teamBGroup}
+									onChange={(val) =>
+										setFormData({ ...formData, teamBGroup: val })
+									}
+									options={Array.from({ length: groupsCount }, (_, i) =>
+										String.fromCharCode(65 + i),
+									).map((g) => ({
+										value: g,
+										label: `Group ${g}`,
+									}))}
+								/>
+								<CustomSelect
+									label={t("modal.placement")}
+									value={formData.teamBPlacement}
+									onChange={(val) =>
+										setFormData({ ...formData, teamBPlacement: val })
+									}
+									options={Array.from(
+										{ length: advancingPerGroup },
+										(_, i) => ({
+											value: String(i + 1),
+											label: t(`modal.placement${i + 1}` as const),
+										}),
+									)}
+								/>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
-		</div>
+		</AdminFormModal>
 	);
 }

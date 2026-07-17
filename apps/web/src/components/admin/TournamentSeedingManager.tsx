@@ -140,13 +140,13 @@ export function TournamentSeedingManager({
 					<h2 className="font-black text-2xl text-black uppercase italic">
 						{t("seeding.title")}
 					</h2>
-					<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
+					<p className="font-body font-bold text-gray-500 text-sm tracking-wide">
 						{t("seeding.description")}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
 					{savingTeams.size > 0 && (
-						<div className="flex items-center gap-2 font-bold font-body text-gray-500 text-xs uppercase tracking-widest">
+						<div className="flex items-center gap-2 font-body font-bold text-gray-500 text-xs uppercase tracking-widest">
 							<InlineLoader size="sm" />
 							{t("seeding.saving", { count: savingTeams.size })}
 						</div>
@@ -157,7 +157,7 @@ export function TournamentSeedingManager({
 			<div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
 				{groupedTeams["Unassigned"]?.length > 0 && (
 					<div className="border-2 border-black/20 border-dashed bg-gray-100 p-4 lg:col-span-2">
-						<h3 className="mb-4 font-bold font-body text-gray-400 uppercase tracking-widest">
+						<h3 className="mb-4 font-body font-bold text-gray-400 uppercase tracking-widest">
 							{t("seeding.unassigned")}
 						</h3>
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -259,7 +259,7 @@ function TeamSeedingCard({
 					<select
 						value={team.group || ""}
 						onChange={(e) => onUpdate(team.id, "group", e.target.value || null)}
-						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-gray-100"
+						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-body font-bold text-[10px] text-black uppercase tracking-widest hover:bg-gray-100"
 						disabled={isSaving}
 					>
 						<option value="">{t("seeding.selectGroup")}</option>
@@ -278,7 +278,7 @@ function TeamSeedingCard({
 								e.target.value ? Number(e.target.value) : null,
 							)
 						}
-						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-bold font-body text-[10px] text-black uppercase tracking-widest hover:bg-gray-100"
+						className="h-6 w-16 cursor-pointer border border-black bg-gray-50 px-1 font-body font-bold text-[10px] text-black uppercase tracking-widest hover:bg-gray-100"
 						disabled={isSaving}
 					>
 						<option value="">{t("seeding.selectSeed")}</option>

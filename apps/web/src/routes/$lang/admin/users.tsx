@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import {
-	AlertTriangle,
 	Copy,
 	Edit2,
 	Image as ImageIcon,
@@ -10,12 +9,15 @@ import {
 	Trash2,
 	Upload,
 	User,
-	X,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { InlineLoader } from "@/components/inline-loader";
+import {
+	AdminFormActions,
+	AdminFormModal,
+} from "@/components/admin/AdminFormModal";
+import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
 import { useLangLink } from "@/i18n/useLangLink";
 import {
 	deleteUser,
@@ -193,14 +195,14 @@ function AdminUsersPage() {
 	useSetHeader({
 		title: t("common:nav.adminUsers"),
 		actions: (
-			<div className="flex w-full items-center gap-4 sm:w-auto">
+			<div className="flex h-11 w-full items-center gap-4 sm:w-auto">
 				<div className="relative w-full sm:w-auto">
 					<input
 						type="text"
 						placeholder={t("common:actions.search")}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full border-[3px] border-black bg-white px-4 py-2 pr-10 font-bold font-body text-black text-sm uppercase tracking-widest placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-96"
+						className="h-11 w-full border-[3px] border-black bg-white px-4 py-0 pr-10 font-body font-bold text-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-96"
 					/>
 					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 				</div>
@@ -223,7 +225,7 @@ function AdminUsersPage() {
 					<div className="overflow-x-auto">
 						<div className="min-w-full md:min-w-[800px]">
 							{/* Table Header */}
-							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-bold font-body text-sm text-white uppercase tracking-widest md:grid">
+							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-body font-bold text-sm text-white uppercase tracking-widest md:grid">
 								<div className="col-span-4">{t("users.tableUserIdentity")}</div>
 								<div className="col-span-4">{t("users.tableContact")}</div>
 								<div className="col-span-2 text-center">
@@ -287,11 +289,11 @@ function AdminUsersPage() {
 
 											{/* Contact */}
 											<div className="flex w-full flex-col justify-center md:col-span-4">
-												<span className="flex items-center gap-2 break-all font-bold font-body text-gray-700 text-sm">
+												<span className="flex items-center gap-2 break-all font-body font-bold text-gray-700 text-sm">
 													{u.email}
 													<Copy className="h-3 w-3 shrink-0 cursor-pointer text-gray-300 hover:text-black" />
 												</span>
-												<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest tabular-nums">
+												<span className="font-body font-bold text-[10px] text-gray-400 uppercase tabular-nums tracking-widest">
 													ID: {u.id.slice(0, 8)}...
 												</span>
 											</div>
@@ -338,282 +340,142 @@ function AdminUsersPage() {
 				</div>
 			</div>
 
-			{/* EDIT MODAL */}
-			{isEditModalOpen && (
-				<div className="fade-in fixed inset-0 z-[100] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 relative max-h-[90vh] w-full max-w-md animate-in overflow-y-auto border-[4px] border-black bg-white shadow-[10px_10px_0px_0px_#000] duration-200">
-						<div className="sticky top-0 z-10 flex items-center justify-between border-black border-b-[4px] bg-[#2e5cff] p-3">
-							<h2 className="font-black text-lg text-white uppercase italic">
-								{t("users.editUser")}
-							</h2>
+			<AdminFormModal
+				isOpen={isEditModalOpen}
+				onClose={() => setIsEditModalOpen(false)}
+				title={t("users.editUser")}
+				onSubmit={handleSaveDetails}
+				size="sm"
+				formId="user-edit-form"
+				footer={
+					<AdminFormActions
+						onCancel={() => setIsEditModalOpen(false)}
+						cancelLabel={t("common:actions.cancel")}
+						submitLabel={t("users.saveChanges")}
+						isSubmitting={isSubmitting}
+					/>
+				}
+			>
+				<div className="space-y-6">
+					<div>
+						<label className="mb-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+							{t("users.displayName")}
+						</label>
+						<input
+							type="text"
+							value={nicknameInput}
+							onChange={(e) => setNicknameInput(e.target.value)}
+							placeholder={t("users.nicknamePlaceholder")}
+							className="w-full border-[3px] border-black bg-white p-3 font-black font-display text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-4 focus:ring-electric-lime"
+						/>
+						<p className="mt-2 font-black font-display text-black text-xl uppercase italic">
+							{editingUser?.nickname || "User"}
+						</p>
+					</div>
+
+					<div>
+						<label className="mb-1 block font-body font-bold text-black text-xs uppercase tracking-widest">
+							{t("users.profilePicture")}
+						</label>
+
+						<div className="mb-4 flex justify-center">
+							<div className="group relative h-24 w-24 overflow-hidden rounded-md border-[3px] border-black bg-paper shadow-sm">
+								{imageInput ? (
+									<img
+										src={imageInput}
+										alt=""
+										className="h-full w-full object-cover"
+									/>
+								) : (
+									<div className="flex h-full w-full items-center justify-center text-gray-300">
+										<ImageIcon className="h-8 w-8" />
+									</div>
+								)}
+							</div>
+						</div>
+
+						<div className="space-y-2">
+							<div className="relative">
+								<ImageIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+								<input
+									type="url"
+									value={imageInput}
+									onChange={(e) => setImageInput(e.target.value)}
+									className="w-full border-[3px] border-black bg-white p-2 pl-9 font-body text-black text-xs placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-electric-lime"
+									placeholder={t("users.imageUrlPlaceholder")}
+								/>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<span className="font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
+									{t("users.or")}
+								</span>
+								<div className="h-[1px] flex-1 bg-gray-200" />
+							</div>
+
+							<input
+								type="file"
+								accept="image/*"
+								className="hidden"
+								ref={fileInputRef}
+								onChange={handleFileUpload}
+							/>
 							<button
-								onClick={() => setIsEditModalOpen(false)}
-								className="rounded-sm border-2 border-white bg-black p-1 text-white transition-colors hover:bg-[#ff2e2e]"
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+								className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white py-2 font-black font-display text-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-100 active:translate-y-[1px] active:shadow-none"
 							>
-								<X className="h-4 w-4" />
+								<Upload className="h-3 w-3" />
+								{t("users.uploadFromDevice")}
 							</button>
 						</div>
-
-						<form onSubmit={handleSaveDetails} className="space-y-6 p-6">
-							{/* Nickname Field */}
-							<div>
-								<label className="mb-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-									{t("users.displayName")}
-								</label>
-								<input
-									type="text"
-									value={nicknameInput}
-									onChange={(e) => setNicknameInput(e.target.value)}
-									placeholder={t("users.nicknamePlaceholder")}
-									className="w-full border-[3px] border-black p-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-								/>
-								<p className="mb-6 font-black text-black text-xl uppercase italic">
-									{editingUser?.nickname || "User"}
-								</p>
-							</div>
-
-							{/* Image Field */}
-							<div>
-								<label className="mb-1 block font-bold font-body text-black text-xs uppercase tracking-widest">
-									{t("users.profilePicture")}
-								</label>
-
-								{/* Image Preview */}
-								<div className="mb-4 flex justify-center">
-									<div className="group relative h-24 w-24 overflow-hidden rounded-md border-[3px] border-black bg-gray-100 shadow-sm">
-										{imageInput ? (
-											<img
-												src={imageInput}
-												alt="Preview"
-												className="h-full w-full object-cover"
-											/>
-										) : (
-											<div className="flex h-full w-full items-center justify-center text-gray-300">
-												<ImageIcon className="h-8 w-8" />
-											</div>
-										)}
-									</div>
-								</div>
-
-								<div className="space-y-2">
-									<div className="relative">
-										<ImageIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-										<input
-											type="url"
-											value={imageInput}
-											onChange={(e) => setImageInput(e.target.value)}
-											className="w-full border-[3px] border-black bg-white p-2 pl-9 font-mono text-black text-xs placeholder:text-gray-400 focus:border-black focus:outline-none"
-											placeholder={t("users.imageUrlPlaceholder")}
-										/>
-									</div>
-
-									<div className="flex items-center gap-2">
-										<span className="font-bold font-body text-[10px] text-gray-400 uppercase tracking-widest">
-											{t("users.or")}
-										</span>
-										<div className="h-[1px] flex-1 bg-gray-200" />
-									</div>
-
-									<input
-										type="file"
-										accept="image/*"
-										className="hidden"
-										ref={fileInputRef}
-										onChange={handleFileUpload}
-									/>
-									<button
-										type="button"
-										onClick={() => fileInputRef.current?.click()}
-										className="flex w-full items-center justify-center gap-2 border-[3px] border-black bg-white py-2 font-bold text-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-100 active:translate-y-[1px] active:shadow-none"
-									>
-										<Upload className="h-3 w-3" />
-										{t("users.uploadFromDevice")}
-									</button>
-								</div>
-							</div>
-
-							<div className="flex gap-2 border-gray-100 border-t-2 pt-4">
-								<button
-									type="button"
-									onClick={() => setIsEditModalOpen(false)}
-									className="flex-1 border-[3px] border-transparent py-3 font-black text-gray-500 uppercase hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-								<button
-									type="submit"
-									disabled={isSubmitting}
-									className="flex flex-[2] items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] py-3 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-[#bbe000] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#000]"
-								>
-									{isSubmitting && <InlineLoader size="sm" />}
-									{t("users.saveChanges")}
-								</button>
-							</div>
-						</form>
 					</div>
 				</div>
-			)}
+			</AdminFormModal>
 
-			{/* NEW ROLE CONFIRMATION MODAL */}
-			{isRoleModalOpen && roleTargetUser && (
-				<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
-						{/* Header */}
-						<div
-							className={clsx(
-								"flex items-center gap-3 border-black border-b-[4px] p-4",
+			<ConfirmationModal
+				isOpen={isRoleModalOpen && !!roleTargetUser}
+				onClose={() => setIsRoleModalOpen(false)}
+				onConfirm={confirmRoleToggle}
+				title={
+					roleTargetUser?.currentRole === "admin"
+						? t("users.revokeAdmin")
+						: t("users.promoteUser")
+				}
+				description={
+					roleTargetUser
+						? `${t("users.confirmRoleChange")} ${
 								roleTargetUser.currentRole === "admin"
-									? "bg-[#ff2e2e]"
-									: "bg-[#ccff00]",
-							)}
-						>
-							<div className="border-[3px] border-black bg-white p-1">
-								{roleTargetUser.currentRole === "admin" ? (
-									<AlertTriangle className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
-								) : (
-									<Shield className="h-6 w-6 bg-black stroke-[3px] text-[#ccff00]" />
-								)}
-							</div>
-							<h3
-								className={clsx(
-									"font-black text-2xl uppercase italic tracking-tighter",
-									roleTargetUser.currentRole === "admin"
-										? "text-white"
-										: "text-black",
-								)}
-							>
-								{roleTargetUser.currentRole === "admin"
-									? t("users.revokeAdmin")
-									: t("users.promoteUser")}
-							</h3>
-						</div>
-
-						{/* Content */}
-						<div className="p-6 text-center">
-							<div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-sm">
-								{roleTargetUser.image ? (
-									<img
-										src={roleTargetUser.image}
-										alt={roleTargetUser.name || "User"}
-										className="h-full w-full object-cover"
-									/>
-								) : (
-									<div className="flex h-full w-full items-center justify-center bg-[#e0e0e0] font-black text-2xl text-black italic">
-										{roleTargetUser.nickname?.[0] ||
-											roleTargetUser.name?.[0] ||
-											"?"}
-									</div>
-								)}
-							</div>
-
-							<p className="mb-2 font-bold text-gray-800 text-lg">
-								{t("users.confirmRoleChange")}{" "}
-								{roleTargetUser.currentRole === "admin"
 									? t("users.removePrivileges")
-									: t("users.grantAdmin")}
-							</p>
-							<p className="mb-6 font-black text-black text-xl uppercase italic">
-								{roleTargetUser.nickname || "User"}
-							</p>
+									: t("users.grantAdmin")
+							} ${roleTargetUser.nickname || roleTargetUser.name || "User"}`
+						: ""
+				}
+				confirmLabel={
+					roleTargetUser?.currentRole === "admin"
+						? t("users.yesDemote")
+						: t("users.yesMakeAdmin")
+				}
+				cancelLabel={t("common:actions.cancel")}
+				isLoading={isSubmitting}
+				variant={roleTargetUser?.currentRole === "admin" ? "danger" : "warning"}
+			/>
 
-							<div className="flex flex-col gap-3">
-								<button
-									onClick={confirmRoleToggle}
-									disabled={isSubmitting}
-									className={clsx(
-										"flex w-full items-center justify-center gap-2 border-[4px] border-black py-4 font-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
-										roleTargetUser.currentRole === "admin"
-											? "bg-[#ff2e2e] text-white hover:bg-[#d41d1d]"
-											: "bg-[#ccff00] text-black hover:bg-[#bbe000]",
-									)}
-								>
-									{isSubmitting ? (
-										<InlineLoader size="lg" />
-									) : (
-										<>
-											{roleTargetUser.currentRole === "admin"
-												? t("users.yesDemote")
-												: t("users.yesMakeAdmin")}
-										</>
-									)}
-								</button>
-								<button
-									onClick={() => setIsRoleModalOpen(false)}
-									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* DELETE CONFIRMATION MODAL */}
-			{isDeleteModalOpen && deleteTargetUser && (
-				<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
-						{/* Header */}
-						<div className="flex items-center gap-3 border-black border-b-[4px] bg-[#ff2e2e] p-4">
-							<div className="border-[3px] border-black bg-white p-1">
-								<AlertTriangle className="h-6 w-6 stroke-[3px] text-[#ff2e2e]" />
-							</div>
-							<h3 className="font-black text-2xl text-white uppercase italic tracking-tighter">
-								{t("users.deleteUserTitle")}
-							</h3>
-						</div>
-
-						{/* Content */}
-						<div className="p-6 text-center">
-							<div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-md border-[3px] border-black bg-gray-200 shadow-sm">
-								{deleteTargetUser.image ? (
-									<img
-										src={deleteTargetUser.image}
-										alt={deleteTargetUser.name || "User"}
-										className="h-full w-full object-cover"
-									/>
-								) : (
-									<div className="flex h-full w-full items-center justify-center bg-[#e0e0e0] font-black text-2xl text-black italic">
-										{deleteTargetUser.nickname?.[0] ||
-											deleteTargetUser.name?.[0] ||
-											"?"}
-									</div>
-								)}
-							</div>
-
-							<p className="mb-2 font-bold text-gray-800 text-lg">
-								{t("users.confirmDelete")}
-							</p>
-							<p className="mb-2 font-black text-black text-xl uppercase italic">
-								{deleteTargetUser.nickname || "User"}
-							</p>
-							<p className="mb-6 rounded border-2 border-yellow-300 bg-yellow-50 p-3 text-gray-600 text-sm">
-								{t("users.deleteWarning")}
-							</p>
-
-							<div className="flex flex-col gap-3">
-								<button
-									onClick={confirmDelete}
-									disabled={isSubmitting}
-									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ff2e2e] py-4 font-black text-white uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-								>
-									{isSubmitting ? (
-										<InlineLoader size="lg" />
-									) : (
-										<>{t("users.yesDelete")}</>
-									)}
-								</button>
-								<button
-									onClick={() => setIsDeleteModalOpen(false)}
-									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
+			<ConfirmationModal
+				isOpen={isDeleteModalOpen && !!deleteTargetUser}
+				onClose={() => setIsDeleteModalOpen(false)}
+				onConfirm={confirmDelete}
+				title={t("users.deleteUserTitle")}
+				description={
+					deleteTargetUser
+						? `${t("users.confirmDelete")} ${deleteTargetUser.nickname || deleteTargetUser.name || "User"}. ${t("users.deleteWarning")}`
+						: ""
+				}
+				confirmLabel={t("users.yesDelete")}
+				cancelLabel={t("common:actions.cancel")}
+				isLoading={isSubmitting}
+				variant="danger"
+			/>
 		</div>
 	);
 }

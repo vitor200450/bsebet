@@ -4,7 +4,6 @@ import {
 	Award,
 	Check,
 	History,
-	Search,
 	Trophy,
 	User,
 	X,
@@ -12,9 +11,13 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { InlineLoader } from "@/components/inline-loader";
-import { CustomSelect } from "@/components/admin/CustomInputs";
+import { ConfirmationModal } from "@/components/admin/ConfirmationModal";
+import {
+	CustomAsyncSearch,
+	CustomSelect,
+} from "@/components/admin/CustomInputs";
 import { useSetHeader } from "@/components/HeaderContext";
+import { InlineLoader } from "@/components/inline-loader";
 import { getMatches } from "@/server/matches";
 import {
 	adjustUserPoints,
@@ -96,9 +99,9 @@ function CompensationsPage() {
 	useSetHeader({
 		title: t("compensations.title"),
 		actions: (
-			<div className="flex items-center gap-2 text-gray-600 text-sm">
-				<History className="h-4 w-4" />
-				<span className="font-bold uppercase">
+			<div className="flex h-11 items-center gap-2 border-[3px] border-black bg-white px-4 font-body font-bold text-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+				<History className="h-4 w-4 shrink-0" strokeWidth={3} />
+				<span className="pr-0.5">
 					{t("compensations.adjustmentCount", { count: adjustments.length })}
 				</span>
 			</div>
@@ -379,12 +382,11 @@ function CompensationsPage() {
 						<div className="space-y-6 border-[4px] border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)]">
 							{/* Tournament Selector */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-body font-bold text-black text-xs uppercase tracking-widest">
 									<Trophy className="h-4 w-4" />
 									{t("compensations.tournament")}
 								</label>
 								<CustomSelect
-									label=""
 									value={
 										selectedTournamentId ? String(selectedTournamentId) : ""
 									}
@@ -394,9 +396,9 @@ function CompensationsPage() {
 									placeholder={t("compensations.selectTournament")}
 									options={[
 										{ value: "", label: t("compensations.selectTournament") },
-										...tournaments.map((t) => ({
-											value: String(t.id),
-											label: t.name,
+										...tournaments.map((tournament) => ({
+											value: String(tournament.id),
+											label: tournament.name,
 										})),
 									]}
 								/>
@@ -404,7 +406,7 @@ function CompensationsPage() {
 
 							{/* User Search */}
 							<div className="relative">
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-body font-bold text-black text-xs uppercase tracking-widest">
 									<User className="h-4 w-4" />
 									{t("compensations.user")}
 								</label>
@@ -438,72 +440,46 @@ function CompensationsPage() {
 										</button>
 									</div>
 								) : (
-									<div className="relative">
-										<Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-										<input
-											type="text"
-											placeholder={t("compensations.searchUser")}
-											value={userSearchTerm}
-											onChange={(e) => setUserSearchTerm(e.target.value)}
-											className="w-full border-[3px] border-black p-3 pl-10 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-[#ccff00]"
-										/>
-										{isSearchingUsers && (
-											<InlineLoader
-												size="md"
-												className="absolute top-1/2 right-3 -translate-y-1/2"
-											/>
-										)}
-
-										{/* Dropdown Results */}
-										{showUserDropdown && userSearchResults.length > 0 && (
-											<div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-auto border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-												{userSearchResults.map((user) => (
-													<button
-														key={user.id}
-														onClick={() => handleSelectUser(user)}
-														className="flex w-full items-center gap-3 border-gray-100 border-b-2 p-3 text-left transition-colors last:border-b-0 hover:bg-[#ccff00]/20"
-													>
-														{user.image ? (
-															<img
-																src={user.image}
-																alt={user.name}
-																className="h-8 w-8 rounded-full border-2 border-black object-cover"
-															/>
-														) : (
-															<div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-gray-200">
-																<User className="h-4 w-4 text-gray-500" />
-															</div>
-														)}
-														<div className="min-w-0 flex-1">
-															<p className="truncate font-bold text-black text-sm">
-																{user.name}
-															</p>
-															<p className="truncate font-bold font-body text-gray-500 text-xs tracking-wide">
-																{user.email}
-															</p>
-														</div>
-													</button>
-												))}
-											</div>
-										)}
-
-										{showUserDropdown &&
-											userSearchTerm.length >= 2 &&
-											userSearchResults.length === 0 &&
-											!isSearchingUsers && (
-												<div className="absolute top-full right-0 left-0 z-50 mt-2 border-[3px] border-black bg-white p-4 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-													<p className="font-bold font-body text-gray-500 text-sm tracking-wide">
-														{t("compensations.noUserFound")}
-													</p>
+									<CustomAsyncSearch
+										query={userSearchTerm}
+										onQueryChange={setUserSearchTerm}
+										results={userSearchResults.map((user) => ({
+											id: user.id,
+											title: user.name,
+											subtitle: user.email,
+											imageUrl: user.image,
+										}))}
+										isLoading={isSearchingUsers}
+										open={showUserDropdown}
+										onOpenChange={setShowUserDropdown}
+										onSelect={(item) => {
+											const user = userSearchResults.find(
+												(entry) => entry.id === item.id,
+											);
+											if (user) handleSelectUser(user);
+										}}
+										placeholder={t("compensations.searchUser")}
+										emptyMessage={t("compensations.noUserFound")}
+										renderLeading={(item) =>
+											item.imageUrl ? (
+												<img
+													src={item.imageUrl}
+													alt=""
+													className="size-8 shrink-0 rounded-full border-2 border-black object-cover"
+												/>
+											) : (
+												<div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-black bg-gray-200">
+													<User className="h-4 w-4 text-gray-500" />
 												</div>
-											)}
-									</div>
+											)
+										}
+									/>
 								)}
 							</div>
 
 							{/* Match Selector (Optional) */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-body font-bold text-black text-xs uppercase tracking-widest">
 									<Trophy className="h-4 w-4" />
 									{t("compensations.affectedMatch")}{" "}
 									<span className="font-normal text-gray-500">
@@ -512,7 +488,6 @@ function CompensationsPage() {
 								</label>
 								<CustomSelect
 									key={`match-select-${selectedTournamentId}-${tournamentMatches.length}`}
-									label=""
 									value={selectedMatchId ? String(selectedMatchId) : ""}
 									onChange={(val) => setSelectedMatchId(val ? Number(val) : "")}
 									placeholder={
@@ -537,7 +512,7 @@ function CompensationsPage() {
 
 							{/* Score Inputs */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-body font-bold text-black text-xs uppercase tracking-widest">
 									<Award className="h-4 w-4" />
 									{t("compensations.betScore")}
 								</label>
@@ -559,7 +534,7 @@ function CompensationsPage() {
 												</span>
 											)}
 										</div>
-										<label className="w-full text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest leading-tight">
+										<label className="w-full text-center font-body font-bold text-[10px] text-gray-500 uppercase leading-tight tracking-widest">
 											{selectedMatchData?.teamAName ||
 												t("compensations.teamAFallback")}
 										</label>
@@ -593,7 +568,7 @@ function CompensationsPage() {
 												</span>
 											)}
 										</div>
-										<label className="w-full text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest leading-tight">
+										<label className="w-full text-center font-body font-bold text-[10px] text-gray-500 uppercase leading-tight tracking-widest">
 											{selectedMatchData?.teamBName ||
 												t("compensations.teamBFallback")}
 										</label>
@@ -658,7 +633,7 @@ function CompensationsPage() {
 
 							{/* Reason Textarea */}
 							<div>
-								<label className="mb-2 ml-1 block flex items-center gap-2 font-bold font-body text-black text-xs uppercase tracking-widest">
+								<label className="mb-2 ml-1 block flex items-center gap-2 font-body font-bold text-black text-xs uppercase tracking-widest">
 									<AlertTriangle className="h-4 w-4" />
 									{t("compensations.reason")}{" "}
 									<span className="font-normal text-gray-500">
@@ -751,7 +726,7 @@ function CompensationsPage() {
 															{adj.userName}
 														</span>
 														{adj.isRecoveryCompensation && (
-															<span className="border border-yellow-300 bg-yellow-100 px-2 py-0.5 font-bold font-body text-[10px] text-yellow-800 uppercase tracking-widest">
+															<span className="border border-yellow-300 bg-yellow-100 px-2 py-0.5 font-body font-bold text-[10px] text-yellow-800 uppercase tracking-widest">
 																{t("compensations.recovery")}
 															</span>
 														)}
@@ -786,101 +761,75 @@ function CompensationsPage() {
 				</div>
 			</div>
 
-			{/* Confirmation Modal */}
-			{showConfirmModal && (
-				<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-					<div className="zoom-in-95 w-full max-w-md transform animate-in overflow-hidden border-[4px] border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-200">
-						<div className="flex items-center gap-3 border-black border-b-[4px] bg-[#ccff00] p-4">
-							<div className="border-[3px] border-black bg-white p-1">
-								<AlertTriangle className="h-6 w-6 stroke-[3px] text-black" />
-							</div>
-							<h3 className="font-black text-2xl text-black uppercase italic tracking-tighter">
-								{t("compensations.confirmAdjustment")}
-							</h3>
+			<ConfirmationModal
+				isOpen={showConfirmModal}
+				onClose={() => setShowConfirmModal(false)}
+				onConfirm={confirmAdjustment}
+				title={t("compensations.confirmAdjustment")}
+				confirmLabel={t("compensations.confirm")}
+				cancelLabel={t("common:actions.cancel")}
+				isLoading={isSubmitting}
+				variant="success"
+			>
+				<div className="space-y-4">
+					<div className="space-y-2 border-2 border-black bg-paper p-4">
+						<div className="flex justify-between gap-3">
+							<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+								{t("compensations.userLabel")}
+							</span>
+							<span className="font-black font-display text-black text-sm uppercase italic">
+								{selectedUser?.name}
+							</span>
 						</div>
-
-						<div className="space-y-4 p-6">
-							<div className="space-y-2 border-2 border-black bg-gray-50 p-4">
-								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">
-										{t("compensations.userLabel")}
-									</span>
-									<span className="font-bold text-black">
-										{selectedUser?.name}
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">
-										{t("compensations.tournamentLabel")}
-									</span>
-									<span className="font-bold text-black">
-										{
-											tournaments.find(
-												(t) => t.id === Number(selectedTournamentId),
-											)?.name
-										}
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">
-										{t("compensations.informedScore")}
-									</span>
-									<span className="font-bold text-black">
-										{predictedScoreA} × {predictedScoreB}
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="text-gray-500 text-sm">
-										{t("compensations.calculatedPointsLabel")}
-									</span>
-									<span
-										className={`font-black text-lg ${
-											calculatedPoints >= 0 ? "text-green-600" : "text-red-600"
-										}`}
-									>
-										{calculatedPoints >= 0 ? "+" : ""}
-										{calculatedPoints}
-									</span>
-								</div>
-							</div>
-
-							<div>
-								<span className="text-gray-500 text-sm">
-									{t("compensations.reasonLabel")}
-								</span>
-								<p className="mt-1 border border-gray-200 bg-gray-50 p-3 font-medium text-black text-sm">
-									{reason}
-								</p>
-							</div>
-
-							<div className="rounded border-2 border-yellow-200 bg-yellow-50 p-3 font-bold text-sm text-yellow-800">
-								{t("compensations.irreversible")}
-							</div>
-
-							<div className="flex flex-col gap-3 pt-2">
-								<button
-									onClick={confirmAdjustment}
-									disabled={isSubmitting}
-									className="flex w-full items-center justify-center gap-2 border-[4px] border-black bg-[#ccff00] py-4 font-black text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-								>
-									{isSubmitting ? (
-										<InlineLoader size="lg" />
-									) : (
-										t("compensations.confirm")
-									)}
-								</button>
-								<button
-									onClick={() => setShowConfirmModal(false)}
-									disabled={isSubmitting}
-									className="w-full border-[3px] border-black bg-white py-3 font-black text-black uppercase transition-colors hover:bg-gray-100"
-								>
-									{t("common:actions.cancel")}
-								</button>
-							</div>
+						<div className="flex justify-between gap-3">
+							<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+								{t("compensations.tournamentLabel")}
+							</span>
+							<span className="text-right font-black font-display text-black text-sm uppercase italic">
+								{
+									tournaments.find(
+										(item) => item.id === Number(selectedTournamentId),
+									)?.name
+								}
+							</span>
+						</div>
+						<div className="flex justify-between gap-3">
+							<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+								{t("compensations.informedScore")}
+							</span>
+							<span className="font-body font-bold text-black tabular-nums">
+								{predictedScoreA} × {predictedScoreB}
+							</span>
+						</div>
+						<div className="flex justify-between gap-3">
+							<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+								{t("compensations.calculatedPointsLabel")}
+							</span>
+							<span
+								className={`font-black font-display text-lg tabular-nums ${
+									calculatedPoints >= 0 ? "text-green-600" : "text-brawl-red"
+								}`}
+							>
+								{calculatedPoints >= 0 ? "+" : ""}
+								{calculatedPoints}
+							</span>
 						</div>
 					</div>
+
+					<div>
+						<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+							{t("compensations.reasonLabel")}
+						</span>
+						<p className="mt-1 border-2 border-black bg-paper p-3 font-body font-bold text-black text-sm">
+							{reason}
+						</p>
+					</div>
+
+					<div className="border-2 border-brawl-yellow bg-brawl-yellow/20 p-3 font-body font-bold text-ink text-sm">
+						{t("compensations.irreversible")}
+					</div>
 				</div>
-			)}
+			</ConfirmationModal>
 		</div>
 	);
 }

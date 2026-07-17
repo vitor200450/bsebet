@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { ChevronRight, LogOut, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { getLiveStatus } from "@/functions/get-live-status";
 import { useLangLink } from "@/i18n/useLangLink";
 import { authClient } from "@/lib/auth-client";
@@ -121,7 +122,7 @@ export function GlobalHeader() {
 							/>
 							<span
 								className={clsx(
-									"shrink-0 font-black text-2xl uppercase italic tracking-tighter",
+									"shrink-0 font-black font-display text-2xl uppercase italic tracking-tighter",
 									variant === "dark" ? "text-gray-700" : "text-gray-300",
 								)}
 							>
@@ -135,7 +136,7 @@ export function GlobalHeader() {
 							/>
 							<h1
 								className={clsx(
-									"truncate pr-2 font-black text-2xl uppercase italic tracking-tighter",
+									"truncate pr-2 font-black font-display text-2xl uppercase italic tracking-tighter",
 									variant === "dark" ? "text-white" : "text-black",
 								)}
 							>
@@ -195,7 +196,7 @@ export function GlobalHeader() {
 					{isAdmin && !isInsideAdmin && (
 						<Link
 							{...(routeTo("/admin/tournaments") as any)}
-							className="group flex -skew-x-12 transform items-center gap-2 border-[3px] border-black bg-black px-5 py-2 font-black text-white text-xs uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+							className="group flex -skew-x-12 transform items-center gap-2 border-[3px] border-black bg-black px-5 py-2 font-black font-display text-white text-xs uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 						>
 							<Shield
 								size={16}
@@ -208,19 +209,51 @@ export function GlobalHeader() {
 						</Link>
 					)}
 
+					{isInsideAdmin && isAdmin && (
+						<Link
+							{...(routeTo("/") as any)}
+							className="group flex -skew-x-12 transform items-center gap-2 border-[3px] border-black bg-electric-lime px-5 py-2 font-black font-display text-ink text-xs uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						>
+							<LogOut
+								size={16}
+								strokeWidth={3}
+								className="skew-x-12 transform"
+							/>
+							<span className="skew-x-12 transform whitespace-nowrap pr-1">
+								{t("nav.exitAdmin")}
+							</span>
+						</Link>
+					)}
+
 					<LanguageSwitcher variant={variant} />
 					<UserMenu variant={variant} />
 				</div>
 
 				{/* MOBILE MENU TOGGLE & USER MENU - Mobile */}
-				<div className="flex items-center gap-4 xl:hidden">
+				<div className="flex items-center gap-3 xl:hidden">
 					{liveStatus?.isLive && !isInsideAdmin && (
 						<div className="flex -skew-x-6 transform items-center gap-1.5 rounded-full border-[2px] border-black bg-black px-2 py-1 text-white">
 							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00ff55] shadow-[0_0_8px_rgba(0,255,85,0.6)]" />
-							<span className="mt-0.5 skew-x-6 transform font-black text-[9px] uppercase tracking-widest">
+							<span className="mt-0.5 skew-x-6 transform font-black font-display text-[9px] uppercase tracking-widest">
 								{t("nav.live")}
 							</span>
 						</div>
+					)}
+
+					{isInsideAdmin && isAdmin && (
+						<Link
+							{...(routeTo("/") as any)}
+							className="group flex -skew-x-12 transform items-center gap-1.5 border-[2px] border-black bg-electric-lime px-2.5 py-1.5 font-black font-display text-[10px] text-ink uppercase italic tracking-wider shadow-comic transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						>
+							<LogOut
+								size={14}
+								strokeWidth={3}
+								className="skew-x-12 transform"
+							/>
+							<span className="hidden skew-x-12 transform whitespace-nowrap pr-0.5 sm:inline">
+								{t("nav.exitAdmin")}
+							</span>
+						</Link>
 					)}
 
 					<UserMenu variant={variant} />
@@ -250,46 +283,54 @@ export function GlobalHeader() {
 			{/* MOBILE MENU DROPDOWN */}
 			{isMobileMenuOpen && (
 				<div className="slide-in-from-top-2 absolute top-full right-0 left-0 z-50 flex animate-in flex-col border-black border-b-[4px] bg-white p-4 shadow-[0px_10px_20px_rgba(0,0,0,0.2)] xl:hidden">
-					{!isInsideAdmin && (
-						<nav className="mb-6 flex flex-col gap-4">
-							{navItems.map((item) => {
-								const isActive = isNavItemActive(
-									item,
-									router.location.pathname,
-									lang,
-								);
+					{isInsideAdmin ? (
+						<AdminNav
+							variant="mobile"
+							showExit={false}
+							onNavigate={() => setIsMobileMenuOpen(false)}
+						/>
+					) : (
+						<>
+							<nav className="mb-6 flex flex-col gap-4">
+								{navItems.map((item) => {
+									const isActive = isNavItemActive(
+										item,
+										router.location.pathname,
+										lang,
+									);
 
-								return (
-									<Link
-										key={item.id}
-										{...(routeTo(item.to) as any)}
-										className={clsx(
-											"border-l-[6px] px-4 py-2 font-black text-3xl uppercase italic tracking-tighter transition-all",
-											isActive
-												? "border-brawl-red bg-gray-50 text-black"
-												: "border-transparent text-gray-400 hover:border-gray-200 hover:text-black",
-										)}
-									>
-										{item.label}
-									</Link>
-								);
-							})}
-						</nav>
-					)}
+									return (
+										<Link
+											key={item.id}
+											{...(routeTo(item.to) as any)}
+											className={clsx(
+												"border-l-[6px] px-4 py-2 font-black font-display text-3xl uppercase italic tracking-tighter transition-all",
+												isActive
+													? "border-brawl-red bg-gray-50 text-black"
+													: "border-transparent text-gray-400 hover:border-gray-200 hover:text-black",
+											)}
+										>
+											{item.label}
+										</Link>
+									);
+								})}
+							</nav>
 
-					{isAdmin && !isInsideAdmin && (
-						<Link
-							{...(routeTo("/admin/tournaments") as any)}
-							className="mb-4 flex items-center justify-center gap-2 border-[3px] border-black bg-black px-6 py-4 font-black text-sm text-white uppercase italic tracking-wider shadow-comic transition-all active:translate-y-1 active:shadow-none"
-						>
-							<Shield size={20} strokeWidth={3} />
-							<span>{t("nav.adminPanel")}</span>
-						</Link>
+							{isAdmin && (
+								<Link
+									{...(routeTo("/admin/tournaments") as any)}
+									className="mb-4 flex items-center justify-center gap-2 border-[3px] border-black bg-black px-6 py-4 font-black font-display text-sm text-white uppercase italic tracking-wider shadow-comic transition-all active:translate-y-1 active:shadow-none"
+								>
+									<Shield size={20} strokeWidth={3} />
+									<span>{t("nav.adminPanel")}</span>
+								</Link>
+							)}
+						</>
 					)}
 				</div>
 			)}
 
-			{/* SUB-HEADER ROW (Admin Actions) */}
+			{/* SUB-HEADER ROW — fixed height on md+ so Preparar/Gerir never jump */}
 			{isInsideAdmin && (
 				<div
 					className={clsx(
@@ -299,70 +340,13 @@ export function GlobalHeader() {
 							: "border-black/5 bg-gray-50",
 					)}
 				>
-					<div className="mx-auto w-full max-w-[1600px] px-4 py-3 md:px-6 md:py-3">
-						<div className="flex min-h-[50px] flex-wrap items-center justify-between gap-x-4 gap-y-3 md:min-h-[56px]">
-							{/* Admin Navigation Tabs */}
-							<div className="flex items-center gap-2 md:gap-3">
-								{[
-									{
-										label: t("nav.adminTournaments"),
-										to: "/admin/tournaments",
-									},
-									{ label: t("nav.adminTeams"), to: "/admin/teams" },
-									{ label: t("nav.adminUsers"), to: "/admin/users" },
-									{
-										label: t("nav.adminCompensations"),
-										to: "/admin/compensations",
-									},
-								].map((tab) => {
-									const tabPath = `/${lang}${tab.to}`;
-									const isActive = router.location.pathname.startsWith(tabPath);
-									return (
-										<Link
-											key={tab.to}
-											{...(routeTo(tab.to) as any)}
-											className={clsx(
-												"relative -skew-x-6 transform border-[2px] border-black px-3 py-1.5 font-black text-xs uppercase italic tracking-tight transition-all md:border-[3px] md:px-4 md:py-2 md:text-sm",
-												isActive
-													? "bg-electric-lime text-black shadow-comic-sm md:shadow-comic"
-													: "bg-white text-gray-500 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] hover:bg-gray-100 hover:text-black md:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]",
-											)}
-										>
-											<span className="skew-x-6 transform">{tab.label}</span>
-											{isActive && (
-												<div className="absolute right-0 -bottom-[2px] left-0 h-[2px] bg-brawl-red md:-bottom-[3px] md:h-[3px]" />
-											)}
-										</Link>
-									);
-								})}
-							</div>
-
-							{isAdmin && (
-								<Link
-									{...(routeTo("/") as any)}
-									className={clsx(
-										"group flex shrink-0 -skew-x-12 transform items-center gap-2 border-[2px] border-black px-3 py-1.5 font-black text-[10px] uppercase italic tracking-wider shadow-comic transition-all hover:shadow-comic-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none md:border-[3px] md:px-5 md:py-2 md:text-xs",
-										variant === "dark"
-											? "border-white bg-white text-black shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]"
-											: "border-black bg-electric-lime text-black",
-									)}
-								>
-									<LogOut
-										size={14}
-										strokeWidth={3}
-										className="skew-x-12 transform"
-									/>
-									<span className="hidden skew-x-12 transform whitespace-nowrap md:inline">
-										{t("nav.exitAdmin")}
-									</span>
-								</Link>
-							)}
-						</div>
-
-						{config?.actions && (
-							<div className="mt-3 flex w-full items-start justify-start border-black/10 border-t pt-3">
+					<div className="mx-auto flex min-h-16 w-full max-w-[1600px] items-center px-4 py-2 md:h-16 md:px-6 md:py-0">
+						{config?.actions ? (
+							<div className="flex h-11 w-full items-center overflow-x-auto">
 								{config.actions}
 							</div>
+						) : (
+							<div className="h-11 w-full" aria-hidden />
 						)}
 					</div>
 				</div>

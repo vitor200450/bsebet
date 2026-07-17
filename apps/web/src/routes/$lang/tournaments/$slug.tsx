@@ -547,17 +547,17 @@ function TournamentDetailsPage() {
 						<div className="flex-1 text-center md:text-left">
 							<div className="mb-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
 								{tournament.region && (
-									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
+									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 										<MapPin className="h-3 w-3" strokeWidth={2.5} />
 										{tournament.region}
 									</span>
 								)}
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 									<Calendar className="h-3 w-3" strokeWidth={2.5} />
 									{formatDate(tournament.startDate, t)} -{" "}
 									{formatDate(tournament.endDate, t)}
 								</span>
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-bold font-body text-white text-xs uppercase tracking-widest backdrop-blur-sm">
+								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 									<Users className="h-3 w-3" strokeWidth={2.5} />
 									{t("detail.teamCount", {
 										count: tournament.participantsCount || 0,
@@ -569,7 +569,7 @@ function TournamentDetailsPage() {
 								{tournament.name}
 							</h1>
 
-							<p className="font-bold font-body text-sm text-white/80 uppercase tracking-widest">
+							<p className="font-body font-bold text-sm text-white/80 uppercase tracking-widest">
 								{tournament.format ||
 									(() => {
 										const stages = (tournament.stages as any[]) || [];
@@ -630,7 +630,7 @@ function TournamentDetailsPage() {
 					>
 						{t("detail.filterMyBets")}
 						{userBets.length > 0 && (
-							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-bold font-body text-[10px] text-white tabular-nums">
+							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-body font-bold text-[10px] text-white tabular-nums">
 								{userBets.length}
 							</span>
 						)}

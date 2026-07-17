@@ -153,7 +153,7 @@ export function MatchBetCard({
 							className="h-5 w-5 shrink-0 object-contain"
 						/>
 					) : null}
-					<span className="truncate font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+					<span className="truncate font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 						{matchLabel}
 					</span>
 				</div>
@@ -195,7 +195,7 @@ export function MatchBetCard({
 						</div>
 					)}
 					{aWon && isFinished && (
-						<div className="flex items-center gap-1 font-bold font-body text-[#121212] text-[9px] uppercase tracking-widest">
+						<div className="flex items-center gap-1 font-body font-bold text-[#121212] text-[9px] uppercase tracking-widest">
 							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
@@ -209,14 +209,16 @@ export function MatchBetCard({
 						<div className="flex flex-col items-center gap-2">
 							{hasPredictedScore ? (
 								<>
-									<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+									<span className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("betPredictionPrefix")}
 									</span>
 									<div className="flex items-center gap-2">
 										<span className="font-black font-body text-3xl text-ink tabular-nums">
 											{predictedScoreA}
 										</span>
-										<span className="font-black font-body text-gray-300 text-xl">-</span>
+										<span className="font-black font-body text-gray-300 text-xl">
+											-
+										</span>
 										<span className="font-black font-body text-3xl text-ink tabular-nums">
 											{predictedScoreB}
 										</span>
@@ -230,7 +232,7 @@ export function MatchBetCard({
 								</div>
 							)}
 							{!isProjected && startTime && (
-								<span className="flex items-center gap-1 text-center font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+								<span className="flex items-center gap-1 text-center font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 									<Calendar className="h-3 w-3" strokeWidth={2} />
 									{new Date(startTime).toLocaleString(locale, {
 										day: "2-digit",
@@ -244,7 +246,7 @@ export function MatchBetCard({
 					) : (
 						<div className="flex flex-col items-center gap-2.5">
 							{/* Actual Score */}
-							<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+							<span className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 								{t("matchCard.score")}
 							</span>
 							<div className="flex items-center gap-1.5">
@@ -256,7 +258,9 @@ export function MatchBetCard({
 								>
 									{woA ?? actualScoreA ?? "—"}
 								</span>
-								<span className="font-black font-body text-gray-400 text-sm">-</span>
+								<span className="font-black font-body text-gray-400 text-sm">
+									-
+								</span>
 								<span
 									className={clsx(
 										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black font-body text-xl tabular-nums shadow-comic-sm",
@@ -269,7 +273,7 @@ export function MatchBetCard({
 							{/* Predicted Score */}
 							{hasPredictedScore && !isProjected && (
 								<div className="mt-1 flex flex-col items-center gap-0.5">
-									<span className="font-bold font-body text-[9px] text-gray-500 uppercase tracking-widest">
+									<span className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("betPredictionPrefix")}
 									</span>
 									<span className="font-black font-body text-gray-400 text-xl tabular-nums">
@@ -307,7 +311,7 @@ export function MatchBetCard({
 						</div>
 					)}
 					{bWon && isFinished && (
-						<div className="flex items-center gap-1 font-bold font-body text-[#121212] text-[9px] uppercase tracking-widest">
+						<div className="flex items-center gap-1 font-body font-bold text-[#121212] text-[9px] uppercase tracking-widest">
 							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
 							{t("correctWinner")}
 						</div>
@@ -330,7 +334,7 @@ export function MatchBetCard({
 							</span>
 						)}
 						{isFinished && (pointsEarned == null || pointsEarned === 0) && (
-							<span className="font-bold font-body text-[10px] text-gray-500 uppercase tracking-widest">
+							<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 								{t("result.noPoints")}
 							</span>
 						)}

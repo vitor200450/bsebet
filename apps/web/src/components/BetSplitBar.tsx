@@ -21,13 +21,13 @@ export function BetSplitBar({
 		return (
 			<div className="w-full">
 				{!compact && (
-					<p className="mb-1 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+					<p className="mb-1 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 						{t("community.title")}
 					</p>
 				)}
 				<div className={`w-full bg-gray-300 ${compact ? "h-4" : "h-5"}`} />
 				{!compact && (
-					<p className="mt-1 text-center font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+					<p className="mt-1 text-center font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 						{t("community.noBets")}
 					</p>
 				)}
@@ -39,7 +39,7 @@ export function BetSplitBar({
 		<div className="w-full">
 			{/* Title label */}
 			{!compact && (
-				<p className="mb-1 font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+				<p className="mb-1 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 					{t("community.title")}
 				</p>
 			)}
@@ -70,7 +70,7 @@ export function BetSplitBar({
 
 			{/* Total count */}
 			{!compact && (
-				<p className="mt-1 text-right font-bold font-body text-[9px] text-gray-400 uppercase tracking-widest">
+				<p className="mt-1 text-right font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 					{t("community.totalVotes", { count: totalCount })}
 				</p>
 			)}
