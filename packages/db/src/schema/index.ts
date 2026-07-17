@@ -34,6 +34,45 @@ export const tournamentStatusEnum = pgEnum("tournament_status", [
 	"finished",
 ]);
 
+export const venueModeEnum = pgEnum("venue_mode", ["online", "lan"]);
+
+export const presentationThemeEnum = pgEnum("presentation_theme", [
+	"default",
+	"qualifier",
+	"monthly_finals",
+	"major",
+]);
+
+export type TournamentScoringRules = {
+	winner: number;
+	exact: number;
+	underdog_25: number;
+	underdog_50: number;
+	underdog_tier1_max_pct?: number;
+	underdog_tier2_max_pct?: number;
+};
+
+export type TournamentStage = {
+	id: string;
+	name: string;
+	type: "Single Elimination" | "Double Elimination" | "Groups" | "Swiss";
+	settings: {
+		groupsCount?: number;
+		teamsPerGroup?: number;
+		advancingCount?: number;
+		matchType?: "Bo1" | "Bo3" | "Bo5";
+		groupFormat?: "GSL" | "Round Robin";
+		participantsCount?: number;
+		winsToAdvance?: number;
+		lossesToEliminate?: number;
+		roundsMax?: number;
+		enableThirdPlaceMatch?: boolean;
+	};
+	startDate?: string;
+	endDate?: string;
+	scoringRules?: TournamentScoringRules;
+};
+
 // --- 1. NOVA TABELA: TIMES ---
 export const teams = pgTable("teams", {
 	id: serial("id").primaryKey(),
@@ -63,6 +102,26 @@ export const tournamentTeams = pgTable(
 	}),
 );
 
+// --- EVENT KINDS (circuit role catalog) ---
+
+export const eventKinds = pgTable("event_kinds", {
+	id: serial("id").primaryKey(),
+	name: text("name").notNull(),
+	slug: text("slug").unique().notNull(),
+	presentationTheme: presentationThemeEnum("presentation_theme")
+		.default("default")
+		.notNull(),
+	templateStages: jsonb("template_stages")
+		.$type<TournamentStage[]>()
+		.default([])
+		.notNull(),
+	templateScoringRules: jsonb(
+		"template_scoring_rules",
+	).$type<TournamentScoringRules | null>(),
+	archivedAt: timestamp("archived_at"),
+	createdAt: timestamp("created_at").defaultNow(),
+});
+
 // --- 3. TABELAS EXISTENTES (ATUALIZADAS) ---
 
 export const tournaments = pgTable("tournaments", {
@@ -73,49 +132,16 @@ export const tournaments = pgTable("tournaments", {
 	format: text("format"), // Ex: "Group Stage + Playoffs"
 	region: text("region"), // Ex: "Global"
 	participantsCount: integer("participants_count"),
+	venueMode: venueModeEnum("venue_mode").default("online").notNull(),
+	eventKindId: integer("event_kind_id").references(() => eventKinds.id),
 	// Stages: Complex JSON structure for groups, playoffs, formats
-	stages:
-		jsonb("stages").$type<
-			{
-				id: string;
-				name: string; // e.g., "Group Stage"
-				type: "Single Elimination" | "Double Elimination" | "Groups" | "Swiss";
-				settings: {
-					groupsCount?: number;
-					teamsPerGroup?: number;
-					advancingCount?: number;
-					matchType?: "Bo1" | "Bo3" | "Bo5";
-					groupFormat?: "GSL" | "Round Robin";
-					participantsCount?: number;
-					winsToAdvance?: number;
-					lossesToEliminate?: number;
-					roundsMax?: number;
-				};
-				startDate?: string;
-				endDate?: string;
-				scoringRules?: {
-					winner: number;
-					exact: number;
-					underdog_25: number;
-					underdog_50: number;
-					underdog_tier1_max_pct?: number;
-					underdog_tier2_max_pct?: number;
-				};
-			}[]
-		>(),
+	stages: jsonb("stages").$type<TournamentStage[]>(),
 	startDate: timestamp("start_date"),
 	endDate: timestamp("end_date"),
 	status: tournamentStatusEnum("status").default("upcoming").notNull(),
 	isActive: boolean("is_active").default(true),
 	scoringRules: jsonb("scoring_rules")
-		.$type<{
-			winner: number;
-			exact: number;
-			underdog_25: number;
-			underdog_50: number;
-			underdog_tier1_max_pct?: number;
-			underdog_tier2_max_pct?: number;
-		}>()
+		.$type<TournamentScoringRules>()
 		.notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
 });
@@ -228,10 +254,18 @@ export const teamsRelations = relations(teams, ({ many }) => ({
 	matchesAsB: many(matches, { relationName: "teamB" }),
 }));
 
-export const tournamentsRelations = relations(tournaments, ({ many }) => ({
+export const eventKindsRelations = relations(eventKinds, ({ many }) => ({
+	tournaments: many(tournaments),
+}));
+
+export const tournamentsRelations = relations(tournaments, ({ many, one }) => ({
 	matches: many(matches),
 	teams: many(tournamentTeams), // Acesso fácil aos times do torneio
 	matchDays: many(matchDays),
+	eventKind: one(eventKinds, {
+		fields: [tournaments.eventKindId],
+		references: [eventKinds.id],
+	}),
 }));
 
 export const tournamentTeamsRelations = relations(

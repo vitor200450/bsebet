@@ -20,5 +20,8 @@
 	"adminOnly": "Apenas administradores podem ajustar pontos",
 	"adminOnlySearch": "Apenas administradores podem buscar usuários",
 	"pointAdjustmentError": "Erro ao buscar ajustes de pontos",
-	"pointAdjustmentFallbackUser": "Usuário"
+	"pointAdjustmentFallbackUser": "Usuário",
+	"eventKindUnavailable": "Este Tipo de Evento está arquivado ou não existe",
+	"eventKindInvalidId": "ID de Tipo de Evento inválido",
+	"eventKindInUse": "Este Tipo de Evento ainda é referenciado por torneios"
 }

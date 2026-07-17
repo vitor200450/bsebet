@@ -29,6 +29,8 @@ import {
 import { type Stage, StageBuilder } from "@/components/admin/StageBuilder";
 import { useSetHeader } from "@/components/HeaderContext";
 import { useLangLink } from "@/i18n/useLangLink";
+import { getAllEventKinds } from "@/server/event-kinds";
+import { applyEventKindTemplate } from "@/server/event-kind-template";
 import {
 	copyTournament,
 	deleteTournament,
@@ -38,13 +40,19 @@ import {
 
 export const Route = createFileRoute("/$lang/admin/tournaments/")({
 	component: AdminTournamentsPage,
-	loader: () => getTournaments(),
+	loader: async () => {
+		const [tournaments, eventKinds] = await Promise.all([
+			getTournaments(),
+			getAllEventKinds(),
+		]);
+		return { tournaments, eventKinds };
+	},
 });
 
 function AdminTournamentsPage() {
 	const { t } = useTranslation("admin");
 	const { linkTo } = useLangLink();
-	const tournaments = Route.useLoaderData();
+	const { tournaments, eventKinds } = Route.useLoaderData();
 	const router = useRouter();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +83,8 @@ function AdminTournamentsPage() {
 		startDate: string;
 		endDate: string;
 		status: "upcoming" | "active" | "finished";
+		venueMode: "online" | "lan";
+		eventKindId: number | null;
 		scoringRules: {
 			winner: number;
 			exact: number;
@@ -94,6 +104,8 @@ function AdminTournamentsPage() {
 		startDate: "",
 		endDate: "",
 		status: "upcoming",
+		venueMode: "online",
+		eventKindId: null,
 		scoringRules: {
 			winner: 1,
 			exact: 3,
@@ -141,6 +153,8 @@ function AdminTournamentsPage() {
 							startDate: "",
 							endDate: "",
 							status: "upcoming",
+							venueMode: "online",
+							eventKindId: null,
 							scoringRules: {
 								winner: 1,
 								exact: 3,
@@ -191,6 +205,8 @@ function AdminTournamentsPage() {
 				: "",
 
 			status: item.status || "upcoming",
+			venueMode: item.venueMode || "online",
+			eventKindId: item.eventKindId ?? null,
 			scoringRules: {
 				winner: (item.scoringRules as any)?.winner ?? 1,
 				exact: (item.scoringRules as any)?.exact ?? 3,
@@ -203,6 +219,40 @@ function AdminTournamentsPage() {
 			},
 		});
 		setIsModalOpen(true);
+	};
+
+	const handleEventKindChange = (raw: string) => {
+		const nextId = raw === "" ? null : Number(raw);
+		const kind = nextId ? eventKinds.find((k) => k.id === nextId) : undefined;
+
+		setFormData((prev) => {
+			const next = { ...prev, eventKindId: nextId };
+			// Client-side seed preview on create — same rules as server applyEventKindTemplate
+			if (!prev.id && kind) {
+				const seeded = applyEventKindTemplate(
+					{
+						stages: prev.stages as any,
+						scoringRules: prev.scoringRules,
+					},
+					{
+						stages: (kind.templateStages as any) || [],
+						scoringRules: kind.templateScoringRules,
+					},
+				);
+				next.stages = seeded.stages as Stage[];
+				next.scoringRules = {
+					winner: seeded.scoringRules.winner,
+					exact: seeded.scoringRules.exact,
+					underdog_25: seeded.scoringRules.underdog_25,
+					underdog_50: seeded.scoringRules.underdog_50,
+					underdog_tier1_max_pct:
+						seeded.scoringRules.underdog_tier1_max_pct ?? 0.25,
+					underdog_tier2_max_pct:
+						seeded.scoringRules.underdog_tier2_max_pct ?? 0.5,
+				};
+			}
+			return next;
+		});
 	};
 
 	const handleSave = async (e: React.FormEvent) => {
@@ -229,6 +279,8 @@ function AdminTournamentsPage() {
 						: undefined,
 					endDate: formData.endDate ? new Date(formData.endDate) : undefined,
 					scoringRules: formData.scoringRules,
+					venueMode: formData.venueMode,
+					eventKindId: formData.eventKindId,
 				},
 			});
 
@@ -644,6 +696,56 @@ function AdminTournamentsPage() {
 								},
 							]}
 						/>
+
+						<div className="grid grid-cols-2 gap-4">
+							<CustomSelect
+								label={t("tournaments.venueModeLabel")}
+								value={formData.venueMode}
+								onChange={(val) =>
+									setFormData({
+										...formData,
+										venueMode: val as "online" | "lan",
+									})
+								}
+								searchable={false}
+								options={[
+									{
+										value: "online",
+										label: t("tournaments.venueModes.online"),
+									},
+									{ value: "lan", label: t("tournaments.venueModes.lan") },
+								]}
+							/>
+							<CustomSelect
+								label={t("tournaments.eventKindLabel")}
+								value={
+									formData.eventKindId != null
+										? String(formData.eventKindId)
+										: ""
+								}
+								onChange={handleEventKindChange}
+								options={[
+									{ value: "", label: t("tournaments.eventKindNone") },
+									...eventKinds
+										.filter(
+											(k) =>
+												k.archivedAt == null || k.id === formData.eventKindId,
+										)
+										.map((k) => ({
+											value: String(k.id),
+											label:
+												k.archivedAt != null
+													? `${k.name} (${t("eventKinds.archivedBadge")})`
+													: k.name,
+										})),
+								]}
+							/>
+						</div>
+						{!formData.id && formData.eventKindId != null && (
+							<p className="font-body text-[10px] text-gray-600 uppercase tracking-widest">
+								{t("tournaments.eventKindSeedHint")}
+							</p>
+						)}
 
 						<div className="space-y-3 border-[3px] border-black bg-paper p-4">
 							<h3 className="flex items-center gap-2 font-black font-display text-black text-sm uppercase italic">

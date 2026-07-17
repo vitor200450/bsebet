@@ -20,5 +20,8 @@
 	"adminOnly": "Only administrators can adjust points",
 	"adminOnlySearch": "Only administrators can search users",
 	"pointAdjustmentError": "Error fetching point adjustments",
-	"pointAdjustmentFallbackUser": "User"
+	"pointAdjustmentFallbackUser": "User",
+	"eventKindUnavailable": "This Event Kind is archived or missing",
+	"eventKindInvalidId": "Invalid Event Kind ID",
+	"eventKindInUse": "This Event Kind is still referenced by tournaments"
 }

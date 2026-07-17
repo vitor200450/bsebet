@@ -1,10 +1,15 @@
 import { auth } from "@bsebet/auth";
-import { bets, matches, tournaments } from "@bsebet/db/schema";
+import { bets, eventKinds, matches, tournaments } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { createServerT } from "@/i18n";
 import type { SupportedLang } from "@/i18n/config";
+import {
+	applyEventKindTemplate,
+	DEFAULT_SCORING_RULES,
+	VENUE_MODES,
+} from "./event-kind-template";
 import {
 	base64ToBuffer,
 	deleteLogoFromR2,
@@ -105,15 +110,10 @@ const createTournamentSchema = (t: (key: string) => string) =>
 		endDate: z.coerce.date().optional(),
 		status: z.enum(["upcoming", "active", "finished"]).default("upcoming"),
 		isActive: z.boolean().default(true),
+		venueMode: z.enum(VENUE_MODES).default("online"),
+		eventKindId: z.number().nullable().optional(),
 		// Default scoring rules if creating new
-		scoringRules: scoringRulesSchema.default({
-			winner: 1,
-			exact: 3,
-			underdog_25: 2,
-			underdog_50: 1,
-			underdog_tier1_max_pct: 0.25,
-			underdog_tier2_max_pct: 0.5,
-		}),
+		scoringRules: scoringRulesSchema.default(DEFAULT_SCORING_RULES),
 	});
 
 const _dummyT = (key: string) => key;
@@ -138,17 +138,16 @@ export const saveTournamentStageSchema = z.object({
 });
 
 /**
- * Fetch all tournaments ordered by created_at desc
+ * Fetch all tournaments ordered by created_at desc (with Event Kind for live theme)
  */
 export const getTournaments = createServerFn({
 	method: "GET",
 }).handler(async () => {
 	const { db } = await import("@bsebet/db");
-	const allTournaments = await db
-		.select()
-		.from(tournaments)
-		.orderBy(desc(tournaments.createdAt));
-	return allTournaments;
+	return db.query.tournaments.findMany({
+		orderBy: [desc(tournaments.createdAt)],
+		with: { eventKind: true },
+	});
 });
 
 const getTournamentFn = createServerFn({
@@ -179,6 +178,30 @@ const saveTournamentFn = createServerFn({
 	const lang = data?.lang ?? "pt";
 	const t = createServerT(lang as SupportedLang);
 	const validData = createTournamentSchema(t).parse(data);
+
+	let stages = validData.stages;
+	let scoringRules = validData.scoringRules;
+	const venueMode = validData.venueMode;
+	const eventKindId = validData.eventKindId ?? null;
+
+	// Create only: one-shot Event Kind Template seed
+	if (!validData.id && eventKindId) {
+		const kind = await db.query.eventKinds.findFirst({
+			where: eq(eventKinds.id, eventKindId),
+		});
+		if (!kind || kind.archivedAt != null) {
+			throw new Error(t("errors:eventKindUnavailable"));
+		}
+		const seeded = applyEventKindTemplate(
+			{ stages, scoringRules },
+			{
+				stages: kind.templateStages,
+				scoringRules: kind.templateScoringRules,
+			},
+		);
+		stages = seeded.stages;
+		scoringRules = seeded.scoringRules;
+	}
 
 	let finalLogoUrl = validData.logoUrl || null;
 
@@ -224,12 +247,14 @@ const saveTournamentFn = createServerFn({
 				format: validData.format || null,
 				region: validData.region || null,
 				participantsCount: validData.participantsCount || null,
-				stages: validData.stages,
+				stages,
 				startDate: validData.startDate || null,
 				endDate: validData.endDate || null,
 				status: validData.status,
 				isActive: validData.isActive,
-				scoringRules: validData.scoringRules,
+				scoringRules,
+				venueMode,
+				eventKindId,
 			})
 			.where(eq(tournaments.id, validData.id))
 			.returning();
@@ -245,12 +270,14 @@ const saveTournamentFn = createServerFn({
 			format: validData.format || null,
 			region: validData.region || null,
 			participantsCount: validData.participantsCount || null,
-			stages: validData.stages,
+			stages,
 			startDate: validData.startDate || null,
 			endDate: validData.endDate || null,
 			status: validData.status,
 			isActive: validData.isActive,
-			scoringRules: validData.scoringRules,
+			scoringRules,
+			venueMode,
+			eventKindId,
 		})
 		.returning();
 
@@ -376,6 +403,7 @@ const getTournamentBySlugFn = createServerFn({
 	// 1. Get Tournament
 	const tournament = await db.query.tournaments.findFirst({
 		where: eq(tournaments.slug, slug),
+		with: { eventKind: true },
 	});
 
 	if (!tournament) {
@@ -470,6 +498,8 @@ const copyTournamentFn = createServerFn({
 			scoringRules: original.scoringRules, // Copy scoring rules
 			startDate: null, // Reset dates
 			endDate: null,
+			venueMode: original.venueMode,
+			eventKindId: original.eventKindId,
 		})
 		.returning();
 

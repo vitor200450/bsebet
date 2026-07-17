@@ -12,8 +12,15 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { PublicPageShell } from "@/components/PublicPageShell";
+import {
+	getTournamentPresentationTheme,
+	presentationThemeBadgeClass,
+	presentationThemeHeaderClass,
+	venueModePillClass,
+} from "@/components/tournament-presentation";
 import { i18next } from "@/i18n";
 import { useLangLink } from "@/i18n/useLangLink";
+import type { PresentationTheme } from "@/server/event-kind-template";
 import { getTournaments } from "@/server/tournaments";
 
 // Schema for URL search params (filter state)
@@ -125,6 +132,13 @@ function TournamentsPage() {
 	);
 }
 
+function themeLabelKey(theme: PresentationTheme): string | null {
+	if (theme === "qualifier") return "browse.themeQualifier";
+	if (theme === "monthly_finals") return "browse.themeMonthlyFinals";
+	if (theme === "major") return "browse.themeMajor";
+	return null;
+}
+
 function TournamentCard({
 	tournament,
 }: {
@@ -139,12 +153,21 @@ function TournamentCard({
 		startDate: Date | null;
 		endDate: Date | null;
 		status: "upcoming" | "active" | "finished";
+		venueMode: "online" | "lan";
+		eventKind: {
+			id: number;
+			name: string;
+			presentationTheme: string;
+		} | null;
 	};
 }) {
 	const { t } = useTranslation("tournament");
 	const { linkTo } = useLangLink();
 	const isActive = tournament.status === "active";
 	const isFinished = tournament.status === "finished";
+	const theme = getTournamentPresentationTheme(tournament.eventKind);
+	const themeKey = themeLabelKey(theme);
+	const themeBadge = presentationThemeBadgeClass(theme);
 
 	// Status config
 	const statusConfig = isActive
@@ -167,16 +190,18 @@ function TournamentCard({
 
 	return (
 		<article className="group">
-			<div className="relative overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:shadow-[5px_5px_0_0_#000]">
+			<div
+				className={clsx(
+					"relative overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:shadow-[5px_5px_0_0_#000]",
+					theme === "major" && "border-[3px]",
+					theme === "monthly_finals" && "ring-2 ring-[#ccff00] ring-offset-2",
+				)}
+			>
 				{/* Header with gradient */}
 				<div
 					className={clsx(
 						"relative h-24 overflow-hidden",
-						isActive && "bg-gradient-to-r from-[#ff2e2e]/20 to-[#ffc700]/20",
-						isFinished && "bg-gradient-to-r from-gray-100 to-gray-50",
-						!isActive &&
-							!isFinished &&
-							"bg-gradient-to-r from-[#ffc700]/20 to-[#ccff00]/10",
+						presentationThemeHeaderClass(theme, tournament.status),
 					)}
 				>
 					{/* Pattern overlay */}
@@ -232,6 +257,26 @@ function TournamentCard({
 				<div className="px-4 pt-12 pb-4">
 					{/* Meta */}
 					<div className="mb-3 flex flex-wrap items-center gap-2">
+						<span
+							className={clsx(
+								"rounded px-2 py-1 font-body font-bold text-[10px] uppercase tracking-widest",
+								venueModePillClass(tournament.venueMode),
+							)}
+						>
+							{tournament.venueMode === "lan"
+								? t("browse.venueLan")
+								: t("browse.venueOnline")}
+						</span>
+						{themeKey && themeBadge && (
+							<span
+								className={clsx(
+									"rounded px-2 py-1 font-body font-bold text-[10px] uppercase tracking-widest",
+									themeBadge,
+								)}
+							>
+								{t(themeKey)}
+							</span>
+						)}
 						<span className="flex items-center gap-1 rounded bg-paper px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
 							<Calendar className="h-3 w-3" strokeWidth={2} />
 							{formatDateRange(tournament.startDate, tournament.endDate)}

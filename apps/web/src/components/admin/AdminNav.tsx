@@ -1,6 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { LogOut, Scale, Trophy, UserCog, UsersRound } from "lucide-react";
+import {
+	Layers,
+	LogOut,
+	Scale,
+	Trophy,
+	UserCog,
+	UsersRound,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLangLink } from "@/i18n/useLangLink";
 
@@ -36,6 +43,12 @@ const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 				to: "/admin/tournaments",
 				icon: Trophy,
 				matchExtra: ["/admin/live"],
+			},
+			{
+				id: "event-kinds",
+				labelKey: "nav.adminEventKinds",
+				to: "/admin/event-kinds",
+				icon: Layers,
 			},
 		],
 	},

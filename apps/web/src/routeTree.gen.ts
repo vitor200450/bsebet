@@ -32,6 +32,7 @@ import { Route as LangAdminUsersRouteImport } from './routes/$lang/admin/users'
 import { Route as LangAdminTournamentsRouteImport } from './routes/$lang/admin/tournaments'
 import { Route as LangAdminTeamsRouteImport } from './routes/$lang/admin/teams'
 import { Route as LangAdminMigrateLogosRouteImport } from './routes/$lang/admin/migrate-logos'
+import { Route as LangAdminEventKindsRouteImport } from './routes/$lang/admin/event-kinds'
 import { Route as LangAdminCompensationsRouteImport } from './routes/$lang/admin/compensations'
 import { Route as LangAdminTournamentsIndexRouteImport } from './routes/$lang/admin/tournaments/index'
 import { Route as LangAdminLiveMatchIdRouteImport } from './routes/$lang/admin/live/$matchId'
@@ -152,6 +153,11 @@ const LangAdminMigrateLogosRoute = LangAdminMigrateLogosRouteImport.update({
   path: '/migrate-logos',
   getParentRoute: () => LangAdminRoute,
 } as any)
+const LangAdminEventKindsRoute = LangAdminEventKindsRouteImport.update({
+  id: '/event-kinds',
+  path: '/event-kinds',
+  getParentRoute: () => LangAdminRoute,
+} as any)
 const LangAdminCompensationsRoute = LangAdminCompensationsRouteImport.update({
   id: '/compensations',
   path: '/compensations',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
   '/$lang/': typeof LangIndexRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/event-kinds': typeof LangAdminEventKindsRoute
   '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
   '/$lang/admin/teams': typeof LangAdminTeamsRoute
   '/$lang/admin/tournaments': typeof LangAdminTournamentsRouteWithChildren
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/$lang/profile': typeof LangProfileRoute
   '/$lang/terms': typeof LangTermsRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/event-kinds': typeof LangAdminEventKindsRoute
   '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
   '/$lang/admin/teams': typeof LangAdminTeamsRoute
   '/$lang/admin/users': typeof LangAdminUsersRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/$lang/tournaments': typeof LangTournamentsRouteWithChildren
   '/$lang/': typeof LangIndexRoute
   '/$lang/admin/compensations': typeof LangAdminCompensationsRoute
+  '/$lang/admin/event-kinds': typeof LangAdminEventKindsRoute
   '/$lang/admin/migrate-logos': typeof LangAdminMigrateLogosRoute
   '/$lang/admin/teams': typeof LangAdminTeamsRoute
   '/$lang/admin/tournaments': typeof LangAdminTournamentsRouteWithChildren
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/$lang/tournaments'
     | '/$lang/'
     | '/$lang/admin/compensations'
+    | '/$lang/admin/event-kinds'
     | '/$lang/admin/migrate-logos'
     | '/$lang/admin/teams'
     | '/$lang/admin/tournaments'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/$lang/profile'
     | '/$lang/terms'
     | '/$lang/admin/compensations'
+    | '/$lang/admin/event-kinds'
     | '/$lang/admin/migrate-logos'
     | '/$lang/admin/teams'
     | '/$lang/admin/users'
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/$lang/tournaments'
     | '/$lang/'
     | '/$lang/admin/compensations'
+    | '/$lang/admin/event-kinds'
     | '/$lang/admin/migrate-logos'
     | '/$lang/admin/teams'
     | '/$lang/admin/tournaments'
@@ -530,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangAdminMigrateLogosRouteImport
       parentRoute: typeof LangAdminRoute
     }
+    '/$lang/admin/event-kinds': {
+      id: '/$lang/admin/event-kinds'
+      path: '/event-kinds'
+      fullPath: '/$lang/admin/event-kinds'
+      preLoaderRoute: typeof LangAdminEventKindsRouteImport
+      parentRoute: typeof LangAdminRoute
+    }
     '/$lang/admin/compensations': {
       id: '/$lang/admin/compensations'
       path: '/compensations'
@@ -577,6 +596,7 @@ const LangAdminTournamentsRouteWithChildren =
 
 interface LangAdminRouteChildren {
   LangAdminCompensationsRoute: typeof LangAdminCompensationsRoute
+  LangAdminEventKindsRoute: typeof LangAdminEventKindsRoute
   LangAdminMigrateLogosRoute: typeof LangAdminMigrateLogosRoute
   LangAdminTeamsRoute: typeof LangAdminTeamsRoute
   LangAdminTournamentsRoute: typeof LangAdminTournamentsRouteWithChildren
@@ -586,6 +606,7 @@ interface LangAdminRouteChildren {
 
 const LangAdminRouteChildren: LangAdminRouteChildren = {
   LangAdminCompensationsRoute: LangAdminCompensationsRoute,
+  LangAdminEventKindsRoute: LangAdminEventKindsRoute,
   LangAdminMigrateLogosRoute: LangAdminMigrateLogosRoute,
   LangAdminTeamsRoute: LangAdminTeamsRoute,
   LangAdminTournamentsRoute: LangAdminTournamentsRouteWithChildren,

@@ -18,6 +18,7 @@
 		"adminUsers": "Users",
 		"adminTeams": "Teams",
 		"adminTournaments": "Tournaments",
+		"adminEventKinds": "Event Kinds",
 		"adminCompensations": "Compensations",
 		"adminGroupSetup": "Setup",
 		"adminGroupManage": "Manage",

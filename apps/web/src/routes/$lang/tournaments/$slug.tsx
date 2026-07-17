@@ -19,6 +19,11 @@ import { RoundRobinResultView } from "@/components/RoundRobinResultView";
 import { SwissStageView } from "@/components/SwissStageView";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { TournamentPodium } from "@/components/TournamentPodium";
+import {
+	getTournamentPresentationTheme,
+	presentationThemeBadgeClass,
+	venueModePillClass,
+} from "@/components/tournament-presentation";
 import { i18next } from "@/i18n";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getIntermediateColor } from "@/lib/color-extractor";
@@ -35,6 +40,21 @@ function TournamentDetailsPage() {
 	const { t } = useTranslation("tournament");
 	const { linkTo } = useLangLink();
 	const { tournament, matches, userBets } = Route.useLoaderData();
+	const theme = getTournamentPresentationTheme(
+		(tournament as { eventKind?: { presentationTheme: string } | null })
+			.eventKind,
+	);
+	const themeBadge = presentationThemeBadgeClass(theme);
+	const themeLabel =
+		theme === "qualifier"
+			? t("browse.themeQualifier")
+			: theme === "monthly_finals"
+				? t("browse.themeMonthlyFinals")
+				: theme === "major"
+					? t("browse.themeMajor")
+					: null;
+	const venueMode =
+		(tournament as { venueMode?: "online" | "lan" }).venueMode ?? "online";
 	const [filter, setFilter] = useState<
 		"all" | "my-bets" | "upcoming" | "finished"
 	>("all");
@@ -546,6 +566,26 @@ function TournamentDetailsPage() {
 						{/* Title & Meta */}
 						<div className="flex-1 text-center md:text-left">
 							<div className="mb-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+								<span
+									className={clsx(
+										"rounded-md px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
+										venueModePillClass(venueMode),
+									)}
+								>
+									{venueMode === "lan"
+										? t("browse.venueLan")
+										: t("browse.venueOnline")}
+								</span>
+								{themeLabel && themeBadge && (
+									<span
+										className={clsx(
+											"rounded-md px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
+											themeBadge,
+										)}
+									>
+										{themeLabel}
+									</span>
+								)}
 								{tournament.region && (
 									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
 										<MapPin className="h-3 w-3" strokeWidth={2.5} />
