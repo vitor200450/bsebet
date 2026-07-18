@@ -2,28 +2,26 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq, inArray, sql } from "drizzle-orm";
 import { authMiddleware } from "@/middleware/auth";
 import type { BetStats } from "@/server/bets";
+import { careerBetsUserFilter, careerStatsSelect } from "@/utils/career-points";
+import { compareMyBetsByMatchOrder } from "@/utils/my-bets-match-order";
 
 export const getMyBets = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {
-		const { db, bets, matches } = await import("@bsebet/db");
+		const { db, bets, matches, tournaments } = await import("@bsebet/db");
 
 		const userId = context.session?.user?.id;
 		if (!userId) {
 			return { stats: null, betsByTournament: [] };
 		}
 
-		// 1. Stats aggregation (same as dashboard)
+		// 1. Career stats aggregation (same as dashboard)
 		const totalBetsResult = await db
-			.select({
-				count: sql<number>`count(*)`,
-				totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`,
-				correctCount: sql<number>`count(*) FILTER (WHERE ${bets.pointsEarned} > 0)`,
-				perfectCount: sql<number>`count(*) FILTER (WHERE ${bets.isPerfectPick} = true)`,
-				underdogCount: sql<number>`count(*) FILTER (WHERE ${bets.isUnderdogPick} = true AND ${bets.pointsEarned} > 0)`,
-			})
+			.select(careerStatsSelect)
 			.from(bets)
-			.where(eq(bets.userId, userId));
+			.innerJoin(matches, eq(bets.matchId, matches.id))
+			.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
+			.where(careerBetsUserFilter(userId));
 
 		const pendingBetsResult = await db
 			.select({ count: sql<number>`count(*)` })
@@ -35,14 +33,17 @@ export const getMyBets = createServerFn({ method: "GET" })
 
 		const data = totalBetsResult[0];
 		const stats = {
-			totalBets: Number(data?.count) || 0,
+			totalBets: Number(data?.totalBets) || 0,
 			totalPoints: Number(data?.totalPoints) || 0,
-			correctPredictions: Number(data?.correctCount) || 0,
-			perfectPicks: Number(data?.perfectCount) || 0,
-			underdogWins: Number(data?.underdogCount) || 0,
+			correctPredictions: Number(data?.correctPredictions) || 0,
+			perfectPicks: Number(data?.perfectPicks) || 0,
+			underdogWins: Number(data?.underdogWins) || 0,
 			accuracy:
-				Number(data?.count) > 0
-					? Math.round((Number(data?.correctCount) / Number(data?.count)) * 100)
+				Number(data?.totalBets) > 0
+					? Math.round(
+							(Number(data?.correctPredictions) / Number(data?.totalBets)) *
+								100,
+						)
 					: 0,
 			pendingBets: Number(pendingBetsResult[0]?.count) || 0,
 		};
@@ -155,7 +156,7 @@ export const getMyBets = createServerFn({ method: "GET" })
 			if (b.predictedWinnerId) allTeamIds.add(b.predictedWinnerId);
 		});
 
-		const { teams, tournaments } = await import("@bsebet/db/schema");
+		const { teams } = await import("@bsebet/db/schema");
 
 		const [teamsData, tournamentsData] = await Promise.all([
 			allTeamIds.size > 0
@@ -372,20 +373,25 @@ export const getMyBets = createServerFn({ method: "GET" })
 			betStats: betStatsMap.get(bet.matchId),
 		}));
 
-		// 5. Find all projected future matches that user hasn't bet on yet
-		// These are matches where at least one team was projected from user's predictions
+		// 5. Synthetic cards for matches the user did not lock a pick on:
+		// - future/live path projections from their bracket picks
+		// - finished matches in their tournaments with no bet (skipped or wrong path)
 		const userMatchIds = new Set(userBets.map((b) => b.matchId));
-		const projectedFutureMatches: typeof allTournamentMatches = [];
+		const syntheticMatchIds = new Set<number>();
+		const syntheticMatches: typeof allTournamentMatches = [];
+
+		const pushSynthetic = (match: (typeof allTournamentMatches)[number]) => {
+			if (userMatchIds.has(match.id) || syntheticMatchIds.has(match.id)) return;
+			if (!match.teamA?.id || !match.teamB?.id) return;
+			syntheticMatchIds.add(match.id);
+			syntheticMatches.push(match);
+		};
 
 		for (const match of allTournamentMatches) {
-			// Skip matches user already bet on
 			if (userMatchIds.has(match.id)) continue;
 
-			// Check if this match has any team projected from user's predictions
-			// A team is "projected" if it came from a previous match where user made a prediction
 			let hasProjectedTeam = false;
 
-			// Check slot A
 			if (match.teamAPreviousMatchId) {
 				const prevOutcome = matchOutcomes.get(match.teamAPreviousMatchId);
 				const requiredResult =
@@ -397,7 +403,6 @@ export const getMyBets = createServerFn({ method: "GET" })
 				}
 			}
 
-			// Check slot B
 			if (match.teamBPreviousMatchId) {
 				const prevOutcome = matchOutcomes.get(match.teamBPreviousMatchId);
 				const requiredResult =
@@ -410,18 +415,23 @@ export const getMyBets = createServerFn({ method: "GET" })
 			}
 
 			if (hasProjectedTeam) {
-				projectedFutureMatches.push(match);
+				pushSynthetic(match);
+				continue;
+			}
+
+			// Finished match with both teams set, but user never placed a bet
+			if (match.status === "finished") {
+				pushSynthetic(match);
 			}
 		}
 
-		// Create synthetic bets for projected future matches
-		const syntheticBets = projectedFutureMatches.map((match) => ({
-			id: -match.id, // Negative ID to indicate synthetic bet
+		const syntheticBets = syntheticMatches.map((match) => ({
+			id: -match.id,
 			userId,
 			matchId: match.id,
 			predictedWinnerId: null,
-			predictedScoreA: 0,
-			predictedScoreB: 0,
+			predictedScoreA: null,
+			predictedScoreB: null,
 			pointsEarned: null,
 			isPerfectPick: null,
 			isUnderdogPick: null,
@@ -430,7 +440,6 @@ export const getMyBets = createServerFn({ method: "GET" })
 			predictedWinner: null,
 		}));
 
-		// Combine real bets with synthetic projected bets
 		const allBets = [...betsWithProjection, ...syntheticBets];
 
 		// Regroup by tournament
@@ -455,30 +464,7 @@ export const getMyBets = createServerFn({ method: "GET" })
 		const betsByTournament = Array.from(tournamentMapProjected.values());
 
 		for (const group of betsByTournament) {
-			group.bets.sort((a, b) => {
-				const aHasOrder =
-					a.match.displayOrder !== null && a.match.displayOrder !== undefined;
-				const bHasOrder =
-					b.match.displayOrder !== null && b.match.displayOrder !== undefined;
-
-				if (aHasOrder && bHasOrder) {
-					const aOrder = a.match.displayOrder ?? 0;
-					const bOrder = b.match.displayOrder ?? 0;
-					if (aOrder !== bOrder) return aOrder - bOrder;
-				} else if (aHasOrder !== bHasOrder) {
-					return aHasOrder ? -1 : 1;
-				}
-
-				const aTime = new Date(a.match.startTime).getTime();
-				const bTime = new Date(b.match.startTime).getTime();
-				if (aTime !== bTime) return aTime - bTime;
-
-				const aRound = a.match.roundIndex ?? 999;
-				const bRound = b.match.roundIndex ?? 999;
-				if (aRound !== bRound) return aRound - bRound;
-
-				return a.match.id - b.match.id;
-			});
+			group.bets.sort(compareMyBetsByMatchOrder);
 		}
 
 		betsByTournament.sort((a, b) =>

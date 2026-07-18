@@ -1,7 +1,8 @@
-import { bets } from "@bsebet/db/schema";
+import { bets, matches, tournaments } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { authMiddleware } from "@/middleware/auth";
+import { careerBetsUserFilter, careerStatsSelect } from "@/utils/career-points";
 
 export const getUserPoints = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
@@ -14,10 +15,12 @@ export const getUserPoints = createServerFn({ method: "GET" })
 
 		const result = await db
 			.select({
-				totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`,
+				totalPoints: careerStatsSelect.totalPoints,
 			})
 			.from(bets)
-			.where(eq(bets.userId, userId));
+			.innerJoin(matches, eq(bets.matchId, matches.id))
+			.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
+			.where(careerBetsUserFilter(userId));
 
-		return result[0]?.totalPoints ?? 0;
+		return Number(result[0]?.totalPoints ?? 0);
 	});

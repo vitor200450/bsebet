@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, or, sql } from "drizzle-orm";
 import { authMiddleware } from "@/middleware/auth";
+import { careerBetsUserFilter, careerStatsSelect } from "@/utils/career-points";
 
 export const getDashboardData = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
@@ -21,17 +22,13 @@ export const getDashboardData = createServerFn({ method: "GET" })
 		};
 
 		if (userId) {
-			// Total bets and points
+			// Career stats: only tournaments that count toward Global Leaderboard
 			const totalBetsResult = await db
-				.select({
-					count: sql<number>`count(*)`,
-					totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`,
-					correctCount: sql<number>`count(*) FILTER (WHERE ${bets.pointsEarned} > 0)`,
-					perfectCount: sql<number>`count(*) FILTER (WHERE ${bets.isPerfectPick} = true)`,
-					underdogCount: sql<number>`count(*) FILTER (WHERE ${bets.isUnderdogPick} = true AND ${bets.pointsEarned} > 0)`,
-				})
+				.select(careerStatsSelect)
 				.from(bets)
-				.where(eq(bets.userId, userId));
+				.innerJoin(matches, eq(bets.matchId, matches.id))
+				.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
+				.where(careerBetsUserFilter(userId));
 
 			// Pending bets (matches not finished yet)
 			const pendingBetsResult = await db
@@ -46,11 +43,11 @@ export const getDashboardData = createServerFn({ method: "GET" })
 				);
 
 			const data = totalBetsResult[0];
-			stats.totalBets = data?.count || 0;
+			stats.totalBets = data?.totalBets || 0;
 			stats.totalPoints = data?.totalPoints || 0;
-			stats.correctPredictions = data?.correctCount || 0;
-			stats.perfectPicks = data?.perfectCount || 0;
-			stats.underdogWins = data?.underdogCount || 0;
+			stats.correctPredictions = data?.correctPredictions || 0;
+			stats.perfectPicks = data?.perfectPicks || 0;
+			stats.underdogWins = data?.underdogWins || 0;
 			stats.accuracy =
 				stats.totalBets > 0
 					? Math.round((stats.correctPredictions / stats.totalBets) * 100)

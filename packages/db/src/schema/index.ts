@@ -140,6 +140,7 @@ export const tournaments = pgTable("tournaments", {
 	endDate: timestamp("end_date"),
 	status: tournamentStatusEnum("status").default("upcoming").notNull(),
 	isActive: boolean("is_active").default(true),
+	countsTowardGlobal: boolean("counts_toward_global").default(true).notNull(),
 	scoringRules: jsonb("scoring_rules")
 		.$type<TournamentScoringRules>()
 		.notNull(),

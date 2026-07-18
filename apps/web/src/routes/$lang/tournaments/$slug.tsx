@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
 import {
-	ArrowLeft,
 	Calendar,
 	Filter,
 	MapPin,
@@ -12,6 +11,17 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	BannerMetaPill,
+	bannerActionLinkClass,
+	bannerBackLinkClass,
+	EntityDetailBanner,
+} from "@/components/EntityDetailBanner";
+import {
+	DetailEmptyState,
+	DetailFilterTabs,
+	DetailPanel,
+} from "@/components/entity-detail-ui";
 import { GSLResultView } from "@/components/GSLResultView";
 import { MatchCard } from "@/components/MatchCard";
 import { PublicPageShell } from "@/components/PublicPageShell";
@@ -30,6 +40,8 @@ import { getIntermediateColor } from "@/lib/color-extractor";
 import { deriveMatchFormat } from "@/lib/utils";
 import { extractColorsServer } from "@/server/color-extractor";
 import { getTournamentBySlug } from "@/server/tournaments";
+import { formatScoreDisplay } from "@/utils/score-format";
+import { resolveTournamentFormatLabel } from "@/utils/tournament-format";
 
 export const Route = createFileRoute("/$lang/tournaments/$slug")({
 	loader: ({ params }) => getTournamentBySlug({ data: params.slug }),
@@ -55,6 +67,8 @@ function TournamentDetailsPage() {
 					: null;
 	const venueMode =
 		(tournament as { venueMode?: "online" | "lan" }).venueMode ?? "online";
+	const countsTowardGlobal =
+		(tournament as { countsTowardGlobal?: boolean }).countsTowardGlobal ?? true;
 	const [filter, setFilter] = useState<
 		"all" | "my-bets" | "upcoming" | "finished"
 	>("all");
@@ -508,206 +522,135 @@ function TournamentDetailsPage() {
 	}, [filteredMatches]);
 
 	return (
-		<PublicPageShell className="pb-20 font-sans">
-			{/* Clean Header Banner */}
-			<div
-				className="relative z-10 border-black border-b-2 transition-all duration-500"
-				style={{
-					background: `linear-gradient(135deg, ${tournamentColors.primary} 0%, ${tournamentColors.intermediate} 50%, ${tournamentColors.secondary} 100%)`,
-				}}
-			>
-				<div className="relative z-10 mx-auto max-w-7xl px-4 py-6 md:py-8">
-					{/* Top Bar */}
-					<div className="mb-6 flex items-center justify-between">
+		<PublicPageShell className="pb-20">
+			<EntityDetailBanner
+				colors={tournamentColors}
+				topBar={
+					<div className="flex items-center justify-between gap-3">
 						<Link
 							to={linkTo("/tournaments")}
 							search={{ filter: "active" }}
-							className="flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-3 py-1.5 font-bold font-display text-sm text-white backdrop-blur-sm transition-all hover:bg-white/20"
+							className={bannerBackLinkClass}
 						>
-							<ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
+							<span className="material-symbols-outlined text-lg">
+								arrow_back
+							</span>
 							<span className="hidden sm:inline">{t("detail.back")}</span>
 						</Link>
 
 						{matches.some(
 							(m) => m.isBettingEnabled && m.status === "scheduled",
-						) && (
-							<Link
-								to={linkTo("/")}
-								className="flex items-center gap-2 rounded-lg border-2 border-black bg-[#ccff00] px-3 py-1.5 font-bold font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000]"
-							>
+						) ? (
+							<Link to={linkTo("/")} className={bannerActionLinkClass}>
 								<Sparkles className="h-4 w-4" strokeWidth={2.5} />
 								{t("detail.bet")}
 							</Link>
-						)}
+						) : null}
 					</div>
-
-					{/* Tournament Info */}
-					<div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-						{/* Logo */}
-						<div className="relative shrink-0">
-							<div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-xl border-3 border-black bg-white p-4 shadow-[4px_4px_0_0_#000] md:h-40 md:w-40">
-								{tournament.logoUrl ? (
-									<img
-										src={tournament.logoUrl}
-										alt={tournament.name}
-										className="h-full w-full object-contain"
-									/>
-								) : (
-									<Trophy className="h-12 w-12 text-gray-300" strokeWidth={2} />
-								)}
-							</div>
-							{isActive && (
-								<div className="absolute -right-2 -bottom-2 rounded-lg border-2 border-black bg-[#ff2e2e] px-2 py-1 font-black font-display text-white text-xs shadow-[2px_2px_0_0_#000]">
-									{t("detail.live")}
-								</div>
-							)}
-						</div>
-
-						{/* Title & Meta */}
-						<div className="flex-1 text-center md:text-left">
-							<div className="mb-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
-								<span
-									className={clsx(
-										"rounded-md px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
-										venueModePillClass(venueMode),
-									)}
-								>
-									{venueMode === "lan"
-										? t("browse.venueLan")
-										: t("browse.venueOnline")}
-								</span>
-								{themeLabel && themeBadge && (
-									<span
-										className={clsx(
-											"rounded-md px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
-											themeBadge,
-										)}
-									>
-										{themeLabel}
-									</span>
-								)}
-								{tournament.region && (
-									<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
-										<MapPin className="h-3 w-3" strokeWidth={2.5} />
-										{tournament.region}
-									</span>
-								)}
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
-									<Calendar className="h-3 w-3" strokeWidth={2.5} />
-									{formatDate(tournament.startDate, t)} -{" "}
-									{formatDate(tournament.endDate, t)}
-								</span>
-								<span className="flex items-center gap-1.5 rounded-md bg-white/20 px-2 py-1 font-body font-bold text-white text-xs uppercase tracking-widest backdrop-blur-sm">
-									<Users className="h-3 w-3" strokeWidth={2.5} />
-									{t("detail.teamCount", {
-										count: tournament.participantsCount || 0,
-									})}
-								</span>
-							</div>
-
-							<h1 className="mb-2 font-black font-display text-3xl text-white uppercase italic tracking-tighter md:text-5xl">
-								{tournament.name}
-							</h1>
-
-							<p className="font-body font-bold text-sm text-white/80 uppercase tracking-widest">
-								{tournament.format ||
-									(() => {
-										const stages = (tournament.stages as any[]) || [];
-										if (stages.length === 0) return t("detail.formatTbd");
-										const types = Array.from(
-											new Set(stages.map((s) => s.type)),
-										);
-										const typeMap: Record<string, string> = {
-											Groups: t("detail.stageGroups"),
-											"Single Elimination": t("detail.stagePlayoffs"),
-											"Double Elimination": t("detail.stagePlayoffsDouble"),
-										};
-										return types
-											.map((type) => typeMap[type] || type)
-											.join(" + ");
-									})()}
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div className="relative z-10 mx-auto max-w-7xl px-4 py-8">
-				{/* Tournament Podium - Only for finished tournaments */}
-				{tournament.status === "finished" && (
-					<div className="mb-10">
-						<TournamentPodium
-							tournamentId={tournament.id}
-							tournamentName={tournament.name}
-							tournamentLogoUrl={tournament.logoUrl}
+				}
+				logo={
+					tournament.logoUrl ? (
+						<img
+							src={tournament.logoUrl}
+							alt={tournament.name}
+							className="h-full w-full object-contain"
 						/>
-					</div>
-				)}
-
-				{/* Filters - Clean Segmented Control */}
-				<div className="mb-8 flex flex-wrap items-center gap-1 rounded-lg border-2 border-black bg-white p-1 shadow-[3px_3px_0_0_#000]">
-					<button
-						type="button"
-						onClick={() => setFilter("all")}
-						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
-							filter === "all"
-								? "bg-[#121212] text-white"
-								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
-						)}
-					>
-						{t("detail.filterAll")}
-					</button>
-					<button
-						type="button"
-						onClick={() => setFilter("my-bets")}
-						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
-							filter === "my-bets"
-								? "bg-[#121212] text-white"
-								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
-						)}
-					>
-						{t("detail.filterMyBets")}
-						{userBets.length > 0 && (
-							<span className="ml-2 rounded-full bg-[#ff2e2e] px-1.5 py-0.5 font-body font-bold text-[10px] text-white tabular-nums">
-								{userBets.length}
+					) : (
+						<Trophy className="h-12 w-12 text-gray-300" strokeWidth={2} />
+					)
+				}
+				logoBadge={
+					isActive ? (
+						<div className="surface-brawl-red absolute -right-2 -bottom-2 border-[3px] border-black px-2 py-1 font-black font-display text-xs uppercase shadow-comic-sm">
+							{t("detail.live")}
+						</div>
+					) : null
+				}
+				meta={
+					<>
+						<span
+							className={clsx(
+								"rounded-none border-2 border-black px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
+								venueModePillClass(venueMode),
+							)}
+						>
+							{venueMode === "lan"
+								? t("browse.venueLan")
+								: t("browse.venueOnline")}
+						</span>
+						{themeLabel && themeBadge ? (
+							<span
+								className={clsx(
+									"rounded-none border-2 border-black px-2 py-1 font-body font-bold text-xs uppercase tracking-widest",
+									themeBadge,
+								)}
+							>
+								{themeLabel}
 							</span>
-						)}
-					</button>
-					<button
-						type="button"
-						onClick={() => setFilter("upcoming")}
-						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
-							filter === "upcoming"
-								? "bg-[#121212] text-white"
-								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
-						)}
-					>
-						{t("detail.filterUpcoming")}
-					</button>
-					<button
-						type="button"
-						onClick={() => setFilter("finished")}
-						className={clsx(
-							"flex-1 rounded-md px-4 py-2 font-bold font-display text-sm uppercase tracking-wider transition-all",
-							filter === "finished"
-								? "bg-[#121212] text-white"
-								: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[#121212]",
-						)}
-					>
-						{t("detail.filterFinished")}
-					</button>
-				</div>
+						) : null}
+						{tournament.region ? (
+							<BannerMetaPill>
+								<MapPin className="h-3 w-3" strokeWidth={2.5} />
+								{tournament.region}
+							</BannerMetaPill>
+						) : null}
+						<BannerMetaPill>
+							<Calendar className="h-3 w-3" strokeWidth={2.5} />
+							{formatDate(tournament.startDate, t)} -{" "}
+							{formatDate(tournament.endDate, t)}
+						</BannerMetaPill>
+						<BannerMetaPill>
+							<Users className="h-3 w-3" strokeWidth={2.5} />
+							{t("detail.teamCount", {
+								count: tournament.participantsCount || 0,
+							})}
+						</BannerMetaPill>
+					</>
+				}
+				title={tournament.name}
+				subtitle={resolveTournamentFormatLabel(
+					tournament.format,
+					tournament.stages,
+					t,
+				)}
+			/>
 
-				{/* Matches Grid */}
+			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-10">
+				{!countsTowardGlobal ? (
+					<div className="surface-tape mb-6 border-[3px] border-black px-4 py-3 shadow-comic-sm">
+						<p className="font-body font-bold text-black text-sm leading-relaxed">
+							{t("detail.excludedFromGlobalNotice")}
+						</p>
+					</div>
+				) : null}
+				{tournament.status === "finished" ? (
+					<div className="mb-6">
+						<TournamentPodium tournamentId={tournament.id} />
+					</div>
+				) : null}
+
+				<DetailFilterTabs
+					className="mb-8"
+					ariaLabel={t("detail.overview")}
+					value={filter}
+					onChange={setFilter}
+					tabs={[
+						{ key: "all", label: t("detail.filterAll") },
+						{
+							key: "my-bets",
+							label: t("detail.filterMyBets"),
+							count: userBets.length,
+						},
+						{ key: "upcoming", label: t("detail.filterUpcoming") },
+						{ key: "finished", label: t("detail.filterFinished") },
+					]}
+				/>
+
 				<div className="space-y-4">
 					{filteredMatches.length > 0 ? (
 						<div className="flex flex-col gap-12">
 							{filter === "all" || filter === "my-bets" ? (
 								<>
-									{/* Render GSL Groups */}
 									{groupedMatches.groups.map(([groupName, groupMatches]) => {
 										const hasOpening = groupMatches.some((m) => {
 											const text = (m.label || m.name || "").toLowerCase();
@@ -744,38 +687,28 @@ function TournamentDetailsPage() {
 										);
 									})}
 
-									{/* Render Swiss Stage */}
-									{groupedMatches.swissRoundData.length > 0 && (
-										<div className="rounded-xl border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
-											<div className="mb-6 flex w-full items-center gap-3">
-												<h3 className="font-black font-display text-2xl text-ink uppercase italic">
-													{t("swiss.title")}
-												</h3>
-												<div className="h-0.5 flex-1 bg-black/10" />
-											</div>
+									{groupedMatches.swissRoundData.length > 0 ? (
+										<DetailPanel title={t("swiss.title")}>
 											<SwissStageView
 												buckets={groupedMatches.swissBuckets}
 												groupedRounds={groupedMatches.swissRoundData}
 												userBets={userBets}
 												showPredictionScore={filter === "my-bets"}
 											/>
-										</div>
-									)}
+										</DetailPanel>
+									) : null}
 
-									{/* Render Others (Playoffs, etc.) as a Bracket */}
-									{groupedMatches.otherMatchesByRound.length > 0 && (
-										<div className="mt-12 rounded-xl border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
-											<div className="mb-6 flex w-full items-center gap-3">
+									{groupedMatches.otherMatchesByRound.length > 0 ? (
+										<DetailPanel
+											className="mt-4"
+											title={t("detail.playoffBracket")}
+											icon={
 												<Workflow
-													className="h-6 w-6 text-[#121212]"
+													className="h-6 w-6 text-ink"
 													strokeWidth={2.5}
 												/>
-												<h3 className="font-black font-display text-2xl text-ink uppercase italic">
-													{t("detail.playoffBracket")}
-												</h3>
-												<div className="h-0.5 flex-1 bg-black/10" />
-											</div>
-
+											}
+										>
 											<div className="w-full overflow-x-auto pb-4">
 												<TournamentBracket
 													className="flex w-full min-w-max flex-col items-center"
@@ -790,7 +723,10 @@ function TournamentDetailsPage() {
 																		);
 																		acc[bet.matchId] = {
 																			winnerId: bet.predictedWinnerId,
-																			score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
+																			score: formatScoreDisplay(
+																				bet.predictedScoreA,
+																				bet.predictedScoreB,
+																			),
 																			pointsEarned: bet.pointsEarned,
 																			isCorrect:
 																				match?.winnerId ===
@@ -810,11 +746,10 @@ function TournamentDetailsPage() {
 													isReadOnly={true}
 												/>
 											</div>
-										</div>
-									)}
+										</DetailPanel>
+									) : null}
 								</>
 							) : (
-								/* Simple List View for Status Filtering */
 								<div className="flex flex-col gap-4">
 									{filteredMatches
 										.sort((a, b) => {
@@ -854,17 +789,13 @@ function TournamentDetailsPage() {
 							)}
 						</div>
 					) : (
-						<div className="rounded-xl border-2 border-black/20 border-dashed bg-white py-16 text-center">
-							<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0f0f0]">
-								<Filter className="h-8 w-8 text-gray-400" strokeWidth={2} />
-							</div>
-							<h3 className="font-black font-display text-ink text-xl uppercase italic">
-								{t("detail.noMatches")}
-							</h3>
-							<p className="mt-2 font-display text-gray-600 text-sm">
-								{t("detail.emptyHint")}
-							</p>
-						</div>
+						<DetailEmptyState
+							icon={
+								<Filter className="h-7 w-7 text-gray-500" strokeWidth={2} />
+							}
+							title={t("detail.noMatches")}
+							hint={t("detail.emptyHint")}
+						/>
 					)}
 				</div>
 			</div>

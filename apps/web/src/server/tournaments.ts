@@ -110,6 +110,7 @@ const createTournamentSchema = (t: (key: string) => string) =>
 		endDate: z.coerce.date().optional(),
 		status: z.enum(["upcoming", "active", "finished"]).default("upcoming"),
 		isActive: z.boolean().default(true),
+		countsTowardGlobal: z.boolean().default(true),
 		venueMode: z.enum(VENUE_MODES).default("online"),
 		eventKindId: z.number().nullable().optional(),
 		// Default scoring rules if creating new
@@ -252,6 +253,7 @@ const saveTournamentFn = createServerFn({
 				endDate: validData.endDate || null,
 				status: validData.status,
 				isActive: validData.isActive,
+				countsTowardGlobal: validData.countsTowardGlobal,
 				scoringRules,
 				venueMode,
 				eventKindId,
@@ -275,6 +277,7 @@ const saveTournamentFn = createServerFn({
 			endDate: validData.endDate || null,
 			status: validData.status,
 			isActive: validData.isActive,
+			countsTowardGlobal: validData.countsTowardGlobal,
 			scoringRules,
 			venueMode,
 			eventKindId,
@@ -495,6 +498,7 @@ const copyTournamentFn = createServerFn({
 			stages: original.stages, // Copy stages config
 			status: "upcoming", // Reset status
 			isActive: false, // Start inactive
+			countsTowardGlobal: original.countsTowardGlobal,
 			scoringRules: original.scoringRules, // Copy scoring rules
 			startDate: null, // Reset dates
 			endDate: null,

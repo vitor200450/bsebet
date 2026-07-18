@@ -29,14 +29,15 @@ import {
 import { type Stage, StageBuilder } from "@/components/admin/StageBuilder";
 import { useSetHeader } from "@/components/HeaderContext";
 import { useLangLink } from "@/i18n/useLangLink";
-import { getAllEventKinds } from "@/server/event-kinds";
 import { applyEventKindTemplate } from "@/server/event-kind-template";
+import { getAllEventKinds } from "@/server/event-kinds";
 import {
 	copyTournament,
 	deleteTournament,
 	getTournaments,
 	saveTournament,
 } from "@/server/tournaments";
+import { runTournamentListRefreshAfterMutation } from "@/utils/admin-tournament-duplicate";
 
 export const Route = createFileRoute("/$lang/admin/tournaments/")({
 	component: AdminTournamentsPage,
@@ -46,6 +47,30 @@ export const Route = createFileRoute("/$lang/admin/tournaments/")({
 			getAllEventKinds(),
 		]);
 		return { tournaments, eventKinds };
+	},
+});
+
+const createInitialTournamentForm = () => ({
+	name: "",
+	slug: "",
+	logoUrl: "",
+	format: "",
+	region: "",
+	participantsCount: "",
+	stages: [] as Stage[],
+	startDate: "",
+	endDate: "",
+	status: "upcoming" as const,
+	countsTowardGlobal: true,
+	venueMode: "online" as const,
+	eventKindId: null as number | null,
+	scoringRules: {
+		winner: 1,
+		exact: 3,
+		underdog_25: 2,
+		underdog_50: 1,
+		underdog_tier1_max_pct: 0.25,
+		underdog_tier2_max_pct: 0.5,
 	},
 });
 
@@ -83,6 +108,7 @@ function AdminTournamentsPage() {
 		startDate: string;
 		endDate: string;
 		status: "upcoming" | "active" | "finished";
+		countsTowardGlobal: boolean;
 		venueMode: "online" | "lan";
 		eventKindId: number | null;
 		scoringRules: {
@@ -93,30 +119,10 @@ function AdminTournamentsPage() {
 			underdog_tier1_max_pct: number;
 			underdog_tier2_max_pct: number;
 		};
-	}>({
-		name: "",
-		slug: "",
-		logoUrl: "",
-		format: "",
-		region: "",
-		participantsCount: "",
-		stages: [],
-		startDate: "",
-		endDate: "",
-		status: "upcoming",
-		venueMode: "online",
-		eventKindId: null,
-		scoringRules: {
-			winner: 1,
-			exact: 3,
-			underdog_25: 2,
-			underdog_50: 1,
-			underdog_tier1_max_pct: 0.25,
-			underdog_tier2_max_pct: 0.5,
-		},
-	});
+	}>(createInitialTournamentForm);
 
 	const [searchTerm, setSearchTerm] = useState("");
+	const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
 	const generateSlug = (name: string) => {
 		return name
@@ -142,28 +148,8 @@ function AdminTournamentsPage() {
 
 				<button
 					onClick={() => {
-						setFormData({
-							name: "",
-							slug: "",
-							logoUrl: "",
-							format: "",
-							region: "",
-							participantsCount: "",
-							stages: [],
-							startDate: "",
-							endDate: "",
-							status: "upcoming",
-							venueMode: "online",
-							eventKindId: null,
-							scoringRules: {
-								winner: 1,
-								exact: 3,
-								underdog_25: 2,
-								underdog_50: 1,
-								underdog_tier1_max_pct: 0.25,
-								underdog_tier2_max_pct: 0.5,
-							},
-						});
+						setFormData(createInitialTournamentForm());
+						setSlugManuallyEdited(false);
 						setIsModalOpen(true);
 					}}
 					className="flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-0 font-black font-display text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
@@ -180,12 +166,13 @@ function AdminTournamentsPage() {
 		setFormData((prev) => ({
 			...prev,
 			name: val,
-			slug: prev.id ? prev.slug : slug,
+			slug: slugManuallyEdited ? prev.slug : slug,
 		}));
 	};
 
 	// --- CRUD HANDLERS ---
 	const handleEdit = (item: (typeof tournaments)[0]) => {
+		setSlugManuallyEdited(false);
 		setFormData({
 			id: item.id,
 			name: item.name,
@@ -205,6 +192,7 @@ function AdminTournamentsPage() {
 				: "",
 
 			status: item.status || "upcoming",
+			countsTowardGlobal: item.countsTowardGlobal ?? true,
 			venueMode: item.venueMode || "online",
 			eventKindId: item.eventKindId ?? null,
 			scoringRules: {
@@ -280,11 +268,14 @@ function AdminTournamentsPage() {
 					endDate: formData.endDate ? new Date(formData.endDate) : undefined,
 					scoringRules: formData.scoringRules,
 					venueMode: formData.venueMode,
+					countsTowardGlobal: formData.countsTowardGlobal,
 					eventKindId: formData.eventKindId,
 				},
 			});
 
 			toast.success(t("tournaments.saveSuccess"));
+			setFormData(createInitialTournamentForm());
+			setSlugManuallyEdited(false);
 			setIsModalOpen(false);
 			router.invalidate();
 		} catch (error) {
@@ -327,18 +318,21 @@ function AdminTournamentsPage() {
 	const confirmDuplicate = async () => {
 		if (!itemToDuplicate) return;
 
+		setIsSubmitting(true);
 		try {
-			await toast.promise(copyTournament({ data: itemToDuplicate.id }), {
-				loading: t("tournaments.duplicating"),
-				success: t("tournaments.duplicateSuccess"),
-				error: t("tournaments.duplicateError"),
+			await runTournamentListRefreshAfterMutation({
+				mutate: () => copyTournament({ data: itemToDuplicate.id }),
+				invalidate: () => router.invalidate(),
 			});
 
-			router.invalidate();
+			toast.success(t("tournaments.duplicateSuccess"));
 			setIsDuplicateModalOpen(false);
 			setItemToDuplicate(null);
 		} catch (error) {
 			console.error(error);
+			toast.error(t("tournaments.duplicateError"));
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -489,7 +483,7 @@ function AdminTournamentsPage() {
 											</div>
 
 											{/* Status Badge */}
-											<div className="flex w-full justify-start md:col-span-2 md:justify-center">
+											<div className="flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:justify-center">
 												<span
 													className={`whitespace-nowrap border-[2px] border-black px-3 py-1 font-body font-bold text-[10px] uppercase italic tracking-widest ${getStatusColor(
 														tournament.status || "upcoming",
@@ -501,6 +495,11 @@ function AdminTournamentsPage() {
 															? t("tournaments.statusFinished")
 															: t("tournaments.statusUpcoming")}
 												</span>
+												{tournament.countsTowardGlobal === false ? (
+													<span className="surface-tape whitespace-nowrap border-[2px] border-black px-3 py-1 font-body font-bold text-[10px] uppercase tracking-widest">
+														{t("tournaments.excludedFromGlobalBadge")}
+													</span>
+												) : null}
 											</div>
 
 											<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
@@ -543,9 +542,9 @@ function AdminTournamentsPage() {
 													<Trash2 className="h-4 w-4" strokeWidth={2.5} />
 												</button>
 											</div>
-											{formData.logoUrl.startsWith("data:") && (
+											{tournament.logoUrl?.startsWith("data:") && (
 												<p className="mt-1 w-full font-body font-bold text-[10px] text-red-500 uppercase italic tracking-widest">
-													⚠️ {t("tournaments.base64Warning")}{" "}
+													{t("tournaments.base64Warning")}{" "}
 													<Link
 														to={linkTo("/admin/migrate-logos")}
 														className="underline hover:text-red-700"
@@ -608,12 +607,13 @@ function AdminTournamentsPage() {
 								<input
 									type="text"
 									value={formData.slug}
-									onChange={(e) =>
+									onChange={(e) => {
+										setSlugManuallyEdited(true);
 										setFormData((prev) => ({
 											...prev,
 											slug: generateSlug(e.target.value),
-										}))
-									}
+										}));
+									}}
 									className="w-full border-[3px] border-black bg-white p-3 pr-10 font-body text-black text-sm tabular-nums focus:border-black focus:outline-none focus:ring-4 focus:ring-electric-lime"
 								/>
 								<Copy className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-black" />
@@ -696,6 +696,28 @@ function AdminTournamentsPage() {
 								},
 							]}
 						/>
+
+						<label className="flex cursor-pointer items-start gap-3 border-[3px] border-black bg-paper px-4 py-3 shadow-comic-sm">
+							<input
+								type="checkbox"
+								checked={formData.countsTowardGlobal}
+								onChange={(event) =>
+									setFormData({
+										...formData,
+										countsTowardGlobal: event.target.checked,
+									})
+								}
+								className="mt-1 h-4 w-4 accent-black"
+							/>
+							<span className="space-y-1">
+								<span className="block font-body font-bold text-black text-xs uppercase tracking-widest">
+									{t("tournaments.countsTowardGlobalLabel")}
+								</span>
+								<span className="block font-body text-gray-600 text-xs leading-relaxed">
+									{t("tournaments.countsTowardGlobalHint")}
+								</span>
+							</span>
+						</label>
 
 						<div className="grid grid-cols-2 gap-4">
 							<CustomSelect
@@ -913,6 +935,8 @@ function AdminTournamentsPage() {
 						<StageBuilder
 							stages={formData.stages}
 							onChange={(stages) => setFormData({ ...formData, stages })}
+							tournamentStartDate={formData.startDate || undefined}
+							tournamentEndDate={formData.endDate || undefined}
 						/>
 
 						<div>
@@ -1008,6 +1032,7 @@ function AdminTournamentsPage() {
 				}
 				confirmLabel={t("tournaments.duplicateConfirmButton")}
 				cancelLabel={t("common:actions.cancel")}
+				isLoading={isSubmitting}
 				variant="warning"
 			/>
 		</div>

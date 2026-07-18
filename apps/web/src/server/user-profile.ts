@@ -1,6 +1,12 @@
 import { bets, matches, tournaments, user } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
+import {
+	careerBetsUserFilter,
+	careerStatsSelect,
+	filterMedalsForGlobalTiebreaker,
+	summarizeMedalPlacements,
+} from "@/utils/career-points";
 
 // --- getUserProfile ---
 const getUserProfileFn = createServerFn({ method: "GET" }).handler(
@@ -43,15 +49,11 @@ const getUserStatsFn = createServerFn({ method: "GET" }).handler(
 		const userId = ctx.data as string;
 
 		const result = await db
-			.select({
-				totalBets: sql<number>`count(*)`,
-				totalPoints: sql<number>`COALESCE(SUM(${bets.pointsEarned}), 0)`,
-				correctPredictions: sql<number>`count(*) FILTER (WHERE ${bets.pointsEarned} > 0)`,
-				perfectPicks: sql<number>`count(*) FILTER (WHERE ${bets.isPerfectPick} = true)`,
-				underdogWins: sql<number>`count(*) FILTER (WHERE ${bets.isUnderdogPick} = true AND ${bets.pointsEarned} > 0)`,
-			})
+			.select(careerStatsSelect)
 			.from(bets)
-			.where(eq(bets.userId, userId));
+			.innerJoin(matches, eq(bets.matchId, matches.id))
+			.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
+			.where(careerBetsUserFilter(userId));
 
 		const data = result[0];
 		const totalBets = Number(data?.totalBets || 0);
@@ -207,25 +209,34 @@ export const getUserMedalCounts = getUserMedalCountsFn as unknown as (opts: {
 const getUserMedalsExcludingTournamentFn = createServerFn({
 	method: "GET",
 }).handler(async (ctx: any) => {
+	const { db } = await import("@bsebet/db");
 	const { userId, excludeTournamentId } = ctx.data as {
 		userId: string;
 		excludeTournamentId?: number;
 	};
 
+	const nonGlobalTournaments = await db
+		.select({ id: tournaments.id })
+		.from(tournaments)
+		.where(eq(tournaments.countsTowardGlobal, false));
+
+	const nonGlobalTournamentIds = new Set(
+		nonGlobalTournaments.map((tournament) => tournament.id),
+	);
+
 	// Get all medals first
 	const allMedals = await getUserMedals({ data: userId });
 
-	// Filter out the excluded tournament if specified
-	const filteredMedals = excludeTournamentId
-		? allMedals.filter((m) => m.tournamentId !== excludeTournamentId)
-		: allMedals;
+	const filteredMedals = filterMedalsForGlobalTiebreaker(allMedals, {
+		excludeTournamentId,
+		nonGlobalTournamentIds,
+	});
+
+	const summary = summarizeMedalPlacements(filteredMedals);
 
 	return {
 		medals: filteredMedals,
-		gold: filteredMedals.filter((m) => m.placement === 1).length,
-		silver: filteredMedals.filter((m) => m.placement === 2).length,
-		bronze: filteredMedals.filter((m) => m.placement === 3).length,
-		total: filteredMedals.length,
+		...summary,
 	};
 });
 

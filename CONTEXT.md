@@ -64,3 +64,25 @@ _Avoid_: full wipe (ambiguous), reset scores (that is Match Score Reset)
 Admin action that clears a single match's score and winner so the match can be scored again.
 _Avoid_: reset match (ambiguous with deleting the match), reset picks
 
+## Leaderboards
+
+**Global Leaderboard** (PT: **Mundial**):
+The all-time ranking that aggregates Career Points across tournaments with Counts Toward Global on. Only users with Picks in at least one such tournament appear. Distinct from a single tournament's ranking; not a calendar Season. Medals from tournaments with Counts Toward Global off do not participate in its tiebreaks.
+_Avoid_: season (when meaning all-time), temporada global, Season leaderboard
+
+**Tournament Leaderboard**:
+The ranking of Pick points within a single tournament. In the product UI this may appear under a "Temporada" tab, but it is not a Season entity.
+_Avoid_: Season, temporada (as a domain entity), global
+
+**Medal**:
+A placement badge (gold / silver / bronze) earned from finishing 1st / 2nd / 3rd on a Tournament Leaderboard. Always kept on the tournament and on the user profile (list and aggregate counts), even when the tournament does not count toward the Global Leaderboard.
+_Avoid_: trophy (ambiguous with podium), badge (overloaded with UI chrome)
+
+**Career Points**:
+A user's aggregate Pick points across tournaments that count toward the Global Leaderboard. Used consistently on the Global Leaderboard and on career/total surfaces (dashboard, profile, aggregate stats). Never includes points from a tournament that does not count toward the Global Leaderboard.
+_Avoid_: total points (ambiguous with tournament-scoped totals), season points, lifetime score (when meaning something else)
+
+**Counts Toward Global**:
+A persistent admin-controlled property on a tournament (default on). When off, that tournament's Pick points are excluded from the Global Leaderboard and from Career Points, and its Medals are excluded from Global Leaderboard tiebreaks — but the Tournament Leaderboard, match results, Picks, and Medals (including on the user profile) remain intact. Reversible at any time. Users see a clear notice on that tournament that it does not count toward the Global Leaderboard.
+_Avoid_: soft delete, hide tournament, exhibition mode (unless product copy), beta flag (too narrow), Season exclusion, silent exclusion
+

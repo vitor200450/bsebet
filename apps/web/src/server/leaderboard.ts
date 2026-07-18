@@ -1,6 +1,7 @@
 import { bets, matches, tournaments, user } from "@bsebet/db/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, gte, lte, or, sql } from "drizzle-orm";
+import { countsTowardGlobalCondition } from "@/utils/career-points";
 import { getUserMedalsExcludingTournament } from "./user-profile";
 
 /**
@@ -41,13 +42,14 @@ const getLeaderboardFn = createServerFn({
 		.from(bets)
 		.innerJoin(user, eq(bets.userId, user.id))
 		.innerJoin(matches, eq(bets.matchId, matches.id))
+		.innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
 		.groupBy(bets.userId, user.name, user.nickname, user.image);
 
 	let rows;
 	if (tournamentId) {
 		rows = await baseQuery.where(eq(matches.tournamentId, tournamentId));
 	} else {
-		rows = await baseQuery;
+		rows = await baseQuery.where(countsTowardGlobalCondition);
 	}
 
 	// Fetch medal counts for all users in parallel
@@ -132,6 +134,7 @@ const getLeaderboardFn = createServerFn({
 				and(
 					gte(tournaments.endDate, firstDayOfPreviousMonth),
 					lte(tournaments.endDate, lastDayOfPreviousMonth),
+					countsTowardGlobalCondition,
 				),
 			);
 
@@ -161,7 +164,7 @@ const getLeaderboardFn = createServerFn({
 		}
 
 		// 3. Calculate global ranking for tiebreaker
-		const globalRows = await baseQuery;
+		const globalRows = await baseQuery.where(countsTowardGlobalCondition);
 		const globalMedalsMap = new Map<
 			string,
 			{ gold: number; silver: number; bronze: number; total: number }
