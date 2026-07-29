@@ -1,6 +1,7 @@
 {
 	"back": "Voltar",
 	"vs": "VS",
+	"tbd": "TBD",
 	"tournament": "Torneio",
 	"tournaments": "Torneios",
 	"stats": {
@@ -16,7 +17,9 @@
 	},
 	"sections": {
 		"upcoming": "Próximas Partidas",
-		"recentHistory": "Histórico Recente"
+		"recentHistory": "Histórico Recente",
+		"recentResults": "Resultados Recentes",
+		"form": "Forma recente"
 	},
 	"status": {
 		"live": "AO VIVO",

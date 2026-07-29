@@ -1,20 +1,32 @@
 {
+	"title": "My Picks",
+	"subtitle": "Your pick history by tournament",
 	"header": "Your complete pick history",
-	"tabs": {
-		"all": "All",
-		"pending": "Pending",
-		"finished": "Finished",
-		"recovery": "Recovery"
-	},
 	"labels": {
 		"allTournaments": "All tournaments",
+		"tournaments": "Tournaments",
 		"projection": "Projection",
+		"noBet": "No pick",
 		"projectionTooltip": "Projection based on your historical performance",
 		"futureProjection": "Future projection",
 		"underdogLabel": "Underdog",
 		"waitingScore": "Awaiting result",
 		"selectTournament": "Select tournament",
-		"clickToExpand": "Click tournament name to expand"
+		"pickCount_one": "{{count}} pick",
+		"pickCount_other": "{{count}} picks",
+		"pointsEarned": "{{points}} pts",
+		"pendingCount_one": "{{count}} pending",
+		"pendingCount_other": "{{count}} pending",
+		"liveCount_one": "{{count}} live",
+		"liveCount_other": "{{count}} live",
+		"noBetHint": "No pick on this match"
+	},
+	"tabs": {
+		"all": "All",
+		"pending": "Pending",
+		"finished": "Finished",
+		"recovery": "Recovery",
+		"liveShort": "LIVE"
 	},
 	"empty": {
 		"none": "No picks found",
@@ -28,6 +40,7 @@
 	"betLabel": "Your pick",
 	"stageLabel": {
 		"groups": "Group Stage",
+		"group": "Group {{group}}",
 		"upper": "Upper R{{number}}",
 		"lower": "Lower R{{number}}",
 		"grandFinal": "Grand Final",

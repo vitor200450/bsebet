@@ -483,7 +483,8 @@
 	.admin-modal-panel,
 	.admin-press,
 	.admin-press-comic,
-	.admin-nav-item {
+	.admin-nav-item,
+	.admin-card-interactive {
 		transition: none;
 	}
 
@@ -493,8 +494,48 @@
 
 	.admin-press:active:not(:disabled),
 	.admin-press-comic:active:not(:disabled),
-	.admin-nav-item:active {
+	.admin-nav-item:active,
+	.admin-card-interactive:active,
+	.admin-bracket-card:active {
 		transform: none;
+	}
+}
+
+/* Admin tournament panels — card hover + press (fine pointer) */
+.admin-card-interactive {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 150ms var(--ease-out),
+		box-shadow 150ms var(--ease-out),
+		background-color 160ms ease,
+		border-color 160ms ease;
+}
+
+.admin-card-interactive:active {
+	transform: scale(0.99);
+}
+
+.admin-bracket-card:active {
+	transform: translateY(-1px) scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.admin-card-shadow-hover:hover {
+		box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+	}
+
+	.admin-card-lift-hover:hover {
+		transform: translateY(-2px);
+		box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+	}
+
+	.admin-dashed-add:hover {
+		border-color: #000;
+		background-color: #fff;
+	}
+
+	.admin-dashed-add:hover .admin-dashed-add-label {
+		color: #000;
 	}
 }
 

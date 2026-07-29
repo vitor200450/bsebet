@@ -1,6 +1,10 @@
 import clsx from "clsx";
 import { Plus, Settings, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import {
+	getStageEndDateBounds,
+	getStageStartDateBounds,
+} from "@/utils/date-range";
 import { CustomDatePicker, CustomSelect } from "./CustomInputs";
 
 // Re-using the types from the schema/validation
@@ -42,6 +46,11 @@ export interface Stage {
 interface StageBuilderProps {
 	stages: Stage[];
 	onChange: (stages: Stage[]) => void;
+	/** Stage date fields — hide for Event Kind templates (dates belong to the tournament). */
+	showDates?: boolean;
+	/** Tournament window — stage dates must stay within these bounds when set. */
+	tournamentStartDate?: string;
+	tournamentEndDate?: string;
 }
 
 const fieldLabelClass =
@@ -56,7 +65,13 @@ const selectTriggerClass =
 const scoringInputClass =
 	"h-10 w-full border-2 border-black bg-white px-2.5 font-body font-bold text-black text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-electric-lime";
 
-export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
+export const StageBuilder = ({
+	stages,
+	onChange,
+	showDates = true,
+	tournamentStartDate,
+	tournamentEndDate,
+}: StageBuilderProps) => {
 	const { t } = useTranslation("admin-matches");
 	const addStage = () => {
 		const newStage: Stage = {
@@ -430,19 +445,31 @@ export const StageBuilder = ({ stages, onChange }: StageBuilderProps) => {
 							</div>
 						</div>
 
-						{/* Dates */}
-						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-							<CustomDatePicker
-								label={t("stageBuilder.startDate")}
-								value={stage.startDate || ""}
-								onChange={(val) => updateStage(index, "startDate", val)}
-							/>
-							<CustomDatePicker
-								label={t("stageBuilder.endDate")}
-								value={stage.endDate || ""}
-								onChange={(val) => updateStage(index, "endDate", val)}
-							/>
-						</div>
+						{/* Dates — tournament-only; Event Kind templates omit them */}
+						{showDates && (
+							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+								<CustomDatePicker
+									label={t("stageBuilder.startDate")}
+									value={stage.startDate || ""}
+									onChange={(val) => updateStage(index, "startDate", val)}
+									{...getStageStartDateBounds(
+										stage,
+										tournamentStartDate,
+										tournamentEndDate,
+									)}
+								/>
+								<CustomDatePicker
+									label={t("stageBuilder.endDate")}
+									value={stage.endDate || ""}
+									onChange={(val) => updateStage(index, "endDate", val)}
+									{...getStageEndDateBounds(
+										stage,
+										tournamentStartDate,
+										tournamentEndDate,
+									)}
+								/>
+							</div>
+						)}
 
 						{/* Scoring overrides */}
 						<div className="mt-4 border-2 border-black/15 bg-white p-3">

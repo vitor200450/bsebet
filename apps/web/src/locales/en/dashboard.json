@@ -15,7 +15,9 @@
 		"noActiveTournaments": "No active tournaments",
 		"perfectPicks": "Perfect Picks",
 		"totalBets": "Total Picks",
-		"correctCount": "{{correct}} of {{total}} correct"
+		"correctCount": "{{correct}} of {{total}} correct",
+		"viewAllPicks": "View all",
+		"showingOf": "Next {{shown}} of {{total}}"
 	},
 	"viewHistory": "View full history",
 	"empty": {

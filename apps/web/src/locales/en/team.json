@@ -1,6 +1,7 @@
 {
 	"back": "Back",
 	"vs": "VS",
+	"tbd": "TBD",
 	"tournament": "Tournament",
 	"tournaments": "Tournaments",
 	"stats": {
@@ -16,7 +17,9 @@
 	},
 	"sections": {
 		"upcoming": "Upcoming Matches",
-		"recentHistory": "Recent History"
+		"recentHistory": "Recent History",
+		"recentResults": "Recent Results",
+		"form": "Recent form"
 	},
 	"status": {
 		"live": "LIVE",

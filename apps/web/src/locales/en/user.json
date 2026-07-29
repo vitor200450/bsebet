@@ -1,6 +1,7 @@
 {
 	"profile": "PROFILE",
 	"back": "BACK",
+	"playerBadge": "PLAYER",
 	"memberSince": "Member since",
 	"unknownTournament": "Unknown Tournament",
 	"totalPoints": "Total Points",
@@ -10,6 +11,15 @@
 	"recentBets": "Recent Picks",
 	"filterLabel": "Tournament",
 	"all": "All",
+	"pickCount_one": "{{count}} pick",
+	"pickCount_other": "{{count}} picks",
+	"picksModal": {
+		"open": "View all picks",
+		"eyebrow": "Player picks",
+		"title": "{{name}} picks",
+		"tournamentCount_one": "{{count}} tournament",
+		"tournamentCount_other": "{{count}} tournaments"
+	},
 	"scheduled": "SCHEDULED",
 	"live": "LIVE",
 	"bet": "PICK",
@@ -17,6 +27,15 @@
 	"actualLabel": "Actual:",
 	"perfectScore": "Perfect",
 	"finalPoints": "Final Points",
+	"tbd": "TBD",
+	"win": "WIN",
+	"loss": "LOSS",
+	"empty": {
+		"recentBets": "No picks yet",
+		"recentBetsHint": "Picks from active and finished tournaments will show up here",
+		"history": "No tournament history",
+		"historyHint": "Join a tournament and lock picks to build your record"
+	},
 	"stats": {
 		"general": "GENERAL STATS",
 		"underdogs": "Underdogs",

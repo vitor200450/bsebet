@@ -216,7 +216,7 @@ export default function UserMenu({
 						<div className="hidden flex-col items-end leading-none sm:flex">
 							<span
 								className={clsx(
-									"max-w-[70px] truncate px-1 font-black font-display text-xs uppercase italic tracking-tighter sm:max-w-none sm:text-sm",
+									"max-w-[70px] truncate pe-[0.35em] px-1 font-black font-display text-xs uppercase italic leading-[1.15] tracking-tighter sm:max-w-none sm:text-sm",
 									variant === "dark" ? "text-white" : "text-black",
 								)}
 							>
@@ -252,7 +252,7 @@ export default function UserMenu({
 				{/* Identity panel — avatar stays in header trigger only */}
 				<div className="border-black border-b-[3px] bg-charcoal p-3 text-white">
 					<div className="min-w-0">
-						<p className="truncate font-black font-display text-sm uppercase italic tracking-tighter">
+						<p className="truncate pe-[0.35em] pb-0.5 font-black font-display text-sm uppercase italic leading-[1.15] tracking-tighter">
 							{displayName}
 						</p>
 						<p className="mt-0.5 truncate font-body font-bold text-[10px] text-white/50">

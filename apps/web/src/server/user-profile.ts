@@ -319,6 +319,9 @@ export type UserRecentBet = {
 		scoreB: number | null;
 		status: string | null;
 		startTime: Date;
+		roundIndex: number | null;
+		displayOrder: number | null;
+		bracketSide: string | null;
 		teamA: {
 			id: number;
 			name: string;

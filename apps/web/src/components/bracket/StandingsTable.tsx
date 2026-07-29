@@ -55,8 +55,6 @@ export function useStandings(
 
 			const prediction = predictions?.[match.id];
 			const isFinished = match.status === "finished";
-
-			// Use prediction if not finished, otherwise use actual result
 			const winnerId = isFinished ? match.winnerId : prediction?.winnerId;
 
 			if (winnerId) {
@@ -66,7 +64,6 @@ export function useStandings(
 				const winnerStats = stats.get(winnerId);
 				const loserStats = stats.get(loserId);
 
-				// Only update if both teams are not ghosts (real teams)
 				if (winnerStats && loserStats) {
 					winnerStats.played += 1;
 					winnerStats.wins += 1;
@@ -74,7 +71,6 @@ export function useStandings(
 					loserStats.played += 1;
 					loserStats.losses += 1;
 
-					// Map Scores logic
 					let scoreA = 0;
 					let scoreB = 0;
 
@@ -82,26 +78,27 @@ export function useStandings(
 						scoreA = match.scoreA ?? 0;
 						scoreB = match.scoreB ?? 0;
 					} else if (prediction?.score) {
-						// Parse prediction score "2 - 1"
 						const parts = prediction.score
 							.split("-")
 							.map((s) => Number.parseInt(s.trim()));
-						if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-							scoreA = parts[0];
-							scoreB = parts[1];
+						if (
+							parts.length === 2 &&
+							!Number.isNaN(parts[0]) &&
+							!Number.isNaN(parts[1])
+						) {
+							scoreA = parts[0] ?? 0;
+							scoreB = parts[1] ?? 0;
 						}
 					}
 
 					if (match.teamA.id === winnerId) {
 						winnerStats.mapWins += scoreA;
 						winnerStats.mapLosses += scoreB;
-
 						loserStats.mapWins += scoreB;
 						loserStats.mapLosses += scoreA;
 					} else {
 						winnerStats.mapWins += scoreB;
 						winnerStats.mapLosses += scoreA;
-
 						loserStats.mapWins += scoreA;
 						loserStats.mapLosses += scoreB;
 					}
@@ -109,15 +106,13 @@ export function useStandings(
 			}
 		});
 
-		// Calculate Diff
-		stats.forEach((s: Standing) => (s.mapDiff = s.mapWins - s.mapLosses));
+		for (const s of stats.values()) {
+			s.mapDiff = s.mapWins - s.mapLosses;
+		}
 
 		return Array.from(stats.values()).sort((a, b) => {
-			// Sort by Wins
 			if (b.wins !== a.wins) return b.wins - a.wins;
-			// Then Map Diff
 			if (b.mapDiff !== a.mapDiff) return b.mapDiff - a.mapDiff;
-			// Then Map Wins
 			if (b.mapWins !== a.mapWins) return b.mapWins - a.mapWins;
 			return 0;
 		});
@@ -126,87 +121,96 @@ export function useStandings(
 
 export function StandingsTable({ standings }: { standings: Standing[] }) {
 	const { t } = useTranslation("admin-matches");
+
 	return (
-		<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
+		<div className="overflow-hidden border-[3px] border-black bg-white text-ink shadow-comic-md">
 			<div className="overflow-x-auto">
 				<table className="w-full text-left">
 					<thead>
-						<tr className="border-black border-b-2 bg-[#121212]">
-							<th className="px-3 py-2.5 font-black text-[10px] text-white uppercase tracking-wider">
+						<tr className="border-black border-b-[3px] bg-ink">
+							<th className="w-10 px-2 py-2.5 text-center font-body font-bold text-[10px] text-white uppercase tracking-widest">
+								#
+							</th>
+							<th className="px-3 py-2.5 font-body font-bold text-[10px] text-white uppercase tracking-widest">
 								{t("bracketView.colTeam")}
 							</th>
-							<th className="px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+							<th className="px-3 py-2.5 text-center font-body font-bold text-[10px] text-white/80 uppercase tracking-widest">
 								{t("bracketView.colWL")}
 							</th>
-							<th className="hidden px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider sm:table-cell">
+							<th className="hidden px-3 py-2.5 text-center font-body font-bold text-[10px] text-white/80 uppercase tracking-widest sm:table-cell">
 								{t("bracketView.colMaps")}
 							</th>
-							<th className="px-3 py-2.5 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
+							<th className="px-3 py-2.5 text-center font-body font-bold text-[10px] text-white/80 uppercase tracking-widest">
 								{t("bracketView.colDiff")}
 							</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-black/10">
-						{standings.map((s, i) => (
-							<tr
-								key={s.team.id}
-								className={clsx(
-									"relative font-bold text-xs transition-colors",
-									i < 2 ? "bg-[#ccff00]/20" : "bg-white",
-								)}
-							>
-								<td className="relative px-3 py-2">
-									<div className="flex items-center gap-2">
-										{i < 2 && (
-											<div className="h-2 w-2 shrink-0 rounded-full bg-[#ccff00] shadow-[0_0_0_2px_rgba(204,255,0,0.3)]" />
-										)}
-										<TeamLogo
-											teamName={s.team.name}
-											logoUrl={s.team.logoUrl}
-											size="sm"
-											className="h-6 w-6 shrink-0 drop-shadow-sm"
-										/>
-										<span
-											className={clsx(
-												"truncate font-black text-sm uppercase leading-none",
-												i < 2 ? "text-black" : "text-zinc-700",
-											)}
-										>
-											{s.team.name}
-										</span>
-									</div>
-								</td>
-								<td className="px-3 py-2 text-center font-black text-[#121212]">
-									{s.wins}-{s.losses}
-								</td>
-								<td className="hidden px-3 py-2 text-center font-bold text-gray-500 sm:table-cell">
-									{s.mapWins}-{s.mapLosses}
-								</td>
-								<td
+					<tbody>
+						{standings.map((s, i) => {
+							const isQualifying = i < 2;
+							return (
+								<tr
+									key={s.team.id}
 									className={clsx(
-										"px-3 py-2 text-center font-black",
-										s.mapDiff > 0
-											? "text-green-600"
-											: s.mapDiff < 0
-												? "text-red-500"
-												: "text-gray-400",
+										"border-black/10 border-b text-xs last:border-b-0",
+										isQualifying ? "bg-electric-lime/25" : "bg-white",
 									)}
 								>
-									{s.mapDiff > 0 ? "+" : ""}
-									{s.mapDiff}
-								</td>
-							</tr>
-						))}
-						{standings.length === 0 && (
+									<td className="px-2 py-2.5 text-center">
+										<span
+											className={clsx(
+												"inline-flex h-6 w-6 items-center justify-center border-2 border-black font-black font-body text-[10px] tabular-nums shadow-comic-sm",
+												isQualifying ? "surface-lime" : "bg-white text-ink",
+											)}
+										>
+											{i + 1}
+										</span>
+									</td>
+									<td className="px-3 py-2.5">
+										<div className="flex min-w-0 items-center gap-2">
+											<TeamLogo
+												teamName={s.team.name}
+												logoUrl={s.team.logoUrl}
+												size="md"
+												className="h-8 w-8 shrink-0"
+											/>
+											<span className="truncate pe-[0.25em] pb-0.5 font-black font-display text-ink text-sm uppercase italic leading-[1.15] tracking-tighter">
+												{s.team.name}
+											</span>
+										</div>
+									</td>
+									<td className="px-3 py-2.5 text-center font-black font-body text-ink tabular-nums">
+										{s.wins}-{s.losses}
+									</td>
+									<td className="hidden px-3 py-2.5 text-center font-body font-bold text-gray-500 tabular-nums sm:table-cell">
+										{s.mapWins}-{s.mapLosses}
+									</td>
+									<td
+										className={clsx(
+											"px-3 py-2.5 text-center font-black font-body tabular-nums",
+											s.mapDiff > 0
+												? "text-brawl-blue"
+												: s.mapDiff < 0
+													? "text-brawl-red"
+													: "text-gray-400",
+										)}
+									>
+										{s.mapDiff > 0 ? "+" : ""}
+										{s.mapDiff}
+									</td>
+								</tr>
+							);
+						})}
+						{standings.length === 0 ? (
 							<tr>
 								<td
-									colSpan={4}
-									className="p-4 text-center font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest"
+									colSpan={5}
+									className="p-6 text-center font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest"
 								>
 									{t("bracketView.noMatches")}
 								</td>
 							</tr>
-						)}
+						) : null}
 					</tbody>
 				</table>
 			</div>

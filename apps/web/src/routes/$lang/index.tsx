@@ -1,15 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { clsx } from "clsx";
 import { and, asc, eq, inArray, like, not } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BetSplitBar } from "@/components/BetSplitBar";
 import { BettingEmptyState } from "@/components/BettingEmptyState";
 import { InlineLoader } from "@/components/inline-loader";
-import { useLangLink } from "@/i18n/useLangLink";
+import { ReviewScreen } from "@/components/ReviewScreen";
 import { deriveMatchFormat } from "@/lib/utils";
-import type { BetStats } from "@/server/bets";
 import { BettingCarousel } from "../../components/BettingCarousel";
 import { LandingPage } from "../../components/LandingPage";
 import { MatchDaySelector } from "../../components/MatchDaySelector";
@@ -21,12 +19,16 @@ import {
 	TournamentBracket,
 } from "../../components/TournamentBracket";
 import { TournamentSelector } from "../../components/TournamentSelector";
-import { queryClient } from "../../router";
+import { canReturnToBetting as canReturnToBettingFromMatches } from "../../utils/bet-submission";
 import {
-	canOpenRecoveryScoreEditor,
-	getRecoveryReviewScoreLabel,
-	isBracketMatchLike,
-} from "../../utils/recovery";
+	predictionsFromUserBets,
+	pruneInvalidStoredPredictions,
+} from "../../utils/prediction-persistence";
+import { isBracketMatchLike } from "../../utils/recovery";
+import {
+	formatScoreDisplay,
+	normalizeScoreDisplay,
+} from "../../utils/score-format";
 
 // 1. SERVER FUNCTION: Lista torneios ativos com apostas OU onde usuário tem apostas
 const getActiveTournaments = createServerFn({ method: "GET" }).handler(
@@ -273,6 +275,7 @@ const getHomeTournamentDataFn = createServerFn({ method: "GET" }).handler(
 		// Get tournament info once (instead of joining on every match)
 		const tournament = await db.query.tournaments.findFirst({
 			where: eq(tournaments.id, tournamentId),
+			with: { eventKind: true },
 		});
 
 		// Get all match days for this tournament
@@ -514,6 +517,7 @@ function formatMatches(
 						logoUrl: m.teamA.logoUrl ?? undefined,
 						slug: m.teamA.slug ?? undefined,
 						color: "blue" as const,
+						region: m.teamA.region ?? null,
 						seed: teamAStats?.seed ?? null,
 						group: teamAStats?.group ?? null,
 					}
@@ -525,12 +529,19 @@ function formatMatches(
 						logoUrl: m.teamB.logoUrl ?? undefined,
 						slug: m.teamB.slug ?? undefined,
 						color: "red" as const,
+						region: m.teamB.region ?? null,
 						seed: teamBStats?.seed ?? null,
 						group: teamBStats?.group ?? null,
 					}
 				: null,
 			tournamentName: tournament?.name ?? null,
 			tournamentLogoUrl: tournament?.logoUrl ?? null,
+			tournamentRegion: tournament?.region ?? null,
+			tournamentPresentationTheme:
+				(tournament as { eventKind?: { presentationTheme?: string } | null })
+					?.eventKind?.presentationTheme ?? null,
+			tournamentVenueMode:
+				(tournament as { venueMode?: "online" | "lan" }).venueMode ?? "online",
 			scoringRules: tournament?.scoringRules ?? {
 				winner: 1,
 				exact: 3,
@@ -546,8 +557,10 @@ function formatMatches(
 			stats: {
 				regionA: m.teamA?.region || "SA",
 				regionB: m.teamB?.region || "SA",
-				pointsA: (teamAForm?.wins || 0) * 3, // 3 points per win
+				pointsA: (teamAForm?.wins || 0) * 3, // legacy field; UI uses form instead
 				pointsB: (teamBForm?.wins || 0) * 3,
+				formA: `${teamAForm?.wins || 0}-${teamAForm?.losses || 0}`,
+				formB: `${teamBForm?.wins || 0}-${teamBForm?.losses || 0}`,
 				winRateA: `${winRateA}%`,
 				winRateB: `${winRateB}%`,
 				seedA: teamAStats?.seed ?? null,
@@ -653,1779 +666,6 @@ export const Route = createFileRoute("/$lang/")({
 	},
 	component: Home,
 });
-
-// Review Screen Component
-function ReviewScreen({
-	matches,
-	predictions,
-	onUpdatePrediction,
-	onBack,
-	isReadOnly = false,
-	tournamentId,
-	userId,
-	userBets = [],
-	setSelectedMatchDayId,
-	setShowReview,
-	setPredictions,
-	setSelectedTournamentId,
-	matchDayStatus,
-	onLockRecoveryMatch,
-	stalePredictionMatchIds = new Set<number>(),
-	projectedMatches = [],
-	editableRecoveryMatchIds = new Set<number>(),
-}: {
-	matches: any[];
-	predictions: Record<number, Prediction>;
-	onUpdatePrediction: (
-		matchId: number,
-		winnerId: number,
-		score?: string,
-	) => void;
-	onBack: () => void;
-	isReadOnly?: boolean;
-	tournamentId: number;
-	userId: string;
-	userBets?: any[];
-	setSelectedMatchDayId?: (id: number | null) => void;
-	setShowReview?: (show: boolean) => void;
-	setPredictions?: React.Dispatch<
-		React.SetStateAction<Record<number, Prediction>>
-	>;
-	setSelectedTournamentId?: (id: number | null) => void;
-	matchDayStatus?: string;
-	onLockRecoveryMatch?: (matchId: number) => void;
-	stalePredictionMatchIds?: Set<number>;
-	projectedMatches?: any[];
-	editableRecoveryMatchIds?: Set<number>;
-}) {
-	const { t } = useTranslation("betting");
-	const [editingScoreMatchId, setEditingScoreMatchId] = useState<number | null>(
-		null,
-	);
-	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>(
-		{},
-	);
-
-	// Fetch community bet stats for all matches when ReviewScreen mounts
-	useEffect(() => {
-		const matchIds = matches
-			.map((m: any) => m.id)
-			.filter((id: number) => id > 0);
-		if (matchIds.length === 0) return;
-
-		let cancelled = false;
-
-		(async () => {
-			try {
-				const { getMatchBetStats } = await import("@/server/bets");
-				const results = await Promise.all(
-					matchIds.map((id: number) =>
-						getMatchBetStats({ data: { matchId: id } }),
-					),
-				);
-				if (cancelled) return;
-				const statsMap: Record<number, BetStats> = {};
-				matchIds.forEach((id: number, i: number) => {
-					if (results[i]) statsMap[id] = results[i];
-				});
-				setMatchBetStats(statsMap);
-			} catch {
-				// non-fatal — bars simply won't appear
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [matches]);
-
-	// Note: These were previously calculated here, but now they are passed as props from Home
-	// to avoid redundant calculations and allow Home to use them for auto-review logic.
-	// We provide fallbacks if they are not passed.
-	const effectiveStaleIds = useMemo(
-		() => stalePredictionMatchIds || new Set<number>(),
-		[stalePredictionMatchIds],
-	);
-	const effectiveProjectedMatches = useMemo(() => {
-		const source = projectedMatches?.length ? projectedMatches : matches;
-		const allowedMatchIds = new Set(matches.map((m: any) => Number(m.id)));
-		return source.filter((m: any) => allowedMatchIds.has(Number(m.id)));
-	}, [projectedMatches, matches]);
-	const effectiveEditableIds = useMemo(
-		() => editableRecoveryMatchIds || new Set<number>(),
-		[editableRecoveryMatchIds],
-	);
-
-	// Calculate if there are any valid bets to submit
-	const hasValidBetsToSubmit = useMemo(() => {
-		const betsToSubmit = Object.entries(predictions)
-			.map(([matchIdStr]) => {
-				const matchId = Number.parseInt(matchIdStr);
-				const match = matches.find((m: any) => m.id === matchId);
-
-				// Skip if match not found or explicitly started/finished
-				if (!match || match.status === "live" || match.status === "finished") {
-					return null;
-				}
-
-				// Skip stale predictions, UNLESS this is a recovery bet (editable in locked mode).
-				// Recovery bets are intentionally overriding stale data, so we allow them.
-				if (
-					effectiveStaleIds.has(matchId) &&
-					!effectiveEditableIds.has(matchId)
-				) {
-					return null;
-				}
-
-				// When matchday is locked, ONLY allow recovery bets (editable matches)
-				if (matchDayStatus === "locked") {
-					// Not in editable list = can't bet
-					if (!effectiveEditableIds.has(matchId)) {
-						return null;
-					}
-
-					// In recovery mode, editable matches are always re-submittable (server does upsert).
-					// We only block if there's truly no usable score at all.
-					const currentPred = predictions[matchId];
-					const serverBet = userBets.find((b: any) => b.matchId === matchId);
-					const resolvedScore =
-						currentPred?.score?.trim() ||
-						(serverBet
-							? `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`
-							: "");
-					if (!currentPred?.winnerId || !resolvedScore) {
-						return null; // Nothing to submit (no winner or no score at all)
-					}
-				}
-
-				return { matchId };
-			})
-			.filter((bet): bet is NonNullable<typeof bet> => bet !== null);
-
-		return betsToSubmit.length > 0;
-	}, [
-		predictions,
-		matches,
-		effectiveStaleIds,
-		effectiveEditableIds,
-		userBets,
-		matchDayStatus,
-	]);
-
-	// Filter matches to show in review:
-	// - If read-only: show ALL matches (including draft/scheduled)
-	// - Otherwise: show predicted matches, finished/live matches, OR matches available for recovery betting
-	const matchesToDisplay = useMemo(() => {
-		return effectiveProjectedMatches
-			.filter(
-				(match: any) =>
-					isReadOnly || // Show all matches in read-only mode
-					predictions[match.id] ||
-					match.status === "finished" ||
-					match.status === "live" ||
-					effectiveStaleIds.has(match.id) || // Show matches that need re-betting due to wrong predictions
-					// Show scheduled matches with both teams defined (projected from real results) when locked
-					(matchDayStatus === "locked" &&
-						match.status === "scheduled" &&
-						match.teamA?.id &&
-						match.teamB?.id), // Both teams are now known via projection
-			)
-			.sort((a: any, b: any) => {
-				const roundA = a.roundIndex ?? 0;
-				const roundB = b.roundIndex ?? 0;
-				if (roundA !== roundB) return roundA - roundB;
-
-				return (a.displayOrder || 0) - (b.displayOrder || 0);
-			});
-	}, [
-		effectiveProjectedMatches,
-		predictions,
-		isReadOnly,
-		effectiveStaleIds,
-		matchDayStatus,
-	]);
-
-	// Filter userBets to only include bets for matches being displayed (current matchday)
-	const matchIdsInDisplay = useMemo(() => {
-		return new Set(matchesToDisplay.map((m: any) => m.id));
-	}, [matchesToDisplay]);
-
-	const filteredUserBets = useMemo(() => {
-		return userBets.filter((bet: any) => matchIdsInDisplay.has(bet.matchId));
-	}, [userBets, matchIdsInDisplay]);
-
-	// Calculate total points earned (only for current matchday)
-	const totalPoints = useMemo(() => {
-		return filteredUserBets.reduce(
-			(sum, bet) => sum + (bet.pointsEarned || 0),
-			0,
-		);
-	}, [filteredUserBets]);
-
-	// Calculate stats (only for current matchday)
-	const stats = useMemo(() => {
-		const finished = matchesToDisplay.filter(
-			(m: any) => m.status === "finished",
-		);
-		const withBets = finished.filter((m: any) =>
-			filteredUserBets.find((b: any) => b.matchId === m.id),
-		);
-		const correct = withBets.filter((m: any) => {
-			const bet = filteredUserBets.find((b: any) => b.matchId === m.id);
-			return bet && m.winnerId === bet.predictedWinnerId;
-		});
-		const perfectPicks = filteredUserBets.filter((b) => b.isPerfectPick).length;
-		const underdogPicks = filteredUserBets.filter(
-			(b) => b.isUnderdogPick && b.pointsEarned > 0,
-		).length;
-
-		return {
-			total: withBets.length,
-			correct: correct.length,
-			perfectPicks,
-			underdogPicks,
-		};
-	}, [matchesToDisplay, filteredUserBets]);
-
-	return (
-		<>
-			<PublicPageShell className="fade-in slide-in-from-bottom-5 flex w-full animate-in flex-col p-4 pb-32 duration-300 md:p-6">
-				<div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center">
-					{/* Header */}
-					<header className="mb-8 text-center">
-						<div className="mb-2 inline-flex -skew-x-12 transform items-center gap-1.5 rounded-full bg-black px-3 py-1 font-black text-[10px] text-white tracking-[0.2em]">
-							<span className="h-1.5 w-1.5 rounded-full bg-brawl-yellow" />
-							{t("review.title", {
-								tournament:
-									matches[0]?.tournamentName?.toUpperCase() ||
-									t("review.titleFallback"),
-							})}
-						</div>
-						<h2 className="-skew-x-12 transform font-black font-display text-4xl text-black uppercase italic tracking-tighter">
-							{t("review.reviewTitle")}{" "}
-							<span className="text-brawl-red">
-								{t("review.reviewTitleHighlight")}
-							</span>
-						</h2>
-						<p className="mt-2 font-bold text-gray-500 text-xs uppercase tracking-widest">
-							{t("review.reviewSubtitle")}
-						</p>
-					</header>
-
-					{/* Recovery Bets Alert Banner */}
-					{matchDayStatus === "locked" && editableRecoveryMatchIds.size > 0 && (
-						<div className="slide-in-from-top-5 mb-6 w-full max-w-2xl animate-in border-[4px] border-black bg-brawl-yellow p-4 shadow-[8px_8px_0px_0px_#000] duration-500">
-							<div className="flex items-start gap-3">
-								<span className="material-symbols-outlined text-3xl text-black">
-									notification_important
-								</span>
-								<div className="flex-1">
-									<h4 className="font-black font-display text-black text-lg uppercase italic">
-										{t("recovery.available")}
-									</h4>
-									<p className="mt-1 font-bold text-black/80 text-sm">
-										{t("recovery.errorPrompt")}
-									</p>
-								</div>
-							</div>
-						</div>
-					)}
-
-					{/* Navigation Controls */}
-					{!isReadOnly ? (
-						<button
-							onClick={onBack}
-							className="mb-6 flex w-fit items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-red"
-						>
-							<span className="material-symbols-outlined text-lg">
-								arrow_back
-							</span>
-							{t("recovery.backToPicks")}
-						</button>
-					) : (
-						<button
-							onClick={() => {
-								// Reset all state to show tournament selector
-								setSelectedTournamentId?.(null);
-								setSelectedMatchDayId?.(null);
-								setShowReview?.(false);
-								setPredictions?.({});
-							}}
-							className="mb-6 flex w-fit cursor-pointer items-center gap-2 font-black text-black text-sm uppercase transition-colors hover:text-brawl-blue"
-						>
-							<span className="material-symbols-outlined text-lg">
-								emoji_events
-							</span>
-							Ver Torneios
-						</button>
-					)}
-
-					{/* Stats Summary - Only show if there are finished matches with bets */}
-					{isReadOnly && stats.total > 0 && (
-						<div className="mb-8 w-full overflow-hidden border-[4px] border-black bg-white shadow-[6px_6px_0px_0px_#000]">
-							{/* Header */}
-							<div className="flex items-center justify-between border-black border-b-[4px] bg-black px-4 py-2 text-white">
-								<span className="font-black text-[10px] uppercase tracking-widest">
-									Resumo de Pontos
-								</span>
-								<span className="material-symbols-outlined text-[#ccff00] text-base">
-									leaderboard
-								</span>
-							</div>
-
-							{/* Stats Grid */}
-							<div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
-								{/* Total Points */}
-								<div className="-rotate-1 transform border-[3px] border-black bg-[#ccff00] p-3 text-center shadow-[3px_3px_0px_0px_#000]">
-									<div className="font-black text-3xl text-black italic">
-										{totalPoints}
-									</div>
-									<div className="mt-1 font-black text-[9px] text-black/60 uppercase">
-										Pontos Totais
-									</div>
-								</div>
-
-								{/* Correct Predictions */}
-								<div className="rotate-1 transform border-[3px] border-black bg-green-500 p-3 text-center shadow-[3px_3px_0px_0px_#000]">
-									<div className="font-black text-3xl text-white italic">
-										{stats.correct}/{stats.total}
-									</div>
-									<div className="mt-1 font-black text-[9px] text-white/80 uppercase">
-										Acertos
-									</div>
-								</div>
-
-								{/* Perfect Picks */}
-								<div className="-rotate-1 transform border-[3px] border-black bg-blue-500 p-3 text-center shadow-[3px_3px_0px_0px_#000]">
-									<div className="font-black text-3xl text-white italic">
-										{stats.perfectPicks}
-									</div>
-									<div className="mt-1 font-black text-[9px] text-white/80 uppercase">
-										Placares Exatos
-									</div>
-								</div>
-
-								{/* Underdog Wins */}
-								<div className="rotate-1 transform border-[3px] border-black bg-gradient-to-r from-purple-600 to-pink-600 p-3 text-center shadow-[3px_3px_0px_0px_#000]">
-									<div className="flex items-center justify-center gap-1 font-black text-3xl text-white italic">
-										<span>🔥</span>
-										{stats.underdogPicks}
-									</div>
-									<div className="mt-1 font-black text-[9px] text-white/80 uppercase">
-										{t("bonus.underdogLabel")}
-									</div>
-								</div>
-							</div>
-
-							{/* Accuracy Bar */}
-							{stats.total > 0 && (
-								<div className="px-4 pb-4">
-									<div className="mb-1 flex items-center justify-between">
-										<span className="font-black text-[9px] text-gray-500 uppercase">
-											Taxa de Acerto
-										</span>
-										<span className="font-black text-[9px] text-black">
-											{Math.round((stats.correct / stats.total) * 100)}%
-										</span>
-									</div>
-									<div className="h-2 overflow-hidden border-2 border-black bg-gray-200">
-										<div
-											className="h-full bg-green-500 transition-all duration-500"
-											style={{
-												width: `${(stats.correct / stats.total) * 100}%`,
-											}}
-										/>
-									</div>
-								</div>
-							)}
-						</div>
-					)}
-
-					{/* Matches List */}
-					<div className="mx-auto mb-12 w-full max-w-4xl space-y-8 px-1">
-						<div className="flex flex-col gap-8">
-							{matchesToDisplay.map((match: any, idx: number) => {
-								const mId = Number(match.id);
-								const prediction = predictions[mId];
-								const betData = filteredUserBets.find(
-									(b) => Number(b.matchId) === mId,
-								);
-
-								const showResult =
-									match.status === "live" || match.status === "finished";
-								const isEditingScore =
-									editingScoreMatchId !== null &&
-									Number(editingScoreMatchId) === mId;
-
-								// A "valid local pick" means the user has already chosen a team that IS in
-								// this match — in recovery mode this clears the stale warning badges.
-								const hasValidLocalPick =
-									!!prediction?.winnerId &&
-									(Number(prediction.winnerId) === Number(match.teamA?.id) ||
-										Number(prediction.winnerId) === Number(match.teamB?.id));
-
-								// Check if predicted team is not in the current match (bracket projection changed).
-								// Only applies when there IS a prior server-side bet (betData) and the user hasn't
-								// already made a fresh valid local pick.
-								const predictedTeamNotInMatch =
-									!!betData?.predictedWinnerId &&
-									!!match.teamA?.id &&
-									!!match.teamB?.id &&
-									![Number(match.teamA.id), Number(match.teamB.id)].includes(
-										Number(betData.predictedWinnerId),
-									) &&
-									!hasValidLocalPick; // Suppress once user picks a valid current team
-
-								// If predicted team is not in the match, reset effective prediction
-								// unless the match is already live/finished
-								const isInvalidPrediction =
-									predictedTeamNotInMatch && !showResult;
-
-								// Check if this prediction is stale (depends on a wrong prediction in a previous match)
-								// Use Array.from().some() or handle type mismatch in .has()
-								const isStalePrediction =
-									stalePredictionMatchIds &&
-									Array.from(stalePredictionMatchIds).some(
-										(id: any) => Number(id) === mId,
-									);
-
-								// Use betData as source of truth when available (readonly mode or match finished)
-								// BUT only if the match has a valid winnerId (data integrity check).
-								// When the predicted team is no longer in the match (isInvalidPrediction), we STILL
-								// use the local prediction state so the user can select a new team. The warning
-								// badges are shown independently via `predictedTeamNotInMatch`.
-								const effectivePrediction =
-									betData && match.winnerId !== null
-										? {
-												winnerId: betData.predictedWinnerId,
-												score: `${betData.predictedScoreA}-${betData.predictedScoreB}`,
-											}
-										: prediction;
-
-								const isWinnerA =
-									effectivePrediction?.winnerId !== undefined &&
-									match.teamA?.id !== undefined &&
-									Number(effectivePrediction.winnerId) ===
-										Number(match.teamA.id);
-								const isWinnerB =
-									effectivePrediction?.winnerId !== undefined &&
-									match.teamB?.id !== undefined &&
-									Number(effectivePrediction.winnerId) ===
-										Number(match.teamB.id);
-
-								const isWalkoverResult =
-									showResult && match.resultType === "wo";
-								const walkoverDisplay = (() => {
-									if (!isWalkoverResult) {
-										return { a: "FF", b: "FF" };
-									}
-
-									if (match.winnerId && match.teamA?.id && match.teamB?.id) {
-										return {
-											a:
-												Number(match.winnerId) === Number(match.teamA.id)
-													? "W"
-													: "FF",
-											b:
-												Number(match.winnerId) === Number(match.teamB.id)
-													? "W"
-													: "FF",
-										};
-									}
-
-									if ((match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
-										return {
-											a: (match.scoreA ?? 0) > (match.scoreB ?? 0) ? "W" : "FF",
-											b: (match.scoreB ?? 0) > (match.scoreA ?? 0) ? "W" : "FF",
-										};
-									}
-
-									if (
-										match.teamAPreviousMatchId &&
-										!match.teamBPreviousMatchId
-									) {
-										return { a: "W", b: "FF" };
-									}
-
-									if (
-										!match.teamAPreviousMatchId &&
-										match.teamBPreviousMatchId
-									) {
-										return { a: "FF", b: "W" };
-									}
-
-									if (!match.teamA?.id && match.teamB?.id) {
-										return { a: "W", b: "FF" };
-									}
-
-									if (match.teamA?.id && !match.teamB?.id) {
-										return { a: "FF", b: "W" };
-									}
-
-									return { a: "FF", b: "FF" };
-								})();
-								const isActualWinnerA = showResult
-									? isWalkoverResult
-										? walkoverDisplay.a === "W"
-										: Number(match.winnerId) === Number(match.teamA?.id)
-									: false;
-								const isActualWinnerB = showResult
-									? isWalkoverResult
-										? walkoverDisplay.b === "W"
-										: Number(match.winnerId) === Number(match.teamB?.id)
-									: false;
-
-								const matchActiveColor =
-									isActualWinnerA || (!showResult && isWinnerA)
-										? "brawl-blue"
-										: "brawl-red";
-								const displayScore = showResult
-									? isWalkoverResult
-										? `${walkoverDisplay.a} - ${walkoverDisplay.b}`
-										: `${match.scoreA} - ${match.scoreB}`
-									: effectivePrediction?.score
-										? effectivePrediction.score
-										: betData
-											? `${betData.predictedScoreA}-${betData.predictedScoreB}`
-											: "?-?";
-
-								const winsNeeded =
-									match.format === "bo5" ? 3 : match.format === "bo3" ? 2 : 4;
-								const scoreOptions = [];
-								for (let loserWins = 0; loserWins < winsNeeded; loserWins++) {
-									const label = isWinnerA
-										? `${winsNeeded}-${loserWins}`
-										: `${loserWins}-${winsNeeded}`;
-									scoreOptions.push(label);
-								}
-
-								// Master Editability Rule: In locked mode, only matches explicitly in the recovery set are editable.
-								// This set (calculated in Home) already filters for stale/invalid status AND enforces locks.
-								const currentMatchDayStatus =
-									match.matchDayStatus || matchDayStatus;
-
-								const isRecoveryMatch =
-									currentMatchDayStatus === "locked" &&
-									editableRecoveryMatchIds &&
-									(editableRecoveryMatchIds.has(mId) ||
-										editableRecoveryMatchIds.has(Number(match.id)));
-
-								const isEditableInRecovery =
-									currentMatchDayStatus !== "locked" || !!isRecoveryMatch;
-								const canOpenScoreEditor = canOpenRecoveryScoreEditor({
-									isEditableInRecovery,
-									hasSelectedWinner: Boolean(effectivePrediction?.winnerId),
-									showResult,
-								});
-								const serverBetScore = betData
-									? `${betData.predictedScoreA}-${betData.predictedScoreB}`
-									: "?-?";
-								const reviewBadgeScore = getRecoveryReviewScoreLabel({
-									displayScore,
-									serverScore: serverBetScore,
-									canOpenScoreEditor,
-								});
-
-								return (
-									<div
-										key={match.id}
-										className={clsx(
-											"pointer-events-auto relative mb-4 w-full transform overflow-visible border-[4px] bg-white transition-all duration-200 hover:-translate-y-1",
-											isRecoveryMatch
-												? "border-brawl-yellow shadow-[6px_6px_0px_0px_#ccff00]"
-												: betData?.isPerfectPick && match.winnerId !== null
-													? "border-[#ccff00] shadow-[6px_6px_0px_0px_#ccff00,12px_12px_0px_0px_#000]"
-													: "border-black shadow-[6px_6px_0px_0px_#000]",
-											currentMatchDayStatus === "locked" &&
-												!isEditableInRecovery &&
-												!showResult &&
-												"opacity-60",
-										)}
-									>
-										{/* Match Header Bar */}
-										<div
-											className={clsx(
-												"flex items-center justify-between border-black border-b-[4px] px-4 py-1.5",
-												betData?.isPerfectPick && match.winnerId !== null
-													? "bg-gradient-to-r from-[#ccff00] via-yellow-300 to-[#ccff00]"
-													: betData?.isUnderdogPick && match.winnerId !== null
-														? "bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600"
-														: "bg-zinc-900",
-											)}
-										>
-											<div className="flex items-center gap-2">
-												<span
-													className={clsx(
-														"font-black text-[10px] uppercase italic tracking-[0.2em] md:text-xs",
-														betData?.isPerfectPick && match.winnerId !== null
-															? "text-black"
-															: "text-white",
-													)}
-												>
-													{match.label || match.name || `MATCH ${idx + 1}`}
-												</span>
-												{isRecoveryMatch && (
-													<span className="flex animate-pulse items-center gap-1 border-2 border-black bg-brawl-yellow px-2 py-0.5 font-black text-[8px] text-black">
-														🔄 RECUPERAÇÃO
-													</span>
-												)}
-												{/* Show "APOSTA ENVIADA" for recovery bets that are locked */}
-												{!isRecoveryMatch &&
-													currentMatchDayStatus === "locked" &&
-													!isWalkoverResult &&
-													betData?.isRecovery && (
-														<span className="flex items-center gap-1 border-2 border-black bg-green-500 px-2 py-0.5 font-black text-[8px] text-white">
-															✅ APOSTA ENVIADA
-														</span>
-													)}
-												{betData?.isPerfectPick && match.winnerId !== null && (
-													<span className="flex items-center gap-1 border-2 border-black bg-black px-2 py-0.5 font-black text-[#ccff00] text-[8px]">
-														⭐ PERFECT PICK!
-													</span>
-												)}
-												{betData?.isUnderdogPick &&
-													match.winnerId !== null &&
-													!betData?.isPerfectPick && (
-														<span className="flex items-center gap-1 border-2 border-black bg-black px-2 py-0.5 font-black text-[8px] text-purple-300">
-															🔥 UNDERDOG!
-														</span>
-													)}
-											</div>
-											<div className="flex items-center gap-2">
-												<div
-													className={clsx(
-														"flex shrink-0 items-center gap-1 font-black text-[10px] italic",
-														betData?.isPerfectPick
-															? "text-black"
-															: "text-[#ccff00]",
-													)}
-													suppressHydrationWarning
-												>
-													<span className="material-symbols-outlined text-xs">
-														schedule
-													</span>
-													{new Date(match.startTime).toLocaleTimeString(
-														"pt-BR",
-														{
-															hour: "2-digit",
-															minute: "2-digit",
-															timeZone: "America/Sao_Paulo",
-														},
-													)}
-												</div>
-											</div>
-										</div>
-
-										{/* Match Body - Responsive Design */}
-										<div
-											className={clsx(
-												"group relative flex h-auto flex-col overflow-visible md:flex-row",
-												showResult || isEditingScore
-													? "min-h-[120px] md:min-h-[112px]"
-													: "min-h-[140px] md:min-h-[112px]",
-											)}
-										>
-											{/* Perfect Pick Overlay Effect */}
-											{betData?.isPerfectPick && match.winnerId !== null && (
-												<>
-													<div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-[#ccff00]/20 via-yellow-200/10 to-[#ccff00]/20" />
-													{/* Decorative Stars */}
-													<div
-														className="absolute top-2 left-2 z-10 animate-bounce text-2xl"
-														style={{ animationDelay: "0ms" }}
-													>
-														⭐
-													</div>
-													<div
-														className="absolute top-4 right-4 z-10 animate-bounce text-xl"
-														style={{ animationDelay: "200ms" }}
-													>
-														✨
-													</div>
-													<div
-														className="absolute bottom-2 left-6 z-10 animate-bounce text-lg"
-														style={{ animationDelay: "400ms" }}
-													>
-														💫
-													</div>
-													<div
-														className="absolute right-8 bottom-4 z-10 animate-bounce text-xl"
-														style={{ animationDelay: "600ms" }}
-													>
-														⭐
-													</div>
-												</>
-											)}
-											{/* Underdog Pick Overlay Effect */}
-											{betData?.isUnderdogPick &&
-												match.winnerId !== null &&
-												!betData?.isPerfectPick && (
-													<>
-														<div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-purple-600/10" />
-														{/* Decorative Fire/Dogs */}
-														<div
-															className="absolute top-2 left-2 z-10 animate-bounce text-2xl"
-															style={{ animationDelay: "0ms" }}
-														>
-															🔥
-														</div>
-														<div
-															className="absolute top-4 right-4 z-10 animate-bounce text-xl"
-															style={{ animationDelay: "200ms" }}
-														>
-															🐕
-														</div>
-														<div
-															className="absolute bottom-2 left-6 z-10 animate-bounce text-lg"
-															style={{ animationDelay: "400ms" }}
-														>
-															💪
-														</div>
-														<div
-															className="absolute right-8 bottom-4 z-10 animate-bounce text-xl"
-															style={{ animationDelay: "600ms" }}
-														>
-															🔥
-														</div>
-													</>
-												)}
-											{/* Team A Side */}
-											<div
-												onClick={() => {
-													if (
-														!showResult &&
-														(currentMatchDayStatus === "locked"
-															? isEditableInRecovery
-															: !isReadOnly) &&
-														match.teamA?.id !== undefined
-													)
-														onUpdatePrediction(
-															match.id,
-															match.teamA.id,
-															isInvalidPrediction ? "" : undefined,
-														);
-												}}
-												className={clsx(
-													"pointer-events-auto relative z-20 flex min-w-0 flex-1 items-center justify-start border-black/10 border-b-2 px-4 transition-all duration-300 hover:z-40 md:border-r-2 md:border-b-0 md:py-4 md:pr-14 md:pl-6",
-													showResult || isEditingScore
-														? "pt-3 pb-7 md:py-4"
-														: "pt-6 pb-6 md:py-4",
-													!showResult &&
-														(currentMatchDayStatus === "locked"
-															? isEditableInRecovery
-															: !isReadOnly)
-														? "cursor-pointer"
-														: "cursor-default",
-													isActualWinnerA
-														? "bg-[#ccff00] text-black"
-														: isWinnerA
-															? "bg-brawl-blue"
-															: "bg-white hover:bg-gray-50",
-													showResult &&
-														!isActualWinnerA &&
-														"opacity-50 grayscale",
-												)}
-											>
-												{(isWinnerA || isActualWinnerA) && (
-													<>
-														<div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
-														{isWinnerA && (
-															<div className="absolute top-1.5 left-2 z-30 border border-black bg-white px-2 py-0.5 font-black text-[8px] text-black italic shadow-sm md:text-[9px]">
-																PICK
-															</div>
-														)}
-													</>
-												)}
-												<div className="relative z-10 flex w-full items-center justify-start gap-3 overflow-hidden md:gap-4">
-													<div
-														className={clsx(
-															"h-10 w-10 shrink-0 rounded-full border-2 p-2 backdrop-blur-sm transition-all md:h-14 md:w-14",
-															isWinnerA
-																? "border-white bg-white/20 shadow-sm"
-																: "border-black/10 bg-black/5",
-														)}
-													>
-														<img
-															src={match.teamA?.logoUrl ?? undefined}
-															className="h-full w-full object-contain drop-shadow-md filter"
-															alt=""
-														/>
-													</div>
-													<span
-														className={clsx(
-															"-skew-x-6 transform truncate px-1 font-black font-display text-lg uppercase italic leading-none tracking-tighter md:flex-1 md:text-2xl md:leading-tight",
-															isActualWinnerA
-																? "text-black"
-																: isWinnerA
-																	? "text-white"
-																	: showResult
-																		? "text-zinc-500"
-																		: "text-zinc-400",
-														)}
-													>
-														{match.teamA?.name ?? match.labelTeamA ?? "TBD"}
-													</span>
-												</div>
-											</div>
-
-											{/* Team B Side */}
-											<div
-												onClick={() => {
-													if (
-														!showResult &&
-														(currentMatchDayStatus === "locked"
-															? isEditableInRecovery
-															: !isReadOnly) &&
-														match.teamB?.id !== undefined
-													)
-														onUpdatePrediction(
-															match.id,
-															match.teamB.id,
-															isInvalidPrediction ? "" : undefined,
-														);
-												}}
-												className={clsx(
-													"pointer-events-auto relative z-20 flex min-w-0 flex-1 items-center justify-start border-black/10 px-4 transition-all duration-300 hover:z-40 md:justify-end md:border-l-2 md:py-4 md:pr-6 md:pl-14",
-													showResult || isEditingScore
-														? "pt-7 pb-3 md:py-4"
-														: "pt-6 pb-6 md:py-4",
-													!showResult &&
-														(currentMatchDayStatus === "locked"
-															? isEditableInRecovery
-															: !isReadOnly)
-														? "cursor-pointer"
-														: "cursor-default",
-													isActualWinnerB
-														? "bg-[#ccff00] text-black"
-														: isWinnerB
-															? "bg-brawl-red"
-															: "bg-white hover:bg-gray-50",
-													showResult &&
-														!isActualWinnerB &&
-														"opacity-50 grayscale",
-												)}
-											>
-												{(isWinnerB || isActualWinnerB) && (
-													<>
-														<div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
-														{isWinnerB && (
-															<div className="absolute top-1.5 right-2 z-30 border border-black bg-white px-2 py-0.5 font-black text-[8px] text-black italic shadow-sm md:right-2 md:left-auto md:text-[9px]">
-																PICK
-															</div>
-														)}
-													</>
-												)}
-												<div className="relative z-10 flex w-full flex-row items-center justify-start gap-3 overflow-hidden md:flex-row md:justify-end md:gap-4">
-													<div
-														className={clsx(
-															"h-10 w-10 shrink-0 rounded-full border-2 p-2 backdrop-blur-sm transition-all md:h-14 md:w-14",
-															isWinnerB
-																? "border-white bg-white/20 shadow-sm"
-																: "border-black/10 bg-black/5",
-														)}
-													>
-														<img
-															src={match.teamB?.logoUrl ?? undefined}
-															className="h-full w-full object-contain drop-shadow-md filter"
-															alt=""
-														/>
-													</div>
-													<span
-														className={clsx(
-															"-skew-x-6 transform truncate px-1 text-left font-black font-display text-lg uppercase italic leading-none tracking-tighter md:flex-1 md:text-right md:text-2xl md:leading-tight",
-															isActualWinnerB
-																? "text-black"
-																: isWinnerB
-																	? "text-white"
-																	: showResult
-																		? "text-zinc-500"
-																		: "text-zinc-400",
-														)}
-													>
-														{match.teamB?.name ?? match.labelTeamB ?? "TBD"}
-													</span>
-												</div>
-											</div>
-
-											{/* Warning if predicted team didn't make it to this match */}
-											{predictedTeamNotInMatch && (
-												<div className="pointer-events-none absolute -top-2 left-1/2 z-50 -translate-x-1/2 -rotate-1 transform whitespace-nowrap border-[2px] border-black bg-yellow-500 px-2 py-0.5 shadow-[2px_2px_0px_0px_#000]">
-													<span className="font-black text-[8px] text-black uppercase">
-														{t("recovery.wrongMatchup")}
-													</span>
-												</div>
-											)}
-
-											{(isEditingScore || betData) && (
-												<div
-													className={clsx(
-														"absolute left-1/2 z-50 -translate-x-1/2 transition-all duration-300",
-														isEditingScore
-															? "top-1/2 -translate-y-1/2 md:top-auto md:-bottom-2 md:translate-y-0"
-															: "top-1/2 -translate-y-1/2 md:top-auto md:-bottom-2 md:translate-y-0",
-													)}
-												>
-													{isEditingScore && isEditableInRecovery ? (
-														<div className="zoom-in-95 flex -rotate-1 animate-in gap-1 border-[3px] border-black bg-white p-1 shadow-[4px_4px_0px_0px_#000] duration-200">
-															{scoreOptions.map((opt) => (
-																<button
-																	key={opt}
-																	onClick={(e) => {
-																		e.stopPropagation();
-																		onUpdatePrediction(
-																			match.id,
-																			prediction?.winnerId || 0,
-																			opt,
-																		);
-																		setEditingScoreMatchId(null);
-																	}}
-																	className={clsx(
-																		"border-2 px-2 py-1 font-black font-display text-xs italic transition-all",
-																		prediction?.score === opt
-																			? matchActiveColor === "brawl-blue"
-																				? "border-black bg-brawl-blue text-white"
-																				: "border-black bg-brawl-red text-white"
-																			: "border-transparent bg-white text-gray-400 hover:border-gray-200 hover:text-black",
-																	)}
-																>
-																	{opt}
-																</button>
-															))}
-														</div>
-													) : showResult && betData ? (
-														// Show comparison: predicted vs actual
-														<div className="flex flex-row items-center gap-2">
-															{/* Actual Score (Left) */}
-															<div className="-rotate-1 border-[3px] border-black bg-zinc-800 px-4 py-1 shadow-[4px_4px_0px_0px_#000]">
-																<span className="font-black font-display text-sm text-white italic">
-																	{displayScore}
-																</span>
-															</div>
-															{/* Predicted Score (Right) */}
-															<div
-																className={clsx(
-																	"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
-																	betData.isPerfectPick &&
-																		match.winnerId !== null
-																		? "border-black bg-[#ccff00] text-black"
-																		: betData.predictedWinnerId ===
-																				match.winnerId
-																			? "bg-green-100 text-green-700"
-																			: "bg-red-100 text-red-600",
-																)}
-															>
-																<div className="flex flex-col items-center leading-none">
-																	<span className="mb-0.5 font-bold text-[6px] uppercase md:text-[7px]">
-																		PALPITE
-																	</span>
-																	<span className="font-black font-display text-[10px] italic md:text-sm">
-																		{betData.predictedScoreA}-
-																		{betData.predictedScoreB}
-																	</span>
-																</div>
-															</div>
-														</div>
-													) : betData ? (
-														// Review mode: show bet badge in center between teams
-														<button
-															type="button"
-															onClick={(e) => {
-																e.stopPropagation();
-																if (canOpenScoreEditor) {
-																	setEditingScoreMatchId(mId);
-																}
-															}}
-															disabled={!canOpenScoreEditor}
-															className={clsx(
-																"rotate-1 border-[2px] border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000]",
-																canOpenScoreEditor &&
-																	"cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0.5",
-																matchActiveColor === "brawl-blue"
-																	? "bg-brawl-blue"
-																	: "bg-brawl-red",
-															)}
-														>
-															<div className="flex flex-col items-center leading-none">
-																<span className="mb-0.5 font-bold text-[6px] text-white uppercase md:text-[7px]">
-																	PALPITE
-																</span>
-																<span className="font-black font-display text-[10px] text-white italic md:text-sm">
-																	{reviewBadgeScore}
-																</span>
-															</div>
-														</button>
-													) : null}
-												</div>
-											)}
-
-											{/* Points Badge - Show for finished matches */}
-											{match.status === "finished" &&
-												betData &&
-												betData.pointsEarned !== undefined && (
-													<div
-														className={clsx(
-															"group/badge absolute -right-2 -bottom-2 z-20 flex cursor-help items-center gap-1.5 border-2 px-2 py-1 font-black text-[8px] uppercase",
-															(() => {
-																const isCorrect =
-																	match.winnerId === betData.predictedWinnerId;
-																if (!isCorrect)
-																	return "border-black bg-red-500 text-white";
-																if (betData.isPerfectPick) {
-																	return "border-[#ccff00] bg-gradient-to-r from-yellow-400 via-[#ccff00] to-yellow-400 text-black shadow-[0_0_20px_rgba(204,255,0,0.6)]";
-																}
-																if (betData.isUnderdogPick) {
-																	return "border-black bg-gradient-to-r from-purple-600 to-pink-600 text-white";
-																}
-																return "border-black bg-green-500 text-white";
-															})(),
-														)}
-													>
-														{/* Tooltip */}
-														<div className="pointer-events-none absolute right-0 bottom-full z-[100] mb-2 hidden w-52 rounded border-2 border-white bg-black p-2 text-[10px] text-white shadow-lg group-hover/badge:block">
-															<div className="space-y-1">
-																{(() => {
-																	const isCorrect =
-																		match.winnerId ===
-																		betData.predictedWinnerId;
-
-																	// Special case: predicted team never reached this match
-																	if (predictedTeamNotInMatch) {
-																		return (
-																			<>
-																				<div className="font-bold text-yellow-400">
-																					⚠️ Confronto Diferente
-																				</div>
-																				<div className="text-[9px] text-gray-300">
-																					{t("recovery.matchupLabel")}
-																				</div>
-																				<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-red-400">
-																					Total: 0 pontos
-																				</div>
-																			</>
-																		);
-																	}
-
-																	if (!isCorrect) {
-																		if (isWalkoverResult) {
-																			return (
-																				<>
-																					<div className="font-bold text-red-300">
-																						❌ W.O. Incorreto
-																					</div>
-																					<div className="text-[9px] text-gray-300">
-																						No W.O., apenas o vencedor conta.
-																					</div>
-																					<div className="text-[9px] text-gray-300">
-																						{t("recovery.wrongWinner")}
-																					</div>
-																					<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-																						{t("totalPoints", { count: 0 })}
-																					</div>
-																				</>
-																			);
-																		}
-
-																		return (
-																			<>
-																				<div className="font-bold text-red-300">
-																					❌ Palpite Incorreto
-																				</div>
-																				<div className="text-[9px] text-gray-300">
-																					{t("betLabel")}{" "}
-																					{match.teamA?.id ===
-																					betData.predictedWinnerId
-																						? match.teamA?.name
-																						: match.teamB?.name}
-																				</div>
-																				<div className="text-[9px] text-gray-300">
-																					Vencedor real:{" "}
-																					{match.teamA?.id === match.winnerId
-																						? match.teamA?.name
-																						: match.teamB?.name}
-																				</div>
-																				<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-																					Total: 0 pontos
-																				</div>
-																			</>
-																		);
-																	}
-
-																	return (
-																		<>
-																			{isWalkoverResult && (
-																				<div className="font-bold text-yellow-300">
-																					🚫 W.O. Confirmado
-																				</div>
-																			)}
-																			{betData.isPerfectPick ? (
-																				<div className="flex items-center gap-1 font-bold text-[#ccff00]">
-																					⭐ PLACAR PERFEITO!
-																				</div>
-																			) : (
-																				<div className="font-bold text-green-300">
-																					{isWalkoverResult
-																						? "✅ Breakdown W.O.:"
-																						: "✅ Breakdown de Pontos:"}
-																				</div>
-																			)}
-
-																			{/* Calculate point breakdown */}
-																			{(() => {
-																				// Get scoring rules from match (with fallback to defaults)
-																				const rules = match.scoringRules || {
-																					winner: 1,
-																					exact: 3,
-																					underdog_25: 2,
-																					underdog_50: 1,
-																					underdog_tier1_max_pct: 0.25,
-																					underdog_tier2_max_pct: 0.5,
-																				};
-
-																				let winnerPoints = 0;
-																				let exactPoints = 0;
-																				let underdogPoints = 0;
-
-																				if (isWalkoverResult) {
-																					winnerPoints = rules.winner;
-																				} else if (betData.isPerfectPick) {
-																					// Perfect pick: exact score overwrites
-																					exactPoints = rules.exact;
-																				} else {
-																					// Only winner correct
-																					winnerPoints = rules.winner;
-																				}
-
-																				if (betData.isUnderdogPick) {
-																					// Calculate underdog bonus from total points
-																					underdogPoints =
-																						betData.pointsEarned -
-																						(exactPoints || winnerPoints);
-																				}
-
-																				return (
-																					<div className="space-y-0.5 text-[9px]">
-																						{isWalkoverResult ? (
-																							<div className="flex justify-between text-gray-300">
-																								<span>
-																									✓ Vencedor correto (W.O.)
-																								</span>
-																								<span>+{winnerPoints} pt</span>
-																							</div>
-																						) : betData.isPerfectPick ? (
-																							<div className="flex justify-between font-bold text-[#ccff00]">
-																								<span>
-																									⭐ Placar exato (
-																									{betData.predictedScoreA}-
-																									{betData.predictedScoreB})
-																								</span>
-																								<span>+{exactPoints} pts</span>
-																							</div>
-																						) : (
-																							<div className="flex justify-between text-gray-300">
-																								<span>✓ Vencedor correto</span>
-																								<span>+{winnerPoints} pt</span>
-																							</div>
-																						)}
-																						{!isWalkoverResult &&
-																							betData.isUnderdogPick &&
-																							underdogPoints > 0 && (
-																								<div className="flex justify-between font-bold text-purple-300">
-																									<span>
-																										{t("bonus.underdog", {
-																											percent: 25,
-																										})}
-																									</span>
-																									<span>
-																										+{underdogPoints} pts
-																									</span>
-																								</div>
-																							)}
-																					</div>
-																				);
-																			})()}
-
-																			<div
-																				className={clsx(
-																					"mt-1 flex justify-between border-t pt-1 font-bold",
-																					betData.isPerfectPick
-																						? "border-[#ccff00] text-[#ccff00]"
-																						: "border-gray-600 text-yellow-300",
-																				)}
-																			>
-																				<span>Total:</span>
-																				<span>+{betData.pointsEarned} pts</span>
-																			</div>
-																		</>
-																	);
-																})()}
-															</div>
-															<div className="absolute top-full right-4 h-0 w-0 border-transparent border-t-4 border-t-white border-r-4 border-l-4" />
-														</div>
-
-														{/* Badge Content */}
-														{(() => {
-															const isCorrect =
-																match.winnerId === betData.predictedWinnerId;
-															if (!isCorrect) return "✗";
-															if (betData.isPerfectPick)
-																return <span className="text-[10px]">⭐</span>;
-															if (betData.isUnderdogPick)
-																return <span>🔥</span>;
-															return "✓";
-														})()}
-														<span className="whitespace-nowrap">
-															{betData.pointsEarned > 0
-																? `+${betData.pointsEarned}`
-																: betData.pointsEarned}{" "}
-															PTS
-														</span>
-														{betData.isUnderdogPick &&
-															match.winnerId === betData.predictedWinnerId && (
-																<span className="text-[7px]">🐕</span>
-															)}
-													</div>
-												)}
-										</div>
-
-										{/* Orphaned Bet Warning */}
-										{isInvalidPrediction && (
-											<div className="pointer-events-none absolute inset-x-0 -bottom-8 z-50 flex justify-center">
-												<div className="rotate-1 animate-pulse border-2 border-black bg-brawl-red px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
-													<span className="flex items-center gap-1.5 font-black text-[9px] text-white uppercase italic leading-none">
-														<span className="material-symbols-outlined text-xs">
-															warning
-														</span>
-														Pick required: Bracket changed!
-													</span>
-												</div>
-											</div>
-										)}
-
-										{/* Stale Prediction Warning - depends on wrong prediction.
-                        Hidden for recovery matches since user is intentionally re-picking. */}
-										{isStalePrediction &&
-											!isInvalidPrediction &&
-											!isRecoveryMatch && (
-												<div className="pointer-events-none absolute inset-x-0 -bottom-8 z-50 flex justify-center">
-													<div className="-rotate-1 animate-pulse border-2 border-black bg-orange-500 px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
-														<span className="flex items-center gap-1.5 font-black text-[9px] text-white uppercase italic leading-none">
-															<span className="material-symbols-outlined text-xs">
-																refresh
-															</span>
-															Pick again: Wrong prediction above!
-														</span>
-													</div>
-												</div>
-											)}
-
-										{/* Recovery Mode Lock - match is not editable */}
-										{matchDayStatus === "locked" &&
-											!isEditableInRecovery &&
-											!showResult && (
-												<div className="absolute inset-x-0 -bottom-8 z-50 flex justify-center">
-													<div className="border-2 border-black bg-gray-500 px-3 py-1 shadow-[4px_4px_0px_0px_#000]">
-														<span className="flex items-center gap-1.5 font-black text-[9px] text-white uppercase italic leading-none">
-															<span className="material-symbols-outlined text-xs">
-																lock
-															</span>
-															{predictions[match.id]
-																? "Locked: Already picked"
-																: "Locked"}
-														</span>
-													</div>
-												</div>
-											)}
-
-										{/* Community bet stats */}
-										{(() => {
-											const stats = matchBetStats[match.id];
-											if (!stats) return null;
-											return (
-												<div className="w-full">
-													<BetSplitBar
-														teamAName={match.teamA?.name ?? "Team A"}
-														teamBName={match.teamB?.name ?? "Team B"}
-														stats={stats}
-														compact
-													/>
-												</div>
-											);
-										})()}
-									</div>
-								);
-							})}
-						</div>
-					</div>
-
-					{/* Lock In Button */}
-					{!isReadOnly && hasValidBetsToSubmit ? (
-						<button
-							onClick={() => setIsSuccessModalOpen(true)}
-							className="relative mb-12 flex w-full max-w-xs items-center justify-center gap-3 border-[4px] border-black bg-brawl-red py-4 font-black text-white text-xl uppercase italic shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#d41d1d] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
-						>
-							{editableRecoveryMatchIds.size > 0 && (
-								<span className="absolute -top-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-black bg-brawl-yellow font-black text-black text-sm shadow-[2px_2px_0px_0px_#000]">
-									{editableRecoveryMatchIds.size}
-								</span>
-							)}
-							<span className="material-symbols-outlined text-2xl">
-								verified
-							</span>
-							{editableRecoveryMatchIds.size > 0
-								? t("review.updateBets")
-								: t("review.lockAll")}
-						</button>
-					) : (
-						<div className="mb-12 flex w-full max-w-xs items-center justify-center gap-3 border-[4px] border-zinc-200 bg-zinc-100 py-4 font-black text-xl text-zinc-400 uppercase italic">
-							<span className="material-symbols-outlined text-2xl">lock</span>
-							{isReadOnly ? t("review.picksLocked") : t("review.noValidPicks")}
-						</div>
-					)}
-				</div>
-			</PublicPageShell>
-
-			{/* COMPLETION MODAL */}
-			{isSuccessModalOpen && (
-				<SubmitBetsModal
-					predictions={predictions}
-					matchList={matches}
-					onClose={() => setIsSuccessModalOpen(false)}
-					tournamentId={tournamentId}
-					userId={userId}
-					stalePredictionMatchIds={stalePredictionMatchIds}
-					editableRecoveryMatchIds={editableRecoveryMatchIds}
-					onLockRecoveryMatch={onLockRecoveryMatch}
-					onUpdatePrediction={onUpdatePrediction}
-					userBets={userBets}
-					onSuccess={() => {
-						// Invalidar query de minhas apostas para recarregar
-						queryClient.invalidateQueries({
-							queryKey: ["myBets"],
-							exact: false,
-						});
-					}}
-					matchDayStatus={matchDayStatus}
-				/>
-			)}
-		</>
-	);
-}
-
-function SubmitBetsModal({
-	predictions,
-	matchList,
-	onClose,
-	tournamentId,
-	userId,
-	stalePredictionMatchIds = new Set(),
-	editableRecoveryMatchIds = new Set(),
-	onLockRecoveryMatch,
-	onUpdatePrediction,
-	userBets = [],
-	onSuccess,
-	matchDayStatus,
-}: {
-	predictions: Record<number, Prediction>;
-	matchList: Match[];
-	onClose: () => void;
-	tournamentId: number;
-	userId: string;
-	onUpdatePrediction?: (
-		matchId: number,
-		winnerId: number,
-		score?: string,
-	) => void;
-	stalePredictionMatchIds?: Set<number>;
-	editableRecoveryMatchIds?: Set<number>;
-	onLockRecoveryMatch?: (matchId: number) => void;
-	userBets?: any[];
-	matchDayStatus?: string;
-	onSuccess?: () => void;
-}) {
-	const { t, i18n } = useTranslation("betting");
-	const navigate = useNavigate();
-	const { routeTo } = useLangLink();
-	const [status, setStatus] = useState<
-		"idle" | "submitting" | "success" | "error"
-	>("idle");
-	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [matchBetStats, setMatchBetStats] = useState<Record<number, BetStats>>(
-		{},
-	);
-
-	// Calculate if there are any valid bets to submit
-	const hasValidBetsToSubmit = useMemo(() => {
-		const betsToSubmit = Object.entries(predictions)
-			.map(([matchIdStr]) => {
-				const matchId = Number.parseInt(matchIdStr);
-				const match = matchList.find((m: any) => m.id === matchId);
-
-				// Skip if match not found or explicitly started/finished
-				if (!match || match.status === "live" || match.status === "finished") {
-					return null;
-				}
-
-				// When matchday is locked, ONLY allow recovery bets (editable matches)
-				// In recovery mode, we ALLOW stale predictions to be re-submitted
-				if (matchDayStatus === "locked") {
-					// Not in editable list = can't bet
-					if (!editableRecoveryMatchIds.has(matchId)) {
-						return null;
-					}
-
-					// In recovery mode, editable matches are always re-submittable (server does upsert).
-					// Only block if there's truly no usable winner or score.
-					const currentPred = predictions[matchId];
-					if (!currentPred?.winnerId) {
-						return null;
-					}
-
-					// Check for score - must have explicit score or server bet score
-					const hasExplicitScore = currentPred?.score?.trim();
-					const serverBet = userBets.find((b: any) => b.matchId === matchId);
-					const hasServerScore =
-						serverBet &&
-						(serverBet.predictedScoreA !== undefined ||
-							serverBet.predictedScoreB !== undefined);
-
-					if (!hasExplicitScore && !hasServerScore) {
-						return null;
-					}
-				}
-
-				return { matchId };
-			})
-			.filter((bet): bet is NonNullable<typeof bet> => bet !== null);
-
-		return betsToSubmit.length > 0;
-	}, [
-		predictions,
-		matchList,
-		stalePredictionMatchIds,
-		editableRecoveryMatchIds,
-		userBets,
-		matchDayStatus,
-	]);
-
-	// Call onSuccess when status changes to success
-	useEffect(() => {
-		if (status === "success") {
-			onSuccess?.();
-		}
-	}, [status, onSuccess]);
-
-	// Fetch community bet stats for all pending matches when modal mounts
-	useEffect(() => {
-		const matchIds = Object.keys(predictions)
-			.map(Number)
-			.filter((id) => {
-				const match = matchList.find((m: any) => m.id === id);
-				return match && match.status !== "finished" && match.status !== "live";
-			});
-
-		if (matchIds.length === 0) return;
-
-		let cancelled = false;
-
-		(async () => {
-			try {
-				const { getMatchBetStats } = await import("@/server/bets");
-				const results = await Promise.all(
-					matchIds.map((id) => getMatchBetStats({ data: { matchId: id } })),
-				);
-				if (cancelled) return;
-				const statsMap: Record<number, BetStats> = {};
-				matchIds.forEach((id, i) => {
-					if (results[i]) statsMap[id] = results[i];
-				});
-				setMatchBetStats(statsMap);
-			} catch {
-				// non-fatal — bars simply won't appear
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	const handleSubmit = async () => {
-		setStatus("submitting");
-		setErrorMessage(null);
-
-		try {
-			// Transform predictions to array and filter out started matches and stale predictions
-			const betsToSubmit = Object.entries(predictions)
-				.map(([matchIdStr, pred]) => {
-					const matchId = Number.parseInt(matchIdStr);
-					const match = matchList.find((m: any) => m.id === matchId);
-
-					// Skip if match not found or explicitly started/finished
-					// We allow betting on "scheduled" matches even if start time has passed,
-					// as admin might be late to start it.
-					if (
-						!match ||
-						match.status === "live" ||
-						match.status === "finished"
-					) {
-						return null;
-					}
-
-					// In recovery mode (locked), be more restrictive:
-					// Only submit bets for matches that are editable AND either:
-					// 1. Have no server bet (new bet), OR
-					// 2. The current prediction differs from server bet (changed bet)
-					// In recovery mode, we ALLOW stale predictions to be re-submitted
-					if (
-						editableRecoveryMatchIds.size > 0 ||
-						matchDayStatus === "locked"
-					) {
-						// Not in editable list = can't bet (including stale matches)
-						if (!editableRecoveryMatchIds.has(matchId)) {
-							return null;
-						}
-
-						// Check if this is a new or changed bet.
-						// Use resolved score (with server fallback) to avoid false "changed" detection
-						// when user hasn't modified a pre-filled bet.
-						// NOTE: In recovery mode, we allow re-submission even if values are the same
-						// because the server will block if the bet is already locked (isRecovery=true)
-						// and the bracket hasn't changed.
-						const serverBet = userBets.find((b: any) => b.matchId === matchId);
-
-						// If no server bet exists, this is a new bet - allow it
-						if (!serverBet) {
-							// Continue to add this bet
-						} else {
-							// Server bet exists - check if it changed
-							const currentPred = predictions[matchId];
-							const serverBetScore = `${serverBet.predictedScoreA}-${serverBet.predictedScoreB}`;
-							const resolvedCurrentScore =
-								currentPred?.score?.trim() || serverBetScore;
-
-							// Only skip if bet is EXACTLY the same AND not in recovery mode
-							// In recovery mode, let the server decide
-							const isUnchanged =
-								currentPred?.winnerId === serverBet.predictedWinnerId &&
-								resolvedCurrentScore === serverBetScore;
-
-							if (isUnchanged && !serverBet.isRecovery) {
-								// Bet unchanged and not a recovery bet - skip
-								return null;
-							}
-							// If isRecovery=true, let server validate (it will block if bracket hasn't changed)
-						}
-					} else {
-						// Not in recovery mode - skip stale predictions normally
-						if (stalePredictionMatchIds.has(matchId)) {
-							return null;
-						}
-					}
-
-					// Use local score if available; fall back to server bet score if exists.
-					const serverBetForScore = userBets.find(
-						(b: any) => b.matchId === matchId,
-					);
-					const resolvedScore =
-						pred.score?.trim() ||
-						(serverBetForScore
-							? `${serverBetForScore.predictedScoreA}-${serverBetForScore.predictedScoreB}`
-							: "");
-
-					const [scoreA, scoreB] = resolvedScore
-						.split("-")
-						.map((s) => Number.parseInt(s.trim()));
-
-					return {
-						matchId,
-						predictedWinnerId: pred.winnerId,
-						predictedScoreA: isNaN(scoreA) ? 0 : scoreA,
-						predictedScoreB: isNaN(scoreB) ? 0 : scoreB,
-					};
-				})
-				.filter((bet): bet is NonNullable<typeof bet> => bet !== null);
-
-			if (betsToSubmit.length === 0) {
-				throw new Error("No valid bets to submit (matches may have started).");
-			}
-
-			const { submitMultipleBets } = await import("@/server/bets");
-			await submitMultipleBets({
-				data: {
-					bets: betsToSubmit,
-					lang: i18n.language === "en" ? "en" : "pt",
-				},
-			});
-
-			// After successful submission:
-			// 1. Update local predictions with the resolved scores so the review screen
-			//    shows the correct score (e.g. "3-2") instead of "?-?" on next open.
-			// 2. Lock recovery matches so they can't be re-edited in this session.
-			betsToSubmit.forEach((bet) => {
-				onUpdatePrediction?.(
-					bet.matchId,
-					bet.predictedWinnerId,
-					`${bet.predictedScoreA}-${bet.predictedScoreB}`,
-				);
-				onLockRecoveryMatch?.(bet.matchId);
-			});
-
-			setStatus("success");
-			// Clear localStorage after updating predictions — localStorage will be written
-			// again immediately by the persistence effect with the correct scores above.
-			const key = `bse-predictions-${tournamentId}-${userId}`;
-			localStorage.removeItem(key);
-		} catch (error: any) {
-			console.error("[SUBMIT BETS] Error submitting bets:", error);
-			setStatus("error");
-			setErrorMessage(
-				error.message || "Failed to submit bets. Please try again.",
-			);
-		}
-	};
-
-	if (status === "success") {
-		return (
-			<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-6 backdrop-blur-md duration-300">
-				<div className="zoom-in-95 relative flex w-full max-w-md transform animate-in flex-col items-center overflow-hidden border-[6px] border-black bg-brawl-yellow p-8 text-center shadow-[16px_16px_0px_0px_#000] duration-500">
-					{/* Background decoration */}
-					<div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
-					<div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-brawl-red/20 blur-2xl" />
-
-					<div className="mb-6 flex h-24 w-24 rotate-3 items-center justify-center rounded-full border-[4px] border-black bg-white shadow-[4px_4px_0px_0px_#000]">
-						<span className="material-symbols-outlined font-black text-6xl text-green-500">
-							celebration
-						</span>
-					</div>
-
-					<h3 className="mb-4 -skew-x-12 transform font-black font-display text-5xl text-black uppercase italic leading-none tracking-tighter">
-						{t("review.successTitle")}{" "}
-						<span className="text-brawl-red">
-							{t("review.successTitleHighlight")}
-						</span>
-					</h3>
-
-					<p className="mb-8 font-body font-bold text-black text-lg leading-snug">
-						{t("toast.confirmed")}
-					</p>
-
-					<button
-						onClick={() => {
-							onClose();
-							// Navigate to my-bets page
-							navigate(routeTo("/my-bets"));
-						}}
-						className="w-full border-[4px] border-black bg-black py-4 font-black text-lg text-white uppercase tracking-widest shadow-[6px_6px_0px_0px_#ccff00] transition-all hover:bg-zinc-800 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-					>
-						{t("review.viewMyBets")}
-					</button>
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="fade-in fixed inset-0 z-[200] flex animate-in items-center justify-center bg-black/60 p-6 backdrop-blur-md duration-300">
-			<div className="relative flex w-full max-w-md flex-col items-center overflow-hidden border-[6px] border-black bg-white p-8 text-center shadow-[16px_16px_0px_0px_#000]">
-				<h3 className="mb-4 font-black font-display text-3xl text-black uppercase italic">
-					{t("review.confirmTitle")}
-				</h3>
-
-				<p className="mb-4 font-body font-bold text-gray-600">
-					{t("review.description")}
-				</p>
-
-				{/* Bet summary list with community stats */}
-				{Object.keys(predictions).length > 0 && (
-					<div className="mb-6 max-h-[35vh] w-full space-y-3 overflow-y-auto">
-						{Object.entries(predictions).map(([matchIdStr, pred]) => {
-							const matchId = Number(matchIdStr);
-							const match = matchList.find((m: any) => m.id === matchId);
-							if (
-								!match ||
-								match.status === "live" ||
-								match.status === "finished"
-							)
-								return null;
-							if (
-								matchDayStatus === "locked" &&
-								!editableRecoveryMatchIds.has(matchId)
-							)
-								return null;
-
-							const teamAName = match.teamA?.name ?? "Time A";
-							const teamBName = match.teamB?.name ?? "Time B";
-							const pickedTeamName =
-								pred.winnerId === match.teamA?.id
-									? teamAName
-									: pred.winnerId === match.teamB?.id
-										? teamBName
-										: "?";
-							const stats = matchBetStats[matchId];
-
-							return (
-								<div
-									key={matchId}
-									className="w-full rounded-sm border-2 border-black bg-[#fafafa] p-3 text-left shadow-[2px_2px_0_0_#000]"
-								>
-									<div className="mb-2 flex items-center justify-between">
-										<span className="font-black text-[10px] text-gray-500 uppercase tracking-wider">
-											{teamAName} vs {teamBName}
-										</span>
-										<span className="rounded-sm border border-black bg-[#ccff00] px-1.5 py-0.5 font-black text-[9px] text-black uppercase">
-											{pickedTeamName}
-										</span>
-									</div>
-									{stats && (
-										<BetSplitBar
-											teamAName={teamAName}
-											teamBName={teamBName}
-											stats={stats}
-											compact
-										/>
-									)}
-								</div>
-							);
-						})}
-					</div>
-				)}
-
-				{status === "error" && (
-					<div className="mb-6 w-full border-2 border-red-500 bg-red-100 p-3 text-left font-bold text-red-700 text-xs">
-						⚠️ {errorMessage}
-					</div>
-				)}
-
-				<div className="flex w-full gap-3">
-					<button
-						onClick={onClose}
-						disabled={status === "submitting"}
-						className="flex-1 border-[3px] border-black bg-gray-200 py-3 font-black text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-300 active:shadow-none"
-					>
-						{t("common:actions.cancel")}
-					</button>
-					<button
-						onClick={handleSubmit}
-						disabled={status === "submitting" || !hasValidBetsToSubmit}
-						className={clsx(
-							"flex flex-1 items-center justify-center gap-2 border-[3px] border-black py-3 font-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all active:shadow-none",
-							hasValidBetsToSubmit
-								? "bg-brawl-red text-white hover:bg-red-600"
-								: "cursor-not-allowed bg-gray-300 text-gray-500",
-						)}
-					>
-						{status === "submitting" ? (
-							<InlineLoader size="sm" />
-						) : (
-							<span>{t("review.lockIn")}</span>
-						)}
-					</button>
-				</div>
-			</div>
-		</div>
-	);
-}
 
 // Recovery Bets Toast Component
 function RecoveryBetsToast({
@@ -2628,9 +868,13 @@ function Home() {
 				tournamentStages: data.tournamentStages,
 			});
 
-			// Keep match day unselected so user always goes through Match Day selector.
-			// This avoids jumping directly to carousel on refresh when only one tournament is available.
-			setSelectedMatchDayId(null);
+			// Single match day tournaments skip the selector — one less click.
+			const loadedMatchDays = data.matchDays ?? [];
+			if (loadedMatchDays.length === 1) {
+				setSelectedMatchDayId(loadedMatchDays[0].id);
+			} else {
+				setSelectedMatchDayId(null);
+			}
 		} catch (err) {
 			console.error("Failed to load tournament data", err);
 		} finally {
@@ -3308,6 +1552,32 @@ function Home() {
 			(m: any) => !betMatchIdsInSelectedDay.has(Number(m.id)),
 		);
 
+	const canReturnToBetting = useMemo(() => {
+		if (!selectedMatchDayId) return false;
+
+		return canReturnToBettingFromMatches({
+			hasUnbetEligibleMatches: hasUnbetEligibleMatchesInSelectedDay,
+			editableRecoveryMatchIds: editableRecoveryMatchIdsForSelectedDay,
+			matches: matchesInSelectedDay.map((match: any) => ({
+				matchId: Number(match.id),
+				matchStatus: match.status,
+				teamAId: match.teamA?.id ? Number(match.teamA.id) : null,
+				teamBId: match.teamB?.id ? Number(match.teamB.id) : null,
+			})),
+			userBets,
+			matchDayStatus: selectedMatchDay?.status,
+			isReadOnly,
+		});
+	}, [
+		selectedMatchDayId,
+		hasUnbetEligibleMatchesInSelectedDay,
+		editableRecoveryMatchIdsForSelectedDay,
+		matchesInSelectedDay,
+		userBets,
+		selectedMatchDay?.status,
+		isReadOnly,
+	]);
+
 	// Auto-redirect to review if user has bets but no matches available to bet on FOR THE SELECTED MATCH DAY
 	useEffect(() => {
 		if (!tournamentData || !selectedMatchDayId) return;
@@ -3377,7 +1647,7 @@ function Home() {
 			userBets.forEach((bet: any) => {
 				initial[bet.matchId] = {
 					winnerId: bet.predictedWinnerId ?? 0,
-					score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
+					score: formatScoreDisplay(bet.predictedScoreA, bet.predictedScoreB),
 				};
 			});
 			setPredictions(initial);
@@ -3393,51 +1663,41 @@ function Home() {
 					if (selectedMatchDay?.status === "locked") {
 						userBets.forEach((bet: any) => {
 							if (parsed[bet.matchId] && !parsed[bet.matchId].score) {
-								parsed[bet.matchId].score =
-									`${bet.predictedScoreA}-${bet.predictedScoreB}`;
+								parsed[bet.matchId].score = formatScoreDisplay(
+									bet.predictedScoreA,
+									bet.predictedScoreB,
+								);
 							}
 						});
 					}
 
-					// Validate predicted winners still belong to current match rosters.
-					// Admin may have swapped teams after predictions were saved.
-					for (const match of allCarouselMatches) {
-						const mid = Number(match.id);
-						const pred = parsed[mid];
-						if (!pred?.winnerId) continue;
-						const tA = match.teamA?.id ? Number(match.teamA.id) : null;
-						const tB = match.teamB?.id ? Number(match.teamB.id) : null;
-						const predictedId = Number(pred.winnerId);
-						if (predictedId !== tA && predictedId !== tB) {
-							delete parsed[mid];
+					for (const matchId of Object.keys(parsed)) {
+						const pred = parsed[matchId];
+						if (pred?.score) {
+							parsed[matchId] = {
+								...pred,
+								score: normalizeScoreDisplay(pred.score),
+							};
 						}
 					}
 
-					setPredictions(parsed);
+					// Validate predicted winners still belong to current match rosters.
+					// Admin may have swapped teams after predictions were saved.
+					// TBD bracket matches keep picks — roster is projection-driven.
+					const pruned = pruneInvalidStoredPredictions(
+						parsed,
+						allCarouselMatches,
+					);
+
+					setPredictions(pruned);
 				} catch (e) {
 					console.error("Failed to load predictions", e);
 				}
-			} else if (selectedMatchDay?.status === "locked") {
-				// Recovery Mode: Pre-fill with existing server bets if no local draft exists.
-				// We now pre-fill the actual score as well to avoid the "?-?" display issue.
-				const initial: Record<number, Prediction> = {};
-				userBets.forEach((bet: any) => {
-					// Skip bets where the predicted team is no longer in the match
-					// (admin may have swapped teams after the bet was placed)
-					const match = allCarouselMatches.find(
-						(m: any) => Number(m.id) === Number(bet.matchId),
-					);
-					const predictedId = Number(bet.predictedWinnerId);
-					const teamAId = match?.teamA?.id ? Number(match.teamA.id) : null;
-					const teamBId = match?.teamB?.id ? Number(match.teamB.id) : null;
-					if (predictedId !== teamAId && predictedId !== teamBId) return;
-
-					initial[bet.matchId] = {
-						winnerId: predictedId,
-						score: `${bet.predictedScoreA}-${bet.predictedScoreB}`,
-					};
-				});
-				setPredictions(initial);
+			} else {
+				const initial = predictionsFromUserBets(userBets, allCarouselMatches);
+				if (Object.keys(initial).length > 0) {
+					setPredictions(initial);
+				}
 			}
 		}
 	}, [
@@ -3492,14 +1752,18 @@ function Home() {
 			const current = prev[mId];
 			let newScore = score ?? current?.score ?? "";
 
+			if (score) {
+				newScore = normalizeScoreDisplay(score);
+			}
+
 			if (
 				current &&
 				Number(current.winnerId) !== wId &&
 				newScore.includes("-")
 			) {
-				const parts = newScore.split("-").map((s: string) => s.trim());
+				const parts = newScore.split(/\s*-\s*/).map((s: string) => s.trim());
 				if (parts.length === 2 && !score) {
-					newScore = `${parts[1]}-${parts[0]}`;
+					newScore = `${parts[1]} - ${parts[0]}`;
 				}
 			}
 
@@ -3567,26 +1831,26 @@ function Home() {
 		);
 	}
 
-	// Show Match Day Selector if tournament is selected but no match day chosen
-	// Only show when matchDays has data to avoid empty state flicker
-	if (selectedTournamentId && !selectedMatchDayId && matchDays.length > 0) {
+	// Show Match Day Selector only when there are multiple days to choose from
+	if (selectedTournamentId && !selectedMatchDayId && matchDays.length > 1) {
 		return (
 			<div className="relative flex min-h-[100dvh] w-full flex-col pt-16 md:pt-0">
 				{/* Back button */}
 				{tournaments.length > 1 && (
 					<button
+						type="button"
 						onClick={() => {
 							setSelectedTournamentId(null);
 							setTournamentData(null);
 							setPredictions({});
 							setShowReview(false);
 						}}
-						className="fixed bottom-6 left-4 z-[90] flex w-fit items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black text-black text-xs uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:left-4"
+						className="fixed bottom-6 left-4 z-[90] flex w-fit items-center gap-2 border-[3px] border-black bg-white px-4 py-2 font-black font-display text-black text-xs uppercase shadow-comic-md transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:left-4"
 					>
 						<span className="material-symbols-outlined text-base">
 							arrow_back
 						</span>
-						Tournaments
+						{t("tournament:selector.backToTournaments")}
 					</button>
 				)}
 
@@ -3626,21 +1890,33 @@ function Home() {
 				/>
 			)}
 
-			{/* BACK BUTTON - returns to match day selector or tournament selector */}
-			{selectedMatchDayId && (
-				<button
-					onClick={() => {
-						setSelectedMatchDayId(null);
-						setShowReview(false);
-					}}
-					className="fixed bottom-6 left-4 z-[90] flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black text-[10px] text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:text-xs"
-				>
-					<span className="material-symbols-outlined text-base">
-						arrow_back
-					</span>
-					{matchDays.length > 1 ? "Match Days" : "Voltar"}
-				</button>
-			)}
+			{/* BACK BUTTON — match day selector (2+ days) or tournament list (single day) */}
+			{selectedMatchDayId &&
+				(matchDays.length > 1 || tournaments.length > 1) && (
+					<button
+						type="button"
+						onClick={() => {
+							setShowReview(false);
+							if (matchDays.length > 1) {
+								setSelectedMatchDayId(null);
+								return;
+							}
+							// Single match day: skip the empty selector and go back to tournaments
+							setSelectedMatchDayId(null);
+							setSelectedTournamentId(null);
+							setTournamentData(null);
+							setPredictions({});
+						}}
+						className="fixed bottom-6 left-4 z-[90] flex items-center gap-2 border-[3px] border-black bg-white px-4 py-2.5 font-black font-display text-[10px] text-black uppercase shadow-comic-md transition-all hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:top-28 md:bottom-auto md:text-xs"
+					>
+						<span className="material-symbols-outlined text-base">
+							arrow_back
+						</span>
+						{matchDays.length > 1
+							? t("tournament:matchDay.selectTitle")
+							: t("tournament:selector.backToTournaments")}
+					</button>
+				)}
 
 			{/* VIEW SWITCHER & ACTIONS */}
 			{hasMatches && !showReview && (
@@ -3661,16 +1937,17 @@ function Home() {
 					{!isReadOnly && (
 						<div className="inline-flex overflow-hidden border-[3px] border-black bg-paper shadow-[4px_4px_0px_0px_#000] md:shadow-[6px_6px_0px_0px_#000]">
 							<button
+								type="button"
 								onClick={() => setViewMode("list")}
 								className={clsx(
-									"relative flex items-center gap-2 px-3 py-2 font-black text-[10px] uppercase transition-all md:px-6 md:text-sm",
+									"relative flex items-center gap-2 px-3 py-2 font-black font-display text-[10px] uppercase transition-all md:px-6 md:text-sm",
 									viewMode === "list"
-										? "bg-black text-white"
-										: "bg-white text-black hover:bg-gray-100",
+										? "bg-ink text-white"
+										: "bg-white text-ink hover:bg-paper",
 								)}
 							>
 								{viewMode === "list" && (
-									<div className="pointer-events-none absolute inset-0 border-[#ccff00] border-[3px]" />
+									<div className="pointer-events-none absolute inset-0 border-[3px] border-electric-lime" />
 								)}
 								<span className="material-symbols-outlined xs:inline hidden text-base">
 									view_carousel
@@ -3678,16 +1955,17 @@ function Home() {
 								<span>{t("viewFeed")}</span>
 							</button>
 							<button
+								type="button"
 								onClick={() => setViewMode("bracket")}
 								className={clsx(
-									"relative flex items-center gap-2 border-black border-l-[3px] px-3 py-2 font-black text-[10px] uppercase transition-all md:px-6 md:text-sm",
+									"relative flex items-center gap-2 border-ink border-l-[3px] px-3 py-2 font-black font-display text-[10px] uppercase transition-all md:px-6 md:text-sm",
 									viewMode === "bracket"
-										? "bg-black text-white"
-										: "bg-white text-black hover:bg-gray-100",
+										? "bg-ink text-white"
+										: "bg-white text-ink hover:bg-paper",
 								)}
 							>
 								{viewMode === "bracket" && (
-									<div className="pointer-events-none absolute inset-0 border-[#ccff00] border-[3px]" />
+									<div className="pointer-events-none absolute inset-0 border-[3px] border-electric-lime" />
 								)}
 								<span className="material-symbols-outlined xs:inline hidden text-base">
 									account_tree
@@ -3786,6 +2064,7 @@ function Home() {
 						stalePredictionMatchIds={stalePredictionMatchIds}
 						projectedMatches={projectedMatches}
 						editableRecoveryMatchIds={editableRecoveryMatchIdsForSelectedDay}
+						canReturnToBetting={canReturnToBetting}
 					/>
 				) : viewMode === "list" ? (
 					<BettingCarousel
@@ -3810,6 +2089,7 @@ function Home() {
 						isReadOnly={isReadOnly}
 						editableMatchIds={editableRecoveryMatchIdsForSelectedDay}
 						matchDayStatus={selectedMatchDay?.status}
+						userBets={userBets}
 					/>
 				) : (
 					<div

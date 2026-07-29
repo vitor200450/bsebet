@@ -9,8 +9,9 @@ import {
 	Trophy,
 	Zap,
 } from "lucide-react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { MatchBetCard } from "@/components/MatchBetCard";
+import { ActiveBetRow } from "@/components/ActiveBetRow";
 import { MedalSummary } from "@/components/MedalSummary";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { getDashboardData } from "@/functions/get-dashboard-data";
@@ -18,6 +19,8 @@ import { getUser } from "@/functions/get-user";
 import { useLangLink } from "@/i18n/useLangLink";
 import { getUserMedalCounts, getUserMedals } from "@/server/user-profile";
 import { getMyProfile } from "@/server/users";
+
+const ACTIVE_BETS_PREVIEW = 4;
 
 export const Route = createFileRoute("/$lang/dashboard")({
 	component: RouteComponent,
@@ -35,9 +38,10 @@ export const Route = createFileRoute("/$lang/dashboard")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation("dashboard");
+	const { t, i18n } = useTranslation("dashboard");
 	const { linkTo } = useLangLink();
 	const { session } = Route.useRouteContext();
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["dashboard"],
@@ -77,6 +81,25 @@ function RouteComponent() {
 	};
 	const activeBets = data?.activeBets ?? [];
 	const activeTournaments = data?.activeTournaments ?? [];
+
+	const sortedActiveBets = useMemo(() => {
+		return [...activeBets].sort((a, b) => {
+			const liveRank = (status: string) => (status === "live" ? 0 : 1);
+			const byLive = liveRank(a.match.status) - liveRank(b.match.status);
+			if (byLive !== 0) return byLive;
+
+			const timeA = a.match.startTime
+				? new Date(a.match.startTime).getTime()
+				: Number.POSITIVE_INFINITY;
+			const timeB = b.match.startTime
+				? new Date(b.match.startTime).getTime()
+				: Number.POSITIVE_INFINITY;
+			return timeA - timeB;
+		});
+	}, [activeBets]);
+
+	const previewBets = sortedActiveBets.slice(0, ACTIVE_BETS_PREVIEW);
+	const hasMoreActiveBets = sortedActiveBets.length > ACTIVE_BETS_PREVIEW;
 
 	return (
 		<PublicPageShell className="pb-12">
@@ -248,30 +271,54 @@ function RouteComponent() {
 				{/* Active Bets + Tournaments */}
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					<section className="lg:col-span-2">
-						<div className="mb-5 flex items-center gap-3">
-							<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
-								{t("stats.activeBets")}
-							</h2>
+						<div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+							<div className="flex items-center gap-3">
+								<h2 className="font-black font-display text-ink text-xl uppercase italic tracking-tight md:text-2xl">
+									{t("stats.activeBets")}
+								</h2>
+								{activeBets.length > 0 && (
+									<span className="rounded-md bg-electric-lime px-2 py-0.5 font-black font-display text-black text-xs">
+										{activeBets.length}
+									</span>
+								)}
+							</div>
 							{activeBets.length > 0 && (
-								<span className="rounded-md bg-electric-lime px-2 py-0.5 font-black font-display text-black text-xs">
-									{activeBets.length}
-								</span>
+								<div className="flex flex-col items-end gap-0.5">
+									{hasMoreActiveBets && (
+										<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+											{t("stats.showingOf", {
+												shown: previewBets.length,
+												total: sortedActiveBets.length,
+											})}
+										</span>
+									)}
+									<Link
+										to={linkTo("/my-bets")}
+										className="group flex items-center gap-1 font-black font-display text-brawl-blue text-xs uppercase tracking-wider transition-colors hover:text-ink"
+									>
+										{t("stats.viewAllPicks")}
+										<ChevronRight
+											className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+											strokeWidth={3}
+										/>
+									</Link>
+								</div>
 							)}
 						</div>
 
 						{isLoading ? (
-							<div className="space-y-4">
-								{[1, 2].map((i) => (
+							<div className="space-y-3">
+								{[1, 2, 3].map((i) => (
 									<div
 										key={i}
-										className="h-36 animate-pulse rounded-lg border-2 border-black/10 bg-white"
+										className="h-20 animate-pulse rounded-lg border-2 border-black/10 bg-white"
 									/>
 								))}
 							</div>
-						) : activeBets.length > 0 ? (
-							<div className="space-y-4">
-								{activeBets.map((bet) => (
-									<MatchBetCard
+						) : previewBets.length > 0 ? (
+							<div className="space-y-3">
+								{previewBets.map((bet) => (
+									<ActiveBetRow
 										key={bet.id}
 										matchLabel={bet.match.tournament?.name || ""}
 										headerLogoUrl={bet.match.tournament?.logoUrl}
@@ -280,19 +327,33 @@ function RouteComponent() {
 											id: bet.match.teamA?.id,
 											name: bet.match.teamA?.name || "TBD",
 											logoUrl: bet.match.teamA?.logoUrl,
+											slug: bet.match.teamA?.slug,
 										}}
 										teamB={{
 											id: bet.match.teamB?.id,
 											name: bet.match.teamB?.name || "TBD",
 											logoUrl: bet.match.teamB?.logoUrl,
+											slug: bet.match.teamB?.slug,
 										}}
 										status={bet.match.status}
 										startTime={bet.match.startTime}
 										predictedWinnerId={bet.predictedWinnerId}
 										predictedScoreA={bet.predictedScoreA}
 										predictedScoreB={bet.predictedScoreB}
+										locale={locale}
 									/>
 								))}
+								{hasMoreActiveBets && (
+									<Link
+										to={linkTo("/my-bets")}
+										className="flex items-center justify-center gap-2 rounded-lg border-2 border-black border-dashed bg-paper px-4 py-3 font-black font-display text-ink text-sm uppercase tracking-wider transition-colors hover:bg-electric-lime"
+									>
+										{t("stats.viewAllPicks")}
+										<span className="rounded-sm bg-ink px-1.5 py-0.5 font-body font-bold text-[10px] text-white tabular-nums">
+											+{sortedActiveBets.length - previewBets.length}
+										</span>
+									</Link>
+								)}
 							</div>
 						) : (
 							<div className="rounded-lg border-2 border-black bg-white p-8 text-center shadow-comic">

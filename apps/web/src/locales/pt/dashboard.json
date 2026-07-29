@@ -15,7 +15,9 @@
 		"noActiveTournaments": "Sem torneios ativos",
 		"perfectPicks": "Placares Exatos",
 		"totalBets": "Total de Palpites",
-		"correctCount": "{{correct}} de {{total}} corretos"
+		"correctCount": "{{correct}} de {{total}} corretos",
+		"viewAllPicks": "Ver todos",
+		"showingOf": "Próximos {{shown}} de {{total}}"
 	},
 	"viewHistory": "Ver histórico completo",
 	"empty": {

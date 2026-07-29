@@ -1,20 +1,32 @@
 {
+	"title": "Meus Palpites",
+	"subtitle": "Histórico dos seus palpites por torneio",
 	"header": "Histórico completo dos seus palpites",
-	"tabs": {
-		"all": "Todas",
-		"pending": "Pendentes",
-		"finished": "Finalizados",
-		"recovery": "Recuperação"
-	},
 	"labels": {
 		"allTournaments": "Todos os torneios",
+		"tournaments": "Torneios",
 		"projection": "Projeção",
+		"noBet": "Não apostou",
 		"projectionTooltip": "Projeção baseada na sua performance histórica",
 		"futureProjection": "Projeção futura",
 		"underdogLabel": "Azarão",
 		"waitingScore": "Aguardando resultado",
 		"selectTournament": "Selecionar torneio",
-		"clickToExpand": "Clique no nome do torneio para expandir"
+		"pickCount_one": "{{count}} palpite",
+		"pickCount_other": "{{count}} palpites",
+		"pointsEarned": "{{points}} pts",
+		"pendingCount_one": "{{count}} pendente",
+		"pendingCount_other": "{{count}} pendentes",
+		"liveCount_one": "{{count}} ao vivo",
+		"liveCount_other": "{{count}} ao vivo",
+		"noBetHint": "Sem palpite nesta partida"
+	},
+	"tabs": {
+		"all": "Todas",
+		"pending": "Pendentes",
+		"finished": "Finalizados",
+		"recovery": "Recuperação",
+		"liveShort": "AO VIVO"
 	},
 	"empty": {
 		"none": "Nenhum palpite encontrado",
@@ -28,6 +40,7 @@
 	"betLabel": "Seu palpite",
 	"stageLabel": {
 		"groups": "Fase de Grupos",
+		"group": "Grupo {{group}}",
 		"upper": "Upper R{{number}}",
 		"lower": "Lower R{{number}}",
 		"grandFinal": "Grand Final",

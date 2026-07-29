@@ -45,24 +45,22 @@ export function StandardGroupView({
 	};
 
 	return (
-		<div className="flex flex-col gap-5 rounded-lg border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_#000] md:p-5">
-			{/* Header */}
-			<div className="flex items-center justify-between border-black/10 border-b-2 pb-3">
+		<div className="flex flex-col gap-5 rounded-md border-2 border-black bg-white p-4 text-ink shadow-comic md:p-5">
+			<div className="flex flex-col gap-3 border-black/10 border-b-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
 				<h3 className="font-black font-display text-ink text-lg uppercase italic tracking-tight md:text-xl">
-					{groupName} — {t("bracketView.roundRobin")}
+					{groupName} <span className="text-gray-400">-</span>{" "}
+					{t("bracketView.roundRobin")}
 				</h3>
-				<div className="rounded-sm border-2 border-black bg-ink px-2 py-1 font-bold text-[#ccff00] text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_0px_#000] md:px-2.5 md:text-[10px]">
+				<div className="w-fit rounded-sm border-2 border-black bg-ink px-2 py-1 font-body font-bold text-[9px] text-electric-lime uppercase tracking-widest shadow-[1px_1px_0px_0px_#000] md:px-2.5 md:text-[10px]">
 					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
 			<div className="flex flex-col gap-6 md:flex-row">
-				{/* STANDINGS TABLE */}
 				<div className="w-full min-w-0 md:w-auto md:min-w-56">
 					<StandingsTable standings={standings} />
 				</div>
 
-				{/* MATCH LIST */}
 				<div className="flex min-w-0 flex-1 flex-col gap-4">
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 						{matches.map((m) => (
@@ -72,8 +70,8 @@ export function StandardGroupView({
 						))}
 					</div>
 					{matches.length === 0 && (
-						<div className="rounded border-2 border-gray-300 border-dashed p-8 text-center">
-							<p className="font-black font-display text-gray-500 text-sm italic">
+						<div className="rounded-md border-2 border-ink/20 border-dashed p-8 text-center">
+							<p className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
 								{t("bracketView.noMatches")}
 							</p>
 						</div>

@@ -2,11 +2,12 @@ import { clsx } from "clsx";
 import { Plus, Zap } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { MatchSchedulePills } from "@/components/admin/MatchSchedulePills";
 import { GSLGroupView } from "../bracket/GSLGroupView";
 import { StandardGroupView } from "../bracket/StandardGroupView";
 import type { Match } from "../bracket/types";
 
-const MATCH_HEIGHT = 125;
+const MATCH_HEIGHT = 132;
 
 // Abbreviate long team labels for bracket display
 function abbreviateLabel(label: string | null | undefined): string {
@@ -152,23 +153,27 @@ export function BracketEditor({
 	return (
 		<div className="min-h-[600px] overflow-x-auto overflow-y-visible">
 			{/* GLOBAL ACTIONS BAR */}
-			<div className="mb-8 flex items-center justify-between rounded-lg border-2 border-black/10 border-dashed bg-white/50 p-4">
-				<div className="flex flex-col">
-					<h2 className="font-black text-3xl text-black uppercase italic">
-						{t("bracketEditor.title")}
-					</h2>
-					<p className="font-body font-bold text-[10px] text-black/40 uppercase tracking-widest">
-						{t("bracketEditor.subtitle")}
-					</p>
-				</div>
+			<div className="mb-8 border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0">
+						<h2 className="font-black font-display text-2xl text-black uppercase italic">
+							{t("bracketEditor.title")}
+						</h2>
+						<p className="mt-1 font-body font-bold text-gray-500 text-sm tracking-wide">
+							{t("bracketEditor.subtitle")}
+						</p>
+					</div>
 
-				<div className="flex items-center gap-4">
 					{onGenerateFullBracket && (
 						<button
+							type="button"
 							onClick={() => onGenerateFullBracket(0, "upper")}
-							className="group relative flex items-center gap-2 border-4 border-black bg-[#ccff00] px-6 py-2 font-black text-black text-sm uppercase italic shadow-[4px_4px_0px_0px_#000] transition-colors hover:bg-black hover:text-[#ccff00] active:translate-y-1 active:shadow-none"
+							className="admin-press-comic group flex w-full shrink-0 items-center justify-center gap-2 border-[3px] border-black bg-electric-lime px-6 py-2 font-black font-display text-black text-sm uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-electric-lime sm:w-auto"
 						>
-							<Zap className="h-5 w-5 group-hover:animate-pulse" />
+							<Zap
+								className="h-5 w-5 motion-safe:group-hover:animate-pulse"
+								strokeWidth={2.5}
+							/>
 							{bracketType === "groups"
 								? t("bracketEditor.generateGroups")
 								: t("bracketEditor.generateBracket")}
@@ -393,10 +398,11 @@ function AddMatchButton({
 }) {
 	return (
 		<button
+			type="button"
 			onClick={onClick}
-			className="group flex h-10 w-full items-center justify-center rounded border-2 border-black/10 border-dashed bg-gray-50/10 transition-all hover:border-black hover:bg-white"
+			className="admin-card-interactive admin-dashed-add group flex h-10 w-full items-center justify-center border-2 border-black/10 border-dashed bg-gray-50/10"
 		>
-			<div className="flex items-center gap-2 font-body font-bold text-[9px] text-black/20 uppercase tracking-widest group-hover:text-black">
+			<div className="admin-dashed-add-label flex items-center gap-2 font-body font-bold text-[9px] text-black/20 uppercase tracking-widest">
 				<Plus className="h-3 w-3" /> {label}
 			</div>
 		</button>
@@ -410,8 +416,10 @@ function EditorMatchCard({
 	match: Match;
 	onClick?: () => void;
 }) {
-	const { t } = useTranslation("admin-matches");
+	const { t, i18n } = useTranslation("admin-matches");
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	const isWalkover = match.status === "finished" && match.resultType === "wo";
+	const isFinished = match.status === "finished";
 	const walkoverScore = (() => {
 		if (!isWalkover) return { a: null, b: null };
 
@@ -447,64 +455,61 @@ function EditorMatchCard({
 
 		return { a: "FF", b: "FF" };
 	})();
+	const teamAWon =
+		isFinished &&
+		(walkoverScore.a === "W" ||
+			(match.winnerId != null && match.winnerId === match.teamA?.id));
+	const teamBWon =
+		isFinished &&
+		(walkoverScore.b === "W" ||
+			(match.winnerId != null && match.winnerId === match.teamB?.id));
+
+	const scoreCellClass = (isWinner: boolean) =>
+		clsx(
+			"flex h-full items-center justify-center border-black border-l-2 font-black text-[11px] italic tabular-nums",
+			isFinished && isWinner
+				? "bg-black text-electric-lime"
+				: isFinished
+					? "bg-gray-200 text-gray-400"
+					: "bg-gray-100 text-gray-300",
+		);
 
 	return (
 		<div
 			onClick={onClick}
 			style={{ minHeight: MATCH_HEIGHT }}
-			className={clsx(
-				"group relative flex w-full cursor-pointer flex-col border-[2px] border-black bg-white p-1.5 pt-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5",
-			)}
+			className="admin-card-interactive admin-card-lift-hover admin-bracket-card group relative flex w-full cursor-pointer flex-col border-[3px] border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
 		>
-			{/* Status Badges */}
 			{match.status === "live" && (
-				<div className="absolute -top-2 -right-1 z-20 animate-pulse border-2 border-black bg-red-500 px-1.5 py-0.5 font-body font-bold text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-brawl-red px-1.5 py-0.5 font-body font-bold text-[8px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] motion-safe:animate-pulse">
 					{t("bracketEditor.badgeLive")}
 				</div>
 			)}
 			{match.status === "finished" && (
-				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-body font-bold text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute -top-2 -right-1 z-20 border-2 border-black bg-black px-1.5 py-0.5 font-body font-bold text-[8px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					{t("bracketEditor.badgeFinal")}
 				</div>
 			)}
 			{isWalkover && (
-				<div className="absolute top-6 -right-1 z-20 border-2 border-black bg-[#ff2e2e] px-1.5 py-0.5 font-body font-bold text-[7px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+				<div className="absolute top-7 -right-1 z-20 border-2 border-black bg-brawl-red px-1.5 py-0.5 font-body font-bold text-[8px] text-white uppercase tracking-widest shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
 					{t("bracketEditor.badgeWO")}
 				</div>
 			)}
 
-			{/* HEADER - Strict top-alignment for baseline consistency */}
-			<div className="relative -mx-1.5 -mt-1.5 mb-1 box-border flex min-h-7 flex-shrink-0 flex-col justify-center gap-0.5 border-black border-b-2 bg-gray-50/50 px-1.5 py-0.5 pr-10">
-				<div className="flex w-full items-center justify-between">
-					<div className="min-w-0 flex-grow pr-1">
-						<span className="line-clamp-2 block text-left font-body font-bold text-[10px] text-black uppercase leading-tight tracking-widest">
-							{match.name || match.label}
-						</span>
-					</div>
-					<span className="flex-shrink-0 font-bold font-mono text-[9px] text-gray-400">
+			<div className="flex flex-shrink-0 flex-col gap-1.5 border-black border-b-[3px] bg-gray-50 px-2 py-1.5">
+				<div className="flex items-start justify-between gap-2">
+					<span className="line-clamp-2 min-w-0 flex-1 text-left font-black font-display text-[10px] text-black uppercase italic leading-[1.15]">
+						{match.name || match.label}
+					</span>
+					<span className="shrink-0 font-body font-bold text-[9px] text-gray-400 uppercase tabular-nums tracking-widest">
 						#{match.displayOrder ?? "-"}
 					</span>
 				</div>
-				{match.startTime && (
-					<div className="font-bold text-[7px] text-gray-600">
-						📅{" "}
-						{new Date(match.startTime).toLocaleDateString("pt-BR", {
-							day: "2-digit",
-							month: "2-digit",
-							year: "numeric",
-						})}{" "}
-						•{" "}
-						{new Date(match.startTime).toLocaleTimeString("pt-BR", {
-							hour: "2-digit",
-							minute: "2-digit",
-						})}
-					</div>
-				)}
+
+				<MatchSchedulePills startTime={match.startTime} locale={locale} />
 			</div>
 
-			{/* TEAMS AREA - Proportional grid for better breathing room */}
-			<div className="flex flex-grow flex-col justify-center gap-1 pb-0.5">
-				{/* TEAM A */}
+			<div className="flex flex-grow flex-col justify-center gap-1.5 p-1.5">
 				<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
 					<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
 						{match.teamA?.logoUrl ? (
@@ -514,20 +519,19 @@ function EditorMatchCard({
 								className="h-6 w-6 object-contain"
 							/>
 						) : (
-							<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
+							<div className="h-5 w-5 border border-black/10 bg-black/5" />
 						)}
 					</div>
-					<div className="flex h-full items-center overflow-hidden px-1.5">
-						<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase italic leading-none tracking-tighter">
+					<div className="flex h-full min-w-0 items-center px-1.5">
+						<span className="block w-full truncate pr-0.5 text-left font-black font-display text-[10px] text-black uppercase italic leading-[1.15] tracking-tighter">
 							{match.teamA?.name || abbreviateLabel(match.labelTeamA)}
 						</span>
 					</div>
-					<div className="flex h-full items-center justify-center border-black border-l-2 bg-black font-black text-[#ccff00] text-[11px] italic">
-						{walkoverScore.a ?? match.scoreA ?? match.stats?.pointsA ?? "0"}
+					<div className={scoreCellClass(teamAWon)}>
+						{walkoverScore.a ?? match.scoreA ?? match.stats?.pointsA ?? "-"}
 					</div>
 				</div>
 
-				{/* TEAM B */}
 				<div className="grid h-9 grid-cols-[2rem_1fr_1.75rem] items-center overflow-hidden border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000]">
 					<div className="flex h-full items-center justify-center border-black border-r-2 bg-gray-100 p-0.5">
 						{match.teamB?.logoUrl ? (
@@ -537,22 +541,18 @@ function EditorMatchCard({
 								className="h-6 w-6 object-contain"
 							/>
 						) : (
-							<div className="h-5 w-5 rounded-full border border-black/5 bg-black/5" />
+							<div className="h-5 w-5 border border-black/10 bg-black/5" />
 						)}
 					</div>
-					<div className="flex h-full items-center overflow-hidden px-1.5">
-						<span className="block w-full truncate text-left font-black font-display text-[10px] text-black uppercase italic leading-none tracking-tighter">
+					<div className="flex h-full min-w-0 items-center px-1.5">
+						<span className="block w-full truncate pr-0.5 text-left font-black font-display text-[10px] text-black uppercase italic leading-[1.15] tracking-tighter">
 							{match.teamB?.name || abbreviateLabel(match.labelTeamB)}
 						</span>
 					</div>
-					<div className="flex h-full items-center justify-center border-black border-l-2 bg-black font-black text-[#ccff00] text-[11px] italic">
-						{walkoverScore.b ?? match.scoreB ?? match.stats?.pointsB ?? "0"}
+					<div className={scoreCellClass(teamBWon)}>
+						{walkoverScore.b ?? match.scoreB ?? match.stats?.pointsB ?? "-"}
 					</div>
 				</div>
-			</div>
-
-			<div className="absolute top-1 right-1 opacity-0 transition-opacity group-hover:opacity-100">
-				{/* Edit actions could go here */}
 			</div>
 		</div>
 	);

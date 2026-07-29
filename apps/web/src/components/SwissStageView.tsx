@@ -154,17 +154,20 @@ export function SwissStageView({
 	const hasPendingBets = Object.keys(predictions).length > 0;
 
 	return (
-		<div className="flex w-full flex-col gap-8">
+		<div className="flex w-full flex-col gap-8 px-1 text-ink sm:px-0">
 			{/* Standings Buckets */}
 			{Object.keys(buckets).length > 0 && (
 				<section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
 					{Object.entries(buckets).map(([bucket, teams]) => (
-						<div key={bucket} className="border-2 border-black bg-white p-3">
+						<div
+							key={bucket}
+							className="rounded-md border-2 border-black bg-white p-3 shadow-comic"
+						>
 							<div className="mb-2 flex items-center gap-2">
-								<span className="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-[#ccff00] font-black text-[10px] text-black">
+								<span className="inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-electric-lime font-black font-body text-[10px] text-black tabular-nums">
 									{teams.length}
 								</span>
-								<h3 className="font-black text-black text-sm uppercase tracking-tight">
+								<h3 className="font-black font-display text-ink text-sm uppercase tracking-tighter">
 									{bucket}
 								</h3>
 							</div>
@@ -172,7 +175,7 @@ export function SwissStageView({
 								{teams.map((team) => (
 									<div
 										key={team.id}
-										className="flex items-center gap-2 rounded-sm bg-[#f0f0f0] px-2 py-1"
+										className="flex items-center gap-2 rounded-sm bg-paper px-2 py-1"
 									>
 										<TeamLogo
 											teamName={team.name}
@@ -181,7 +184,7 @@ export function SwissStageView({
 											className="h-5 w-5 shrink-0"
 										/>
 										<span
-											className="overflow-hidden text-ellipsis font-bold text-black text-xs uppercase"
+											className="overflow-hidden text-ellipsis font-black font-display text-ink text-xs uppercase tracking-tighter"
 											title={team.name}
 										>
 											{team.name}
@@ -199,9 +202,9 @@ export function SwissStageView({
 				{groupedRounds.map((round) => (
 					<div
 						key={round.roundLabel}
-						className="rounded-lg border-2 border-black bg-white p-4"
+						className="rounded-md border-2 border-black bg-white p-4 text-ink shadow-comic"
 					>
-						<div className="mb-3 inline-block rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-xs uppercase tracking-wider">
+						<div className="mb-3 inline-block rounded-sm border-2 border-black bg-ink px-3 py-1 font-body font-bold text-[10px] text-electric-lime uppercase tracking-widest">
 							{round.roundLabel}
 						</div>
 						<div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -237,12 +240,12 @@ export function SwissStageView({
 					</div>
 				))}
 
-				{/* Review / Lock Bets button (interactive mode only) */}
 				{hasPendingBets && !isReadOnly && onShowReview && (
 					<div className="flex justify-center pt-2">
 						<button
+							type="button"
 							onClick={onShowReview}
-							className="flex items-center gap-2 border-[3px] border-black bg-[#ccff00] px-8 py-3 font-black text-black uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:shadow-[6px_6px_0px_0px_#000] active:translate-y-0.5 active:shadow-none"
+							className="flex items-center gap-2 border-[3px] border-black bg-electric-lime px-8 py-3 font-black font-display text-ink uppercase shadow-[4px_4px_0px_0px_#000] transition-all hover:shadow-[6px_6px_0px_0px_#000] active:translate-y-0.5 active:shadow-none"
 						>
 							<span className="material-symbols-outlined text-lg">
 								rate_review

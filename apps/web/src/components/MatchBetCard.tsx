@@ -35,6 +35,79 @@ interface MatchBetCardProps {
 	betStats?: BetStats;
 }
 
+type TeamSideProps = {
+	team: TeamInfo;
+	isPicked: boolean;
+	isProjected: boolean;
+	isFinished: boolean;
+	didWin: boolean;
+	side: "a" | "b";
+	pickLabel: string;
+	winnerLabel: string;
+};
+
+function TeamSide({
+	team,
+	isPicked,
+	isProjected,
+	isFinished,
+	didWin,
+	side,
+	pickLabel,
+	winnerLabel,
+}: TeamSideProps) {
+	const showPick = isPicked && !isProjected;
+
+	return (
+		<div
+			className={clsx(
+				"relative flex flex-1 flex-col items-center gap-2 px-3 py-4 transition-colors",
+				side === "a"
+					? "md:border-black md:border-r-2"
+					: "md:border-black md:border-l-2",
+				showPick ? "surface-lime" : "bg-white text-ink",
+			)}
+		>
+			{showPick && (
+				<div className="absolute inset-y-0 left-0 w-1.5 bg-ink md:hidden" />
+			)}
+
+			<div className="flex flex-col items-center gap-2">
+				<TeamLogo
+					teamName={team.name}
+					logoUrl={team.logoUrl}
+					size="xl"
+					className={clsx("drop-shadow-sm", showPick && "scale-105")}
+				/>
+				<p
+					className={clsx(
+						"max-w-full text-center font-black font-display text-ink uppercase leading-tight tracking-tighter",
+						showPick ? "text-base" : "text-sm",
+					)}
+				>
+					{team.name}
+				</p>
+			</div>
+
+			{showPick && (
+				<div className="flex items-center gap-1 rounded-sm border-2 border-black bg-ink px-2 py-0.5 font-black font-display text-[9px] text-white uppercase shadow-comic-press">
+					<span className="material-symbols-outlined text-[11px] text-electric-lime">
+						check_circle
+					</span>
+					{pickLabel}
+				</div>
+			)}
+
+			{didWin && isFinished && (
+				<div className="flex items-center gap-1 font-body font-bold text-[9px] text-ink uppercase tracking-widest">
+					<Crown className="h-3 w-3 text-brawl-yellow" strokeWidth={2.5} />
+					{winnerLabel}
+				</div>
+			)}
+		</div>
+	);
+}
+
 export function MatchBetCard({
 	matchLabel,
 	headerLogoUrl,
@@ -69,7 +142,6 @@ export function MatchBetCard({
 	const hasPredictedScore =
 		typeof predictedScoreA === "number" && typeof predictedScoreB === "number";
 
-	// Walkover display
 	const woA =
 		isWalkover && actualWinnerId === teamA.id ? "W" : isWalkover ? "FF" : null;
 	const woB =
@@ -98,19 +170,15 @@ export function MatchBetCard({
 
 	const borderColor = isProjected
 		? "border-gray-300 border-dashed"
-		: won
-			? "border-electric-lime"
-			: lost
-				? "border-brawl-red"
-				: "border-black";
+		: lost
+			? "border-brawl-red"
+			: "border-black";
 
 	const shadowColor = isProjected
 		? "shadow-[3px_3px_0_0_#d1d5db]"
-		: won
-			? "shadow-[3px_3px_0_0_var(--color-electric-lime)]"
-			: lost
-				? "shadow-[3px_3px_0_0_#ff2e2e]"
-				: "shadow-comic";
+		: lost
+			? "shadow-[3px_3px_0_0_#ff2e2e]"
+			: "shadow-comic";
 
 	const accentColor = isProjected
 		? "bg-gray-400"
@@ -122,25 +190,17 @@ export function MatchBetCard({
 					? "bg-brawl-red animate-pulse"
 					: "bg-brawl-yellow";
 
-	const pickedTeamBgA =
-		pickedA && !isProjected ? "ring-4 ring-inset ring-electric-lime" : "";
-	const pickedWinnerBgA = pickedA && aWon && isFinished ? "bg-paper" : "";
-
-	const pickedTeamBgB =
-		pickedB && !isProjected ? "ring-4 ring-inset ring-electric-lime" : "";
-	const pickedWinnerBgB = pickedB && bWon && isFinished ? "bg-paper" : "";
-
 	return (
 		<div
 			className={clsx(
-				"group relative overflow-hidden rounded-lg bg-white transition-all",
+				"group relative overflow-hidden rounded-lg border-2 bg-white text-ink transition-all",
 				borderColor,
 				shadowColor,
 				"hover:-translate-y-0.5",
 				className,
 			)}
 		>
-			{/* Top accent bar */}
+			{/* Result / status accent — not a pick indicator */}
 			<div className={clsx("h-1.5 w-full", accentColor)} />
 
 			{/* Header */}
@@ -169,42 +229,19 @@ export function MatchBetCard({
 
 			{/* Main: Teams & Score */}
 			<div className="flex flex-col items-stretch md:flex-row">
-				{/* Team A */}
-				<div
-					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black px-3 py-4 transition-colors md:border-r-2",
-						pickedTeamBgA,
-						pickedWinnerBgA,
-					)}
-				>
-					<TeamLogo
-						teamName={teamA.name}
-						logoUrl={teamA.logoUrl}
-						size="xl"
-						className="drop-shadow-sm"
-					/>
-					<p className="max-w-full text-center font-black font-display text-ink text-sm uppercase leading-tight">
-						{teamA.name}
-					</p>
-					{pickedA && !isProjected && (
-						<div className="flex items-center gap-1 rounded-sm border border-black bg-electric-lime px-1.5 py-0.5 font-black font-display text-[8px] text-black uppercase shadow-comic-press">
-							<span className="material-symbols-outlined text-[10px]">
-								check_circle
-							</span>
-							{t("betLabel")}
-						</div>
-					)}
-					{aWon && isFinished && (
-						<div className="flex items-center gap-1 font-body font-bold text-[#121212] text-[9px] uppercase tracking-widest">
-							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
-							{t("correctWinner")}
-						</div>
-					)}
-				</div>
+				<TeamSide
+					team={teamA}
+					isPicked={pickedA}
+					isProjected={isProjected}
+					isFinished={isFinished}
+					didWin={aWon}
+					side="a"
+					pickLabel={t("review.pickBadge")}
+					winnerLabel={t("correctWinner")}
+				/>
 
 				{/* Center: Scores */}
-				<div className="flex flex-col items-center justify-center gap-2 border-black border-y-2 px-2 py-3 md:min-w-[120px] md:shrink-0 md:border-y-0">
-					{/* VS or Score */}
+				<div className="flex flex-col items-center justify-center gap-2 border-black border-y-2 bg-white px-2 py-3 md:min-w-[120px] md:shrink-0 md:border-y-0">
 					{!isFinished ? (
 						<div className="flex flex-col items-center gap-2">
 							{hasPredictedScore ? (
@@ -213,19 +250,29 @@ export function MatchBetCard({
 										{t("betPredictionPrefix")}
 									</span>
 									<div className="flex items-center gap-2">
-										<span className="font-black font-body text-3xl text-ink tabular-nums">
+										<span
+											className={clsx(
+												"font-black font-body text-3xl tabular-nums",
+												pickedA ? "text-ink" : "text-gray-400",
+											)}
+										>
 											{predictedScoreA}
 										</span>
 										<span className="font-black font-body text-gray-300 text-xl">
 											-
 										</span>
-										<span className="font-black font-body text-3xl text-ink tabular-nums">
+										<span
+											className={clsx(
+												"font-black font-body text-3xl tabular-nums",
+												pickedB ? "text-ink" : "text-gray-400",
+											)}
+										>
 											{predictedScoreB}
 										</span>
 									</div>
 								</>
 							) : (
-								<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-black shadow-[2px_2px_0_0_var(--color-electric-lime)]">
+								<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-ink shadow-comic-sm">
 									<span className="font-black font-display text-white text-xs italic">
 										VS
 									</span>
@@ -245,7 +292,6 @@ export function MatchBetCard({
 						</div>
 					) : (
 						<div className="flex flex-col items-center gap-2.5">
-							{/* Actual Score */}
 							<span className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 								{t("matchCard.score")}
 							</span>
@@ -253,7 +299,7 @@ export function MatchBetCard({
 								<span
 									className={clsx(
 										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black font-body text-xl tabular-nums shadow-comic-sm",
-										aWon ? "bg-electric-lime text-black" : "bg-ink text-white",
+										aWon ? "surface-lime" : "surface-ink",
 									)}
 								>
 									{woA ?? actualScoreA ?? "—"}
@@ -264,13 +310,12 @@ export function MatchBetCard({
 								<span
 									className={clsx(
 										"flex h-12 w-12 items-center justify-center rounded-md border-2 border-black font-black font-body text-xl tabular-nums shadow-comic-sm",
-										bWon ? "bg-electric-lime text-black" : "bg-ink text-white",
+										bWon ? "surface-lime" : "surface-ink",
 									)}
 								>
 									{woB ?? actualScoreB ?? "—"}
 								</span>
 							</div>
-							{/* Predicted Score */}
 							{hasPredictedScore && !isProjected && (
 								<div className="mt-1 flex flex-col items-center gap-0.5">
 									<span className="font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
@@ -285,38 +330,16 @@ export function MatchBetCard({
 					)}
 				</div>
 
-				{/* Team B */}
-				<div
-					className={clsx(
-						"flex flex-1 flex-col items-center gap-2 border-black px-3 py-4 transition-colors md:border-l-2",
-						pickedTeamBgB,
-						pickedWinnerBgB,
-					)}
-				>
-					<TeamLogo
-						teamName={teamB.name}
-						logoUrl={teamB.logoUrl}
-						size="xl"
-						className="drop-shadow-sm"
-					/>
-					<p className="max-w-full text-center font-black font-display text-ink text-sm uppercase leading-tight">
-						{teamB.name}
-					</p>
-					{pickedB && !isProjected && (
-						<div className="flex items-center gap-1 rounded-sm border border-black bg-electric-lime px-1.5 py-0.5 font-black font-display text-[8px] text-black uppercase shadow-comic-press">
-							<span className="material-symbols-outlined text-[10px]">
-								check_circle
-							</span>
-							{t("betLabel")}
-						</div>
-					)}
-					{bWon && isFinished && (
-						<div className="flex items-center gap-1 font-body font-bold text-[#121212] text-[9px] uppercase tracking-widest">
-							<Crown className="h-3 w-3 text-[#ffc700]" strokeWidth={2.5} />
-							{t("correctWinner")}
-						</div>
-					)}
-				</div>
+				<TeamSide
+					team={teamB}
+					isPicked={pickedB}
+					isProjected={isProjected}
+					isFinished={isFinished}
+					didWin={bWon}
+					side="b"
+					pickLabel={t("review.pickBadge")}
+					winnerLabel={t("correctWinner")}
+				/>
 			</div>
 
 			{/* Footer - Points & Badges */}
@@ -348,8 +371,7 @@ export function MatchBetCard({
 				</div>
 			)}
 
-			{/* Community bet stats — shown whenever betStats is provided */}
-			{betStats && !isProjected && (
+			{betStats && !isProjected && teamA.id && teamB.id && (
 				<div className="w-full">
 					<BetSplitBar
 						teamAName={teamA.name}

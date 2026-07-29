@@ -4,6 +4,8 @@ import { Camera, ChevronRight, Lock, Save, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { bannerActionLinkClass } from "@/components/EntityDetailBanner";
+import { DetailPanel } from "@/components/entity-detail-ui";
 import { ImageCropper } from "@/components/image-cropper";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { getUser } from "@/functions/get-user";
@@ -154,56 +156,86 @@ export function ProfilePageContent({
 	}
 
 	const displayImage = avatarPreview ?? user?.image;
+	const previewName = nickname.trim() || user?.name || t("title");
 
 	return (
-		<PublicPageShell className="pb-12">
-			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-12">
-				<div className="mb-8 md:mb-10">
-					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+		<PublicPageShell className="pb-20">
+			<header className="surface-charcoal relative z-10 overflow-hidden border-black border-b-[3px]">
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 opacity-[0.12]"
+					style={{
+						backgroundImage:
+							"repeating-linear-gradient(-12deg, transparent, transparent 10px, rgba(255,255,255,0.25) 10px, rgba(255,255,255,0.25) 11px)",
+					}}
+				/>
+				<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-6 md:px-6 md:py-8">
+					<div className="mb-6 flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<h1 className="font-black font-display text-4xl text-ink uppercase italic tracking-tighter md:text-5xl">
-								{t("title")}
-							</h1>
-							<p className="mt-2 font-bold font-display text-gray-600 text-lg">
+							<p className="mb-1 font-body font-bold text-[10px] text-white/70 uppercase tracking-widest">
 								{t("editInfo")}
 							</p>
+							<h1 className="pb-1 font-black font-display text-3xl text-white uppercase italic leading-[1.1] tracking-tighter md:text-5xl">
+								{t("title")}
+							</h1>
 						</div>
-						{user?.id && (
+						{user?.id ? (
 							<Link
 								{...routeTo("/users/$userId")}
 								params={{ userId: user.id }}
-								className="group flex items-center gap-2 font-black font-display text-brawl-blue text-sm uppercase tracking-wider transition-colors hover:text-ink"
+								className={bannerActionLinkClass}
 							>
 								{t("viewPublic")}
-								<ChevronRight
-									className="h-4 w-4 transition-transform group-hover:translate-x-1"
-									strokeWidth={3}
-								/>
+								<ChevronRight className="h-4 w-4" strokeWidth={3} />
 							</Link>
-						)}
+						) : null}
+					</div>
+
+					<div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-6">
+						<div className="flex h-24 w-24 items-center justify-center overflow-hidden border-[3px] border-black bg-white text-ink shadow-comic-md md:h-28 md:w-28">
+							{displayImage ? (
+								<img
+									src={displayImage}
+									alt={previewName}
+									className="h-full w-full object-cover"
+								/>
+							) : (
+								<User size={40} strokeWidth={1.5} className="text-gray-400" />
+							)}
+						</div>
+						<div className="min-w-0 text-center sm:text-left">
+							<p className="truncate pe-[0.35em] pb-0.5 font-black font-display text-2xl text-white uppercase italic leading-[1.15] tracking-tighter md:text-3xl">
+								{previewName}
+							</p>
+							{user?.email ? (
+								<p className="mt-1 truncate font-body font-bold text-[10px] text-white/70 uppercase tracking-widest">
+									{user.email}
+								</p>
+							) : null}
+						</div>
 					</div>
 				</div>
+			</header>
 
+			<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-10">
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 					<div className="lg:col-span-1">
-						<div className="sticky top-6 space-y-6">
-							<div className="rounded-lg border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
-								<div className="mb-5 flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2e5cff]">
+						<div className="sticky top-6">
+							<DetailPanel
+								title={t("avatarSection")}
+								icon={
+									<div className="surface-brawl-blue flex h-8 w-8 items-center justify-center border-2 border-black shadow-comic-sm">
 										<Camera className="h-4 w-4 text-white" strokeWidth={2.5} />
 									</div>
-									<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
-										{t("avatarSection")}
-									</h2>
-								</div>
-
+								}
+							>
 								<div className="flex flex-col items-center gap-5">
 									<div className="relative">
-										<div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-xl border-[3px] border-black bg-[#e6e6e6] shadow-[4px_4px_0_0_#000]">
+										<div className="flex h-36 w-36 items-center justify-center overflow-hidden border-[3px] border-black bg-tape text-ink shadow-comic-md">
 											{displayImage ? (
 												<img
 													src={displayImage}
-													alt="Avatar"
+													alt={previewName}
 													className="h-full w-full object-cover"
 												/>
 											) : (
@@ -215,8 +247,9 @@ export function ProfilePageContent({
 											)}
 										</div>
 										<button
+											type="button"
 											onClick={() => fileInputRef.current?.click()}
-											className="absolute -right-2 -bottom-2 flex h-10 w-10 items-center justify-center rounded-md border-[3px] border-black bg-[#ffc700] shadow-[2px_2px_0_0_#000] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+											className="surface-yellow absolute -right-2 -bottom-2 flex h-10 w-10 items-center justify-center border-[3px] border-black shadow-comic-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 										>
 											<Camera
 												size={16}
@@ -228,16 +261,18 @@ export function ProfilePageContent({
 
 									<div className="grid w-full grid-cols-1 gap-3">
 										<button
+											type="button"
 											onClick={() => fileInputRef.current?.click()}
-											className="rounded-lg border-2 border-black bg-[#2e5cff] px-4 py-3 font-black font-display text-sm text-white uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none"
+											className="surface-brawl-blue border-[3px] border-black px-4 py-3 font-black font-display text-sm uppercase tracking-wider shadow-comic-md transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 										>
 											{t("changePhoto")}
 										</button>
 										<button
+											type="button"
 											onClick={handleRestoreGoogleAvatar}
 											disabled={isRestoring}
 											title={t("restoreGoogle")}
-											className="flex items-center justify-center gap-2 rounded-lg border-2 border-black bg-white px-4 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] disabled:opacity-50"
+											className="flex items-center justify-center gap-2 border-[3px] border-black bg-white px-4 py-3 font-black font-display text-ink text-sm uppercase tracking-wider shadow-comic-md transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
 										>
 											<svg
 												viewBox="0 0 24 24"
@@ -262,29 +297,27 @@ export function ProfilePageContent({
 										onChange={handleFileChange}
 									/>
 								</div>
-							</div>
+							</DetailPanel>
 						</div>
 					</div>
 
 					<div className="flex flex-col gap-6 lg:col-span-2">
-						<div className="rounded-lg border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
-							<div className="mb-5 flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ff2e2e]">
+						<DetailPanel
+							title={t("accountSection")}
+							icon={
+								<div className="surface-brawl-red flex h-8 w-8 items-center justify-center border-2 border-black shadow-comic-sm">
 									<Lock className="h-4 w-4 text-white" strokeWidth={2.5} />
 								</div>
-								<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
-									{t("accountSection")}
-								</h2>
-							</div>
-
+							}
+						>
 							<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
+								<div className="border-2 border-black/10 bg-paper px-4 py-3 text-ink">
 									<div className="mb-1 font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("nameLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
-										<span className="font-black text-black text-sm">
-											{user?.name ?? "—"}
+										<span className="font-black font-display text-ink text-sm">
+											{user?.name ?? "-"}
 										</span>
 										<Lock
 											size={14}
@@ -294,13 +327,13 @@ export function ProfilePageContent({
 									</div>
 								</div>
 
-								<div className="rounded-lg border-2 border-black/10 bg-[#f0f0f0] px-4 py-3">
+								<div className="border-2 border-black/10 bg-paper px-4 py-3 text-ink">
 									<div className="mb-1 font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 										{t("emailLabel")}
 									</div>
 									<div className="flex items-center justify-between gap-3">
-										<span className="truncate font-black text-black text-sm">
-											{user?.email ?? "—"}
+										<span className="truncate font-black font-display text-ink text-sm">
+											{user?.email ?? "-"}
 										</span>
 										<Lock
 											size={14}
@@ -314,34 +347,36 @@ export function ProfilePageContent({
 							<p className="mt-4 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
 								{t("googleAccountNote")}
 							</p>
-						</div>
+						</DetailPanel>
 
-						<div className="rounded-lg border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_#000]">
-							<div className="mb-5 flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#ffc700]">
+						<DetailPanel
+							title={t("nicknameSection")}
+							icon={
+								<div className="surface-yellow flex h-8 w-8 items-center justify-center border-2 border-black shadow-comic-sm">
 									<span className="material-symbols-outlined text-black text-lg">
 										id_card
 									</span>
 								</div>
-								<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
-									{t("nicknameSection")}
-								</h2>
-							</div>
-
+							}
+						>
 							<div className="space-y-4">
 								<div>
-									<label className="mb-2 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+									<label
+										htmlFor="profile-nickname"
+										className="mb-2 block font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest"
+									>
 										{t("nicknameLabel")}
 									</label>
 									<div className="relative">
 										<input
+											id="profile-nickname"
 											type="text"
 											value={nickname}
 											onChange={(e) => setNickname(e.target.value.slice(0, 50))}
 											placeholder={t("nicknamePlaceholder")}
-											className="h-12 w-full rounded-lg border-[3px] border-black bg-white px-4 font-black text-base text-black outline-none transition-shadow placeholder:font-normal placeholder:text-gray-400 focus:shadow-[3px_3px_0_0_#ffc700]"
+											className="h-12 w-full border-[3px] border-black bg-white px-4 font-black font-display text-base text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-gray-400 focus:shadow-[3px_3px_0_0_#ffc700]"
 										/>
-										<span className="absolute right-3 bottom-2 font-black font-mono text-[9px] text-gray-400">
+										<span className="absolute right-3 bottom-2 font-body font-bold text-[9px] text-gray-400 tabular-nums">
 											{nickname.length}/50
 										</span>
 									</div>
@@ -351,32 +386,27 @@ export function ProfilePageContent({
 								</div>
 
 								<button
+									type="button"
 									onClick={handleSave}
 									disabled={isSaving}
-									className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-[#ffc700] px-5 py-3 font-black font-display text-black text-sm uppercase tracking-wider shadow-[3px_3px_0_0_#000] transition-all hover:shadow-[2px_2px_0_0_#000] active:shadow-none disabled:opacity-60"
+									className="surface-lime flex w-full items-center justify-center gap-2 border-[3px] border-black px-5 py-3 font-black font-display text-sm uppercase tracking-wider shadow-comic-md transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-60"
 								>
 									<Save className="h-4 w-4" strokeWidth={2.5} />
 									{isSaving ? t("saving") : t("saveChanges")}
 								</button>
 							</div>
-						</div>
+						</DetailPanel>
 					</div>
-				</div>
-
-				<div className="mt-12 flex items-center justify-center gap-2 opacity-30">
-					<div className="h-px w-16 bg-black" />
-					<div className="h-2 w-2 rounded-sm bg-[#ccff00]" />
-					<div className="h-px w-16 bg-black" />
 				</div>
 			</div>
 
-			{croppingImage && (
+			{croppingImage ? (
 				<ImageCropper
-					imageSrc={croppingImage!}
+					imageSrc={croppingImage}
 					onCropComplete={handleCropComplete}
 					onCancel={() => setCroppingImage(null)}
 				/>
-			)}
+			) : null}
 		</PublicPageShell>
 	);
 }

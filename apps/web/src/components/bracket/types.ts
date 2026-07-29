@@ -4,6 +4,7 @@ export type Team = {
 	logoUrl?: string;
 	slug?: string;
 	color: "blue" | "red";
+	region?: string | null;
 	seed?: number | null;
 	group?: string | null;
 };
@@ -21,6 +22,9 @@ export type Match = {
 		regionB: string;
 		pointsA: number;
 		pointsB: number;
+		/** Tournament form as "W-L" (e.g. "3-1") */
+		formA: string;
+		formB: string;
 		winRateA: string;
 		winRateB: string;
 		seedA: number | null;
@@ -53,6 +57,9 @@ export type Match = {
 	startTime: string | Date;
 	tournamentName?: string | null;
 	tournamentLogoUrl?: string | null;
+	tournamentRegion?: string | null;
+	tournamentPresentationTheme?: string | null;
+	tournamentVenueMode?: "online" | "lan" | null;
 	scoringRules?: {
 		winner: number;
 		exact: number;

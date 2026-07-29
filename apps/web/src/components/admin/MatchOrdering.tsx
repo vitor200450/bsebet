@@ -18,10 +18,11 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "@tanstack/react-router";
-import { GripVertical, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowUpDown, GripVertical, Save } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { MatchSchedulePills } from "@/components/admin/MatchSchedulePills";
 import { InlineLoader } from "@/components/inline-loader";
 import type { Match } from "@/components/TournamentBracket";
 import { updateMatchOrder } from "@/server/matches";
@@ -31,7 +32,30 @@ interface MatchOrderingProps {
 	tournamentId: number;
 }
 
-// 1. Extracted Card Component for reuse in Item and Overlay
+/** Saved manual order uses displayOrder 0..n-1; bracket-generated orders are sparse. */
+function hasSavedManualOrder(matches: Match[]): boolean {
+	if (matches.length === 0) return false;
+	const orders = [...matches]
+		.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+		.map((m) => m.displayOrder ?? 0);
+	return orders.every((order, index) => order === index);
+}
+
+function sortMatchesForOrdering(matches: Match[]): Match[] {
+	if (hasSavedManualOrder(matches)) {
+		return [...matches].sort(
+			(a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+		);
+	}
+
+	return [...matches].sort((a, b) => {
+		const timeDiff =
+			new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+		if (timeDiff !== 0) return timeDiff;
+		return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+	});
+}
+
 function MatchItemCard({
 	match,
 	index,
@@ -39,106 +63,113 @@ function MatchItemCard({
 	isDragging,
 	dragListeners,
 	dragAttributes,
+	locale,
 }: {
 	match: Match;
 	index: number;
 	isOverlay?: boolean;
 	isDragging?: boolean;
-	dragListeners?: any;
-	dragAttributes?: any;
+	dragListeners?: Record<string, unknown>;
+	dragAttributes?: Record<string, unknown>;
+	locale: string;
 }) {
 	const { t } = useTranslation("admin-matches");
+
 	return (
 		<div
-			className={`flex items-center gap-6 border-[3px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all duration-200 ${
+			className={`admin-card-interactive admin-card-shadow-hover border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] ${
 				isOverlay
-					? "z-50 rotate-1 scale-[1.03] cursor-grabbing shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+					? "z-50 rotate-1 scale-[1.02] cursor-grabbing shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
 					: isDragging
 						? "opacity-30"
-						: "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+						: ""
 			}`}
 		>
-			<div
-				{...dragAttributes}
-				{...dragListeners}
-				className="cursor-grab touch-none rounded p-2 text-black transition-colors hover:bg-gray-100 active:cursor-grabbing"
-			>
-				<GripVertical className="h-6 w-6 text-gray-400 transition-colors hover:text-black" />
-			</div>
+			<div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-stretch lg:gap-6">
+				<div className="flex items-center gap-3 lg:shrink-0">
+					<button
+						type="button"
+						{...dragAttributes}
+						{...dragListeners}
+						className="flex shrink-0 cursor-grab touch-none items-center justify-center border-2 border-black bg-gray-50 p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-[background-color] duration-150 ease-out hover:bg-electric-lime active:scale-[0.97] active:cursor-grabbing"
+						aria-label={t("ordering.title")}
+					>
+						<GripVertical className="h-5 w-5" strokeWidth={2.5} />
+					</button>
 
-			<div className="w-16 flex-shrink-0 select-none text-center font-black text-3xl text-gray-300 italic">
-				#{index + 1}
-			</div>
-
-			<div className="flex min-w-0 flex-grow items-center justify-between gap-8">
-				{/* Match Info */}
-				<div className="flex min-w-0 flex-grow select-none flex-col">
-					<span className="break-words font-black text-black text-xl uppercase uppercase italic leading-[1.1]">
-						{match.name || match.label || t("ordering.tbdVsTbd")}
-					</span>
-					<div className="mt-1 flex items-center gap-2">
-						<span className="font-body font-bold text-gray-500 text-xs uppercase tracking-widest">
-							{new Date(match.startTime).toLocaleDateString()} •{" "}
-							{new Date(match.startTime).toLocaleTimeString([], {
-								hour: "2-digit",
-								minute: "2-digit",
-							})}
+					<div className="-skew-x-6 border-2 border-black bg-black px-2.5 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+						<span className="block skew-x-6 font-black font-display text-lg text-white uppercase italic tabular-nums leading-none">
+							#{index + 1}
 						</span>
+					</div>
+
+					<div className="min-w-0 flex-1 lg:hidden">
+						<p className="truncate font-black font-display text-black text-sm uppercase italic leading-tight">
+							{match.name || match.label || t("ordering.tbdVsTbd")}
+						</p>
+					</div>
+				</div>
+
+				<div className="min-w-0 flex-1 lg:flex lg:flex-col lg:justify-center">
+					<p className="hidden truncate font-black font-display text-base text-black uppercase italic leading-tight lg:block">
+						{match.name || match.label || t("ordering.tbdVsTbd")}
+					</p>
+					<div className="mt-1 flex flex-wrap items-center gap-2">
+						<MatchSchedulePills startTime={match.startTime} locale={locale} />
 						{match.status === "finished" && (
-							<span className="bg-black px-1.5 py-0.5 font-body font-bold text-[10px] text-white uppercase leading-none tracking-widest">
+							<span className="border border-black bg-black px-1.5 py-0.5 font-body font-bold text-[9px] text-white uppercase tracking-widest">
 								{t("bracketEditor.badgeFinal")}
 							</span>
 						)}
 						{match.status === "live" && (
-							<span className="animate-pulse bg-red-500 px-1.5 py-0.5 font-body font-bold text-[10px] text-white uppercase leading-none tracking-widest">
+							<span className="border border-black bg-brawl-red px-1.5 py-0.5 font-body font-bold text-[9px] text-white uppercase tracking-widest">
 								{t("bracketEditor.badgeLive")}
 							</span>
 						)}
 					</div>
 				</div>
 
-				{/* Teams Display */}
-				<div className="ml-auto flex w-[420px] flex-shrink-0 select-none items-center justify-center gap-4 rounded-xl border-2 border-black/5 bg-gray-50 px-4 py-2">
-					{/* Team A */}
-					<div className="flex w-[160px] items-center justify-end gap-3">
-						<span className="truncate text-right font-bold text-black text-sm uppercase">
+				<div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-[3px] border-black bg-gray-50 p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.08)] lg:min-w-[min(100%,520px)] lg:max-w-[560px] lg:flex-1 lg:gap-4 lg:p-4">
+					<div className="flex min-w-0 items-center justify-end gap-3">
+						<span className="min-w-0 flex-1 pr-0.5 text-right font-black font-display text-black text-sm uppercase italic leading-[1.15] tracking-tighter [overflow-wrap:anywhere] lg:text-base">
 							{match.teamA?.name ||
 								match.labelTeamA ||
 								t("ordering.unknownTeam")}
 						</span>
-						<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border-2 border-black bg-white shadow-sm">
+						<div className="flex h-12 w-12 shrink-0 items-center justify-center border-[3px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] lg:h-14 lg:w-14">
 							{match.teamA?.logoUrl ? (
 								<img
 									src={match.teamA.logoUrl}
-									alt={t("ordering.teamA")}
-									className="h-8 w-8 object-contain"
+									alt=""
+									className="h-9 w-9 object-contain lg:h-11 lg:w-11"
 								/>
 							) : (
-								<div className="h-full w-full animate-pulse bg-gray-100" />
+								<span className="font-body font-bold text-gray-300 text-sm">
+									?
+								</span>
 							)}
 						</div>
 					</div>
 
-					<div className="flex w-[40px] flex-col items-center">
-						<span className="font-black text-gray-300 text-xl italic leading-none">
-							{t("ordering.vs")}
-						</span>
-					</div>
+					<span className="px-1 font-black font-display text-base text-gray-300 uppercase italic lg:text-xl">
+						{t("ordering.vs")}
+					</span>
 
-					{/* Team B */}
-					<div className="flex w-[160px] items-center justify-start gap-3">
-						<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border-2 border-black bg-white shadow-sm">
+					<div className="flex min-w-0 items-center gap-3">
+						<div className="flex h-12 w-12 shrink-0 items-center justify-center border-[3px] border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] lg:h-14 lg:w-14">
 							{match.teamB?.logoUrl ? (
 								<img
 									src={match.teamB.logoUrl}
-									alt={t("ordering.teamB")}
-									className="h-8 w-8 object-contain"
+									alt=""
+									className="h-9 w-9 object-contain lg:h-11 lg:w-11"
 								/>
 							) : (
-								<div className="h-full w-full animate-pulse bg-gray-100" />
+								<span className="font-body font-bold text-gray-300 text-sm">
+									?
+								</span>
 							)}
 						</div>
-						<span className="truncate text-left font-bold text-black text-sm uppercase">
+						<span className="min-w-0 flex-1 pr-1 pl-0.5 font-black font-display text-black text-sm uppercase italic leading-[1.15] tracking-tighter [overflow-wrap:anywhere] lg:text-base">
 							{match.teamB?.name ||
 								match.labelTeamB ||
 								t("ordering.unknownTeam")}
@@ -150,8 +181,15 @@ function MatchItemCard({
 	);
 }
 
-// 2. Sortable Wrapper
-function SortableMatchItem({ match, index }: { match: Match; index: number }) {
+function SortableMatchItem({
+	match,
+	index,
+	locale,
+}: {
+	match: Match;
+	index: number;
+	locale: string;
+}) {
 	const {
 		attributes,
 		listeners,
@@ -162,7 +200,6 @@ function SortableMatchItem({ match, index }: { match: Match; index: number }) {
 	} = useSortable({ id: match.id });
 
 	const style = {
-		// USE CSS.Translate instead of Transform for better performance (no layout shift artifacts)
 		transform: CSS.Translate.toString(transform),
 		transition,
 	};
@@ -175,22 +212,36 @@ function SortableMatchItem({ match, index }: { match: Match; index: number }) {
 				isDragging={isDragging}
 				dragListeners={listeners}
 				dragAttributes={attributes}
+				locale={locale}
 			/>
 		</div>
 	);
 }
 
 export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
-	const { t } = useTranslation("admin-matches");
-	const [matches, setMatches] = useState(initialMatches);
+	const { t, i18n } = useTranslation("admin-matches");
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+	const [matches, setMatches] = useState(() =>
+		sortMatchesForOrdering(initialMatches),
+	);
 	const [activeId, setActiveId] = useState<number | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const router = useRouter();
 
+	const sortedInitial = useMemo(
+		() => sortMatchesForOrdering(initialMatches),
+		[initialMatches],
+	);
+
+	const hasLocalEdits = useMemo(() => {
+		if (matches.length !== sortedInitial.length) return true;
+		return matches.some((m, index) => m.id !== sortedInitial[index]?.id);
+	}, [matches, sortedInitial]);
+
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 5, // Prevent accidental drags
+				distance: 5,
 			},
 		}),
 		useSensor(KeyboardSensor, {
@@ -199,28 +250,29 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 	);
 
 	useEffect(() => {
-		setMatches(initialMatches);
-	}, [initialMatches]);
+		if (!hasLocalEdits) {
+			setMatches(sortedInitial);
+		}
+	}, [sortedInitial, hasLocalEdits]);
 
-	const handleDragStart = (event: any) => {
+	const handleDragStart = (event: { active: { id: number } }) => {
 		setActiveId(event.active.id);
 	};
 
-	const handleDragEnd = (event: any) => {
+	const handleDragEnd = (event: {
+		active: { id: number };
+		over: { id: number } | null;
+	}) => {
 		const { active, over } = event;
 		setActiveId(null);
 
-		if (!over) {
-			return;
-		}
+		if (!over || active.id === over.id) return;
 
-		if (active.id !== over.id) {
-			setMatches((items) => {
-				const oldIndex = items.findIndex((i) => i.id === active.id);
-				const newIndex = items.findIndex((i) => i.id === over.id);
-				return arrayMove(items, oldIndex, newIndex);
-			});
-		}
+		setMatches((items) => {
+			const oldIndex = items.findIndex((i) => i.id === active.id);
+			const newIndex = items.findIndex((i) => i.id === over.id);
+			return arrayMove(items, oldIndex, newIndex);
+		});
 	};
 
 	const handleSave = async () => {
@@ -258,49 +310,87 @@ export function MatchOrdering({ matches: initialMatches }: MatchOrderingProps) {
 	};
 
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center justify-between border-[3px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-				<div>
-					<h3 className="font-black text-black text-lg uppercase italic">
-						{t("ordering.title")}
-					</h3>
-					<p className="font-bold text-gray-600 text-sm">
-						{t("ordering.subtitle")}
-					</p>
+		<div className="space-y-6">
+			<div className="border-[4px] border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0">
+						<div className="flex items-center gap-2">
+							<ArrowUpDown
+								className="h-5 w-5 shrink-0 text-black"
+								strokeWidth={2.5}
+							/>
+							<h2 className="font-black font-display text-2xl text-black uppercase italic">
+								{t("ordering.title")}
+							</h2>
+						</div>
+						<p className="mt-1 font-body font-bold text-gray-500 text-sm tracking-wide">
+							{t("ordering.subtitle")}
+						</p>
+					</div>
+					<button
+						type="button"
+						onClick={handleSave}
+						disabled={isSaving || matches.length === 0}
+						className="admin-press-comic flex h-10 w-full shrink-0 items-center justify-center gap-2 border-[3px] border-black bg-electric-lime px-6 font-black font-display text-black text-sm uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-[#bbe000] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 sm:w-auto"
+					>
+						{isSaving ? (
+							<InlineLoader size="sm" />
+						) : (
+							<Save className="h-4 w-4" strokeWidth={3} />
+						)}
+						{t("ordering.saveButton")}
+					</button>
 				</div>
-				<button
-					onClick={handleSave}
-					disabled={isSaving}
-					className="flex items-center gap-2 border-2 border-black bg-brawl-yellow px-4 py-2 font-bold text-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:bg-[#ffe600] hover:shadow-none disabled:opacity-50"
-				>
-					{isSaving ? <InlineLoader size="sm" /> : <Save className="h-4 w-4" />}
-					{t("ordering.saveButton")}
-				</button>
 			</div>
 
-			<DndContext
-				sensors={sensors}
-				collisionDetection={closestCenter}
-				onDragStart={handleDragStart}
-				onDragEnd={handleDragEnd}
-			>
-				<SortableContext
-					items={matches.map((m) => m.id)}
-					strategy={verticalListSortingStrategy}
+			{matches.length === 0 ? (
+				<div className="border-[3px] border-black border-dashed bg-white px-6 py-12 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
+					<ArrowUpDown
+						className="mx-auto mb-3 h-8 w-8 text-gray-300"
+						strokeWidth={2}
+					/>
+					<p className="font-black font-display text-gray-400 text-lg uppercase italic">
+						{t("ordering.emptyTitle")}
+					</p>
+					<p className="mt-1 font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
+						{t("ordering.emptyHint")}
+					</p>
+				</div>
+			) : (
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCenter}
+					onDragStart={handleDragStart}
+					onDragEnd={handleDragEnd}
 				>
-					<div className="space-y-4">
-						{matches.map((match, index) => (
-							<SortableMatchItem key={match.id} match={match} index={index} />
-						))}
-					</div>
-				</SortableContext>
+					<SortableContext
+						items={matches.map((m) => m.id)}
+						strategy={verticalListSortingStrategy}
+					>
+						<div className="space-y-3">
+							{matches.map((match, index) => (
+								<SortableMatchItem
+									key={match.id}
+									match={match}
+									index={index}
+									locale={locale}
+								/>
+							))}
+						</div>
+					</SortableContext>
 
-				<DragOverlay dropAnimation={dropAnimation}>
-					{activeMatch ? (
-						<MatchItemCard match={activeMatch} index={activeIndex} isOverlay />
-					) : null}
-				</DragOverlay>
-			</DndContext>
+					<DragOverlay dropAnimation={dropAnimation}>
+						{activeMatch ? (
+							<MatchItemCard
+								match={activeMatch}
+								index={activeIndex}
+								isOverlay
+								locale={locale}
+							/>
+						) : null}
+					</DragOverlay>
+				</DndContext>
+			)}
 		</div>
 	);
 }

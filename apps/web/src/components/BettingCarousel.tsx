@@ -1,85 +1,204 @@
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BettingEmptyState } from "@/components/BettingEmptyState";
+import {
+	SPRAY_MASK_COUNT,
+	SpraySplat,
+	TapeLabel,
+	TournamentLogoSticker,
+} from "@/components/betting/BettingDecor";
 import { useLangLink } from "@/i18n/useLangLink";
+import { cn } from "@/lib/utils";
+import { isMatchPickEditable } from "@/utils/bet-submission";
+import { scoresEqual } from "@/utils/score-format";
+import {
+	getRegionPalette,
+	resolveTournamentVisualIdentity,
+	stageBarStyle,
+} from "@/utils/tournament-visual-identity";
 import type { Match, Prediction } from "./bracket/types";
 import { TeamLogo } from "./TeamLogo";
 
-// --- SVG COMPONENTS ---
-const PaintSplatterBlue = ({ className }: { className?: string }) => (
-	<svg
-		viewBox="0 0 400 400"
-		xmlns="http://www.w3.org/2000/svg"
-		className={clsx(className, "pointer-events-none mix-blend-multiply")}
-		style={{ overflow: "visible" }}
-	>
-		<defs>
-			<filter id="bleed-blue" x="-50%" y="-50%" width="200%" height="200%">
-				<feTurbulence
-					type="fractalNoise"
-					baseFrequency="0.04"
-					numOctaves="4"
-					seed="5"
-					result="noise"
-				/>
-				<feDisplacementMap
-					in="SourceGraphic"
-					in2="noise"
-					scale="40"
-					xChannelSelector="R"
-					yChannelSelector="G"
-				/>
-			</filter>
-		</defs>
-		<circle
-			cx="200"
-			cy="200"
-			r="140"
-			fill="#2E5CFF"
-			filter="url(#bleed-blue)"
-			opacity="0.9"
-		/>
-	</svg>
-);
+/** Colored paper chip for tournament region */
+function getRegionPaperStyle(region: string): {
+	tintClass: string;
+	textClass: string;
+	lightText: boolean;
+} {
+	const palette = getRegionPalette(region);
+	return {
+		tintClass: palette.tintClass,
+		textClass: palette.textOnAccentClass,
+		lightText: palette.lightText,
+	};
+}
 
-const PaintSplatterRed = ({ className }: { className?: string }) => (
-	<svg
-		viewBox="0 0 400 400"
-		xmlns="http://www.w3.org/2000/svg"
-		className={clsx(className, "pointer-events-none mix-blend-multiply")}
-		style={{ overflow: "visible" }}
-	>
-		<defs>
-			<filter id="bleed-red" x="-50%" y="-50%" width="200%" height="200%">
-				<feTurbulence
-					type="fractalNoise"
-					baseFrequency="0.04"
-					numOctaves="4"
-					seed="10"
-					result="noise"
-				/>
-				<feDisplacementMap
-					in="SourceGraphic"
-					in2="noise"
-					scale="40"
-					xChannelSelector="R"
-					yChannelSelector="G"
-				/>
-			</filter>
-		</defs>
-		<circle
-			cx="200"
-			cy="200"
-			r="140"
-			fill="#FF2E2E"
-			filter="url(#bleed-red)"
-			opacity="0.9"
-		/>
-	</svg>
-);
+function presentationThemeLabelKey(theme: string): string | null {
+	switch (theme) {
+		case "qualifier":
+			return "tournament:browse.themeQualifier";
+		case "monthly_finals":
+			return "tournament:browse.themeMonthlyFinals";
+		case "major":
+			return "tournament:browse.themeMajor";
+		default:
+			return null;
+	}
+}
+
+function regionLabelKey(region: string): string {
+	return `common:regions.${region.trim().toLowerCase()}`;
+}
+
+function RegionPaperLabel({
+	region,
+	label,
+	rotate = "2deg",
+	className,
+}: {
+	region: string;
+	label: string;
+	rotate?: string;
+	className?: string;
+}) {
+	const { tintClass, textClass, lightText } = getRegionPaperStyle(region);
+
+	return (
+		<div
+			className={cn(
+				"relative inline-flex max-w-full items-center justify-center overflow-hidden border-[3px] border-black px-4 py-2 shadow-comic-sm",
+				tintClass,
+				className,
+			)}
+			style={{ transform: `rotate(${rotate})` }}
+		>
+			<img
+				src="/betting/paper-sticker.jpg"
+				alt=""
+				aria-hidden="true"
+				draggable={false}
+				className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-multiply"
+			/>
+			<span
+				className={clsx(
+					"relative z-10 truncate font-body font-bold text-[10px] uppercase tracking-widest sm:text-xs",
+					textClass,
+					lightText
+						? "drop-shadow-[0_1px_0_rgba(0,0,0,0.4)]"
+						: "drop-shadow-[0_1px_0_rgba(255,255,255,0.25)]",
+				)}
+			>
+				{label}
+			</span>
+		</div>
+	);
+}
+
+const BLUE_ROTATIONS = [-28, -14, 8, 22, -35, 12] as const;
+const RED_ROTATIONS = [24, 38, -10, 16, -22, 30] as const;
+
+/** Spray bloom behind team pick — mask variants + rotation per match */
+function CarouselAtmosphere({
+	selectedSide,
+	matchId,
+}: {
+	selectedSide: "blue" | "red" | null;
+	matchId: number;
+}) {
+	const blueMask = (matchId % SPRAY_MASK_COUNT) + 1;
+	const redMask = ((matchId + 2) % SPRAY_MASK_COUNT) + 1;
+	const blueRotate = BLUE_ROTATIONS[matchId % BLUE_ROTATIONS.length] ?? -14;
+	const redRotate = RED_ROTATIONS[matchId % RED_ROTATIONS.length] ?? 24;
+
+	return (
+		<div
+			aria-hidden="true"
+			className="pointer-events-none absolute top-[4%] left-1/2 z-0 h-[44%] w-[140%] max-w-[680px] -translate-x-1/2 sm:top-[3%] sm:h-[48%] sm:w-[150%]"
+		>
+			<SpraySplat
+				variant="blue"
+				maskIndex={blueMask}
+				rotate={blueRotate}
+				className={clsx(
+					"absolute top-1/2 left-[-10%] h-[95%] w-[55%] -translate-y-1/2 transition-opacity duration-300 sm:left-[-14%] sm:h-[100%] sm:w-[52%]",
+					selectedSide === "red" ? "opacity-35" : "opacity-95",
+				)}
+			/>
+			<SpraySplat
+				variant="red"
+				maskIndex={redMask}
+				rotate={redRotate}
+				className={clsx(
+					"absolute top-1/2 right-[-10%] h-[95%] w-[55%] -translate-y-1/2 transition-opacity duration-300 sm:right-[-14%] sm:h-[100%] sm:w-[52%]",
+					selectedSide === "blue" ? "opacity-35" : "opacity-95",
+				)}
+			/>
+		</div>
+	);
+}
+
+function StatsComparisonRow({
+	label,
+	valueA,
+	valueB,
+	accentA,
+	accentB,
+	emphasize,
+}: {
+	label: string;
+	valueA: ReactNode;
+	valueB: ReactNode;
+	accentA?: boolean;
+	accentB?: boolean;
+	/** Larger score-style number treatment */
+	emphasize?: boolean;
+}) {
+	return (
+		<div className="grid grid-cols-[1fr_7.5rem_1fr] items-stretch sm:grid-cols-[1fr_8.5rem_1fr]">
+			<div className="flex items-center justify-start border-black/10 border-r px-3 py-3 sm:px-4">
+				<span
+					className={clsx(
+						"tabular-nums tracking-tight",
+						emphasize
+							? "font-black font-display text-base sm:text-lg"
+							: "font-body font-bold text-xs sm:text-sm",
+						accentA ? "text-brawl-blue" : "text-ink",
+					)}
+				>
+					{valueA}
+				</span>
+			</div>
+			<div className="flex items-center justify-center bg-tape px-1.5 py-3">
+				<span className="max-w-full truncate whitespace-nowrap border border-black bg-white px-2 py-1 font-body font-bold text-[8px] text-ink uppercase tracking-widest shadow-comic-sm sm:text-[9px]">
+					{label}
+				</span>
+			</div>
+			<div className="flex items-center justify-end border-black/10 border-l px-3 py-3 sm:px-4">
+				<span
+					className={clsx(
+						"tabular-nums tracking-tight",
+						emphasize
+							? "font-black font-display text-base sm:text-lg"
+							: "font-body font-bold text-xs sm:text-sm",
+						accentB ? "text-brawl-red" : "text-ink",
+					)}
+				>
+					{valueB}
+				</span>
+			</div>
+		</div>
+	);
+}
+
+function formatStreak(value: number): string {
+	if (value > 0) return `+${value}`;
+	if (value < 0) return `${value}`;
+	return "-";
+}
 
 export function BettingCarousel({
 	matches,
@@ -90,6 +209,7 @@ export function BettingCarousel({
 	isReadOnly = false,
 	editableMatchIds,
 	matchDayStatus,
+	userBets = [],
 }: {
 	matches: Match[];
 	predictions: Record<number, Prediction>;
@@ -103,10 +223,17 @@ export function BettingCarousel({
 	isReadOnly?: boolean;
 	editableMatchIds?: Set<number>;
 	matchDayStatus?: string | null;
+	userBets?: Array<{
+		matchId: number;
+		predictedWinnerId?: number | null;
+	}>;
 }) {
-	const { t } = useTranslation("betting");
+	const { t, i18n } = useTranslation("betting");
 	const { routeTo, lang } = useLangLink();
+	const reduceMotion = useReducedMotion();
 	const [currentIndex, setCurrentIndex] = useState(0);
+	const scoreSectionRef = useRef<HTMLDivElement>(null);
+	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 
 	useEffect(() => {
 		if (currentIndex >= matches.length && matches.length > 0) {
@@ -119,7 +246,26 @@ export function BettingCarousel({
 			...m,
 			teamA: m.teamA ? { ...m.teamA } : null,
 			teamB: m.teamB ? { ...m.teamB } : null,
+			stats: { ...m.stats },
 		}));
+
+		const applyProjectedTeam = (
+			nextMatch: Match,
+			slot: "A" | "B",
+			team: NonNullable<Match["teamA"]>,
+		) => {
+			if (slot === "A") {
+				nextMatch.teamA = { ...team, color: "blue" };
+				if (team.region) {
+					nextMatch.stats = { ...nextMatch.stats, regionA: team.region };
+				}
+			} else {
+				nextMatch.teamB = { ...team, color: "red" };
+				if (team.region) {
+					nextMatch.stats = { ...nextMatch.stats, regionB: team.region };
+				}
+			}
+		};
 
 		projected.forEach((match) => {
 			const prediction = predictions[match.id];
@@ -138,10 +284,9 @@ export function BettingCarousel({
 					(m) => m.id === match.nextMatchWinnerId,
 				);
 				if (nextMatch) {
-					if (match.nextMatchWinnerSlot?.toUpperCase() === "A") {
-						nextMatch.teamA = { ...winnerTeam, color: "blue" };
-					} else if (match.nextMatchWinnerSlot?.toUpperCase() === "B") {
-						nextMatch.teamB = { ...winnerTeam, color: "red" };
+					const slot = match.nextMatchWinnerSlot?.toUpperCase();
+					if (slot === "A" || slot === "B") {
+						applyProjectedTeam(nextMatch, slot, winnerTeam);
 					}
 				}
 			}
@@ -151,10 +296,9 @@ export function BettingCarousel({
 					(m) => m.id === match.nextMatchLoserId,
 				);
 				if (nextMatch) {
-					if (match.nextMatchLoserSlot?.toUpperCase() === "A") {
-						nextMatch.teamA = { ...loserTeam, color: "blue" };
-					} else if (match.nextMatchLoserSlot?.toUpperCase() === "B") {
-						nextMatch.teamB = { ...loserTeam, color: "red" };
+					const slot = match.nextMatchLoserSlot?.toUpperCase();
+					if (slot === "A" || slot === "B") {
+						applyProjectedTeam(nextMatch, slot, loserTeam);
 					}
 				}
 			}
@@ -178,6 +322,31 @@ export function BettingCarousel({
 		);
 	}, [matches, predictions]);
 
+	const isPredictionComplete = (matchId: number): boolean => {
+		const prediction = predictions[matchId];
+		return Boolean(
+			prediction?.winnerId &&
+				prediction.score &&
+				prediction.score.trim() !== "",
+		);
+	};
+
+	const canNavigateToIndex = (targetIndex: number): boolean => {
+		if (targetIndex === currentIndex) return true;
+		if (targetIndex < 0 || targetIndex >= matches.length) return false;
+
+		// Going back is always allowed (edit previous picks).
+		if (targetIndex < currentIndex) return true;
+
+		// Going forward requires every match up to (but not including) the
+		// target to have a complete winner + score pick.
+		for (let i = 0; i < targetIndex; i++) {
+			const match = matches[i];
+			if (!match || !isPredictionComplete(match.id)) return false;
+		}
+		return true;
+	};
+
 	const handleNext = () => {
 		if (isLastMatch && allBetsComplete) {
 			if (onShowReview) {
@@ -188,11 +357,7 @@ export function BettingCarousel({
 
 		if (isLastMatch && !allBetsComplete) {
 			const firstMissingIndex = matches.findIndex(
-				(m) =>
-					!predictions[m.id] ||
-					!predictions[m.id].winnerId ||
-					!predictions[m.id].score ||
-					predictions[m.id].score.trim() === "",
+				(m) => !isPredictionComplete(m.id),
 			);
 			if (firstMissingIndex !== -1) {
 				setCurrentIndex(firstMissingIndex);
@@ -200,7 +365,10 @@ export function BettingCarousel({
 			}
 		}
 
-		if (currentIndex < matches.length - 1) {
+		if (
+			currentIndex < matches.length - 1 &&
+			canNavigateToIndex(currentIndex + 1)
+		) {
 			setCurrentIndex((prev) => prev + 1);
 		}
 	};
@@ -226,17 +394,33 @@ export function BettingCarousel({
 	const selectedScore = currentPrediction?.score || null;
 
 	const isEffectiveReadOnly = useMemo(() => {
-		if (isReadOnly) return true;
 		if (!currentMatch) return true;
-		if (matchDayStatus === "locked") {
-			return !editableMatchIds?.has(currentMatch.id);
-		}
-		return false;
-	}, [isReadOnly, currentMatch, matchDayStatus, editableMatchIds]);
+
+		const serverBet = userBets.find(
+			(bet) => Number(bet.matchId) === Number(currentMatch.id),
+		);
+
+		return !isMatchPickEditable({
+			matchDayStatus: matchDayStatus ?? undefined,
+			isReadOnly,
+			matchStatus: currentMatch.status,
+			isRecoveryMatch: editableMatchIds?.has(currentMatch.id) ?? false,
+			serverBet,
+			teamAId: currentMatch.teamA?.id ? Number(currentMatch.teamA.id) : null,
+			teamBId: currentMatch.teamB?.id ? Number(currentMatch.teamB.id) : null,
+		});
+	}, [isReadOnly, currentMatch, matchDayStatus, editableMatchIds, userBets]);
 
 	const setSelectedWinnerId = (winnerId: number) => {
 		if (!currentMatch || isEffectiveReadOnly) return;
 		onUpdatePrediction(currentMatch.id, winnerId);
+		// Keep score options in view after the team pick (no manual scroll).
+		requestAnimationFrame(() => {
+			scoreSectionRef.current?.scrollIntoView({
+				behavior: reduceMotion ? "auto" : "smooth",
+				block: "nearest",
+			});
+		});
 	};
 
 	const setSelectedScore = (score: string) => {
@@ -267,18 +451,25 @@ export function BettingCarousel({
 			});
 		}
 		return options;
-	}, [currentMatch?.format, currentMatch?.teamA?.id, selectedWinnerId]);
+	}, [currentMatch?.format, currentMatch?.teamA?.id, selectedWinnerId, t]);
 
 	const isSelected = (teamId: number) => selectedWinnerId === teamId;
 	const isOtherTeamSelected = (teamId: number) =>
 		selectedWinnerId !== null && selectedWinnerId !== teamId;
 
-	const activeAccentColor =
+	const selectedSide: "blue" | "red" | null =
 		currentMatch &&
 		currentMatch.teamA &&
 		selectedWinnerId === currentMatch.teamA.id
-			? "brawl-blue"
-			: "brawl-red";
+			? "blue"
+			: currentMatch &&
+					currentMatch.teamB &&
+					selectedWinnerId === currentMatch.teamB.id
+				? "red"
+				: null;
+
+	const activeAccentColor =
+		selectedSide === "blue" ? "brawl-blue" : "brawl-red";
 
 	if (!currentMatch)
 		return (
@@ -293,7 +484,7 @@ export function BettingCarousel({
 						<button
 							type="button"
 							onClick={onShowReview}
-							className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-brawl-red py-3 font-black font-display text-white uppercase shadow-comic transition-all hover:shadow-comic-md active:translate-y-0.5 active:shadow-none"
+							className="flex w-full items-center justify-center gap-2 border-2 border-black bg-brawl-red py-3 font-black font-display text-white uppercase shadow-comic transition-all hover:shadow-comic-md active:translate-y-0.5 active:shadow-none"
 						>
 							<span className="material-symbols-outlined text-lg">
 								rate_review
@@ -301,7 +492,7 @@ export function BettingCarousel({
 							{t("reviewBets")}
 						</button>
 					) : (
-						<div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-gray-100 py-3 font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
+						<div className="flex w-full items-center justify-center gap-2 border-2 border-gray-300 bg-gray-100 py-3 font-body font-bold text-[10px] text-gray-400 uppercase tracking-widest">
 							<span className="material-symbols-outlined text-sm">
 								hourglass_empty
 							</span>
@@ -312,515 +503,599 @@ export function BettingCarousel({
 			/>
 		);
 
+	const teamASelected = isSelected(currentMatch.teamA?.id || 0);
+	const teamBSelected = isSelected(currentMatch.teamB?.id || 0);
+	const teamAMuted = isOtherTeamSelected(currentMatch.teamA?.id || 0);
+	const teamBMuted = isOtherTeamSelected(currentMatch.teamB?.id || 0);
+
+	const tournamentRegion = currentMatch.tournamentRegion?.trim() || null;
+	const tournamentRegionLabel = tournamentRegion
+		? (() => {
+				const key = regionLabelKey(tournamentRegion);
+				const translated = t(key);
+				return translated === key ? tournamentRegion : translated;
+			})()
+		: null;
+
+	const visualIdentity = resolveTournamentVisualIdentity({
+		presentationTheme: currentMatch.tournamentPresentationTheme,
+		region: tournamentRegion,
+		venueMode: currentMatch.tournamentVenueMode ?? "online",
+	});
+	const themeLabelKey = presentationThemeLabelKey(visualIdentity.theme);
+	const themeLabel = themeLabelKey ? t(themeLabelKey) : null;
+
 	return (
-		<>
-			<div className="relative flex w-full flex-col items-center overflow-x-hidden bg-transparent pt-20 pb-24 font-body text-ink md:pb-12">
-				<main className="relative z-10 mx-auto flex w-full max-w-[500px] flex-col items-center px-4">
-					{/* Tournament Header */}
-					<header className="mb-6 flex w-full flex-col items-center text-center">
-						<div className="mb-4 flex items-center gap-3 rounded-md border-2 border-black bg-white px-4 py-2.5 shadow-comic">
-							{currentMatch.tournamentLogoUrl && (
-								<img
-									src={currentMatch.tournamentLogoUrl}
-									alt=""
-									className="h-10 w-10 object-contain md:h-12 md:w-12"
-								/>
-							)}
-							<span className="font-black text-ink text-sm uppercase tracking-wider md:text-base">
-								{currentMatch.tournamentName || "Brawl Stars Championship"}
-							</span>
-						</div>
+		<div className="relative flex w-full flex-col items-center overflow-x-clip bg-transparent pt-20 pb-24 font-body text-ink md:pb-12">
+			<main className="relative z-10 mx-auto flex w-full max-w-[520px] flex-col items-center px-4 sm:px-6">
+				{/* Hero title + taped context */}
+				<header className="mb-3 flex w-full flex-col items-center text-center">
+					<h1 className="mb-2.5 pb-0.5 font-black font-display text-ink text-xl uppercase italic leading-[1.1] tracking-tighter sm:text-2xl">
+						{t("pickWinnerTitle")}
+					</h1>
 
-						<div className="mb-2 flex items-center gap-2">
-							<span className="rounded-md bg-ink px-3 py-1 font-black text-white text-xs uppercase">
-								{currentMatch.label}
-							</span>
-							<span className="text-gray-600 text-xs">
-								{new Date(currentMatch.startTime).toLocaleTimeString("pt-BR", {
-									hour: "2-digit",
-									minute: "2-digit",
-								})}
-							</span>
-						</div>
-
-						<div
-							className={clsx(
-								"rounded-full px-3 py-1 font-black text-[10px] uppercase",
-								isEffectiveReadOnly
-									? "bg-tape text-gray-600"
-									: "bg-electric-lime text-black",
-							)}
+					<div className="mb-2 flex w-full flex-col items-center gap-1.5">
+						{currentMatch.tournamentLogoUrl ? (
+							<TournamentLogoSticker
+								src={currentMatch.tournamentLogoUrl}
+								alt={currentMatch.tournamentName || "Brawl Stars Championship"}
+								rotate="-2deg"
+								size="sm"
+							/>
+						) : null}
+						<TapeLabel
+							rotate="-2deg"
+							className="min-w-0 max-w-md px-6 py-3 sm:px-10 sm:py-4"
 						>
-							{isEffectiveReadOnly ? t("betsClosed") : t("betsOpen")}
+							{currentMatch.tournamentName || "Brawl Stars Championship"}
+						</TapeLabel>
+					</div>
+
+					{/* Line 1: region · Line 2: type + venue */}
+					{(tournamentRegionLabel || themeLabel) && (
+						<div className="flex w-full max-w-sm flex-col items-stretch gap-1.5">
+							{tournamentRegion && tournamentRegionLabel ? (
+								<RegionPaperLabel
+									region={tournamentRegion}
+									label={tournamentRegionLabel}
+									rotate="0deg"
+									className="w-full justify-center px-2.5 py-1.5"
+								/>
+							) : null}
+							{(themeLabel || visualIdentity.venueMode === "lan") && (
+								<div
+									className={clsx(
+										"grid items-stretch gap-1.5",
+										themeLabel && visualIdentity.venueMode === "lan"
+											? "grid-cols-2"
+											: "grid-cols-1",
+									)}
+								>
+									{themeLabel ? (
+										<span
+											className={clsx(
+												"inline-flex w-full items-center justify-center px-2.5 py-1.5 text-center font-body font-bold text-[10px] uppercase tracking-widest",
+												visualIdentity.kindBadgeClass,
+											)}
+										>
+											{themeLabel}
+										</span>
+									) : null}
+									{visualIdentity.venueMode === "lan" ? (
+										<span className="inline-flex w-full items-center justify-center border-2 border-black bg-brawl-blue px-2.5 py-1.5 font-body font-bold text-[10px] text-white uppercase tracking-widest">
+											{t("tournament:browse.venueLan")}
+										</span>
+									) : null}
+								</div>
+							)}
 						</div>
-					</header>
+					)}
+				</header>
 
-					{/* Carousel Content Area */}
-					<div className="relative w-full">
-						<AnimatePresence mode="wait">
-							<motion.div
-								key={currentMatch.id}
-								initial={{ x: 50, opacity: 0 }}
-								animate={{ x: 0, opacity: 1 }}
-								exit={{ x: -50, opacity: 0 }}
-								transition={{ type: "spring", stiffness: 300, damping: 30 }}
-								className="w-full"
-							>
-								<div className="relative w-full overflow-visible bg-paper shadow-none">
-									<div className="pointer-events-none absolute -top-5 -left-[60px] z-0 h-[300px] w-[300px] -rotate-12 transform opacity-60 md:top-[-80px] md:-left-[120px] md:h-[450px] md:w-[450px] md:opacity-80">
-										<PaintSplatterBlue className="h-full w-full" />
-									</div>
-									<div className="pointer-events-none absolute -top-5 -right-[60px] z-0 h-[300px] w-[300px] rotate-12 transform opacity-60 md:top-[-80px] md:-right-[120px] md:h-[450px] md:w-[450px] md:opacity-80">
-										<PaintSplatterRed className="h-full w-full" />
-									</div>
+				{/* Carousel Content Area */}
+				<div className="relative w-full">
+					<AnimatePresence mode="wait">
+						<motion.div
+							key={currentMatch.id}
+							initial={reduceMotion ? false : { x: 40, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={reduceMotion ? undefined : { x: -40, opacity: 0 }}
+							transition={{ type: "spring", stiffness: 320, damping: 32 }}
+							className="w-full"
+						>
+							<div className="relative w-full overflow-visible px-1 sm:px-3">
+								<CarouselAtmosphere
+									selectedSide={selectedSide}
+									matchId={currentMatch.id}
+								/>
 
-									{/* Match Card Container */}
-									<div className="relative z-10 overflow-hidden rounded-lg border-[3px] border-black bg-white shadow-comic-md">
-										{/* Match Counter */}
-										<div className="border-black border-b-2 bg-tape py-1.5 text-center">
-											<span className="font-black text-[10px] text-ink uppercase tracking-wider">
+								{/* Match Card — inset so sprays bloom past the edges */}
+								<div
+									className={clsx(
+										"relative z-10 mx-auto w-full max-w-[480px] overflow-hidden border-[3px] border-black bg-white shadow-comic-md sm:max-w-none",
+										visualIdentity.cardFrameClass,
+									)}
+								>
+									{/* Stage / time / counter bar */}
+									<div
+										className={visualIdentity.stageBarClass}
+										style={stageBarStyle(visualIdentity)}
+									>
+										<span className="truncate font-body font-bold text-[10px] uppercase tracking-widest">
+											{currentMatch.label}
+										</span>
+										<div className="flex shrink-0 items-center gap-2">
+											<span
+												className={clsx(
+													"font-body font-bold text-[10px] uppercase tabular-nums tracking-widest",
+													visualIdentity.theme === "qualifier"
+														? "text-ink/70"
+														: "text-white/80",
+												)}
+											>
+												{new Date(currentMatch.startTime).toLocaleTimeString(
+													locale,
+													{
+														hour: "2-digit",
+														minute: "2-digit",
+													},
+												)}
+											</span>
+											<span
+												className={clsx(
+													"font-body font-bold text-[10px] uppercase tabular-nums tracking-widest",
+													visualIdentity.theme === "qualifier"
+														? "text-ink/60"
+														: "text-white/70",
+												)}
+											>
 												{t("matchCounter", {
 													current: currentIndex + 1,
 													total: matches.length,
 												})}
 											</span>
 										</div>
-
-										{/* TEAMS DISPLAY */}
-										<div className="relative grid h-40 grid-cols-2 md:h-48">
-											{/* VS Badge - Centered */}
-											<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
-												<div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-black bg-white shadow-comic-sm md:h-10 md:w-10">
-													<span className="font-black font-display text-ink text-xs md:text-sm">
-														VS
-													</span>
-												</div>
-											</div>
-
-											{/* Team A (Blue) */}
-											<div
-												role="button"
-												onClick={() =>
-													currentMatch.teamA &&
-													setSelectedWinnerId(currentMatch.teamA.id)
-												}
-												className={clsx(
-													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden border-black border-r-2 p-0 transition-all duration-200",
-													isSelected(currentMatch.teamA?.id || 0)
-														? "bg-brawl-blue"
-														: isOtherTeamSelected(currentMatch.teamA?.id || 0)
-															? "bg-gray-200 grayscale"
-															: isEffectiveReadOnly
-																? "cursor-not-allowed bg-brawl-blue/60"
-																: "bg-brawl-blue hover:brightness-110",
-												)}
-											>
-												{isSelected(currentMatch.teamA?.id || 0) && (
-													<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
-												)}
-
-												<div className="relative z-10 flex h-full w-full flex-col">
-													<div className="w-full bg-black/20 px-2 py-2 text-center">
-														<span className="block truncate font-black text-[10px] text-white uppercase tracking-wider md:text-xs">
-															{currentMatch.teamA?.name || "TBD"}
-														</span>
-													</div>
-													<div className="flex flex-grow items-center justify-center p-3 md:p-4">
-														<TeamLogo
-															teamName={currentMatch.teamA?.name || "TBD"}
-															logoUrl={currentMatch.teamA?.logoUrl}
-															size="xl"
-															className="h-16 w-16 md:h-24 md:w-24"
-														/>
-													</div>
-													<div className="flex min-h-[34px] w-full items-center justify-center bg-black/10 px-2 py-1.5 text-center">
-														<span className="font-bold text-[10px] text-white uppercase leading-none tracking-wider">
-															WR: {currentMatch.stats.winRateA}
-														</span>
-													</div>
-												</div>
-											</div>
-
-											{/* Team B (Red) */}
-											<div
-												role="button"
-												onClick={() =>
-													currentMatch.teamB &&
-													setSelectedWinnerId(currentMatch.teamB.id)
-												}
-												className={clsx(
-													"group relative flex h-full cursor-pointer flex-col items-center overflow-hidden p-0 transition-all duration-200",
-													isSelected(currentMatch.teamB?.id || 0)
-														? "bg-brawl-red"
-														: isOtherTeamSelected(currentMatch.teamB?.id || 0)
-															? "bg-gray-200 grayscale"
-															: isEffectiveReadOnly
-																? "cursor-not-allowed bg-brawl-red/60"
-																: "bg-brawl-red hover:brightness-110",
-												)}
-											>
-												{isSelected(currentMatch.teamB?.id || 0) && (
-													<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
-												)}
-
-												<div className="relative z-10 flex h-full w-full flex-col">
-													<div className="w-full bg-black/20 px-2 py-2 text-center">
-														<span className="block truncate font-black text-[10px] text-white uppercase tracking-wider md:text-xs">
-															{currentMatch.teamB?.name || "TBD"}
-														</span>
-													</div>
-													<div className="flex flex-grow items-center justify-center p-3 md:p-4">
-														<TeamLogo
-															teamName={currentMatch.teamB?.name || "TBD"}
-															logoUrl={currentMatch.teamB?.logoUrl}
-															size="xl"
-															className="h-16 w-16 md:h-24 md:w-24"
-														/>
-													</div>
-													<div className="flex min-h-[34px] w-full items-center justify-center bg-black/10 px-2 py-1.5 text-center">
-														<span className="font-bold text-[10px] text-white uppercase leading-none tracking-wider">
-															WR: {currentMatch.stats.winRateB}
-														</span>
-													</div>
-												</div>
-											</div>
-										</div>
-
-										{/* Stats Section */}
-										<div className="border-black border-t-2 bg-white">
-											<div className="grid grid-cols-2 gap-0">
-												{/* Team A Column */}
-												<div className="border-gray-200 border-r bg-brawl-blue/[0.04] px-3 py-3">
-													<div className="mb-3 flex flex-wrap items-center gap-1.5">
-														{currentMatch.teamA?.seed && (
-															<span className="rounded bg-brawl-blue/10 px-1.5 py-0.5 font-black text-[10px] text-brawl-blue">
-																Seed #{currentMatch.teamA.seed}
-															</span>
-														)}
-														{currentMatch.teamA?.group && (
-															<span className="rounded bg-tape px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
-																Grp {currentMatch.teamA.group}
-															</span>
-														)}
-													</div>
-
-													<div className="space-y-2">
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																{t("common:region")}
-															</span>
-															<span className="font-bold text-[10px] text-ink">
-																{currentMatch.stats.regionA}
-															</span>
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																WR
-															</span>
-															<span className="font-black text-[11px] text-brawl-blue">
-																{currentMatch.stats.winRateA}
-															</span>
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																{t("common:series")}
-															</span>
-															{currentMatch.stats.streakA > 0 && (
-																<span className="font-bold text-[10px] text-green-600">
-																	+{currentMatch.stats.streakA}
-																</span>
-															)}
-															{currentMatch.stats.streakA < 0 && (
-																<span className="font-bold text-[10px] text-brawl-red">
-																	{currentMatch.stats.streakA}
-																</span>
-															)}
-															{currentMatch.stats.streakA === 0 && (
-																<span className="font-bold text-[10px] text-gray-400">
-																	-
-																</span>
-															)}
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Palpites
-															</span>
-															<span className="font-bold text-[10px] text-brawl-blue">
-																{currentMatch.stats.betCountA}
-															</span>
-														</div>
-													</div>
-												</div>
-
-												{/* Team B Column */}
-												<div className="bg-brawl-red/[0.04] px-3 py-3">
-													<div className="mb-3 flex flex-wrap items-center justify-end gap-1.5">
-														{currentMatch.teamB?.group && (
-															<span className="rounded bg-tape px-1.5 py-0.5 font-bold text-[10px] text-gray-600">
-																Grp {currentMatch.teamB.group}
-															</span>
-														)}
-														{currentMatch.teamB?.seed && (
-															<span className="rounded bg-brawl-red/10 px-1.5 py-0.5 font-black text-[10px] text-brawl-red">
-																Seed #{currentMatch.teamB.seed}
-															</span>
-														)}
-													</div>
-
-													<div className="space-y-2">
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																{t("common:region")}
-															</span>
-															<span className="font-bold text-[10px] text-ink">
-																{currentMatch.stats.regionB}
-															</span>
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																WR
-															</span>
-															<span className="font-black text-[11px] text-brawl-red">
-																{currentMatch.stats.winRateB}
-															</span>
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																{t("common:series")}
-															</span>
-															{currentMatch.stats.streakB > 0 && (
-																<span className="font-bold text-[10px] text-green-600">
-																	+{currentMatch.stats.streakB}
-																</span>
-															)}
-															{currentMatch.stats.streakB < 0 && (
-																<span className="font-bold text-[10px] text-brawl-red">
-																	{currentMatch.stats.streakB}
-																</span>
-															)}
-															{currentMatch.stats.streakB === 0 && (
-																<span className="font-bold text-[10px] text-gray-400">
-																	-
-																</span>
-															)}
-														</div>
-														<div className="flex items-center justify-between rounded-md bg-white px-2.5 py-2 shadow-[1px_1px_0_0_#d9d9d9]">
-															<span className="font-black text-[9px] text-gray-400 uppercase">
-																Palpites
-															</span>
-															<span className="font-bold text-[10px] text-brawl-red">
-																{currentMatch.stats.betCountB}
-															</span>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-
-										{/* Team Links */}
-										<div className="grid grid-cols-2 gap-0 border-black border-t-2">
-											{currentMatch.teamA?.slug ? (
-												<Link
-													{...routeTo("/teams/$teamId")}
-													params={{
-														teamId: currentMatch.teamA?.slug || "",
-														lang,
-													}}
-													className="group flex items-center justify-between gap-3 border-black border-r-2 bg-brawl-blue px-3 py-3 text-white transition-all hover:brightness-110"
-												>
-													<div className="flex min-w-0 items-center gap-2">
-														<TeamLogo
-															teamName={currentMatch.teamA?.name || "TBD"}
-															logoUrl={currentMatch.teamA?.logoUrl}
-															size="sm"
-														/>
-														<div className="min-w-0 text-left">
-															<div className="truncate font-black text-[11px] uppercase">
-																{currentMatch.teamA?.name || "TBD"}
-															</div>
-															<div className="text-[9px] text-white/80 uppercase tracking-wider">
-																{t("common:nav.profile")}
-															</div>
-														</div>
-													</div>
-													<span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-0.5">
-														arrow_forward
-													</span>
-												</Link>
-											) : (
-												<div className="flex items-center justify-center gap-2 border-black border-r-2 bg-gray-500 py-3 text-gray-300">
-													<span className="material-symbols-outlined text-sm">
-														visibility_off
-													</span>
-													<span className="font-bold text-xs">TBD</span>
-												</div>
-											)}
-											{currentMatch.teamB?.slug ? (
-												<Link
-													{...routeTo("/teams/$teamId")}
-													params={{
-														teamId: currentMatch.teamB?.slug || "",
-														lang,
-													}}
-													className="group flex items-center justify-between gap-3 bg-brawl-red px-3 py-3 text-white transition-all hover:brightness-110"
-												>
-													<div className="flex min-w-0 items-center gap-2">
-														<TeamLogo
-															teamName={currentMatch.teamB?.name || "TBD"}
-															logoUrl={currentMatch.teamB?.logoUrl}
-															size="sm"
-														/>
-														<div className="min-w-0 text-left">
-															<div className="truncate font-black text-[11px] uppercase">
-																{currentMatch.teamB?.name || "TBD"}
-															</div>
-															<div className="text-[9px] text-white/80 uppercase tracking-wider">
-																{t("common:nav.profile")}
-															</div>
-														</div>
-													</div>
-													<span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-0.5">
-														arrow_forward
-													</span>
-												</Link>
-											) : (
-												<div className="flex items-center justify-center gap-2 bg-gray-500 py-3 text-gray-300">
-													<span className="material-symbols-outlined text-sm">
-														visibility_off
-													</span>
-													<span className="font-bold text-xs">TBD</span>
-												</div>
-											)}
-										</div>
 									</div>
-								</div>
 
-								{/* SCORE SELECTOR */}
-								<div className="mt-5 w-full">
-									<div className="mb-2 text-center">
-										<span className="font-black text-ink text-xs uppercase tracking-wider">
-											{t("pickScore")}
-										</span>
-									</div>
-									<div
-										className={`grid gap-2 md:gap-3 ${scoreOptions.length === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 justify-center"}`}
-									>
-										{scoreOptions.map((option) => {
-											const isOptionSelected = selectedScore === option.label;
-											const isDisabled = !selectedWinnerId || isReadOnly;
-											const accentColor =
-												activeAccentColor === "brawl-blue"
-													? "#2e5cff"
-													: "#ff2e2e";
+									{/* Team pick split */}
+									<div className="relative grid min-h-[9.5rem] grid-cols-2 sm:min-h-[11rem]">
+										{/* VS badge */}
+										<div className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
+											<div className="flex h-9 w-9 items-center justify-center border-2 border-black bg-white shadow-comic-sm sm:h-10 sm:w-10">
+												<span className="font-black font-display text-ink text-xs italic sm:text-sm">
+													{t("matchCard.vs")}
+												</span>
+											</div>
+										</div>
 
-											return (
-												<button
-													key={option.label}
-													onClick={() =>
-														!isDisabled && setSelectedScore(option.label)
-													}
-													disabled={isDisabled}
+										{/* Team A */}
+										<button
+											type="button"
+											disabled={!currentMatch.teamA || isEffectiveReadOnly}
+											onClick={() =>
+												currentMatch.teamA &&
+												setSelectedWinnerId(currentMatch.teamA.id)
+											}
+											className={clsx(
+												"group relative flex h-full flex-col items-center overflow-hidden border-black border-r-[3px] transition-all duration-200",
+												teamAMuted
+													? "bg-tape text-ink grayscale"
+													: "cursor-pointer bg-brawl-blue text-white hover:brightness-110",
+												isEffectiveReadOnly && !teamASelected
+													? "cursor-not-allowed opacity-70"
+													: "",
+											)}
+										>
+											{teamASelected && (
+												<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
+											)}
+
+											<div className="relative z-10 flex h-full w-full flex-col">
+												<div
 													className={clsx(
-														"relative flex h-16 flex-col items-center justify-center rounded-md border-2 p-2 transition-all duration-150 md:h-20",
-														isDisabled || isEffectiveReadOnly
-															? "cursor-not-allowed border-gray-300 bg-gray-100 opacity-50"
-															: isOptionSelected
-																? "border-black bg-white shadow-comic"
-																: "border-gray-300 bg-white hover:border-gray-400 hover:shadow-[2px_2px_0_0_#ccc]",
+														"w-full px-2 py-2 text-center",
+														teamAMuted ? "bg-black/5" : "bg-black/25",
 													)}
 												>
-													{isOptionSelected && (
-														<div className="absolute top-1 right-1">
-															<span
-																className="material-symbols-outlined text-sm"
-																style={{ color: accentColor }}
-															>
-																check_circle
-															</span>
-														</div>
-													)}
-
-													<span
-														className="font-black font-display text-2xl md:text-3xl"
-														style={{
-															color: isOptionSelected
-																? accentColor
-																: isDisabled
-																	? "#9ca3af"
-																	: "#374151",
-														}}
-													>
-														{option.label}
-													</span>
-
 													<span
 														className={clsx(
-															"mt-0.5 rounded px-1.5 py-0.5 font-bold text-[9px] uppercase",
-															isOptionSelected
-																? "bg-electric-lime text-black"
-																: "text-gray-500",
+															"block truncate font-black font-display text-[10px] uppercase italic tracking-tighter sm:text-xs",
+															teamAMuted ? "text-ink" : "text-white",
 														)}
 													>
-														{option.description}
+														{currentMatch.teamA?.name || t("matchCard.tbd")}
 													</span>
-												</button>
-											);
-										})}
+												</div>
+
+												<div className="relative flex flex-grow flex-col items-center justify-center gap-1 p-2 sm:p-3">
+													<TeamLogo
+														teamName={
+															currentMatch.teamA?.name || t("matchCard.tbd")
+														}
+														logoUrl={currentMatch.teamA?.logoUrl}
+														size="xl"
+														className="h-14 w-14 sm:h-20 sm:w-20"
+													/>
+												</div>
+
+												<div
+													className={clsx(
+														"flex min-h-[36px] w-full flex-col items-center justify-center px-2 py-1.5 text-center",
+														teamAMuted ? "bg-black/5" : "bg-black/15",
+													)}
+												>
+													<span
+														className={clsx(
+															"font-body font-bold text-[8px] uppercase tracking-widest",
+															teamAMuted ? "text-gray-500" : "text-white/80",
+														)}
+													>
+														{t("winRateLabel")}
+													</span>
+													<span
+														className={clsx(
+															"font-body font-bold text-[11px] tabular-nums",
+															teamAMuted ? "text-ink" : "text-white",
+														)}
+													>
+														{currentMatch.stats.winRateA}
+													</span>
+												</div>
+											</div>
+										</button>
+
+										{/* Team B */}
+										<button
+											type="button"
+											disabled={!currentMatch.teamB || isEffectiveReadOnly}
+											onClick={() =>
+												currentMatch.teamB &&
+												setSelectedWinnerId(currentMatch.teamB.id)
+											}
+											className={clsx(
+												"group relative flex h-full flex-col items-center overflow-hidden transition-all duration-200",
+												teamBMuted
+													? "bg-tape text-ink grayscale"
+													: "cursor-pointer bg-brawl-red text-white hover:brightness-110",
+												isEffectiveReadOnly && !teamBSelected
+													? "cursor-not-allowed opacity-70"
+													: "",
+											)}
+										>
+											{teamBSelected && (
+												<div className="pointer-events-none absolute inset-0 z-20 border-[4px] border-electric-lime" />
+											)}
+
+											<div className="relative z-10 flex h-full w-full flex-col">
+												<div
+													className={clsx(
+														"w-full px-2 py-2 text-center",
+														teamBMuted ? "bg-black/5" : "bg-black/25",
+													)}
+												>
+													<span
+														className={clsx(
+															"block truncate font-black font-display text-[10px] uppercase italic tracking-tighter sm:text-xs",
+															teamBMuted ? "text-ink" : "text-white",
+														)}
+													>
+														{currentMatch.teamB?.name || t("matchCard.tbd")}
+													</span>
+												</div>
+
+												<div className="relative flex flex-grow flex-col items-center justify-center gap-1 p-2 sm:p-3">
+													<TeamLogo
+														teamName={
+															currentMatch.teamB?.name || t("matchCard.tbd")
+														}
+														logoUrl={currentMatch.teamB?.logoUrl}
+														size="xl"
+														className="h-14 w-14 sm:h-20 sm:w-20"
+													/>
+												</div>
+
+												<div
+													className={clsx(
+														"flex min-h-[36px] w-full flex-col items-center justify-center px-2 py-1.5 text-center",
+														teamBMuted ? "bg-black/5" : "bg-black/15",
+													)}
+												>
+													<span
+														className={clsx(
+															"font-body font-bold text-[8px] uppercase tracking-widest",
+															teamBMuted ? "text-gray-500" : "text-white/80",
+														)}
+													>
+														{t("winRateLabel")}
+													</span>
+													<span
+														className={clsx(
+															"font-body font-bold text-[11px] tabular-nums",
+															teamBMuted ? "text-ink" : "text-white",
+														)}
+													>
+														{currentMatch.stats.winRateB}
+													</span>
+												</div>
+											</div>
+										</button>
+									</div>
+
+									{/* Score selector — directly under teams so the pick flow stays in view */}
+									<div
+										ref={scoreSectionRef}
+										className="border-black border-t-[3px] bg-paper px-3 py-3 sm:px-4 sm:py-3.5"
+									>
+										<div className="mb-2.5 text-center">
+											<span className="font-body font-bold text-[10px] text-ink uppercase tracking-widest sm:text-xs">
+												{t("pickScore")}
+											</span>
+										</div>
+										<div
+											className={clsx(
+												"grid gap-2",
+												scoreOptions.length === 3
+													? "grid-cols-3"
+													: "grid-cols-2 justify-center",
+											)}
+										>
+											{scoreOptions.map((option) => {
+												const isOptionSelected = scoresEqual(
+													selectedScore,
+													option.label,
+												);
+												const isDisabled = !selectedWinnerId || isReadOnly;
+												const accentHex =
+													activeAccentColor === "brawl-blue"
+														? "#2e5cff"
+														: "#ff2e2e";
+
+												return (
+													<button
+														key={option.label}
+														type="button"
+														onClick={() =>
+															!isDisabled && setSelectedScore(option.label)
+														}
+														disabled={isDisabled}
+														className={clsx(
+															"relative flex h-14 flex-col items-center justify-center border-2 p-1.5 transition-all duration-150 sm:h-16",
+															isDisabled || isEffectiveReadOnly
+																? "cursor-not-allowed border-gray-300 bg-gray-100 opacity-50"
+																: isOptionSelected
+																	? "border-black bg-white shadow-comic"
+																	: "border-gray-300 bg-white hover:border-gray-400 hover:shadow-[2px_2px_0_0_#ccc]",
+														)}
+													>
+														{isOptionSelected && (
+															<div className="absolute top-0.5 right-0.5">
+																<span
+																	className="material-symbols-outlined text-sm"
+																	style={{ color: accentHex }}
+																>
+																	check_circle
+																</span>
+															</div>
+														)}
+
+														<span
+															className="font-black font-display text-xl tabular-nums leading-none sm:text-2xl"
+															style={{
+																color: isOptionSelected
+																	? accentHex
+																	: isDisabled
+																		? "#9ca3af"
+																		: "#121212",
+															}}
+														>
+															{option.label}
+														</span>
+
+														<span
+															className={clsx(
+																"mt-1 max-w-full truncate whitespace-nowrap px-1 py-0.5 font-body font-bold text-[8px] uppercase leading-none tracking-widest sm:text-[9px]",
+																isOptionSelected
+																	? "bg-electric-lime text-black"
+																	: "text-gray-500",
+															)}
+														>
+															{option.description}
+														</span>
+													</button>
+												);
+											})}
+										</div>
 									</div>
 								</div>
-							</motion.div>
-						</AnimatePresence>
-					</div>
+							</div>
 
-					{/* Action Button */}
-					<div className="mx-auto mt-8 w-full max-w-xs">
-						<button
-							onClick={handleNext}
-							disabled={!selectedWinnerId || !selectedScore}
-							className={clsx(
-								"flex w-full items-center justify-center gap-2 rounded-md border-2 border-black py-3.5 font-black font-display text-base text-white uppercase shadow-comic transition-all active:translate-y-0.5 active:shadow-none md:text-lg",
-								!selectedWinnerId || !selectedScore
-									? "cursor-not-allowed border-gray-400 bg-gray-400"
-									: activeAccentColor === "brawl-blue"
-										? "bg-brawl-blue hover:shadow-comic-md"
-										: "bg-brawl-red hover:shadow-comic-md",
-							)}
-						>
-							<span className="material-symbols-outlined text-lg">
-								{isLastMatch && allBetsComplete ? "verified" : "arrow_forward"}
-							</span>
-							{getButtonText()}
-						</button>
-					</div>
-
-					{/* Pagination Indicators */}
-					<div className="mt-6 mb-12 flex items-center justify-center gap-2">
-						{matches.map((match, i) => {
-							const prediction = predictions[match.id];
-							const hasPrediction =
-								prediction &&
-								prediction.winnerId &&
-								prediction.score &&
-								prediction.score.trim() !== "";
-							return (
+							{/* Primary action — right after score, before secondary intel */}
+							<div className="mx-auto mt-4 w-full max-w-xs">
 								<button
-									key={i}
-									onClick={() => setCurrentIndex(i)}
+									type="button"
+									onClick={handleNext}
+									disabled={!selectedWinnerId || !selectedScore}
 									className={clsx(
-										"h-2.5 rounded-full border-2 border-black transition-all duration-200",
-										i === currentIndex
-											? "w-8 bg-electric-lime"
-											: hasPrediction
-												? "w-2.5 bg-green-500 hover:bg-green-600"
-												: "w-2.5 bg-white hover:bg-gray-200",
+										"flex w-full items-center justify-center gap-2 border-[3px] border-black py-3.5 font-black font-display text-base text-white uppercase shadow-comic transition-all active:translate-y-0.5 active:shadow-none sm:text-lg",
+										!selectedWinnerId || !selectedScore
+											? "cursor-not-allowed border-gray-400 bg-gray-400"
+											: activeAccentColor === "brawl-blue"
+												? "bg-brawl-blue hover:shadow-comic-md"
+												: "bg-brawl-red hover:shadow-comic-md",
 									)}
-									aria-label={`Go to match ${i + 1}`}
-								/>
-							);
-						})}
-					</div>
-				</main>
-			</div>
-		</>
+								>
+									<span className="material-symbols-outlined text-lg">
+										{isLastMatch && allBetsComplete
+											? "verified"
+											: "arrow_forward"}
+									</span>
+									{getButtonText()}
+								</button>
+							</div>
+
+							{/* Stats + team links — optional intel below the pick CTA */}
+							<div
+								className={clsx(
+									"relative z-10 mx-auto mt-5 w-full max-w-[480px] overflow-hidden border-[3px] border-black bg-white shadow-comic-sm sm:max-w-none",
+									visualIdentity.cardFrameClass,
+								)}
+							>
+								<div className="bg-white">
+									<div className="flex items-center justify-center gap-2 border-black border-b-2 bg-ink px-3 py-2">
+										<span
+											className="h-1 w-4 bg-brawl-blue"
+											aria-hidden="true"
+										/>
+										<span className="font-body font-bold text-[9px] text-white uppercase tracking-[0.2em]">
+											{t("statsTitle")}
+										</span>
+										<span className="h-1 w-4 bg-brawl-red" aria-hidden="true" />
+									</div>
+									<div className="divide-y divide-black/15">
+										<StatsComparisonRow
+											label={t("common:region")}
+											valueA={currentMatch.stats.regionA || "-"}
+											valueB={currentMatch.stats.regionB || "-"}
+										/>
+										{(currentMatch.stats.groupA ||
+											currentMatch.stats.groupB) && (
+											<StatsComparisonRow
+												label={t("groupLabel")}
+												valueA={currentMatch.stats.groupA || "-"}
+												valueB={currentMatch.stats.groupB || "-"}
+											/>
+										)}
+										<StatsComparisonRow
+											label={t("formLabel")}
+											valueA={currentMatch.stats.formA}
+											valueB={currentMatch.stats.formB}
+											accentA
+											accentB
+											emphasize
+										/>
+										<StatsComparisonRow
+											label={t("statsWinRate")}
+											valueA={currentMatch.stats.winRateA}
+											valueB={currentMatch.stats.winRateB}
+											accentA
+											accentB
+											emphasize
+										/>
+										<StatsComparisonRow
+											label={t("streakLabel")}
+											valueA={formatStreak(currentMatch.stats.streakA)}
+											valueB={formatStreak(currentMatch.stats.streakB)}
+											accentA={currentMatch.stats.streakA !== 0}
+											accentB={currentMatch.stats.streakB !== 0}
+										/>
+										{(currentMatch.teamA?.seed != null ||
+											currentMatch.teamB?.seed != null) && (
+											<StatsComparisonRow
+												label={t("seedLabel")}
+												valueA={
+													currentMatch.teamA?.seed != null
+														? `#${currentMatch.teamA.seed}`
+														: "-"
+												}
+												valueB={
+													currentMatch.teamB?.seed != null
+														? `#${currentMatch.teamB.seed}`
+														: "-"
+												}
+											/>
+										)}
+									</div>
+								</div>
+
+								<div className="grid grid-cols-2 gap-0 border-black border-t-[3px]">
+									{currentMatch.teamA?.slug ? (
+										<Link
+											{...routeTo("/teams/$teamId")}
+											params={{
+												teamId: currentMatch.teamA.slug,
+												lang,
+											}}
+											className="group flex items-center justify-center gap-2 border-black border-r-[3px] bg-ink px-3 py-3.5 text-white transition-all hover:bg-charcoal"
+										>
+											<TeamLogo
+												teamName={currentMatch.teamA.name || t("matchCard.tbd")}
+												logoUrl={currentMatch.teamA.logoUrl}
+												size="sm"
+											/>
+											<span className="truncate font-black font-display text-[10px] uppercase tracking-tight sm:text-[11px]">
+												{t("teamPage")}
+											</span>
+										</Link>
+									) : (
+										<div className="flex items-center justify-center gap-2 border-black border-r-[3px] bg-panel-gray py-3.5 text-white/50">
+											<span className="font-body font-bold text-xs uppercase tracking-widest">
+												{t("matchCard.tbd")}
+											</span>
+										</div>
+									)}
+									{currentMatch.teamB?.slug ? (
+										<Link
+											{...routeTo("/teams/$teamId")}
+											params={{
+												teamId: currentMatch.teamB.slug,
+												lang,
+											}}
+											className="group flex items-center justify-center gap-2 bg-ink px-3 py-3.5 text-white transition-all hover:bg-charcoal"
+										>
+											<TeamLogo
+												teamName={currentMatch.teamB.name || t("matchCard.tbd")}
+												logoUrl={currentMatch.teamB.logoUrl}
+												size="sm"
+											/>
+											<span className="truncate font-black font-display text-[10px] uppercase tracking-tight sm:text-[11px]">
+												{t("teamPage")}
+											</span>
+										</Link>
+									) : (
+										<div className="flex items-center justify-center gap-2 bg-panel-gray py-3.5 text-white/50">
+											<span className="font-body font-bold text-xs uppercase tracking-widest">
+												{t("matchCard.tbd")}
+											</span>
+										</div>
+									)}
+								</div>
+							</div>
+						</motion.div>
+					</AnimatePresence>
+				</div>
+
+				{/* Pagination — lime active, white idle, green complete */}
+				<div className="mt-6 mb-12 flex items-center justify-center gap-2">
+					{matches.map((match, i) => {
+						const hasPrediction = isPredictionComplete(match.id);
+						const canJump = canNavigateToIndex(i);
+						return (
+							<button
+								key={match.id}
+								type="button"
+								onClick={() => {
+									if (canJump) setCurrentIndex(i);
+								}}
+								disabled={!canJump}
+								className={clsx(
+									"h-2.5 rounded-full border-2 border-black transition-all duration-200",
+									i === currentIndex
+										? "w-8 bg-electric-lime"
+										: hasPrediction
+											? "w-2.5 bg-electric-lime/70 hover:bg-electric-lime"
+											: canJump
+												? "w-2.5 bg-white hover:bg-tape"
+												: "w-2.5 cursor-not-allowed bg-white opacity-40",
+								)}
+								aria-label={t("matchCounter", {
+									current: i + 1,
+									total: matches.length,
+								})}
+							/>
+						);
+					})}
+				</div>
+			</main>
+		</div>
 	);
 }

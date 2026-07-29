@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
-import { Award, ChevronRight, Crown, Medal, Trophy } from "lucide-react";
+import { ChevronRight, Crown, Medal, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { InlineLoader } from "@/components/inline-loader";
@@ -14,51 +14,35 @@ function cn(...inputs: ClassValue[]) {
 
 interface TournamentPodiumProps {
 	tournamentId: number;
-	tournamentName: string;
-	tournamentLogoUrl?: string | null;
 	className?: string;
 }
 
 const podiumConfig = {
 	1: {
 		icon: Crown,
-		bg: "bg-gradient-to-br from-[#FFD700] via-[#FFFACD] to-[#DAA520]",
-		border: "border-[#B8860B]",
-		text: "text-[#8B6914]",
-		shadow: "shadow-[6px_6px_0_0_#B8860B]",
-		height: "h-32",
-		scale: "scale-110",
+		platform: "surface-yellow",
+		badge: "surface-yellow",
+		height: "h-11",
 		zIndex: "z-30",
-		label: "CAMPEÃO",
 	},
 	2: {
 		icon: Medal,
-		bg: "bg-gradient-to-br from-[#E6E6E6] via-[#FFFFFF] to-[#A3A3A3]",
-		border: "border-[#808080]",
-		text: "text-[#505050]",
-		shadow: "shadow-[4px_4px_0_0_#808080]",
-		height: "h-24",
-		scale: "scale-100",
+		platform: "bg-[#d4d4d4] text-ink",
+		badge: "bg-[#d4d4d4] text-ink",
+		height: "h-8",
 		zIndex: "z-20",
-		label: "2º LUGAR",
 	},
 	3: {
-		icon: Award,
-		bg: "bg-gradient-to-br from-[#CD7F32] via-[#E6A869] to-[#804F1F]",
-		border: "border-[#8B4513]",
-		text: "text-white",
-		shadow: "shadow-[4px_4px_0_0_#8B4513]",
-		height: "h-20",
-		scale: "scale-100",
+		icon: Trophy,
+		platform: "bg-[#c47a3a] text-white",
+		badge: "bg-[#c47a3a] text-white",
+		height: "h-6",
 		zIndex: "z-20",
-		label: "3º LUGAR",
 	},
-};
+} as const;
 
 export function TournamentPodium({
 	tournamentId,
-	tournamentName,
-	tournamentLogoUrl,
 	className,
 }: TournamentPodiumProps) {
 	const { t } = useTranslation("tournament");
@@ -73,12 +57,12 @@ export function TournamentPodium({
 		return (
 			<div
 				className={cn(
-					"rounded-xl border-[3px] border-black bg-white p-8 shadow-[4px_4px_0_0_#000]",
+					"border-[3px] border-black bg-white p-6 shadow-comic-md",
 					className,
 				)}
 			>
-				<div className="flex h-40 items-center justify-center">
-					<InlineLoader size="lg" />
+				<div className="flex h-20 items-center justify-center">
+					<InlineLoader size="md" />
 				</div>
 			</div>
 		);
@@ -97,104 +81,64 @@ export function TournamentPodium({
 	return (
 		<div
 			className={cn(
-				"relative overflow-hidden rounded-xl border-[3px] border-black bg-white shadow-[6px_6px_0_0_#000]",
+				"overflow-hidden border-[3px] border-black bg-white text-ink shadow-comic-md",
 				className,
 			)}
 		>
-			{/* Header */}
-			<div className="relative overflow-hidden border-black border-b-[3px] bg-black p-6">
-				{/* Background Pattern */}
-				<div className="absolute inset-0 opacity-10">
-					<div
-						className="h-full w-full"
-						style={{
-							backgroundImage: `radial-gradient(circle at 20% 50%, #FFD700 2px, transparent 2px),
-                                radial-gradient(circle at 80% 50%, #FFD700 2px, transparent 2px)`,
-							backgroundSize: "40px 40px",
-						}}
+			<div className="surface-ink flex items-center justify-between gap-3 border-black border-b-[3px] px-4 py-2.5">
+				<div className="flex min-w-0 items-center gap-2">
+					<span className="surface-yellow flex h-7 w-7 shrink-0 items-center justify-center border-2 border-black shadow-comic-sm">
+						<Crown className="h-3.5 w-3.5 text-ink" fill="currentColor" />
+					</span>
+					<h2 className="truncate font-black font-display text-sm text-white uppercase italic tracking-tighter md:text-base">
+						{t("podium.title")}
+					</h2>
+				</div>
+
+				<Link
+					{...routeTo("/leaderboard")}
+					search={{ tab: "season", tournamentId }}
+					className="group surface-lime inline-flex shrink-0 items-center gap-1 border-2 border-black px-2.5 py-1 font-black font-display text-[10px] uppercase tracking-wider shadow-comic-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press sm:gap-1.5 sm:px-3 sm:text-xs"
+				>
+					{t("podium.viewRanking")}
+					<ChevronRight
+						className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+						strokeWidth={3}
 					/>
-				</div>
-
-				<div className="relative z-10 flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="flex h-14 w-14 -rotate-3 transform items-center justify-center border-[3px] border-white bg-[#FFD700] shadow-[3px_3px_0_0_rgba(0,0,0,0.5)]">
-							{tournamentLogoUrl ? (
-								<img
-									src={tournamentLogoUrl}
-									alt={tournamentName}
-									className="h-10 w-10 object-contain"
-								/>
-							) : (
-								<Trophy className="h-8 w-8 text-black" fill="black" />
-							)}
-						</div>
-						<div>
-							<p className="font-body font-bold text-[10px] text-white/60 uppercase tracking-widest">
-								{t("podium.title")}
-							</p>
-							<h2 className="font-black font-display text-white text-xl uppercase italic tracking-tight md:text-2xl">
-								{tournamentName}
-							</h2>
-						</div>
-					</div>
-
-					<Link
-						{...routeTo("/leaderboard")}
-						search={{ tab: "season", tournamentId }}
-						className="group hidden items-center gap-2 border-2 border-white bg-white px-4 py-2 font-black font-display text-black text-xs uppercase tracking-wider transition-all hover:bg-[#ccff00] sm:flex"
-					>
-						{t("podium.viewRanking")}
-						<ChevronRight
-							className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-							strokeWidth={3}
-						/>
-					</Link>
-				</div>
+				</Link>
 			</div>
 
-			{/* Podium */}
-			<div className="relative bg-[#f5f5f5] p-6 pt-12">
-				<div className="mx-auto flex max-w-md items-end justify-center gap-2 md:gap-4">
-					{/* 2nd Place - Left */}
-					{second && (
+			<div className="bg-paper px-3 pt-5 pb-3 sm:px-5">
+				<div className="mx-auto flex max-w-sm items-end justify-center gap-2 sm:gap-3">
+					{second ? (
 						<PodiumBlock entry={second} rank={2} config={podiumConfig[2]} />
-					)}
-
-					{/* 1st Place - Center */}
-					{first && (
+					) : null}
+					{first ? (
 						<PodiumBlock
 							entry={first}
 							rank={1}
 							config={podiumConfig[1]}
 							isWinner
 						/>
-					)}
-
-					{/* 3rd Place - Right */}
-					{third && (
+					) : null}
+					{third ? (
 						<PodiumBlock entry={third} rank={3} config={podiumConfig[3]} />
-					)}
+					) : null}
 				</div>
-
-				{/* Floor */}
-				<div className="mx-auto mt-0 h-2 max-w-md rounded-full bg-gradient-to-r from-black/20 via-black/40 to-black/20" />
 			</div>
 		</div>
 	);
 }
 
+interface PodiumEntry {
+	userId: string;
+	name: string;
+	image: string | null;
+	totalPoints: number;
+}
+
 interface PodiumBlockProps {
-	entry: {
-		userId: string;
-		name: string;
-		image: string | null;
-		totalPoints: number;
-		medals: {
-			gold: number;
-			silver: number;
-			bronze: number;
-		};
-	};
+	entry: PodiumEntry;
 	rank: 1 | 2 | 3;
 	config: (typeof podiumConfig)[1];
 	isWinner?: boolean;
@@ -207,111 +151,78 @@ function PodiumBlock({ entry, rank, config, isWinner }: PodiumBlockProps) {
 
 	return (
 		<div
-			className={cn("flex flex-col items-center", config.zIndex, config.scale)}
+			className={cn("flex min-w-0 flex-1 flex-col items-center", config.zIndex)}
 		>
-			{/* Avatar */}
 			<Link
 				{...routeTo("/users/$userId")}
 				params={{ userId: entry.userId, lang }}
 				className={cn(
-					"group relative mb-3 border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000]",
-					isWinner ? "h-20 w-20 md:h-24 md:w-24" : "h-14 w-14 md:h-16 md:w-16",
+					"group relative mb-2 border-[3px] border-black bg-white shadow-comic-sm transition-all hover:-translate-y-0.5 hover:shadow-comic-md",
+					isWinner ? "h-14 w-14 sm:h-16 sm:w-16" : "h-11 w-11 sm:h-12 sm:w-12",
 				)}
 			>
-				{/* Inner container with overflow-hidden for the image */}
 				<div className="h-full w-full overflow-hidden">
 					{entry.image ? (
 						<img
 							src={entry.image}
 							alt={entry.name}
-							className="h-full w-full object-cover transition-transform group-hover:scale-110"
+							className="h-full w-full object-cover transition-transform group-hover:scale-105"
 						/>
 					) : (
-						<div className="flex h-full w-full items-center justify-center bg-gray-200 font-black text-2xl text-black/30">
+						<div className="flex h-full w-full items-center justify-center bg-tape font-black font-display text-ink text-lg uppercase">
 							{entry.name.charAt(0).toUpperCase()}
 						</div>
 					)}
 				</div>
 
-				{/* Rank Badge - positioned outside the overflow container */}
 				<div
 					className={cn(
-						"absolute -right-2 -bottom-2 flex transform items-center justify-center border-2 border-white font-black shadow-[2px_2px_0_0_#000]",
-						isWinner ? "h-8 w-8 text-lg" : "h-6 w-6 text-xs",
-						config.bg,
-						config.border,
-						config.text,
-						rank === 1 ? "rotate-6" : "-rotate-6",
+						"absolute -right-1.5 -bottom-1.5 flex items-center justify-center border-2 border-black shadow-comic-sm",
+						isWinner ? "h-6 w-6" : "h-5 w-5",
+						config.badge,
 					)}
 				>
 					<Icon
-						size={isWinner ? 16 : 12}
+						size={isWinner ? 12 : 10}
 						fill={rank === 1 ? "currentColor" : "none"}
 						strokeWidth={2.5}
 					/>
 				</div>
 			</Link>
 
-			{/* Name */}
 			<Link
 				{...routeTo("/users/$userId")}
 				params={{ userId: entry.userId, lang }}
 				className={cn(
-					"mb-2 transform border border-black bg-white px-3 py-1 text-center shadow-[2px_2px_0_0_#000] transition-all hover:bg-gray-50",
-					isWinner ? "-rotate-1" : "rotate-1",
+					"mb-1 w-full truncate pe-[0.2em] pb-0.5 text-center font-black font-display text-ink uppercase italic leading-[1.15] tracking-tighter hover:underline",
+					isWinner ? "text-xs" : "text-[11px]",
 				)}
 			>
-				<span
-					className={cn(
-						"block max-w-[100px] truncate font-black uppercase tracking-tight",
-						isWinner ? "text-sm" : "text-xs",
-					)}
-				>
-					{entry.name}
-				</span>
+				{entry.name}
 			</Link>
 
-			{/* Label Badge */}
-			<div
-				className={cn(
-					"mb-2 border-2 border-black px-2 py-0.5 font-black text-[10px] uppercase tracking-wider",
-					config.bg,
-					config.text,
-				)}
-			>
-				{t(`podium.rank${rank}`)}
-			</div>
-
-			{/* Points */}
-			<div className="mb-3 text-center">
+			<div className="mb-2 text-center">
 				<span
 					className={cn(
-						"block font-black text-black drop-shadow-sm",
-						isWinner ? "text-2xl" : "text-xl",
+						"block font-black font-body text-ink tabular-nums leading-none",
+						isWinner ? "text-lg" : "text-sm",
 					)}
 				>
 					{entry.totalPoints}
 				</span>
-				<span className="font-bold text-[9px] text-black/60 uppercase tracking-widest">
-					PTS
+				<span className="font-body font-bold text-[8px] text-gray-500 uppercase tracking-widest">
+					{t("podium.points")}
 				</span>
 			</div>
 
-			{/* Platform */}
 			<div
 				className={cn(
-					"w-full border-black border-x-[3px] border-t-[3px]",
-					config.bg,
-					config.border,
+					"flex w-full items-center justify-center border-black border-x-[3px] border-t-[3px]",
+					config.platform,
 					config.height,
 				)}
 			>
-				<span
-					className={cn(
-						"flex h-full items-center justify-center font-black text-4xl italic opacity-20",
-						config.text,
-					)}
-				>
+				<span className="font-black font-display text-2xl italic opacity-25">
 					{rank}
 				</span>
 			</div>

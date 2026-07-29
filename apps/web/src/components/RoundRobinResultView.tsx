@@ -1,8 +1,10 @@
-import { clsx } from "clsx";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { MatchCard } from "./MatchCard";
-import { TeamLogo } from "./TeamLogo";
+import { GroupStageShell } from "@/components/GroupStageShell";
+import { MatchCard } from "@/components/MatchCard";
+import { formatScoreDisplay } from "@/utils/score-format";
+import { StandingsTable, useStandings } from "./bracket/StandingsTable";
+import type { Match as BracketMatch } from "./bracket/types";
 
 interface TeamInfo {
 	id?: number;
@@ -28,17 +30,6 @@ interface RoundRobinResultViewProps {
 	showPredictionScore?: boolean;
 }
 
-interface TeamStanding {
-	team: TeamInfo;
-	played: number;
-	wins: number;
-	losses: number;
-	mapWins: number;
-	mapLosses: number;
-	mapDiff: number;
-	points: number;
-}
-
 export function RoundRobinResultView({
 	groupName,
 	matches,
@@ -46,308 +37,108 @@ export function RoundRobinResultView({
 	showPredictionScore = false,
 }: RoundRobinResultViewProps) {
 	const { t } = useTranslation("tournament");
+	const { t: tAdmin } = useTranslation("admin-matches");
 
-	const standings = useMemo(() => {
-		const teamsMap = new Map<number, TeamStanding>();
+	const bracketMatches: BracketMatch[] = useMemo(() => {
+		return matches.map(
+			(m) =>
+				({
+					id: m.id,
+					label: m.label || "",
+					name: m.name || m.label || "",
+					displayOrder: m.displayOrder ?? 0,
+					teamA: {
+						id: m.teamA?.id ?? 0,
+						name: m.teamA?.name ?? "TBD",
+						logoUrl: m.teamA?.logoUrl,
+						color: "blue",
+					},
+					teamB: {
+						id: m.teamB?.id ?? 0,
+						name: m.teamB?.name ?? "TBD",
+						logoUrl: m.teamB?.logoUrl,
+						color: "red",
+					},
+					format: m.format ?? "bo3",
+					stats: {
+						regionA: "",
+						regionB: "",
+						pointsA: 0,
+						pointsB: 0,
+						formA: "0-0",
+						formB: "0-0",
+						winRateA: "",
+						winRateB: "",
+					},
+					status: m.status as BracketMatch["status"],
+					scoreA: m.scoreA,
+					scoreB: m.scoreB,
+					winnerId: m.winnerId,
+					startTime: m.startTime,
+				}) as BracketMatch,
+		);
+	}, [matches]);
 
-		const getTeam = (teamInfo: TeamInfo) => {
-			if (!teamInfo.id) return null;
-			if (!teamsMap.has(teamInfo.id)) {
-				teamsMap.set(teamInfo.id, {
-					team: teamInfo,
-					played: 0,
-					wins: 0,
-					losses: 0,
-					mapWins: 0,
-					mapLosses: 0,
-					mapDiff: 0,
-					points: 0,
-				});
-			}
-			return teamsMap.get(teamInfo.id)!;
-		};
-
-		matches.forEach((match) => {
-			if (match.teamA?.id) getTeam(match.teamA);
-			if (match.teamB?.id) getTeam(match.teamB);
-
-			const isFinished = match.status === "finished";
-			const bet = showPredictionScore
-				? userBets?.find((b) => b.matchId === match.id)
-				: null;
-			const winnerId = isFinished ? match.winnerId : bet?.predictedWinnerId;
-
-			if (winnerId) {
-				const teamAState = match.teamA ? getTeam(match.teamA) : null;
-				const teamBState = match.teamB ? getTeam(match.teamB) : null;
-
-				if (teamAState) teamAState.played += 1;
-				if (teamBState) teamBState.played += 1;
-
-				if (winnerId === match.teamA?.id && teamAState) {
-					teamAState.wins += 1;
-					teamAState.points += 1;
-					if (teamBState) teamBState.losses += 1;
-				} else if (winnerId === match.teamB?.id && teamBState) {
-					teamBState.wins += 1;
-					teamBState.points += 1;
-					if (teamAState) teamAState.losses += 1;
-				}
-
-				let scoreA = 0;
-				let scoreB = 0;
-
-				if (isFinished) {
-					scoreA = match.scoreA ?? 0;
-					scoreB = match.scoreB ?? 0;
-				} else if (
-					bet?.predictedScoreA !== undefined &&
-					bet?.predictedScoreB !== undefined
-				) {
-					scoreA = bet.predictedScoreA;
-					scoreB = bet.predictedScoreB;
-				}
-
-				if (teamAState && teamBState) {
-					teamAState.mapWins += scoreA;
-					teamAState.mapLosses += scoreB;
-					teamBState.mapWins += scoreB;
-					teamBState.mapLosses += scoreA;
-				}
-			}
+	const predictionsMap = useMemo(() => {
+		if (!showPredictionScore || !userBets) return {};
+		const map: Record<number, { winnerId: number; score: string }> = {};
+		userBets.forEach((bet) => {
+			map[bet.matchId] = {
+				winnerId: bet.predictedWinnerId,
+				score: formatScoreDisplay(bet.predictedScoreA, bet.predictedScoreB),
+			};
 		});
+		return map;
+	}, [userBets, showPredictionScore]);
 
-		const finalStandings = Array.from(teamsMap.values());
-		finalStandings.forEach((s) => {
-			s.mapDiff = s.mapWins - s.mapLosses;
-		});
-
-		return finalStandings.sort((a, b) => {
-			if (b.wins !== a.wins) return b.wins - a.wins;
-			if (b.mapDiff !== a.mapDiff) return b.mapDiff - a.mapDiff;
-			return b.mapWins - a.mapWins;
-		});
-	}, [matches, userBets, showPredictionScore]);
+	const standings = useStandings(bracketMatches, predictionsMap);
 
 	return (
-		<div className="mb-12 flex flex-col gap-6 rounded-3xl border-4 border-black/5 bg-white/40 p-4 shadow-inner backdrop-blur-sm md:p-6">
-			{/* Header */}
-			<div className="flex flex-col items-center justify-between gap-4 border-black/10 border-b-4 pb-6 md:flex-row">
-				<h3 className="font-black text-4xl text-black uppercase italic drop-shadow-sm">
-					{groupName}
-				</h3>
-				<div className="flex items-center gap-2">
-					<div className="rotate-2 border border-transparent bg-black px-4 py-1.5 font-black text-[#ccff00] text-xs uppercase tracking-widest shadow-sm">
-						Round Robin
-					</div>
-					<div className="-rotate-2 border-2 border-black bg-white px-4 py-1.5 font-black text-black text-xs uppercase tracking-widest shadow-sm">
-						Points Stage
-					</div>
-				</div>
-			</div>
-
+		<GroupStageShell
+			title={groupName}
+			formatLabel={tAdmin("bracketView.roundRobin")}
+			badgeLabel={tAdmin("bracketView.top2Advance")}
+		>
 			<div className="flex flex-col gap-8 xl:flex-row">
-				{/* Standings Table - Left Side */}
-				<div className="w-full shrink-0 xl:w-[450px]">
-					<h4 className="mb-4 font-black text-black/80 text-xl uppercase italic">
-						Standings
-					</h4>
-					{standings.length > 0 && (
-						<div className="overflow-hidden rounded-xl border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
-							{/* Desktop Table */}
-							<div className="hidden md:block">
-								<table className="w-full text-left">
-									<thead className="border-black border-b-2 bg-[#121212] text-white">
-										<tr className="border-transparent border-l-4">
-											<th className="px-4 py-3 font-black text-[10px] uppercase tracking-wider">
-												#
-											</th>
-											<th className="px-4 py-3 font-black text-[10px] uppercase tracking-wider">
-												{t("standings.team", "Team")}
-											</th>
-											<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
-												{t("bracketView.colWL", "W-L")}
-											</th>
-											<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
-												{t("bracketView.colMaps", "MAPS")}
-											</th>
-											<th className="px-4 py-3 text-center font-black text-[10px] text-gray-300 uppercase tracking-wider">
-												{t("bracketView.colDiff", "DIFF")}
-											</th>
-										</tr>
-									</thead>
-									<tbody className="divide-y-2 divide-black/10">
-										{standings.map((row, index) => {
-											const isTop = index < 2;
-											return (
-												<tr
-													key={row.team.id}
-													className={clsx(
-														"relative overflow-hidden border-black/10 border-b font-bold text-xs transition-all",
-														isTop
-															? "bg-[#ccff00]/30"
-															: "bg-white hover:bg-gray-50",
-														isTop
-															? "border-[#ccff00] border-l-4"
-															: "border-transparent border-l-4",
-													)}
-												>
-													<td className="w-12 p-2 text-center text-gray-500">
-														{index + 1}
-													</td>
-													<td className="relative flex items-center gap-2 overflow-hidden p-2">
-														<TeamLogo
-															teamName={row.team.name}
-															logoUrl={row.team.logoUrl}
-															size="sm"
-															className="drop-shadow-sm"
-														/>
-														<div className="flex flex-col">
-															<span
-																className={clsx(
-																	"font-black text-sm uppercase leading-none",
-																	isTop ? "text-black" : "text-zinc-700",
-																)}
-															>
-																{row.team.name}
-															</span>
-														</div>
-													</td>
-													<td className="px-4 py-3 text-center font-black text-[#121212]">
-														{row.wins}-{row.losses}
-													</td>
-													<td className="px-4 py-3 text-center font-bold text-gray-500">
-														{row.mapWins}-{row.mapLosses}
-													</td>
-													<td
-														className={clsx(
-															"px-4 py-3 text-center font-black",
-															row.mapDiff > 0
-																? "text-green-600"
-																: row.mapDiff < 0
-																	? "text-red-500"
-																	: "text-gray-400",
-														)}
-													>
-														{row.mapDiff > 0 ? `+${row.mapDiff}` : row.mapDiff}
-													</td>
-												</tr>
-											);
-										})}
-									</tbody>
-								</table>
-							</div>
+				<div className="w-full shrink-0 xl:max-w-md">
+					<p className="mb-3 font-black font-display text-ink text-sm uppercase italic tracking-tighter">
+						{t("detail.standings")}
+					</p>
+					<StandingsTable standings={standings} />
+				</div>
 
-							{/* Mobile Cards */}
-							<div className="flex flex-col gap-2 p-2 md:hidden">
-								{standings.map((row, index) => {
-									const isTop = index < 2;
-									return (
-										<div
-											key={row.team.id}
-											className={clsx(
-												"flex items-center gap-3 rounded-lg border-2 p-3 transition-all",
-												isTop
-													? "border-[#ccff00] bg-[#ccff00]/20 shadow-[3px_3px_0_0_#ccff00]"
-													: "border-black/10 bg-white shadow-[3px_3px_0_0_rgba(0,0,0,0.1)]",
-											)}
-										>
-											{/* Rank */}
-											<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white font-black text-black text-sm shadow-[2px_2px_0_0_#000]">
-												{index + 1}
-											</div>
-
-											{/* Team */}
-											<div className="flex min-w-0 flex-1 items-center gap-2">
-												<TeamLogo
-													teamName={row.team.name}
-													logoUrl={row.team.logoUrl}
-													size="sm"
-													className="shrink-0"
-												/>
-												<span
-													className={clsx(
-														"truncate font-black text-sm uppercase",
-														isTop ? "text-black" : "text-zinc-700",
-													)}
-												>
-													{row.team.name}
-												</span>
-											</div>
-
-											{/* Stats */}
-											<div className="flex shrink-0 items-center gap-3">
-												<div className="flex flex-col items-end">
-													<span className="font-black text-[10px] text-zinc-500 uppercase">
-														W-L
-													</span>
-													<span className="font-black text-black text-sm">
-														{row.wins}-{row.losses}
-													</span>
-												</div>
-												<div className="flex flex-col items-end">
-													<span className="font-black text-[10px] text-zinc-500 uppercase">
-														Maps
-													</span>
-													<span className="font-bold text-gray-500 text-sm">
-														{row.mapWins}-{row.mapLosses}
-													</span>
-												</div>
-												<div className="flex flex-col items-end">
-													<span className="font-black text-[10px] text-zinc-500 uppercase">
-														Diff
-													</span>
-													<span
-														className={clsx(
-															"font-black text-sm",
-															row.mapDiff > 0
-																? "text-green-600"
-																: row.mapDiff < 0
-																	? "text-red-500"
-																	: "text-gray-400",
-														)}
-													>
-														{row.mapDiff > 0 ? `+${row.mapDiff}` : row.mapDiff}
-													</span>
-												</div>
-											</div>
-										</div>
-									);
-								})}
-							</div>
+				<div className="min-w-0 flex-1">
+					<p className="mb-3 font-black font-display text-ink text-sm uppercase italic tracking-tighter">
+						{t("detail.matches")}
+					</p>
+					{matches.length > 0 ? (
+						<div className="flex flex-col gap-4">
+							{matches.map((match) => (
+								<MatchCard
+									key={match.id}
+									match={{
+										...match,
+										category: t("detail.stageGroups"),
+										isBettingEnabled: match.isBettingEnabled ?? false,
+										status: match.status as "scheduled" | "live" | "finished",
+										format: "bo3",
+										teamA: match.teamA as any,
+										teamB: match.teamB as any,
+									}}
+									initialBet={userBets?.find(
+										(b: any) => b.matchId === match.id,
+									)}
+									showPredictionScore={showPredictionScore}
+								/>
+							))}
+						</div>
+					) : (
+						<div className="border-[3px] border-black border-dashed bg-tape/40 py-10 text-center font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+							{tAdmin("bracketView.noMatches")}
 						</div>
 					)}
 				</div>
-
-				{/* Match Cards - Right Side */}
-				<div className="min-w-0 flex-1">
-					<h4 className="mb-4 font-black text-black/80 text-xl uppercase italic">
-						Matches
-					</h4>
-					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-						{matches.map((match) => (
-							<MatchCard
-								key={match.id}
-								match={{
-									...match,
-									category: t("detail.stageGroups"),
-									isBettingEnabled: match.isBettingEnabled ?? false,
-									status: match.status as "scheduled" | "live" | "finished",
-									format: "bo3",
-									teamA: match.teamA as any,
-									teamB: match.teamB as any,
-								}}
-								initialBet={
-									userBets
-										? userBets.find((b: any) => b.matchId === match.id)
-										: undefined
-								}
-								showPredictionScore={showPredictionScore}
-							/>
-						))}
-					</div>
-				</div>
 			</div>
-		</div>
+		</GroupStageShell>
 	);
 }

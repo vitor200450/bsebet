@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import type { BetStats } from "@/server/bets";
 
@@ -7,6 +8,8 @@ interface BetSplitBarProps {
 	stats: BetStats;
 	compact?: boolean;
 }
+
+const MIN_LABEL_PERCENT = 12;
 
 export function BetSplitBar({
 	teamAName,
@@ -19,58 +22,73 @@ export function BetSplitBar({
 
 	if (totalCount === 0) {
 		return (
-			<div className="w-full">
+			<div
+				className={clsx(
+					"w-full border-black border-t-[3px] bg-paper",
+					compact ? "px-3 py-2" : "px-3 py-2.5",
+				)}
+			>
 				{!compact && (
-					<p className="mb-1 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
+					<p className="mb-1.5 font-body font-bold text-[9px] text-ink/50 uppercase tracking-widest">
 						{t("community.title")}
 					</p>
 				)}
-				<div className={`w-full bg-gray-300 ${compact ? "h-4" : "h-5"}`} />
-				{!compact && (
-					<p className="mt-1 text-center font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
+				<div className="flex items-center justify-center border-2 border-black border-dashed bg-white/70 px-3 py-1.5">
+					<p className="font-body font-bold text-[9px] text-ink/60 uppercase tracking-widest">
 						{t("community.noBets")}
 					</p>
-				)}
+				</div>
 			</div>
 		);
 	}
 
+	const showA = teamAPercent >= MIN_LABEL_PERCENT;
+	const showB = teamBPercent >= MIN_LABEL_PERCENT;
+
 	return (
-		<div className="w-full">
-			{/* Title label */}
+		<div className="w-full border-black border-t-[3px]">
 			{!compact && (
-				<p className="mb-1 font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
-					{t("community.title")}
-				</p>
+				<div className="flex items-center justify-between gap-2 bg-paper px-3 py-1">
+					<p className="font-body font-bold text-[9px] text-ink/50 uppercase tracking-widest">
+						{t("community.title")}
+					</p>
+					<p className="font-body font-bold text-[9px] text-ink/50 uppercase tabular-nums tracking-widest">
+						{t("community.totalVotes", { count: totalCount })}
+					</p>
+				</div>
 			)}
 
-			{/* Split bar — flush with card edges */}
-			<div className={`flex w-full ${compact ? "h-6" : "h-8"}`}>
-				{/* Left fill (blue) */}
+			<div
+				className={clsx("flex w-full overflow-hidden", compact ? "h-7" : "h-8")}
+				role="img"
+				aria-label={`${teamAName} ${teamAPercent}%, ${teamBName} ${teamBPercent}%`}
+			>
 				<div
-					className="relative flex items-center justify-end bg-[#2e5cff] pr-2 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
+					className="relative flex items-center justify-end bg-brawl-blue pr-2 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
 					style={{ width: `${teamAPercent}%` }}
+					title={teamAName}
 				>
-					{teamAPercent >= 15 && (
-						<span className="font-black font-display text-sm text-white uppercase italic leading-none">
+					{showA && (
+						<span className="font-black font-display text-sm text-white uppercase italic tabular-nums leading-none">
 							{teamAPercent}%
 						</span>
 					)}
 				</div>
-
-				{/* Right fill (red) */}
-				<div className="relative flex flex-1 items-center bg-[#ff2e2e] pl-2 transition-[flex-grow] duration-[600ms] ease-out motion-reduce:transition-none">
-					{teamBPercent >= 15 && (
-						<span className="font-black font-display text-sm text-white uppercase italic leading-none">
+				<div
+					className="relative flex items-center justify-start bg-brawl-red pl-2 transition-[width] duration-[600ms] ease-out motion-reduce:transition-none"
+					style={{ width: `${teamBPercent}%` }}
+					title={teamBName}
+				>
+					{showB && (
+						<span className="font-black font-display text-sm text-white uppercase italic tabular-nums leading-none">
 							{teamBPercent}%
 						</span>
 					)}
 				</div>
 			</div>
 
-			{/* Total count */}
-			{!compact && (
-				<p className="mt-1 text-right font-body font-bold text-[9px] text-gray-400 uppercase tracking-widest">
+			{compact && (
+				<p className="bg-paper px-3 py-1 text-right font-body font-bold text-[8px] text-ink/45 uppercase tabular-nums tracking-widest">
 					{t("community.totalVotes", { count: totalCount })}
 				</p>
 			)}

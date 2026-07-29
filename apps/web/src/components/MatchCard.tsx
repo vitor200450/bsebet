@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
+import { Calendar, Check, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLangLink } from "@/i18n/useLangLink";
 import { TeamLogo } from "./TeamLogo";
@@ -46,22 +47,45 @@ interface MatchCardProps {
 	match: Match;
 	initialBet?: Bet;
 	showPredictionScore?: boolean;
+	className?: string;
+}
+
+function cleanMatchLabel(name?: string | null, label?: string | null): string {
+	const candidate = name || label || "";
+	return candidate
+		.replace(/Group\s+\w+\s*([-:|]\s*)?/i, "")
+		.replace(/Match\s*\d*/i, "")
+		.trim();
 }
 
 export function MatchCard({
 	match,
 	initialBet,
 	showPredictionScore = false,
+	className,
 }: MatchCardProps) {
 	const { t, i18n } = useTranslation("betting");
 	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
-	const { routeTo, lang } = useLangLink();
+	const { linkTo } = useLangLink();
+
 	const isLive = match.status === "live";
 	const isFinished = match.status === "finished";
 	const isWalkover = match.resultType === "wo";
-
 	const teamA = match.teamA;
 	const teamB = match.teamB;
+
+	const matchLabel = cleanMatchLabel(match.name, match.label);
+	const showScores = isLive || isFinished || showPredictionScore;
+
+	const userPredictedWinnerA =
+		showPredictionScore &&
+		!!teamA?.id &&
+		initialBet?.predictedWinnerId === teamA.id;
+	const userPredictedWinnerB =
+		showPredictionScore &&
+		!!teamB?.id &&
+		initialBet?.predictedWinnerId === teamB.id;
+
 	const walkoverScoreA =
 		teamA?.id && match.winnerId === teamA.id
 			? t("walkover.win")
@@ -71,35 +95,6 @@ export function MatchCard({
 			? t("walkover.win")
 			: t("walkover.forfeit");
 
-	// Visual highlights for user predictions
-	const userPredictedWinnerA =
-		showPredictionScore &&
-		teamA?.id &&
-		initialBet?.predictedWinnerId === teamA.id;
-	const userPredictedWinnerB =
-		showPredictionScore &&
-		teamB?.id &&
-		initialBet?.predictedWinnerId === teamB.id;
-
-	const formattedStartTime = new Date(match.startTime).toLocaleTimeString(
-		"pt-BR",
-		{
-			hour: "2-digit",
-			minute: "2-digit",
-			timeZone: "America/Sao_Paulo",
-		},
-	);
-
-	const formattedStartDate = new Date(match.startTime)
-		.toLocaleDateString(locale, {
-			day: "2-digit",
-			month: "short",
-			timeZone: "America/Sao_Paulo",
-		})
-		.toUpperCase()
-		.replace(".", "");
-
-	// Score Logic
 	const displayScoreA =
 		showPredictionScore && initialBet
 			? initialBet.predictedScoreA
@@ -109,300 +104,235 @@ export function MatchCard({
 			? initialBet.predictedScoreB
 			: (match.scoreB ?? 0);
 
-	// Remove dynamic sizing to keep text consistent across different cards
-	// We'll use truncate to handle long names instead
+	const start = new Date(match.startTime);
+	const formattedStartDate = start
+		.toLocaleDateString(locale, {
+			day: "2-digit",
+			month: "short",
+			timeZone: "America/Sao_Paulo",
+		})
+		.toUpperCase()
+		.replace(".", "");
+	const formattedStartTime = start.toLocaleTimeString(locale, {
+		hour: "2-digit",
+		minute: "2-digit",
+		timeZone: "America/Sao_Paulo",
+	});
 
-	return (
-		<div
-			className={clsx(
-				"group/card relative mx-auto mb-2 w-full max-w-4xl font-sans transition-opacity",
-				"opacity-100",
-			)}
-		>
-			{/* Match Label Badge (Opening, Winners, etc.) */}
-			{(() => {
-				// Prioritize 'name' if it exists and is meaningful, otherwise use cleaned 'label'
-				const candidate = match.name || match.label || "";
-				const cleanedLabel = candidate
-					.replace(/Group\s+\w+\s*([-:|]\s*)?/i, "")
-					.replace(/Match\s*\d*/i, "")
-					.trim();
+	const betCorrect =
+		!!initialBet && match.winnerId === initialBet.predictedWinnerId;
+	const betIncorrect = isFinished && !!initialBet && !betCorrect;
+	const points = initialBet?.pointsEarned;
 
-				if (!cleanedLabel && !initialBet) return null;
+	const renderTeam = (
+		side: "a" | "b",
+		team: Team | null | undefined,
+		fallbackLabel: string | null | undefined,
+		isPicked: boolean,
+	) => {
+		const name = team?.name || fallbackLabel || t("matchCard.tbd");
 
-				return (
-					<div className="absolute -top-2 left-4 z-20 flex items-center gap-2">
-						{cleanedLabel && (
-							<div className="-rotate-1 skew-x-[-12deg] transform border-2 border-white bg-black px-3 py-0.5 font-black text-[10px] text-white uppercase italic shadow-comic-sm md:text-xs">
-								<span className="block skew-x-[12deg]">{cleanedLabel}</span>
-							</div>
-						)}
-						{initialBet && showPredictionScore && (
-							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-electric-lime px-2 py-0.5 font-black text-[8px] text-black uppercase shadow-comic-sm duration-300 md:text-[10px]">
-								{t("betSaved")}
-							</div>
-						)}
-						{isWalkover && isFinished && (
-							<div className="fade-in zoom-in rotate-2 transform animate-in border-2 border-black bg-brawl-red px-2 py-0.5 font-black text-[8px] text-white uppercase shadow-comic-sm duration-300 md:text-[10px]">
-								{t("badges.wo")}
-							</div>
-						)}
-					</div>
-				);
-			})()}
-
+		return (
 			<div
 				className={clsx(
-					"relative overflow-visible border-2 border-black bg-white shadow-comic-md transition-all",
-					isLive
-						? "border-red-600 bg-red-50 ring-2 ring-red-600/20"
-						: "hover:bg-zinc-50",
-					// Add top padding if there's likely a label to avoid overlap
-					match.name || match.label ? "pt-2" : "",
+					"flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md border px-2 py-2 text-center sm:gap-2 sm:px-3",
+					isPicked
+						? "surface-lime border-black"
+						: "border-transparent bg-transparent",
 				)}
 			>
-				<div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-2 md:flex md:h-20 md:items-center md:gap-8 md:p-2">
-					{/* --- TEAM A --- */}
-					<div
-						className={clsx(
-							"relative flex items-center justify-end gap-2 overflow-hidden rounded-lg py-1 pr-1 transition-all md:h-full md:gap-3 md:pr-1 lg:pr-2",
-							userPredictedWinnerA ? "bg-electric-lime/40" : "",
-						)}
+				{team?.slug ? (
+					<Link
+						to={linkTo("/teams/$teamId")}
+						params={{ teamId: team.slug }}
+						className="shrink-0 transition-opacity hover:opacity-80"
+						onClick={(e) => e.stopPropagation()}
 					>
-						<div className="z-10 flex min-w-0 flex-col items-end leading-tight">
-							{teamA?.slug ? (
-								<Link
-									{...routeTo("/teams/$teamId")}
-									params={{ teamId: teamA.slug, lang }}
-									className={clsx(
-										"block w-full truncate text-right font-black text-[10px] uppercase tracking-tighter transition-colors hover:text-brawl-blue hover:underline md:text-sm lg:text-base",
-										userPredictedWinnerA ? "text-black" : "text-zinc-800",
-									)}
-								>
-									{teamA.name}
-								</Link>
-							) : (
-								<span
-									className={clsx(
-										"block w-full truncate text-right font-black text-[10px] uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
-										userPredictedWinnerA ? "text-black" : "text-zinc-800",
-									)}
-								>
-									{match.labelTeamA || t("matchCard.tbd")}
-								</span>
-							)}
-							{initialBet && !showPredictionScore && (
-								<span className="mt-0.5 hidden whitespace-nowrap font-black text-[10px] text-black/40 uppercase md:block">
-									{t("betPredictionPrefix")}: {initialBet.predictedScoreA}
-								</span>
-							)}
-						</div>
-
-						{/* Logo */}
 						<TeamLogo
-							teamName={teamA?.name || match.labelTeamA || t("matchCard.tbd")}
-							logoUrl={teamA?.logoUrl}
-							size="sm"
-							className={clsx(
-								"h-8 w-8 shrink-0 transition-transform md:h-10 md:w-10",
-								userPredictedWinnerA ? "rotate-[-2deg] scale-105" : "",
-							)}
+							teamName={name}
+							logoUrl={team.logoUrl}
+							size="lg"
+							className="shrink-0"
 						/>
-					</div>
+					</Link>
+				) : (
+					<TeamLogo
+						teamName={name}
+						logoUrl={team?.logoUrl}
+						size="lg"
+						className="shrink-0"
+					/>
+				)}
 
-					{/* --- VS / PLACAR (Center) --- */}
-					<div className="flex shrink-0 flex-col items-center justify-center px-1 md:w-36 md:px-0">
-						<div className="flex items-center gap-1 md:gap-3">
-							{(isLive || isFinished || showPredictionScore) && (
-								<div className="flex h-8 w-7 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-lg text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
-									{isWalkover && isFinished ? walkoverScoreA : displayScoreA}
-								</div>
-							)}
+				<div className="flex w-full min-w-0 flex-col items-center gap-0.5">
+					{team?.slug ? (
+						<Link
+							to={linkTo("/teams/$teamId")}
+							params={{ teamId: team.slug }}
+							title={team.name}
+							className="line-clamp-2 w-full break-words px-0.5 pb-0.5 text-center font-black font-display text-ink text-sm uppercase italic leading-[1.15] tracking-tighter hover:text-brawl-blue hover:underline sm:text-base"
+						>
+							{team.name}
+						</Link>
+					) : (
+						<span
+							title={name}
+							className="line-clamp-2 w-full break-words px-0.5 pb-0.5 text-center font-black font-display text-ink text-sm uppercase italic leading-[1.15] tracking-tighter sm:text-base"
+						>
+							{name}
+						</span>
+					)}
+					{initialBet && !showPredictionScore ? (
+						<span className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+							{t("betPredictionPrefix")}{" "}
+							{side === "a"
+								? initialBet.predictedScoreA
+								: initialBet.predictedScoreB}
+						</span>
+					) : null}
+				</div>
+			</div>
+		);
+	};
 
-							<div className="relative flex flex-col items-center justify-center md:min-w-[80px]">
-								{isLive ? (
-									<span className="mb-0.5 animate-pulse font-black text-[7px] text-red-600 uppercase tracking-tighter md:mb-1 md:text-[9px]">
-										{t("badges.live")}
-									</span>
-								) : (
-									<span
-										className="mb-0.5 font-black text-[7px] text-zinc-400 uppercase leading-none tracking-tighter md:mb-1 md:text-[9px]"
-										suppressHydrationWarning
-									>
-										{formattedStartDate}
-									</span>
-								)}
-
-								<div className="flex items-center justify-center rounded border border-zinc-200/50 bg-zinc-100/50 px-1.5 py-0.5 md:px-2">
-									<span className="font-black text-[9px] text-zinc-500 italic leading-none md:text-xs">
-										{isWalkover && isFinished
-											? t("walkover.forfeit")
-											: t("matchCard.vs")}
-									</span>
-								</div>
-
-								<span
-									className="mt-0.5 font-black text-[7px] text-zinc-400 uppercase tabular-nums leading-none tracking-tighter md:mt-1 md:text-[9px]"
-									suppressHydrationWarning
-								>
-									{formattedStartTime}
-								</span>
-							</div>
-
-							{(isLive || isFinished || showPredictionScore) && (
-								<div className="flex h-8 w-7 items-center justify-center rounded-lg border-2 border-black border-zinc-200 bg-zinc-50 text-center font-black text-lg text-zinc-900 shadow-sm md:h-12 md:w-11 md:text-3xl">
-									{isWalkover && isFinished ? walkoverScoreB : displayScoreB}
-								</div>
-							)}
-						</div>
-					</div>
-
-					{/* --- TEAM B --- */}
-					<div
-						className={clsx(
-							"relative flex items-center justify-start gap-2 overflow-hidden rounded-lg py-1 pr-1 pl-1 transition-all md:h-full md:gap-3 md:pr-1 md:pl-1 lg:pr-2 lg:pl-2",
-							userPredictedWinnerB ? "bg-electric-lime/40" : "",
-						)}
-					>
-						{/* Logo */}
-						<TeamLogo
-							teamName={teamB?.name || match.labelTeamB || t("matchCard.tbd")}
-							logoUrl={teamB?.logoUrl}
-							size="sm"
-							className={clsx(
-								"h-8 w-8 shrink-0 transition-transform md:h-10 md:w-10",
-								userPredictedWinnerB ? "rotate-[2deg] scale-105" : "",
-							)}
-						/>
-
-						<div className="z-10 flex min-w-0 flex-col items-start leading-tight">
-							{teamB?.slug ? (
-								<Link
-									{...routeTo("/teams/$teamId")}
-									params={{ teamId: teamB.slug, lang }}
-									className={clsx(
-										"block w-full truncate text-left font-black text-[10px] uppercase tracking-tighter transition-colors hover:text-brawl-red hover:underline md:text-sm lg:text-base",
-										userPredictedWinnerB ? "text-black" : "text-zinc-800",
-									)}
-								>
-									{teamB.name}
-								</Link>
-							) : (
-								<span
-									className={clsx(
-										"block w-full truncate text-left font-black text-[10px] uppercase tracking-tighter transition-colors md:text-sm lg:text-base",
-										userPredictedWinnerB ? "text-black" : "text-zinc-800",
-									)}
-								>
-									{match.labelTeamB || t("matchCard.tbd")}
-								</span>
-							)}
-							{initialBet && !showPredictionScore && (
-								<span className="mt-0.5 hidden whitespace-nowrap font-black text-[10px] text-black/40 uppercase md:block">
-									{t("betPredictionPrefix")}: {initialBet.predictedScoreB}
-								</span>
-							)}
-						</div>
-					</div>
+	return (
+		<article
+			className={clsx(
+				"relative mx-auto w-full max-w-2xl overflow-hidden border-[3px] border-black bg-white text-ink shadow-comic-md transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-comic-press",
+				isLive && "ring-2 ring-brawl-red ring-offset-2",
+				className,
+			)}
+		>
+			<div className="flex items-center justify-between gap-2 border-black border-b-[3px] bg-paper px-3 py-1.5">
+				<div className="flex min-w-0 items-center gap-2">
+					{matchLabel ? (
+						<span className="surface-ink -skew-x-6 border-2 border-black px-2 py-0.5 font-black font-display text-[9px] uppercase italic shadow-comic-sm sm:text-[10px]">
+							<span className="inline-block skew-x-6">{matchLabel}</span>
+						</span>
+					) : (
+						<span className="truncate font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+							{match.category}
+						</span>
+					)}
+					{initialBet && showPredictionScore ? (
+						<span className="surface-lime border-2 border-black px-1.5 py-0.5 font-black font-display text-[8px] uppercase shadow-comic-sm">
+							{t("betSaved")}
+						</span>
+					) : null}
+					{isWalkover && isFinished ? (
+						<span className="surface-brawl-red border-2 border-black px-1.5 py-0.5 font-black font-display text-[8px] uppercase shadow-comic-sm">
+							{t("badges.wo")}
+						</span>
+					) : null}
 				</div>
 
-				{/* Bet Result Badge - Show points earned for finished matches */}
-				{isFinished && initialBet && initialBet.pointsEarned != null && (
-					<div
-						className={clsx(
-							"group/badge absolute -right-2 -bottom-2 z-20 flex cursor-help items-center gap-1.5 border-2 border-black px-2 py-1 font-black text-[8px] uppercase",
-							(() => {
-								const isCorrect =
-									match.winnerId === initialBet.predictedWinnerId;
-								if (!isCorrect) return "bg-red-500 text-white";
-								if (initialBet.isUnderdogPick) {
-									return "animate-pulse bg-gradient-to-r from-purple-600 to-pink-600 text-white";
-								}
-								return "bg-green-500 text-white";
-							})(),
-						)}
-					>
-						{/* Tooltip */}
-						<div className="pointer-events-none absolute right-0 bottom-full z-[100] mb-2 hidden w-48 rounded border-2 border-white bg-black p-2 text-[10px] text-white shadow-lg group-hover/badge:block">
-							<div className="space-y-1">
-								{(() => {
-									const isCorrect =
-										match.winnerId === initialBet.predictedWinnerId;
-									if (!isCorrect) {
-										return (
-											<>
-												<div className="font-bold text-red-300">
-													{t("prediction.incorrect")}
-												</div>
-												<div className="text-[9px] text-gray-300">
-													{t("betLabel")}{" "}
-													{match.teamA?.id === initialBet.predictedWinnerId
-														? match.teamA?.name
-														: match.teamB?.name}
-												</div>
-												<div className="text-[9px] text-gray-300">
-													{t("actualWinner")}{" "}
-													{match.teamA?.id === match.winnerId
-														? match.teamA?.name
-														: match.teamB?.name}
-												</div>
-												<div className="mt-1 border-gray-600 border-t pt-1 font-bold">
-													{t("totalPoints", { count: 0 })}
-												</div>
-											</>
-										);
-									}
-
-									return (
-										<>
-											<div className="font-bold text-green-300">
-												{t("prediction.breakdown")}
-											</div>
-											{initialBet.isPerfectPick ? (
-												<div className="text-[9px] text-gray-300">
-													{t("perfectScore")} ({initialBet.predictedScoreA}-
-													{initialBet.predictedScoreB})
-												</div>
-											) : (
-												<div className="text-[9px] text-gray-300">
-													{t("correctWinner")}
-												</div>
-											)}
-											{initialBet.isUnderdogPick && (
-												<div className="text-[9px] text-purple-300">
-													{t("bonus.underdog", { percent: 25 })}
-												</div>
-											)}
-											<div className="mt-1 border-gray-600 border-t pt-1 font-bold text-yellow-300">
-												{t("totalPoints", { count: initialBet.pointsEarned })}
-											</div>
-										</>
-									);
-								})()}
-							</div>
-							<div className="absolute top-full right-4 h-0 w-0 border-transparent border-t-4 border-t-white border-r-4 border-l-4" />
-						</div>
-
-						{/* Badge Content */}
-						{(() => {
-							const isCorrect = match.winnerId === initialBet.predictedWinnerId;
-							if (!isCorrect) return "✗";
-							if (initialBet.isUnderdogPick) return <span>🔥</span>;
-							return "✓";
-						})()}
-						<span className="whitespace-nowrap">
-							{initialBet.pointsEarned > 0
-								? `+${initialBet.pointsEarned}`
-								: initialBet.pointsEarned}{" "}
-							{t("matchCard.pts")}
+				<div className="flex shrink-0 items-center gap-1.5">
+					{isLive ? (
+						<span className="surface-brawl-red inline-flex animate-pulse items-center border-2 border-black px-1.5 py-0.5 font-black font-display text-[9px] uppercase shadow-comic-sm">
+							{t("badges.live")}
 						</span>
-						{initialBet.isUnderdogPick &&
-							match.winnerId === initialBet.predictedWinnerId && (
-								<span className="text-[7px]">🐕</span>
+					) : (
+						<span
+							className="flex items-center gap-1 font-body font-bold text-[10px] text-gray-600 uppercase tabular-nums tracking-widest"
+							suppressHydrationWarning
+						>
+							<Calendar className="h-3 w-3" strokeWidth={2.5} />
+							{formattedStartDate} {formattedStartTime}
+						</span>
+					)}
+					{isFinished && initialBet && typeof points === "number" ? (
+						<span
+							className={clsx(
+								"inline-flex items-center gap-1 border-2 border-black px-1.5 py-0.5 font-black font-body text-[10px] uppercase tabular-nums shadow-comic-sm",
+								betCorrect ? "surface-lime" : "surface-brawl-red",
 							)}
-					</div>
-				)}
+						>
+							{betCorrect ? (
+								<Check className="h-3 w-3" strokeWidth={3} />
+							) : (
+								<X className="h-3 w-3" strokeWidth={3} />
+							)}
+							{points > 0 ? `+${points}` : points} {t("matchCard.pts")}
+						</span>
+					) : null}
+				</div>
 			</div>
-		</div>
+
+			<div className="flex items-stretch gap-2 bg-white p-2.5 sm:gap-3 sm:p-3">
+				{renderTeam("a", teamA, match.labelTeamA, !!userPredictedWinnerA)}
+
+				<div className="flex w-16 shrink-0 flex-col items-center justify-center gap-1 self-center sm:w-24">
+					{showScores ? (
+						<div className="flex items-center gap-1.5 sm:gap-2">
+							<span
+								className={clsx(
+									"flex h-9 w-8 items-center justify-center border-[3px] border-black font-black font-body text-lg tabular-nums shadow-comic-sm sm:h-11 sm:w-10 sm:text-2xl",
+									userPredictedWinnerA ||
+										(isFinished && match.winnerId === teamA?.id)
+										? "surface-lime"
+										: "bg-white text-ink",
+								)}
+							>
+								{isWalkover && isFinished ? walkoverScoreA : displayScoreA}
+							</span>
+							<span className="font-black font-display text-ink text-xs uppercase italic">
+								{isWalkover && isFinished
+									? t("walkover.forfeit")
+									: t("matchCard.vs")}
+							</span>
+							<span
+								className={clsx(
+									"flex h-9 w-8 items-center justify-center border-[3px] border-black font-black font-body text-lg tabular-nums shadow-comic-sm sm:h-11 sm:w-10 sm:text-2xl",
+									userPredictedWinnerB ||
+										(isFinished && match.winnerId === teamB?.id)
+										? "surface-lime"
+										: "bg-white text-ink",
+								)}
+							>
+								{isWalkover && isFinished ? walkoverScoreB : displayScoreB}
+							</span>
+						</div>
+					) : (
+						<div className="surface-ink -skew-x-12 border-[3px] border-black px-2.5 py-1 shadow-comic-sm">
+							<span className="inline-block skew-x-12 font-black font-display text-[10px] text-electric-lime uppercase italic sm:text-xs">
+								{t("matchCard.vs")}
+							</span>
+						</div>
+					)}
+				</div>
+
+				{renderTeam("b", teamB, match.labelTeamB, !!userPredictedWinnerB)}
+			</div>
+
+			{isFinished && initialBet && points != null ? (
+				<div className="flex flex-wrap items-center gap-2 border-black border-t-[3px] bg-paper px-3 py-1.5">
+					{betIncorrect ? (
+						<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
+							{t("prediction.incorrect")}
+						</span>
+					) : (
+						<>
+							{initialBet.isPerfectPick ? (
+								<span className="surface-yellow border border-black px-1.5 py-0.5 font-black font-display text-[8px] uppercase">
+									{t("perfectScore")}
+								</span>
+							) : (
+								<span className="font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
+									{t("correctWinner")}
+								</span>
+							)}
+							{initialBet.isUnderdogPick ? (
+								<span className="surface-ink border border-black px-1.5 py-0.5 font-black font-display text-[8px] uppercase">
+									{t("labels.underdogLabel")}
+								</span>
+							) : null}
+						</>
+					)}
+					<span className="ml-auto font-body font-bold text-[10px] text-ink uppercase tabular-nums tracking-widest">
+						{t("totalPoints", { count: points })}
+					</span>
+				</div>
+			) : null}
+		</article>
 	);
 }

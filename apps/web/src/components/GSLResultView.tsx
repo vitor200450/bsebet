@@ -1,15 +1,18 @@
 import { useMemo } from "react";
-import { MatchCard as BracketMatchCard } from "./bracket/MatchCard";
+import { useTranslation } from "react-i18next";
+import {
+	GroupStageColumnLabel,
+	GroupStageShell,
+} from "@/components/GroupStageShell";
+import { MatchCard } from "@/components/MatchCard";
+import { formatScoreDisplay } from "@/utils/score-format";
 import { StandingsTable, useStandings } from "./bracket/StandingsTable";
 import type { Match as BracketMatch } from "./bracket/types";
 
-// Define local types to bridge the gap or just reuse bracket types if possible
-// We need to map our main app Match/Team types to these for the Standings logic.
-
 export interface GSLResultViewProps {
 	groupName: string;
-	matches: any[]; // Accepting the main app matches (we'll cast/map them)
-	userBets?: any[]; // For initialBet prop
+	matches: any[];
+	userBets?: any[];
 	showPredictionScore?: boolean;
 }
 
@@ -19,34 +22,37 @@ export function GSLResultView({
 	userBets,
 	showPredictionScore,
 }: GSLResultViewProps) {
-	// Map main app matches to BracketMatch for logic compatibility
+	const { t } = useTranslation("admin-matches");
+	const { t: tTournament } = useTranslation("tournament");
+
 	const bracketMatches: BracketMatch[] = useMemo(() => {
 		return matches.map(
 			(m) =>
 				({
 					id: m.id,
 					label: m.label || "",
-					name: m.name || m.label || "", // Use name if available, fallback to label
+					name: m.name || m.label || "",
 					displayOrder: m.displayOrder ?? 0,
 					teamA: {
 						id: m.teamA?.id ?? 0,
 						name: m.teamA?.name ?? "TBD",
 						logoUrl: m.teamA?.logoUrl,
-						color: "blue", // Mock
+						color: "blue",
 					},
 					teamB: {
 						id: m.teamB?.id ?? 0,
 						name: m.teamB?.name ?? "TBD",
 						logoUrl: m.teamB?.logoUrl,
-						color: "red", // Mock
+						color: "red",
 					},
 					format: m.format ?? "bo3",
 					stats: {
-						// Mock stats
 						regionA: "",
 						regionB: "",
 						pointsA: 0,
 						pointsB: 0,
+						formA: "0-0",
+						formB: "0-0",
 						winRateA: "",
 						winRateB: "",
 					},
@@ -59,31 +65,19 @@ export function GSLResultView({
 		);
 	}, [matches]);
 
-	// Transform userBets for standings logic if showPredictionScore is active
 	const predictionsMap = useMemo(() => {
 		if (!showPredictionScore || !userBets) return {};
-		const map: Record<number, any> = {};
+		const map: Record<number, { winnerId: number; score: string }> = {};
 		userBets.forEach((bet) => {
 			map[bet.matchId] = {
 				winnerId: bet.predictedWinnerId,
-				score: `${bet.predictedScoreA} - ${bet.predictedScoreB}`,
+				score: formatScoreDisplay(bet.predictedScoreA, bet.predictedScoreB),
 			};
 		});
 		return map;
 	}, [userBets, showPredictionScore]);
 
-	// Calculate Standings (using real results + predictions if requested)
 	const standings = useStandings(bracketMatches, predictionsMap);
-
-	// Identify GSL Links
-	// Logic:
-	// - Opening Matches (2 matches)
-	// - Winners Match (Winner of openings)
-	// - Elimination Match (Loser of openings)
-	// - Decider Match (Loser of Winner vs Winner of Elim)
-
-	// We rely on string matching "Opening", "Winners", "Elimination", "Decider"
-	// just like GSLGroupView.
 
 	const findMatch = (patterns: string[]) =>
 		matches.find((m) => {
@@ -102,153 +96,104 @@ export function GSLResultView({
 	});
 
 	const winnersMatch = findMatch(["winners", "vencedores", "winner"]);
-	const elimMatch = findMatch([
-		"elimination",
-		"eliminação",
-		"loser",
-		"elimination",
-	]);
+	const elimMatch = findMatch(["elimination", "eliminação", "loser"]);
 	const deciderMatch = findMatch(["decider", "decisiva", "decisivo"]);
 
-	// Custom Card Wrapper for Layout
-	// Since our cards are huge, we might need to scale them down or use a scrolling container.
-	// For GSL, layout is tree-like.
-	const CardWrapper = ({ match }: { match?: any }) => {
-		if (!match)
+	const renderMatch = (match?: any) => {
+		if (!match) {
 			return (
-				<div className="flex h-40 w-80 items-center justify-center rounded border-2 border-black/10 border-dashed font-bold text-gray-300 text-xs uppercase opacity-20">
-					TBD
+				<div className="mx-auto flex h-28 w-full max-w-sm items-center justify-center border-[3px] border-black border-dashed bg-tape/40 font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest">
+					{tTournament("detail.tba")}
 				</div>
 			);
-
-		// We render the REAL MatchCard here (The one from Bracket system for consistent layout)
-		const initialBet = userBets?.find((b) => b.matchId === match.id);
+		}
 
 		return (
-			<div className="w-72 origin-center transform p-4 transition-all hover:z-10 hover:scale-[1.02]">
-				<BracketMatchCard
-					match={{
-						...match,
-						teamA: match.teamA || {
-							id: 0,
-							name: match.labelTeamA || "TBD",
-							color: "blue",
-						},
-						teamB: match.teamB || {
-							id: 0,
-							name: match.labelTeamB || "TBD",
-							color: "red",
-						},
-					}}
-					prediction={
-						initialBet
-							? {
-									winnerId: initialBet.predictedWinnerId ?? 0,
-									score: `${initialBet.predictedScoreA} - ${initialBet.predictedScoreB}`,
-									pointsEarned: initialBet.pointsEarned,
-									isCorrect: match.winnerId === initialBet.predictedWinnerId,
-									isUnderdogPick: initialBet.isUnderdogPick,
-									isPerfectPick:
-										match.scoreA === initialBet.predictedScoreA &&
-										match.scoreB === initialBet.predictedScoreB,
-								}
-							: undefined
-					}
-					onUpdatePrediction={() => {}}
-					isReadOnly={true}
-				/>
-			</div>
+			<MatchCard
+				className="mx-auto max-w-md"
+				match={{
+					...match,
+					category: tTournament("detail.stageGroups"),
+					isBettingEnabled: match.isBettingEnabled ?? false,
+					status: match.status as "scheduled" | "live" | "finished",
+					format: match.format ?? "bo3",
+					teamA: match.teamA,
+					teamB: match.teamB,
+				}}
+				initialBet={userBets?.find((b) => b.matchId === match.id)}
+				showPredictionScore={showPredictionScore}
+			/>
 		);
 	};
 
 	return (
-		<div className="flex flex-col gap-6 rounded-3xl border-4 border-black/5 bg-white/40 p-4 shadow-inner backdrop-blur-sm md:p-6">
-			{/* Header */}
-			<div className="flex flex-col items-center justify-between gap-4 border-black/10 border-b-4 pb-6 md:flex-row">
-				<h3 className="font-black text-4xl text-black uppercase italic drop-shadow-sm">
-					{groupName}
-				</h3>
-				<div className="flex items-center gap-2">
-					<div className="rotate-2 border border-transparent bg-black px-4 py-1.5 font-black text-[#ccff00] text-xs uppercase tracking-widest shadow-sm">
-						GSL Format
-					</div>
-					<div className="-rotate-2 border-2 border-black bg-white px-4 py-1.5 font-black text-black text-xs uppercase tracking-widest shadow-sm">
-						Top 2 Advance
-					</div>
-				</div>
-			</div>
-
+		<GroupStageShell
+			title={groupName}
+			formatLabel={t("bracketView.gslFormat")}
+			badgeLabel={t("bracketView.top2Advance")}
+		>
 			<div className="flex flex-col gap-8 xl:flex-row">
-				{/* STANDINGS TABLE - Left Side */}
-				<div className="w-full shrink-0 xl:w-[450px]">
-					<h4 className="mb-4 font-black text-black/80 text-xl uppercase italic">
-						Standings
-					</h4>
+				<div className="w-full shrink-0 xl:max-w-md">
+					<p className="mb-3 font-black font-display text-ink text-sm uppercase italic tracking-tighter">
+						{tTournament("detail.standings")}
+					</p>
 					<StandingsTable standings={standings} />
 				</div>
 
-				{/* BRACKET VIEW - Right Side (Scrollable) */}
-				<div className="flex-1 overflow-x-auto pb-8">
-					<div className="flex min-w-max items-center gap-16 pt-8">
-						{/* Round 1: Opening */}
-						<div className="flex flex-col justify-center gap-8">
-							<div className="relative text-center">
-								<span className="mb-4 inline-block -skew-x-12 bg-black px-3 py-1 font-black text-sm text-white uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
-									Opening Matches
-								</span>
-							</div>
-							{openingMatches.map((m) => (
-								<CardWrapper key={m.id} match={m} />
-							))}
-						</div>
-
-						{/* Connector 1 */}
-						<div className="flex h-full flex-col justify-around py-20 opacity-30">
-							<span className="material-symbols-outlined text-4xl">
-								chevron_right
-							</span>
-						</div>
-
-						{/* Round 2: Winners & Elimination */}
-						<div className="flex flex-col justify-center gap-16">
-							<div className="flex flex-col gap-4">
-								<div className="text-center">
-									<span className="inline-block border-2 border-black bg-[#ccff00] px-3 py-1 font-black text-black text-xs uppercase shadow-sm">
-										Winners Match
-									</span>
+				<div className="min-w-0 flex-1">
+					<p className="mb-3 font-black font-display text-ink text-sm uppercase italic tracking-tighter">
+						{tTournament("detail.matches")}
+					</p>
+					<div className="scrollbar-hide overflow-x-auto pb-2">
+						<div className="flex min-w-max items-stretch gap-4 sm:gap-6">
+							<div className="w-[26rem] shrink-0">
+								<GroupStageColumnLabel tone="ink">
+									{t("bracketView.openingMatches")}
+								</GroupStageColumnLabel>
+								<div className="flex flex-col gap-4">
+									{openingMatches.length > 0
+										? openingMatches.map((m) => (
+												<div key={m.id}>{renderMatch(m)}</div>
+											))
+										: renderMatch(undefined)}
 								</div>
-								<CardWrapper match={winnersMatch} />
 							</div>
 
-							<div className="flex flex-col gap-4">
-								<div className="text-center">
-									<span className="inline-block border-2 border-black bg-brawl-red px-3 py-1 font-black text-white text-xs uppercase shadow-sm">
-										Elimination Match
-									</span>
+							<div
+								aria-hidden="true"
+								className="hidden w-px shrink-0 self-stretch border-black border-l-2 border-dashed opacity-30 sm:block"
+							/>
+
+							<div className="w-[26rem] shrink-0">
+								<div className="mb-8">
+									<GroupStageColumnLabel tone="lime">
+										{t("bracketView.winnersMatch")}
+									</GroupStageColumnLabel>
+									{renderMatch(winnersMatch)}
 								</div>
-								<CardWrapper match={elimMatch} />
+								<div>
+									<GroupStageColumnLabel tone="red">
+										{t("bracketView.eliminationMatch")}
+									</GroupStageColumnLabel>
+									{renderMatch(elimMatch)}
+								</div>
 							</div>
-						</div>
 
-						{/* Connector 2 */}
-						<div className="flex h-full flex-col justify-center opacity-30">
-							<span className="material-symbols-outlined text-4xl">
-								chevron_right
-							</span>
-						</div>
+							<div
+								aria-hidden="true"
+								className="hidden w-px shrink-0 self-stretch border-black border-l-2 border-dashed opacity-30 sm:block"
+							/>
 
-						{/* Round 3: Decider */}
-						<div className="flex flex-col justify-center gap-4">
-							<div className="text-center">
-								<span className="inline-block border-2 border-black bg-gray-200 px-3 py-1 font-black text-black text-xs uppercase shadow-sm">
-									Decider Match
-								</span>
+							<div className="w-[26rem] shrink-0">
+								<GroupStageColumnLabel tone="tape">
+									{t("bracketView.deciderMatch")}
+								</GroupStageColumnLabel>
+								{renderMatch(deciderMatch)}
 							</div>
-							<CardWrapper match={deciderMatch} />
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</GroupStageShell>
 	);
 }

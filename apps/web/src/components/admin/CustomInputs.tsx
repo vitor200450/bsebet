@@ -20,6 +20,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { InlineLoader } from "@/components/inline-loader";
 import { cn } from "@/lib/utils";
+import { getCalendarFocusDate, isDateInRange } from "@/utils/date-range";
 
 export type SelectOption = { value: string; label: string };
 
@@ -89,9 +90,10 @@ export const CustomSelect = ({
 			onValueChange={(next) => {
 				if (!next) {
 					confirmOnNextChange.current = false;
-					onChange("");
+					if (value !== "") onChange("");
 					return;
 				}
+				if (next.value === value) return;
 				onChange(next.value);
 				if (confirmOnNextChange.current) {
 					confirmOnNextChange.current = false;
@@ -338,17 +340,29 @@ export const CustomDatePicker = ({
 	const { t, i18n } = useTranslation("admin-matches");
 	const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
 	const [open, setOpen] = useState(false);
-	const [currentDate, setCurrentDate] = useState(
-		value ? new Date(value) : new Date(),
+	const [currentDate, setCurrentDate] = useState(() =>
+		getCalendarFocusDate(value, minDate, maxDate),
+	);
+
+	const valueOutOfRange = Boolean(
+		value && !isDateInRange(value, minDate, maxDate),
 	);
 
 	useEffect(() => {
 		if (!value) return;
-		const parsed = new Date(value);
+		if (!isDateInRange(value, minDate, maxDate)) return;
+		const parsed = new Date(`${value}T12:00:00`);
 		if (!Number.isNaN(parsed.getTime())) {
 			setCurrentDate(parsed);
 		}
-	}, [value]);
+	}, [value, minDate, maxDate]);
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		setOpen(nextOpen);
+		if (nextOpen) {
+			setCurrentDate(getCalendarFocusDate(value, minDate, maxDate));
+		}
+	};
 
 	const daysInMonth = new Date(
 		currentDate.getFullYear(),
@@ -391,7 +405,7 @@ export const CustomDatePicker = ({
 	}) as string[];
 
 	return (
-		<Popover.Root open={open} onOpenChange={setOpen}>
+		<Popover.Root open={open} onOpenChange={handleOpenChange}>
 			<div className="flex w-full flex-col">
 				{label ? <span className={fieldLabelClass}>{label}</span> : null}
 				<Popover.Trigger
@@ -399,10 +413,15 @@ export const CustomDatePicker = ({
 					className={cn(
 						fieldTriggerClass,
 						"min-h-[50px] px-3 py-3 font-display shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]",
+						valueOutOfRange && "border-brawl-red",
 					)}
 				>
 					<span
-						className={cn("truncate", !value && "font-normal text-gray-400")}
+						className={cn(
+							"truncate",
+							!value && "font-normal text-gray-400",
+							valueOutOfRange && "text-brawl-red",
+						)}
 					>
 						{displayValue ?? t("customInputs.selectDate")}
 					</span>
@@ -426,6 +445,27 @@ export const CustomDatePicker = ({
 						className={cn(popupPanelClass, "w-72 p-2")}
 						aria-label={label ?? t("customInputs.selectDate")}
 					>
+						{value ? (
+							<div className="mb-2 flex items-center justify-between gap-2 border-black/15 border-b-2 pb-2">
+								{valueOutOfRange ? (
+									<p className="font-body font-bold text-[10px] text-brawl-red uppercase tracking-widest">
+										{t("customInputs.outOfRange")}
+									</p>
+								) : (
+									<span />
+								)}
+								<button
+									type="button"
+									onClick={() => {
+										onChange("");
+										setOpen(false);
+									}}
+									className="font-body font-bold text-[10px] text-gray-500 uppercase tracking-widest transition-colors hover:text-brawl-red"
+								>
+									{t("customInputs.clearDate")}
+								</button>
+							</div>
+						) : null}
 						<div className="surface-ink mb-2 flex items-center justify-between gap-1 px-1 py-1.5">
 							<button
 								type="button"

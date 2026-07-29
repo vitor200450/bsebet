@@ -1041,12 +1041,10 @@ function TournamentMatchesPage() {
 				)}
 
 				{activeTab === "ordering" && (
-					<div className="mx-auto max-w-4xl">
-						<MatchOrdering
-							matches={matches as any}
-							tournamentId={tournament.id}
-						/>
-					</div>
+					<MatchOrdering
+						matches={matches as any}
+						tournamentId={tournament.id}
+					/>
 				)}
 
 				{activeTab === "matches" && (

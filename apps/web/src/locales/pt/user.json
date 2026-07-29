@@ -1,6 +1,7 @@
 {
 	"profile": "PERFIL",
 	"back": "VOLTAR",
+	"playerBadge": "JOGADOR",
 	"memberSince": "Membro desde",
 	"unknownTournament": "Torneio Desconhecido",
 	"totalPoints": "Total de Pontos",
@@ -10,6 +11,15 @@
 	"recentBets": "Palpites Recentes",
 	"filterLabel": "Torneio",
 	"all": "Todos",
+	"pickCount_one": "{{count}} palpite",
+	"pickCount_other": "{{count}} palpites",
+	"picksModal": {
+		"open": "Ver todos os palpites",
+		"eyebrow": "Palpites do jogador",
+		"title": "Palpites de {{name}}",
+		"tournamentCount_one": "{{count}} torneio",
+		"tournamentCount_other": "{{count}} torneios"
+	},
 	"scheduled": "AGENDADO",
 	"live": "AO VIVO",
 	"bet": "PALPITE",
@@ -17,6 +27,15 @@
 	"actualLabel": "Real:",
 	"perfectScore": "Perfeitos",
 	"finalPoints": "Pontos Finais",
+	"tbd": "A DEFINIR",
+	"win": "VITÓRIA",
+	"loss": "DERROTA",
+	"empty": {
+		"recentBets": "Nenhum palpite ainda",
+		"recentBetsHint": "Palpites de torneios ativos e finalizados aparecem aqui",
+		"history": "Sem histórico de torneios",
+		"historyHint": "Entre em um torneio e trave palpites para montar seu histórico"
+	},
 	"stats": {
 		"general": "ESTATÍSTICAS GERAIS",
 		"underdogs": "Azarões",

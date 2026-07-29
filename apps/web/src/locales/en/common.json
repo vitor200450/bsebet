@@ -52,6 +52,16 @@
 		"sort": "Sort"
 	},
 	"region": "Region",
+	"regions": {
+		"global": "World",
+		"na": "North America",
+		"emea": "EMEA",
+		"sa": "South America",
+		"cn": "China",
+		"ea": "East Asia",
+		"sea": "Southeast Asia",
+		"sas": "South Asia"
+	},
 	"series": "Series",
 	"points": "points",
 	"finished": "Finished",

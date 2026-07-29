@@ -1,6 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Archive, Edit2, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { clsx } from "clsx";
+import {
+	Archive,
+	Edit2,
+	Layers,
+	Plus,
+	RotateCcw,
+	Search,
+	Trash2,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -56,11 +65,15 @@ const emptyScoring = (): ScoringForm => ({
 	underdog_tier2_max_pct: DEFAULT_SCORING_RULES.underdog_tier2_max_pct ?? 0.5,
 });
 
+const actionBtnClass =
+	"flex flex-1 items-center justify-center border-[2px] border-black bg-white p-2 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none md:flex-none";
+
 function AdminEventKindsPage() {
 	const { t } = useTranslation("admin");
 	const eventKinds = Route.useLoaderData();
 	const router = useRouter();
 
+	const [searchTerm, setSearchTerm] = useState("");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [useTemplateScoring, setUseTemplateScoring] = useState(false);
@@ -88,27 +101,54 @@ function AdminEventKindsPage() {
 		templateScoringRules: emptyScoring(),
 	});
 
+	const resetForm = () => {
+		setFormData({
+			name: "",
+			slug: "",
+			presentationTheme: "default",
+			templateStages: [],
+			templateScoringRules: emptyScoring(),
+		});
+		setUseTemplateScoring(false);
+	};
+
+	const filteredKinds = useMemo(
+		() =>
+			eventKinds.filter(
+				(k) =>
+					k.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					k.slug.toLowerCase().includes(searchTerm.toLowerCase()),
+			),
+		[eventKinds, searchTerm],
+	);
+
 	useSetHeader({
 		title: t("eventKinds.title"),
 		actions: (
-			<button
-				type="button"
-				onClick={() => {
-					setFormData({
-						name: "",
-						slug: "",
-						presentationTheme: "default",
-						templateStages: [],
-						templateScoringRules: emptyScoring(),
-					});
-					setUseTemplateScoring(false);
-					setIsModalOpen(true);
-				}}
-				className="flex h-11 items-center justify-center gap-2 border-[3px] border-black bg-[#ccff00] px-6 font-black font-display text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000]"
-			>
-				<Plus className="h-5 w-5" strokeWidth={3} />
-				{t("eventKinds.create")}
-			</button>
+			<div className="flex h-11 w-full flex-col-reverse items-stretch gap-2 max-sm:h-auto sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+				<div className="relative w-full sm:w-auto">
+					<input
+						type="text"
+						placeholder={t("common:actions.search")}
+						value={searchTerm}
+						onChange={(e) => setSearchTerm(e.target.value)}
+						className="h-11 w-full border-[3px] border-black bg-white px-4 py-0 pr-10 font-body font-bold text-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:font-body placeholder:text-gray-400 placeholder:uppercase placeholder:tracking-widest hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-4 focus:ring-[#ccff00]/40 sm:w-64"
+					/>
+					<Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+				</div>
+
+				<button
+					type="button"
+					onClick={() => {
+						resetForm();
+						setIsModalOpen(true);
+					}}
+					className="flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap border-[3px] border-black bg-[#ccff00] px-6 py-0 font-black font-display text-black uppercase italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#bbe000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:w-auto"
+				>
+					<Plus className="h-5 w-5" strokeWidth={3} />
+					<span className="inline">{t("eventKinds.create")}</span>
+				</button>
+			</div>
 		),
 	});
 
@@ -155,7 +195,9 @@ function AdminEventKindsPage() {
 					name: formData.name,
 					slug: formData.slug,
 					presentationTheme: formData.presentationTheme,
-					templateStages: formData.templateStages as any,
+					templateStages: formData.templateStages.map(
+						({ startDate: _s, endDate: _e, ...stage }) => stage,
+					) as any,
 					templateScoringRules: useTemplateScoring
 						? formData.templateScoringRules
 						: null,
@@ -218,84 +260,191 @@ function AdminEventKindsPage() {
 	};
 
 	return (
-		<div className="mx-auto max-w-5xl px-4 py-6">
-			{eventKinds.length === 0 ? (
-				<p className="font-body font-bold text-gray-500 text-sm uppercase tracking-widest">
-					{t("eventKinds.empty")}
-				</p>
-			) : (
-				<div className="space-y-3">
-					{eventKinds.map((kind) => {
-						const archived = kind.archivedAt != null;
-						return (
-							<div
-								key={kind.id}
-								className="flex flex-col gap-3 rounded-lg border-[3px] border-black bg-white p-4 shadow-[3px_3px_0_0_#000] sm:flex-row sm:items-center sm:justify-between"
-							>
-								<div>
-									<div className="flex flex-wrap items-center gap-2">
-										<h2 className="font-black font-display text-ink text-lg uppercase italic tracking-tight">
-											{kind.name}
-										</h2>
-										{archived && (
-											<span className="rounded bg-gray-200 px-2 py-0.5 font-body font-bold text-[10px] text-gray-700 uppercase tracking-widest">
-												{t("eventKinds.archivedBadge")}
-											</span>
-										)}
-										<span className="rounded border-2 border-black bg-paper px-2 py-0.5 font-body font-bold text-[10px] text-ink uppercase tracking-widest">
-											{t(`eventKinds.themes.${kind.presentationTheme}`)}
-										</span>
-									</div>
-									<p className="mt-1 font-body text-gray-500 text-xs tabular-nums">
-										{kind.slug}
-									</p>
+		<div className="min-h-screen bg-paper bg-paper-texture pb-20 font-sans">
+			<div className="mx-auto max-w-[1600px] px-6 py-8">
+				<div className="overflow-hidden border-[4px] border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]">
+					<div className="overflow-x-auto">
+						<div className="min-w-full md:min-w-[800px]">
+							<div className="hidden grid-cols-12 gap-4 border-black border-b-[4px] bg-black px-6 py-4 font-body font-bold text-sm text-white uppercase tracking-widest md:grid">
+								<div className="col-span-4">{t("eventKinds.tableInfo")}</div>
+								<div className="col-span-2">{t("eventKinds.tableTheme")}</div>
+								<div className="col-span-2">
+									{t("eventKinds.tableTemplate")}
 								</div>
-								<div className="flex gap-2">
-									<button
-										type="button"
-										onClick={() => handleEdit(kind)}
-										className="flex items-center justify-center border-2 border-black bg-white p-2 text-black shadow-[2px_2px_0_0_#000] hover:bg-electric-lime"
-										title={t("eventKinds.edit")}
-									>
-										<Edit2 className="h-4 w-4" strokeWidth={2.5} />
-									</button>
-									{archived ? (
-										<button
-											type="button"
-											onClick={() => handleRestore(kind.id)}
-											className="flex items-center justify-center border-2 border-black bg-white p-2 text-black shadow-[2px_2px_0_0_#000] hover:bg-[#ccff00]"
-											title={t("eventKinds.restore")}
-										>
-											<RotateCcw className="h-4 w-4" strokeWidth={2.5} />
-										</button>
-									) : (
-										<button
-											type="button"
-											onClick={() =>
-												setItemToArchive({ id: kind.id, name: kind.name })
-											}
-											className="flex items-center justify-center border-2 border-black bg-white p-2 text-black shadow-[2px_2px_0_0_#000] hover:bg-[#ffc700]"
-											title={t("eventKinds.archive")}
-										>
-											<Archive className="h-4 w-4" strokeWidth={2.5} />
-										</button>
-									)}
-									<button
-										type="button"
-										onClick={() =>
-											setItemToDelete({ id: kind.id, name: kind.name })
-										}
-										className="flex items-center justify-center border-2 border-black bg-white p-2 text-black shadow-[2px_2px_0_0_#000] hover:bg-[#ff2e2e] hover:text-white"
-										title={t("eventKinds.delete")}
-									>
-										<Trash2 className="h-4 w-4" strokeWidth={2.5} />
-									</button>
+								<div className="col-span-2 text-center">
+									{t("eventKinds.tableStatus")}
+								</div>
+								<div className="col-span-2 text-right">
+									{t("eventKinds.tableActions")}
 								</div>
 							</div>
-						);
-					})}
+
+							{filteredKinds.length === 0 ? (
+								<div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+									<button
+										type="button"
+										onClick={() => {
+											resetForm();
+											setIsModalOpen(true);
+										}}
+										className="flex flex-col items-center justify-center gap-4 border-[3px] border-black border-dashed bg-[#e6e6e6] px-10 py-8 opacity-80 transition-all hover:border-solid hover:bg-white hover:opacity-100"
+									>
+										<div className="flex h-16 w-16 items-center justify-center border-[3px] border-black bg-white">
+											<Layers className="h-8 w-8 text-ink" strokeWidth={2.5} />
+										</div>
+										<span className="font-black font-display text-gray-500 uppercase italic">
+											{t("eventKinds.empty")}
+										</span>
+									</button>
+								</div>
+							) : (
+								<div className="divide-y-[3px] divide-black">
+									{filteredKinds.map((kind, index) => {
+										const archived = kind.archivedAt != null;
+										const stageCount = ((kind.templateStages as Stage[]) || [])
+											.length;
+										const hasScoring = kind.templateScoringRules != null;
+
+										return (
+											<div
+												key={kind.id}
+												className={clsx(
+													"flex flex-col items-start gap-4 px-6 py-4 transition-colors hover:bg-[#ccff00]/10 md:grid md:grid-cols-12 md:items-center",
+													index % 2 === 0 ? "bg-white" : "bg-[#f4f4f5]",
+												)}
+											>
+												<div className="flex w-full items-center gap-4 md:col-span-4">
+													<div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border-[3px] border-black bg-paper shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+														<Layers
+															className="h-6 w-6 text-ink"
+															strokeWidth={2.5}
+														/>
+													</div>
+													<div className="min-w-0">
+														<h3 className="break-words font-black font-display text-black text-lg uppercase italic leading-none">
+															{kind.name}
+														</h3>
+														<span className="mt-1 inline-block rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-body font-bold text-[10px] text-gray-500 tracking-widest">
+															{kind.slug}
+														</span>
+													</div>
+												</div>
+
+												<div className="flex w-full md:col-span-2">
+													<span className="w-fit rounded border-2 border-black bg-paper px-2 py-1 font-body font-bold text-[10px] text-ink uppercase tracking-widest">
+														{t(`eventKinds.themes.${kind.presentationTheme}`)}
+													</span>
+												</div>
+
+												<div className="flex w-full flex-row flex-wrap gap-2 md:col-span-2 md:flex-col md:gap-1.5">
+													{stageCount === 0 && !hasScoring ? (
+														<span className="font-body font-bold text-[10px] text-gray-400 uppercase italic tracking-widest">
+															{t("eventKinds.noTemplate")}
+														</span>
+													) : (
+														<>
+															{stageCount > 0 && (
+																<span className="w-fit rounded bg-gray-100 px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tabular-nums tracking-widest">
+																	{t("eventKinds.stagesCount", {
+																		count: stageCount,
+																	})}
+																</span>
+															)}
+															<span className="w-fit rounded bg-gray-100 px-2 py-1 font-body font-bold text-[10px] text-gray-600 uppercase tracking-widest">
+																{hasScoring
+																	? t("eventKinds.scoringSeeded")
+																	: t("eventKinds.scoringDefault")}
+															</span>
+														</>
+													)}
+												</div>
+
+												<div className="flex w-full justify-start md:col-span-2 md:justify-center">
+													<span
+														className={clsx(
+															"whitespace-nowrap border-[2px] border-black px-3 py-1 font-body font-bold text-[10px] uppercase italic tracking-widest",
+															archived
+																? "bg-gray-200 text-gray-600"
+																: "bg-[#ccff00] text-black",
+														)}
+													>
+														{archived
+															? t("eventKinds.archivedBadge")
+															: t("eventKinds.statusActive")}
+													</span>
+												</div>
+
+												<div className="mt-2 flex w-full flex-wrap justify-start gap-2 md:col-span-2 md:mt-0 md:justify-end">
+													<button
+														type="button"
+														onClick={() => handleEdit(kind)}
+														className={clsx(
+															actionBtnClass,
+															"hover:bg-[#2e5cff] hover:text-white",
+														)}
+														title={t("eventKinds.edit")}
+													>
+														<Edit2 className="h-4 w-4" strokeWidth={2.5} />
+													</button>
+													{archived ? (
+														<button
+															type="button"
+															onClick={() => handleRestore(kind.id)}
+															className={clsx(
+																actionBtnClass,
+																"hover:bg-[#ccff00] hover:text-black",
+															)}
+															title={t("eventKinds.restore")}
+														>
+															<RotateCcw
+																className="h-4 w-4"
+																strokeWidth={2.5}
+															/>
+														</button>
+													) : (
+														<button
+															type="button"
+															onClick={() =>
+																setItemToArchive({
+																	id: kind.id,
+																	name: kind.name,
+																})
+															}
+															className={clsx(
+																actionBtnClass,
+																"hover:bg-[#ffc700] hover:text-black",
+															)}
+															title={t("eventKinds.archive")}
+														>
+															<Archive className="h-4 w-4" strokeWidth={2.5} />
+														</button>
+													)}
+													<button
+														type="button"
+														onClick={() =>
+															setItemToDelete({
+																id: kind.id,
+																name: kind.name,
+															})
+														}
+														className={clsx(
+															actionBtnClass,
+															"hover:bg-[#ff2e2e] hover:text-white",
+														)}
+														title={t("eventKinds.delete")}
+													>
+														<Trash2 className="h-4 w-4" strokeWidth={2.5} />
+													</button>
+												</div>
+											</div>
+										);
+									})}
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
-			)}
+			</div>
 
 			<AdminFormModal
 				isOpen={isModalOpen}
@@ -371,6 +520,7 @@ function AdminEventKindsPage() {
 						</p>
 						<StageBuilder
 							stages={formData.templateStages}
+							showDates={false}
 							onChange={(stages) =>
 								setFormData({ ...formData, templateStages: stages })
 							}

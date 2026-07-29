@@ -66,26 +66,25 @@ export function GSLGroupView({
 	};
 
 	return (
-		<div className="flex flex-col gap-5 rounded-lg border-2 border-black bg-white p-5 shadow-[4px_4px_0px_0px_#000]">
-			{/* Header */}
-			<div className="flex items-center justify-between border-black/10 border-b-2 pb-3">
-				<h3 className="font-black font-display text-ink text-xl uppercase italic tracking-tight">
-					{groupName} — {t("bracketView.gslFormat")}
+		<div className="flex flex-col gap-5 rounded-md border-2 border-black bg-white p-4 text-ink shadow-comic sm:p-5">
+			<div className="flex flex-col gap-3 border-black/10 border-b-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
+				<h3 className="font-black font-display text-ink text-lg uppercase italic tracking-tight sm:text-xl">
+					{groupName} <span className="text-gray-400">-</span>{" "}
+					{t("bracketView.gslFormat")}
 				</h3>
-				<div className="rounded-sm border-2 border-black bg-ink px-2.5 py-1 font-bold text-[#ccff00] text-[10px] uppercase tracking-wider shadow-[1px_1px_0px_0px_#000]">
+				<div className="w-fit rounded-sm border-2 border-black bg-ink px-2.5 py-1 font-body font-bold text-[10px] text-electric-lime uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 					{t("bracketView.top2Advance")}
 				</div>
 			</div>
 
 			<div className="flex flex-col gap-6 xl:flex-row">
-				{/* STANDINGS TABLE */}
-				<StandingsTable standings={standings} />
+				<div className="w-full min-w-0 xl:w-auto xl:min-w-56">
+					<StandingsTable standings={standings} />
+				</div>
 
-				{/* BRACKET VIEW */}
-				<div className="flex items-center gap-6 overflow-x-auto pb-3">
-					{/* Round 1: Opening */}
-					<div className="flex w-64 shrink-0 flex-col justify-center gap-5">
-						<div className="mb-1 text-center font-bold text-[9px] text-gray-500 uppercase tracking-wider">
+				<div className="scrollbar-hide flex snap-x snap-mandatory items-center gap-4 overflow-x-auto pb-3 sm:gap-6">
+					<div className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col justify-center gap-5">
+						<div className="mb-1 text-center font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 							{t("bracketView.openingMatches")}
 						</div>
 						{openingMatches.map((m) => (
@@ -93,31 +92,27 @@ export function GSLGroupView({
 						))}
 					</div>
 
-					{/* Connector */}
 					<div className="h-full w-4 shrink-0 border-black/20 border-r-2 border-dashed" />
 
-					{/* Round 2: Winners & Elimination */}
-					<div className="flex w-64 shrink-0 flex-col justify-center gap-10">
+					<div className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col justify-center gap-10">
 						<div className="flex flex-col gap-2">
-							<div className="mx-auto mb-1 w-max rounded-sm border-2 border-black bg-ink px-2 py-0.5 text-center font-bold text-[#ccff00] text-[9px] uppercase shadow-[1px_1px_0px_0px_#000]">
+							<div className="mx-auto mb-1 w-max rounded-sm border-2 border-black bg-ink px-2 py-0.5 text-center font-body font-bold text-[9px] text-electric-lime uppercase tracking-widest shadow-[1px_1px_0px_0px_#000]">
 								{t("bracketView.winnersMatch")}
 							</div>
 							{renderCard(winnersMatch)}
 						</div>
 						<div className="flex flex-col gap-2">
-							<div className="mx-auto mb-1 w-max rounded-sm bg-brawl-red/10 px-2 py-0.5 text-center font-bold text-[9px] text-brawl-red uppercase">
+							<div className="mx-auto mb-1 w-max rounded-sm border-2 border-black bg-brawl-red px-2 py-0.5 text-center font-body font-bold text-[9px] text-white uppercase tracking-widest">
 								{t("bracketView.eliminationMatch")}
 							</div>
 							{renderCard(elimMatch)}
 						</div>
 					</div>
 
-					{/* Connector */}
 					<div className="h-full w-4 shrink-0 border-black/20 border-r-2 border-dashed" />
 
-					{/* Round 3: Decider */}
-					<div className="flex w-64 shrink-0 flex-col justify-center gap-2">
-						<div className="mx-auto mb-1 w-max rounded-sm bg-tape px-2 py-0.5 text-center font-bold text-[9px] text-ink uppercase">
+					<div className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col justify-center gap-2">
+						<div className="mx-auto mb-1 w-max rounded-sm border-2 border-black bg-tape px-2 py-0.5 text-center font-body font-bold text-[9px] text-ink uppercase tracking-widest">
 							{t("bracketView.deciderMatch")}
 						</div>
 						{renderCard(deciderMatch)}

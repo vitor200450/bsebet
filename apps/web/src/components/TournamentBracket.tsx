@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { GSLGroupView } from "./bracket/GSLGroupView";
+import { MatchCard } from "./bracket/MatchCard";
 import { StandardGroupView } from "./bracket/StandardGroupView";
 import type { Match, Prediction, Team } from "./bracket/types";
-export type { Match, Prediction, Team };
 
-import { MatchCard } from "./bracket/MatchCard";
+export type { Match, Prediction, Team };
 
 export function TournamentBracket({
 	matches,
@@ -170,8 +170,12 @@ export function TournamentBracket({
 		const sortMatches = (a: Match, b: Match) =>
 			(a.displayOrder ?? 999) - (b.displayOrder ?? 999) || a.id - b.id;
 
-		Object.values(upper).forEach((rm) => rm.sort(sortMatches));
-		Object.values(lower).forEach((rm) => rm.sort(sortMatches));
+		Object.values(upper).forEach((rm) => {
+			rm.sort(sortMatches);
+		});
+		Object.values(lower).forEach((rm) => {
+			rm.sort(sortMatches);
+		});
 		gf.sort(sortMatches);
 
 		const foundElimination =
@@ -253,13 +257,13 @@ export function TournamentBracket({
 		<div
 			className={
 				className ||
-				"relative flex min-h-[100dvh] w-full flex-col items-center overflow-x-auto bg-transparent p-6 font-body text-ink"
+				"relative flex min-h-[100dvh] w-full flex-col items-center overflow-x-auto bg-transparent px-3 py-4 font-body text-ink sm:p-6"
 			}
 		>
-			{/* Review Button - Fixed at bottom right */}
 			{showReviewButton && (
-				<div className="fixed right-6 bottom-24 z-[70]">
+				<div className="fixed right-4 bottom-24 z-[70] sm:right-6">
 					<button
+						type="button"
 						onClick={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
@@ -267,37 +271,34 @@ export function TournamentBracket({
 								onReview();
 							}
 						}}
-						className="slide-in-from-bottom-4 flex animate-in cursor-pointer items-center gap-2 rounded-md border-2 border-black bg-brawl-red px-6 py-3 font-black text-sm text-white uppercase italic shadow-[4px_4px_0px_0px_#000] transition-all duration-300 hover:bg-[#d41d1d] hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						className="slide-in-from-bottom-4 flex animate-in cursor-pointer items-center gap-2 rounded-md border-2 border-black bg-electric-lime px-5 py-3 font-black font-display text-ink text-sm uppercase shadow-[4px_4px_0px_0px_#000] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 					>
 						<span className="material-symbols-outlined text-lg">verified</span>
-						Revisar Palpites
+						{t("reviewBets")}
 					</button>
 				</div>
 			)}
 
-			{/* Header Container */}
 			{!hideHeader && (
-				<div className="relative z-10 mb-8 w-full text-center">
-					<div className="mx-auto inline-block -rotate-1 transform">
-						<div className="relative border-[#ccff00] border-b-4 bg-ink px-8 py-2 text-white shadow-[4px_4px_0px_0px_#000]">
-							<h2 className="font-black font-display text-2xl uppercase italic tracking-tighter">
-								{t("bracketTitle")}{" "}
-								<span className="text-[#ccff00]">
-									{t("bracketTitleHighlight")}
-								</span>
-							</h2>
-						</div>
+				<div className="relative z-10 mb-6 flex w-full justify-center sm:mb-8">
+					<div className="inline-block -rotate-1 border-2 border-black bg-ink px-6 py-2 text-white shadow-comic-sm sm:px-8">
+						<h2 className="font-black font-display text-xl uppercase italic tracking-tighter sm:text-2xl">
+							{t("bracketTitle")}{" "}
+							<span className="text-electric-lime">
+								{t("bracketTitleHighlight")}
+							</span>
+						</h2>
 					</div>
 				</div>
 			)}
 
-			<div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-16">
+			<div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-12 sm:gap-16">
 				{/* Groups Section */}
 				{hasGroups && (
 					<div className="flex flex-col gap-6">
 						<div className="flex items-center gap-4">
 							<div className="h-0.5 flex-grow bg-black/20" />
-							<h3 className="-skew-x-6 transform rounded-md border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-ink text-lg uppercase italic shadow-[2px_2px_0px_0px_#000]">
+							<h3 className="rounded-md border-2 border-black bg-electric-lime px-4 py-1 font-black font-display text-base text-ink uppercase italic shadow-[2px_2px_0px_0px_#000] sm:text-lg">
 								{t("rounds.groupStage")}
 							</h3>
 							<div className="h-0.5 flex-grow bg-black/20" />
@@ -359,31 +360,30 @@ export function TournamentBracket({
 					</div>
 				)}
 
-				{/* Elimination Section */}
 				{hasElimination && (
 					<div className="relative z-10 flex flex-col items-center gap-6">
 						{!hideHeader && (
 							<div className="flex w-full items-center gap-4">
 								<div className="h-0.5 flex-grow bg-black/20" />
-								<h3 className="-skew-x-6 transform rounded-md border-2 border-black bg-[#ccff00] px-4 py-1 font-black text-ink text-lg uppercase italic shadow-[2px_2px_0px_0px_#000]">
+								<h3 className="rounded-md border-2 border-black bg-electric-lime px-4 py-1 font-black font-display text-base text-ink uppercase italic shadow-[2px_2px_0px_0px_#000] sm:text-lg">
 									{t("rounds.playoffBracket")}
 								</h3>
 								<div className="h-0.5 flex-grow bg-black/20" />
 							</div>
 						)}
 
-						<div className="scrollbar-hide flex w-full flex-col gap-10 overflow-x-auto pb-8">
+						<div className="scrollbar-hide -mx-1 flex w-full snap-x snap-mandatory flex-col gap-10 overflow-x-auto px-1 pb-8">
 							{/* UPPER BRACKET */}
 							{upperRounds.length > 0 && (
 								<div className="flex flex-col gap-4">
-									<div className="flex items-stretch gap-5 text-black">
+									<div className="flex items-stretch gap-4 text-ink sm:gap-5">
 										{upperRounds.map((roundIdx) => (
 											<div
 												key={`upper-${roundIdx}`}
-												className="flex w-64 shrink-0 flex-col gap-2"
+												className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col gap-2"
 											>
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="rounded-sm border-2 border-black bg-ink px-3 py-1 font-body font-bold text-[10px] text-electric-lime uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{getRoundTitle("upper", roundIdx)}
 													</span>
 												</div>
@@ -406,9 +406,9 @@ export function TournamentBracket({
 
 										{/* GRAND FINAL */}
 										{grandFinal.length > 0 && (
-											<div className="flex w-64 shrink-0 flex-col gap-2">
+											<div className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col gap-2">
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[#ccff00] text-[10px] uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="rounded-sm border-2 border-black bg-ink px-3 py-1 font-body font-bold text-[10px] text-electric-lime uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{t("rounds.grandFinal")}
 													</span>
 												</div>
@@ -436,18 +436,18 @@ export function TournamentBracket({
 							{lowerRounds.length > 0 && (
 								<div className="relative mt-8 border-black/10 border-t-2 border-dashed pt-6">
 									<div className="absolute top-0 left-0 -translate-y-1/2 bg-paper pr-4">
-										<div className="-skew-x-6 transform rounded-sm border-2 border-black bg-ink px-3 py-1 font-black text-[10px] text-white uppercase italic tracking-widest shadow-[2px_2px_0px_0px_#000]">
+										<div className="rounded-sm border-2 border-black bg-ink px-3 py-1 font-body font-bold text-[10px] text-white uppercase tracking-widest shadow-[2px_2px_0px_0px_#000]">
 											{t("rounds.lowerBracket")}
 										</div>
 									</div>
-									<div className="flex items-center gap-5">
+									<div className="flex items-center gap-4 sm:gap-5">
 										{lowerRounds.map((roundIdx) => (
 											<div
 												key={`lower-${roundIdx}`}
-												className="flex w-64 shrink-0 flex-col gap-2"
+												className="flex w-64 min-w-[16rem] shrink-0 snap-start flex-col gap-2"
 											>
 												<div className="mb-1 flex justify-center">
-													<span className="-skew-x-6 transform rounded-sm border-2 border-black bg-white px-3 py-1 font-black text-[10px] text-ink uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+													<span className="rounded-sm border-2 border-black bg-white px-3 py-1 font-body font-bold text-[10px] text-ink uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
 														{getRoundTitle("lower", roundIdx)}
 													</span>
 												</div>
@@ -471,11 +471,11 @@ export function TournamentBracket({
 								</div>
 							)}
 
-							{/* THIRD PLACE — smaller, less prominent */}
+							{/* THIRD PLACE */}
 							{thirdPlace.length > 0 && (
 								<div className="relative mt-6 border-black/5 border-t pt-5">
 									<div className="mx-auto flex max-w-sm flex-col items-center gap-3">
-										<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-black text-[9px] text-gray-400 uppercase tracking-wider">
+										<span className="rounded-sm border border-black/20 bg-white px-2 py-0.5 font-body font-bold text-[9px] text-gray-500 uppercase tracking-widest">
 											{t("rounds.thirdPlace")}
 										</span>
 										{thirdPlace.map((match) => (

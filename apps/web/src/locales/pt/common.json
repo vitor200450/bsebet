@@ -52,6 +52,16 @@
 		"sort": "Ordenar"
 	},
 	"region": "Região",
+	"regions": {
+		"global": "Mundial",
+		"na": "América do Norte",
+		"emea": "EMEA",
+		"sa": "América do Sul",
+		"cn": "China",
+		"ea": "Leste Asiático",
+		"sea": "Sudeste Asiático",
+		"sas": "Sul Asiático"
+	},
 	"series": "Série",
 	"points": "pontos",
 	"finished": "Concluído",

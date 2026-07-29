@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
-import { Award, Crown, Medal, Star, Trophy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Award, Crown, Medal, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { useLangLink } from "@/i18n/useLangLink";
@@ -306,15 +305,12 @@ export function TrophyCase({ medals, className }: TrophyCaseProps) {
 
 	return (
 		<section className={cn("", className)}>
-			{/* Header */}
-			<div className="mb-6 flex items-center gap-3">
-				<div className="rotate-2 transform border-2 border-black bg-[#FFD700] p-2 shadow-[2px_2px_0_0_#000]">
-					<Trophy className="h-5 w-5 text-black" strokeWidth={3} fill="black" />
-				</div>
-				<h2 className="font-black font-display text-black text-xl uppercase italic tracking-tighter md:text-2xl">
+			<div className="mb-6 flex flex-wrap items-center gap-3">
+				<div className="h-8 w-1.5 shrink-0 bg-ink" />
+				<h2 className="font-black font-display text-2xl text-ink uppercase italic tracking-tighter md:text-3xl">
 					{t("medals.trophyCase")}
 				</h2>
-				<div className="ml-auto flex items-center gap-1 rounded-full border-2 border-black bg-black px-3 py-1">
+				<div className="surface-ink flex items-center gap-1 border-2 border-black px-3 py-1 shadow-comic-sm">
 					<span className="font-black font-body text-sm text-white tabular-nums">
 						{medals.length}
 					</span>
@@ -322,6 +318,7 @@ export function TrophyCase({ medals, className }: TrophyCaseProps) {
 						{t("medals.medalCount")}
 					</span>
 				</div>
+				<div className="hidden h-0.5 min-w-[2rem] flex-1 bg-black/10 sm:block" />
 			</div>
 
 			{/* Medal Grid */}
