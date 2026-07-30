@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
+// Never override DATABASE_URL already set (e.g. bun --env-file=.env.production).
 dotenv.config({
 	path: "../../.env",
-	override: true,
+	override: false,
 });
 
 dotenv.config({

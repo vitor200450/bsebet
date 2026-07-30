@@ -34,19 +34,12 @@ export default defineConfig({
 	},
 
 	envDir: "../../",
+	// Server secrets must stay runtime-only on Vercel — do not bake into the bundle.
 	define: {
 		"process.env.GOOGLE_CLIENT_ID": JSON.stringify(
 			process.env.GOOGLE_CLIENT_ID,
 		),
-		"process.env.GOOGLE_CLIENT_SECRET": JSON.stringify(
-			process.env.GOOGLE_CLIENT_SECRET,
-		),
-		"process.env.BETTER_AUTH_SECRET": JSON.stringify(
-			process.env.BETTER_AUTH_SECRET,
-		),
 		"process.env.BETTER_AUTH_URL": JSON.stringify(process.env.BETTER_AUTH_URL),
-		"process.env.CORS_ORIGIN": JSON.stringify(process.env.CORS_ORIGIN),
-		"process.env.DATABASE_URL": JSON.stringify(process.env.DATABASE_URL),
 		"process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
 	},
 	resolve: {
